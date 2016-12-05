@@ -17,20 +17,32 @@ public class QuickTest {
 		allCfg.put(0, worker0Cfg);
 		allCfg.put(1, worker1Cfg);
 		
-		MessageSenderAndReceiver masterMsg = new MessageSenderAndReceiver(allCfg, -1);
-		MessageSenderAndReceiver worker0Msg = new MessageSenderAndReceiver(allCfg, 0);
-		MessageSenderAndReceiver worker1Msg = new MessageSenderAndReceiver(allCfg, 1);
-		
-		masterMsg.start();
-		worker0Msg.start();
-		worker1Msg.start();
+		MessageSenderAndReceiver master = startWorker(allCfg, -1);
+		MessageSenderAndReceiver worker0 = startWorker(allCfg, 0);
+		MessageSenderAndReceiver worker1 = startWorker(allCfg, 1);
 		
 		Thread.sleep(5000);
 
 		System.out.println("Shutting down");
-		masterMsg.stop();
-		worker0Msg.stop();
-		worker1Msg.stop();
+		master.stop();
+		worker0.stop();
+		worker1.stop();
 		System.out.println("End");
+	}
+	
+	private static MessageSenderAndReceiver startWorker(Map<Integer, Pair<String, Integer>> allCfg, int id) {
+		final MessageSenderAndReceiver messaging = new MessageSenderAndReceiver(allCfg, id);
+		Thread workerThread = new Thread(new Runnable() {			
+			@Override
+			public void run() {
+				messaging.start();
+				messaging.sendMessageToAll(id + " to all");
+				messaging.sendMessageToAll(id + " to all 2");
+			}
+		});
+		workerThread.setName("WorkerThread_[" + id + "]");
+		workerThread.start();
+		
+		return messaging;
 	}
 }

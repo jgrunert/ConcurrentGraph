@@ -1,8 +1,5 @@
 package mthesis.concurrent_graph.communication;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +19,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
@@ -33,7 +34,7 @@ import mthesis.concurrent_graph.Settings;
 
 
 public class MessageSenderAndReceiver {
-	private static Logger logger = LoggerFactory.getLogger(MessageSenderAndReceiver.class);
+	private final Logger logger;
 
 	private final int ownId;
 	private final Map<Integer, Pair<String, Integer>> machines;
@@ -44,6 +45,7 @@ public class MessageSenderAndReceiver {
 
 	
 	public MessageSenderAndReceiver(Map<Integer, Pair<String, Integer>> machines, int ownId) {
+		this.logger = LoggerFactory.getLogger(this.getClass() + "[" + ownId + "]");
 		this.ownId = ownId;
 		this.machines = machines;
 	}
@@ -65,11 +67,33 @@ public class MessageSenderAndReceiver {
 				}
 			}
 		}
+		
+		long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
+		while(System.currentTimeMillis() <= timeoutTime && activeChannels.size() < (machines.size() - 1)) {
+			Thread.yield();
+		}
+		if(activeChannels.size() == (machines.size() - 1))
+			logger.info("Established all connections");
+		else
+			logger.error("Failed to establish all connections");
 	}
 	
 	public void stop() {
 		bossGroup.shutdownGracefully();
 		workerGroup.shutdownGracefully();
+	}
+	
+	
+	public void sendMessageToMachine(int machineId, String message) {
+		// TODO Check
+		activeChannels.get(machineId).writeAndFlush(message + "\n");
+	}
+	
+	public void sendMessageToAll(String message) {
+		// TODO Check
+		for(Channel ch : activeChannels.values()) {
+			ch.writeAndFlush(message + "\n");
+		}
 	}
 
 	
@@ -94,12 +118,16 @@ public class MessageSenderAndReceiver {
 							p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
 						}
 						// p.addLast(new LoggingHandler(LogLevel.INFO));
-						p.addLast(new MachineChannelHandler(activeChannels));
+						p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
+						p.addLast(new StringEncoder());
+						p.addLast(new StringDecoder());
+						p.addLast(new MachineChannelHandler(activeChannels, ownId));
 					}
 				});
 
 		// Start the client.
-		ChannelFuture f = b.connect(host, port).sync();		 
+		//ChannelFuture f = b.connect(host, port).sync();	
+		b.connect(host, port);
 	}
 	
 	
@@ -145,7 +173,10 @@ public class MessageSenderAndReceiver {
 							p.addLast(sslCtx.newHandler(ch.alloc()));
 						}
 						// p.addLast(new LoggingHandler(LogLevel.INFO));
-						p.addLast(new MachineChannelHandler(activeChannels));
+						p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
+						p.addLast(new StringEncoder());
+						p.addLast(new StringDecoder());
+						p.addLast(new MachineChannelHandler(activeChannels, ownId));
 					}
 				});
 

@@ -9,45 +9,70 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+
+// TODO Everything should be more robust, error handling etc.
 public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
-	private static Logger logger = LoggerFactory.getLogger(MessageSenderAndReceiver.class);
+	private final Logger logger;
+	private final int ownId;
 	private final ConcurrentHashMap<Integer, Channel> activeChannels;
 	
+	private enum ChannelState { Inactive, Handshake, Active }
+	private ChannelState channelState = ChannelState.Inactive;
+	private int connectedMachine;
+
+    //private ByteBuf buffer;
 	
-	public MachineChannelHandler(ConcurrentHashMap<Integer, Channel> activeChannels) {
+	
+	public MachineChannelHandler(ConcurrentHashMap<Integer, Channel> activeChannels, int ownId) {
 		super();
+		this.ownId = ownId;
+		this.logger = LoggerFactory.getLogger(MachineChannelHandler.class + "[" + ownId + "]");
 		this.activeChannels = activeChannels;
 	}
 
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        //ctx.writeAndFlush(firstMessage);
-    	logger.debug("Channel active: " + ctx.channel().id());
+		// ctx.writeAndFlush(firstMessage);
+		logger.debug("Channel active: " + ctx.channel().id());
+		if (channelState == ChannelState.Inactive) {
+			channelState = ChannelState.Handshake;
+			ctx.writeAndFlush(Integer.toString(ownId) + "\n");
+		} else {
+			logger.warn("Channel not inactive ignoring active channel " + ctx.channel().id());
+		}
     }
     
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         //ctx.fireChannelInactive();
+		channelState = ChannelState.Inactive;
     	logger.debug("Channel inactive: " + ctx.channel().id());
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-    	System.out.println(msg);
-        //ctx.write(msg);
+    	logger.debug("channelRead " + ctx.channel().id() + " " + msg); // TODO trace
+    	
+    	if (channelState == ChannelState.Active) {
+			// TODO
+		} else if (channelState == ChannelState.Handshake) {
+			connectedMachine = Integer.parseInt((String)msg);
+			activeChannels.put(connectedMachine, ctx.channel());
+			channelState = ChannelState.Active;
+        	logger.debug("Channel handshake finished. Connected " + msg + " via " + ctx.channel().id());		
+		}
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
-       ctx.flush();
+       //ctx.flush();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // Close the connection when an exception is raised.
     	logger.error("exceptionCaught", cause);
-        //cause.printStackTrace();
         ctx.close();
     }
 }
