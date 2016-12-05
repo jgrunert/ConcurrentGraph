@@ -36,7 +36,7 @@ public class Master {
 			});
 			bootstrap.option(ChannelOption.SO_BACKLOG, 50); // (7)
 			bootstrap.childOption(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE); // (8)
-			ChannelFuture future = bootstrap.bind(Settings.PORT).sync(); // (9)
+			ChannelFuture future = bootstrap.bind(1234).sync(); // (9)
 			System.out.println("Server gestartet!");
 			future.channel().closeFuture().sync(); // (10)
 		} catch (Exception ex) {

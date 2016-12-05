@@ -63,7 +63,7 @@ public class Worker {
 	public static void main(String[] args) {
 		System.out.println("Worker starting");
 		try {
-			new Worker("localhost", Settings.PORT).run();			
+			new Worker("localhost", 1234).run();			
 		} catch(Exception exc) {
 			exc.printStackTrace();
 		}

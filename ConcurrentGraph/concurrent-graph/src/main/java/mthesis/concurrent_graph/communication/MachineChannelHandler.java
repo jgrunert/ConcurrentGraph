@@ -23,13 +23,13 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         //ctx.writeAndFlush(firstMessage);
-    	logger.trace("Channel active: " + ctx.channel().id());
+    	logger.debug("Channel active: " + ctx.channel().id());
     }
     
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         //ctx.fireChannelInactive();
-    	logger.trace("Channel inactive: " + ctx.channel().id());
+    	logger.debug("Channel inactive: " + ctx.channel().id());
     }
 
     @Override
@@ -46,7 +46,8 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // Close the connection when an exception is raised.
-        cause.printStackTrace();
+    	logger.error("exceptionCaught", cause);
+        //cause.printStackTrace();
         ctx.close();
     }
 }
