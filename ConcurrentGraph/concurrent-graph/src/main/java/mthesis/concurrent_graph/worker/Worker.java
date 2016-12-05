@@ -67,5 +67,6 @@ public class Worker {
 		} catch(Exception exc) {
 			exc.printStackTrace();
 		}
+		System.out.println("Worker end");
 	}
 }

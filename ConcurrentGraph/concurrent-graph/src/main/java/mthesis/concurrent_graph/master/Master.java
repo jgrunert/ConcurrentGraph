@@ -1,5 +1,8 @@
 package mthesis.concurrent_graph.master;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -15,6 +18,7 @@ import mthesis.concurrent_graph.Settings;
  */
 public class Master {
 	
+	private static Logger logger = LoggerFactory.getLogger( Master.class );
 	
 	public void run() {
 		EventLoopGroup bossGroup = new NioEventLoopGroup(); // (1)
@@ -26,7 +30,8 @@ public class Master {
 			bootstrap.childHandler(new ChannelInitializer<SocketChannel>() { // 5
 				@Override
 				protected void initChannel(SocketChannel channel) throws Exception {
-					System.out.println("Ein Computer hat sich verbunden. IP: " + channel.remoteAddress().getHostName()); // (6)
+					channel.pipeline().addLast(new MasterServerHandler());
+					System.out.println("Worker connected. IP: " + channel.remoteAddress()); // (6)
 				}
 			});
 			bootstrap.option(ChannelOption.SO_BACKLOG, 50); // (7)
@@ -44,11 +49,12 @@ public class Master {
 	
 	
 	public static void main(String[] args) {
-		System.out.println("Master starting");
+		logger.info("Master starting");
 		try {
 			new Master().run();			
 		} catch(Exception exc) {
 			exc.printStackTrace();
 		}
+		logger.info("Master end");
 	}
 }
