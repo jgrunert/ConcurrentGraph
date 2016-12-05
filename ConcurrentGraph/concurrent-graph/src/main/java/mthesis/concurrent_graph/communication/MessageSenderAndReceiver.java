@@ -29,8 +29,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import mthesis.concurrent_graph.Pair;
 import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.util.Pair;
 
 
 public class MessageSenderAndReceiver {

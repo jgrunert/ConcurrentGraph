@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph;
+package mthesis.concurrent_graph.util;
 
 public class Pair<A, B> {
 

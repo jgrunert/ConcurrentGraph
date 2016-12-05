@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
+import mthesis.concurrent_graph.util.Pair;
 
 public class QuickTest {
 
