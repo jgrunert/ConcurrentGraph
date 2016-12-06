@@ -46,49 +46,49 @@ public class MessageSenderAndReceiver {
 
 	private final int ownId;
 	private final Map<Integer, Pair<String, Integer>> machines;
-	private ConcurrentHashMap<Integer, Channel> activeChannels = new ConcurrentHashMap<Integer, Channel>();
-	
+	private final ConcurrentHashMap<Integer, Channel> activeChannels = new ConcurrentHashMap<Integer, Channel>();
+
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
-	
-	private AbstractNode messageListener;
 
-	
-	public MessageSenderAndReceiver(Map<Integer, Pair<String, Integer>> machines, int ownId, 
+	private final AbstractNode messageListener;
+
+
+	public MessageSenderAndReceiver(Map<Integer, Pair<String, Integer>> machines, int ownId,
 			AbstractNode listener) {
 		this.logger = LoggerFactory.getLogger(this.getClass() + "[" + ownId + "]");
 		this.ownId = ownId;
 		this.machines = machines;
 		this.messageListener = listener;
 	}
-	
-//	public void setMessageListner(AbstractNode listener) {
-//		this.messageListener = listener;
-//	}
-	
-	
+
+	//	public void setMessageListner(AbstractNode listener) {
+	//		this.messageListener = listener;
+	//	}
+
+
 	public void start() {
 		bossGroup = new NioEventLoopGroup(1);
 		workerGroup = new NioEventLoopGroup();
-		
+
 		startServer();
-		
+
 		// Connect to all other machines with smaller IDs
-		for(Entry<Integer, Pair<String, Integer>> machine : machines.entrySet()) {
+		for(final Entry<Integer, Pair<String, Integer>> machine : machines.entrySet()) {
 			if(machine.getKey() < ownId) {
 				try {
 					connectToMachine(machine.getValue().fst, machine.getValue().snd);
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					logger.error("Exception at connectToMachine " + machine.getKey(), e);
 				}
 			}
 		}
-		
+
 		//waitStarted();
 	}
-	
-	public void waitUntilStarted() {		
-		long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
+
+	public void waitUntilStarted() {
+		final long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
 		while(System.currentTimeMillis() <= timeoutTime && activeChannels.size() < (machines.size() - 1)) {
 			Thread.yield();
 		}
@@ -97,33 +97,33 @@ public class MessageSenderAndReceiver {
 		else
 			logger.error("Failed to establish all connections");
 	}
-	
+
 	public void stop() {
 		bossGroup.shutdownGracefully();
 		workerGroup.shutdownGracefully();
 	}
-	
-	
+
+
 	public void sendMessageToMachine(int machineId, String message) {
 		// TODO Check
 		activeChannels.get(machineId).writeAndFlush(message + "\n");
 	}
-	
+
 	public void sendMessageToAll(String message) {
 		// TODO Check
-		for(Channel ch : activeChannels.values()) {
+		for(final Channel ch : activeChannels.values()) {
 			ch.writeAndFlush(message + "\n");
-			//ch.writeAndFlush("YES!\n");	
+			//ch.writeAndFlush("YES!\n");
 		}
 	}
-	
-	
+
+
 	public void onIncomingMessage(String message) {
 		if(messageListener != null)
 			messageListener.onIncomingMessage(message);
 	}
 
-	
+
 	private void connectToMachine(String host, int port) throws Exception {
 		// Configure SSL.git
 		final SslContext sslCtx;
@@ -134,40 +134,40 @@ public class MessageSenderAndReceiver {
 		}
 
 		// Configure the client.
-		Bootstrap b = new Bootstrap();
+		final Bootstrap b = new Bootstrap();
 		b.group(workerGroup)
-				.channel(NioSocketChannel.class)
-				.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY)
-				.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
-				.handler(new ChannelInitializer<SocketChannel>() {
-					@Override
-					public void initChannel(SocketChannel ch) throws Exception {
-						ChannelPipeline p = ch.pipeline();
-						if (sslCtx != null) {
-							p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
-						}
-						// p.addLast(new LoggingHandler(LogLevel.INFO));
-						p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-						p.addLast(new StringEncoder());
-						p.addLast(new StringDecoder());
-						p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
-					}
-				});
+		.channel(NioSocketChannel.class)
+		.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY)
+		.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
+		.handler(new ChannelInitializer<SocketChannel>() {
+			@Override
+			public void initChannel(SocketChannel ch) throws Exception {
+				final ChannelPipeline p = ch.pipeline();
+				if (sslCtx != null) {
+					p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
+				}
+				// p.addLast(new LoggingHandler(LogLevel.INFO));
+				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
+				p.addLast(new StringEncoder());
+				p.addLast(new StringDecoder());
+				p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
+			}
+		});
 
 		// Start the client.
 		b.connect(host, port).channel();
 	}
-	
-	
+
+
 	private void startServer() {
-		Thread serverThread = new Thread(new Runnable() {			
+		final Thread serverThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					logger.info("Start run connection server");					
+					logger.info("Start run connection server");
 					runServer();
-					logger.info("End run connection server");	
-				} catch (Exception e) {
+					logger.info("End run connection server");
+				} catch (final Exception e) {
 					logger.error("Exception at runServer", e);
 				}
 			}
@@ -176,44 +176,44 @@ public class MessageSenderAndReceiver {
 		serverThread.setDaemon(true);
 		serverThread.start();
 	}
-	
-	private void runServer() throws Exception {
-		int port = machines.get(ownId).snd;	
-		
-        // Configure SSL.
-        final SslContext sslCtx;
-        if (Settings.SSL) {
-            SelfSignedCertificate ssc = new SelfSignedCertificate();
-            sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
-        } else {
-            sslCtx = null;
-        }
 
-		ServerBootstrap b = new ServerBootstrap();
+	private void runServer() throws Exception {
+		final int port = machines.get(ownId).snd;
+
+		// Configure SSL.
+		final SslContext sslCtx;
+		if (Settings.SSL) {
+			final SelfSignedCertificate ssc = new SelfSignedCertificate();
+			sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+		} else {
+			sslCtx = null;
+		}
+
+		final ServerBootstrap b = new ServerBootstrap();
 		b.group(bossGroup, workerGroup)
-				.channel(NioServerSocketChannel.class)
-				.option(ChannelOption.SO_BACKLOG, 100)
-				.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
-				.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY).handler(new LoggingHandler(LogLevel.INFO))
-				.childHandler(new ChannelInitializer<SocketChannel>() {
-					@Override
-					public void initChannel(SocketChannel ch) throws Exception {
-						ChannelPipeline p = ch.pipeline();
-						if (sslCtx != null) {
-							p.addLast(sslCtx.newHandler(ch.alloc()));
-						}
-						// p.addLast(new LoggingHandler(LogLevel.INFO));
-						p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-						p.addLast(new StringEncoder());
-						p.addLast(new StringDecoder());
-						p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
-					}
-				});
+		.channel(NioServerSocketChannel.class)
+		.option(ChannelOption.SO_BACKLOG, 100)
+		.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
+		.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY).handler(new LoggingHandler(LogLevel.INFO))
+		.childHandler(new ChannelInitializer<SocketChannel>() {
+			@Override
+			public void initChannel(SocketChannel ch) throws Exception {
+				final ChannelPipeline p = ch.pipeline();
+				if (sslCtx != null) {
+					p.addLast(sslCtx.newHandler(ch.alloc()));
+				}
+				// p.addLast(new LoggingHandler(LogLevel.INFO));
+				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
+				p.addLast(new StringEncoder());
+				p.addLast(new StringDecoder());
+				p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
+			}
+		});
 
 		// Start the server.
-		ChannelFuture f = b.bind(port).sync();
+		final ChannelFuture f = b.bind(port).sync();
 
 		// Wait until the server socket is closed.
-		f.channel().closeFuture().sync();   
-    }
+		f.channel().closeFuture().sync();
+	}
 }

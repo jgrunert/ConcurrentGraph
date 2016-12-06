@@ -12,7 +12,7 @@ import mthesis.concurrent_graph.worker.WorkerNode;
  *
  */
 public class CCDetectVertex extends AbstractVertex {
-	
+
 	private int value;
 
 	public CCDetectVertex(List<Integer> neighbors, int id, WorkerNode workerManager) {
@@ -25,13 +25,13 @@ public class CCDetectVertex extends AbstractVertex {
 		if(superstepNo == 0) {
 			sendMessageToAllNeighbors(Integer.toString(value));
 		}
-		
+
 		int min = value;
-		for(VertexMessage msg : messages) {
-			int msgValue = Integer.parseInt(msg.Content);
+		for(final VertexMessage msg : messages) {
+			final int msgValue = Integer.parseInt(msg.Content);
 			min = Math.min(min, msgValue);
 		}
-		
+
 		if(min < value) {
 			value = min;
 			sendMessageToAllNeighbors(Integer.toString(value));

@@ -12,7 +12,7 @@ public abstract class AbstractVertex {
 	protected int superstepNo = 0;
 	private final WorkerNode workerManager;
 	private boolean active = true;
-	
+
 
 	public AbstractVertex(List<Integer> neighbors, int id, WorkerNode workerManager) {
 		super();
@@ -21,7 +21,7 @@ public abstract class AbstractVertex {
 		this.workerManager = workerManager;
 	}
 
-	
+
 	public void superstep(List<VertexMessage> messages, int superstep) {
 		if (!messages.isEmpty())
 			active = true;
@@ -36,12 +36,12 @@ public abstract class AbstractVertex {
 			workerManager.sendVertexMessage(id, neighbors.get(i), superstepNo, message);
 		}
 	}
-	
+
 	protected void voteHalt() {
 		active = false;
 	}
-	
-	
+
+
 	public boolean isActive() {
 		return active;
 	}
