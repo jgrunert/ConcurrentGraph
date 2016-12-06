@@ -1,7 +1,10 @@
 package mthesis.concurrent_graph.worker;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,25 +26,26 @@ import mthesis.concurrent_graph.vertex.CCDetectVertex;
 public class WorkerNode extends AbstractNode {
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
+	private final String output;
 
 	private final List<CCDetectVertex> vertices;
-
 	private int superstepNo;
 	private final Map<Integer, List<VertexMessage>> vertexMessageBuckets = new HashMap<>();
 
 
 	public WorkerNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
-			Set<Integer> vertexIds, String dataDir) {
+			Set<Integer> vertexIds, String input, String output) {
 		super(machines, ownId);
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
 		this.masterId = masterId;
 
 		this.vertices = new ArrayList<>(vertexIds.size());
-		loadVertices(vertexIds, dataDir);
+		this.output = output;
+		loadVertices(vertexIds, input);
 	}
 
-	private void loadVertices(Set<Integer> vertexIds, String dataDir) {
-		try (BufferedReader br = new BufferedReader(new FileReader(dataDir))) {
+	private void loadVertices(Set<Integer> vertexIds, String input) {
+		try (BufferedReader br = new BufferedReader(new FileReader(input))) {
 			String line;
 			final List<Integer> edges = new ArrayList<>();
 
@@ -84,36 +88,42 @@ public class WorkerNode extends AbstractNode {
 		superstepNo = -1;
 		sendSuperstepFinishedMessage(vertices.size());
 
-		while(true) {
-			if (!waitForNextSuperstep()) {
-				logger.info("Worker Finished");
-				return;
+		try {
+			while(!Thread.interrupted()) {
+				if (!waitForNextSuperstep()) {
+					break;
+				}
+				superstepNo++;
+
+				logger.debug("Starting superstep " + superstepNo); // TODO trace
+
+				// Sort incoming messages
+				for(final VertexMessage msg : inWorkerMessages) {
+					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
+					if(vertMsgs != null)
+						vertMsgs.add(msg);
+				}
+				inWorkerMessages.clear();
+
+				// Compute and Messaging (done by vertices)
+				int activeVertices = 0;
+				for(final AbstractVertex vertex : vertices) {
+					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(vertex.id);
+					vertex.superstep(vertMsgs, superstepNo);
+					vertMsgs.clear();
+					if(vertex.isActive())
+						activeVertices++;
+				}
+
+				// Barrier sync
+				logger.debug("Finished superstep " + superstepNo + " activeVertices:" + activeVertices); // TODO trace
+				sendSuperstepFinishedMessage(activeVertices);
 			}
-			superstepNo++;
-
-			logger.debug("Starting superstep " + superstepNo); // TODO trace
-
-			// Sort incoming messages
-			for(final VertexMessage msg : inWorkerMessages) {
-				final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
-				if(vertMsgs != null)
-					vertMsgs.add(msg);
-			}
-			inWorkerMessages.clear();
-
-			// Compute and Messaging (done by vertices)
-			int activeVertices = 0;
-			for(final AbstractVertex vertex : vertices) {
-				final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(vertex.id);
-				vertex.superstep(vertMsgs, superstepNo);
-				vertMsgs.clear();
-				if(vertex.isActive())
-					activeVertices++;
-			}
-
-			// Barrier sync
-			logger.debug("Finished superstep " + superstepNo + " activeVertices:" + activeVertices); // TODO trace
-			sendSuperstepFinishedMessage(activeVertices);
+		}
+		finally {
+			logger.info("Worker shutting down");
+			stop();
+			writeOutput();
 		}
 	}
 
@@ -152,5 +162,19 @@ public class WorkerNode extends AbstractNode {
 	public void sendVertexMessage(int fromVertex, int toVertex, String content) {
 		messaging.sendMessageTo(otherWorkerIds, MessageType.Vertex + ";" + ownId + ";" + superstepNo + ";" + fromVertex + ";" + toVertex + ";" + content);
 		inWorkerMessages.add(new VertexMessage(ownId, fromVertex, toVertex, superstepNo, content));
+	}
+
+
+	private void writeOutput() {
+		try(PrintWriter writer = new PrintWriter(new FileWriter(output + File.separator + ownId + ".txt")))
+		{
+			for(final AbstractVertex vertex : vertices) {
+				writer.println(vertex.id + "\t" + vertex.getOutput());
+			}
+		}
+		catch(final Exception e)
+		{
+			logger.error("writeOutput failed", e);
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,15 +17,13 @@ import mthesis.concurrent_graph.worker.WorkerNode;
 public class QuickTest {
 
 	public static void main(String[] args) throws Exception {
-		final Pair<String, Integer> masterCfg = new Pair<String, Integer>("localhost", 23499);
-		final Pair<String, Integer> worker0Cfg = new Pair<String, Integer>("localhost", 23500);
-		final Pair<String, Integer> worker1Cfg = new Pair<String, Integer>("localhost", 23501);
-
 		final String input = "../../Data/cctest.txt";
-		final String outDir = "output";
+		final String output = "output";
 		final int numWorkers = 3;
 		final String host = "localhost";
 		final int basePort = 23499;
+
+		new File(output).mkdirs();
 
 		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
 		final List<Integer> allWorkerIds= new ArrayList<>();
@@ -49,7 +48,7 @@ public class QuickTest {
 			for(int j = 0; j < nodesPerWorker && !graphNodes.isEmpty(); j++) {
 				workerNodes.add(graphNodes.remove(random.nextInt(graphNodes.size())));
 			}
-			workers.add(startWorker(allCfg, i, allWorkerIds, workerNodes, input));
+			workers.add(startWorker(allCfg, i, allWorkerIds, workerNodes, input, output));
 		}
 
 
@@ -67,8 +66,8 @@ public class QuickTest {
 	}
 
 	private static WorkerNode startWorker(Map<Integer, Pair<String, Integer>> allCfg,
-			int id, List<Integer> allWorkers, Set<Integer> vertexIds, String dataDir) {
-		final WorkerNode node = new WorkerNode(allCfg, id, allWorkers, -1, vertexIds, dataDir);
+			int id, List<Integer> allWorkers, Set<Integer> vertexIds, String input, String output) {
+		final WorkerNode node = new WorkerNode(allCfg, id, allWorkers, -1, vertexIds, input, output);
 		node.start();
 		return node;
 	}
