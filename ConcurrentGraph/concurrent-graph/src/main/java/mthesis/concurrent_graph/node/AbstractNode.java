@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessage;
 import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
@@ -22,8 +25,9 @@ import mthesis.concurrent_graph.util.Pair;
  * @author Jonas Grunert
  */
 public abstract class AbstractNode {
+	protected final Logger logger;
 	//private final Map<Integer, Pair<String, Integer>> machines;
-	private final int ownId;
+	protected final int ownId;
 	
 	private final MessageSenderAndReceiver messaging;
 	protected final BlockingQueue<VertexMessage> inWorkerMessages = new LinkedBlockingQueue<>();
@@ -33,6 +37,7 @@ public abstract class AbstractNode {
 
 	
 	protected AbstractNode(Map<Integer, Pair<String, Integer>> machines, int ownId) {
+		this.logger = LoggerFactory.getLogger(this.getClass() + "[" + ownId + "]");
 		//this.machines = machines;
 		this.ownId = ownId;
 		this.messaging = new MessageSenderAndReceiver(machines, ownId, this);
@@ -65,6 +70,8 @@ public abstract class AbstractNode {
 
 	
 	public void onIncomingMessage(String message) {
+		logger.debug(message); // TODO Remove
+		
 		String[] msgSplit = message.split(";");
 		MessageType type = MessageType.valueOf(msgSplit[0]);
 		int superstepNo = Integer.parseInt(msgSplit[1]);
@@ -92,5 +99,6 @@ public abstract class AbstractNode {
 		
 	public void sendVertexMessage(int fromVertex, int toVertex, int superstepNo, String content) {
 		messaging.sendMessageToAll(MessageType.Worker + ";" + superstepNo + ";" + fromVertex + ";" + toVertex + ";" + content);			
+		inWorkerMessages.add(new VertexMessage(fromVertex, toVertex, superstepNo, content));
 	}
 }

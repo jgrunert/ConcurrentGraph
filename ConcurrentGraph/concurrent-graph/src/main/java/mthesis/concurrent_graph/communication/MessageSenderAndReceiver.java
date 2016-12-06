@@ -162,9 +162,9 @@ public class MessageSenderAndReceiver {
 			@Override
 			public void run() {
 				try {
-					logger.info("Start run server");					
+					logger.info("Start run connection server");					
 					runServer();
-					logger.info("End run server");	
+					logger.info("End run connection server");	
 				} catch (Exception e) {
 					logger.error("Exception at runServer", e);
 				}

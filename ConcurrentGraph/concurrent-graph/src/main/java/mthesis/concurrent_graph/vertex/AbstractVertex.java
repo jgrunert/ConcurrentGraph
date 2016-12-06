@@ -7,8 +7,8 @@ import mthesis.concurrent_graph.worker.WorkerNode;
 
 
 public abstract class AbstractVertex {
+	public final int id;
 	protected final List<Integer> neighbors;
-	protected final int id;
 	protected int superstepNo = 0;
 	private final WorkerNode workerManager;
 	private boolean active = true;

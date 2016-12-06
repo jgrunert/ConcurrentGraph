@@ -3,6 +3,7 @@ package mthesis.concurrent_graph.worker;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,26 +13,28 @@ import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.communication.ControlMessage;
 import mthesis.concurrent_graph.communication.MessageType;
+import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
+import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.CCDetectVertex;
 
 /**
  * Concurrent graph processing worker main
  */
-public class WorkerNode extends AbstractNode {
-	private final Logger logger;
-	
+public class WorkerNode extends AbstractNode {	
 	//private List<Integer> workers;
 	private final int otherWorkerCount;
 	
 	private final List<CCDetectVertex> vertices;
+	
+	private int superstepNo;
+	private Map<Integer, List<VertexMessage>> vertexMessageBuckets = new HashMap<>();
 
 	
 	public WorkerNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> allWorkers, 
 			Set<Integer> vertexIds, String dataDir) {
 		super(machines, ownId);
-		this.logger = LoggerFactory.getLogger(this.getClass() + "[" + ownId + "]");
 		//this.workers = workers;
 		otherWorkerCount = allWorkers.size() - 1;
 		
@@ -62,6 +65,10 @@ public class WorkerNode extends AbstractNode {
 		} catch (Exception e) {
 			logger.error("loadVertices failed", e);
 		}
+		
+		for(Integer vertexId : vertexIds) {
+			vertexMessageBuckets.put(vertexId, new ArrayList<>());
+		}
 	}	
 	private void addVertex(int vertexId, List<Integer> edges) {
 		vertices.add(new CCDetectVertex(edges, vertexId, this));
@@ -70,9 +77,46 @@ public class WorkerNode extends AbstractNode {
 
 	@Override
 	public void run() {
-		broadcastControlMessage(MessageType.Control_Node_Finished, 0, "Ready");
+		logger.info("Starting worker node " + ownId); // TODO trace
+		
+		broadcastControlMessage(MessageType.Control_Node_Superstep_Finished, -1, "Ready");
+		waitForNextSuperstep();
+		superstepNo = 0;
+		
+		while(true) {			
+			logger.debug("Starting superstep " + superstepNo); // TODO trace?
+			
+			// Sort incoming messages		
+			for(VertexMessage msg : inWorkerMessages) {
+				List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.To);
+				if(vertMsgs != null)
+					vertMsgs.add(msg);
+			}
+			inWorkerMessages.clear();
+			
+			// Compute and Messaging (done by vertices)
+			for(AbstractVertex vertex : vertices) {
+				List<VertexMessage> vertMsgs = vertexMessageBuckets.get(vertex.id);
+				vertex.compute(vertMsgs);
+				vertMsgs.clear();
+			}
+
+			// TODO Evaluate if all nodes inactive
+			
+			// Barrier sync
+			broadcastControlMessage(MessageType.Control_Node_Superstep_Finished, superstepNo, "Ready");
+			waitForNextSuperstep();
+			superstepNo++;
+		}
 	}
 	
+	
+	public void waitForNextSuperstep() {
+		waitForControlMessages(MessageType.Control_Node_Superstep_Finished);		
+		synchronized (inControlMessages) {
+			inControlMessages.get(MessageType.Control_Node_Superstep_Finished).clear();
+		}
+	}
 	
 	public void waitForControlMessages(MessageType type) {
 		while(true) {
@@ -82,10 +126,6 @@ public class WorkerNode extends AbstractNode {
 					break;
 			}
 			Thread.yield(); // TODO
-		}
-		
-		synchronized (inControlMessages) {
-			inControlMessages.get(type).clear();
 		}
 	}
 }
