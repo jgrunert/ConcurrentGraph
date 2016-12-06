@@ -121,9 +121,10 @@ public class WorkerNode extends AbstractNode {
 			}
 		}
 		finally {
-			logger.info("Worker shutting down");
-			stop();
+			logger.info("Worker finishing");
 			writeOutput();
+			sendFinishedMessage();
+			stop();
 		}
 	}
 
@@ -140,8 +141,8 @@ public class WorkerNode extends AbstractNode {
 							logger.error("Received Control_Master_Next_Superstep with wrong superstepNo: "
 									+ msg.SuperstepNo + " after " + superstepNo);
 						}
-					case Control_Master_Terminate:
-						logger.info("Received Control_Master_Terminate");
+					case Control_Master_Finish:
+						logger.info("Received Control_Master_Finish");
 
 					default:
 						logger.error("Illegal control while waitForNextSuperstep: " + msg.Type);
@@ -157,6 +158,10 @@ public class WorkerNode extends AbstractNode {
 
 	private void sendSuperstepFinishedMessage(int activeVertices) {
 		messaging.sendMessageTo(masterId, MessageType.Control_Node_Superstep_Finished + ";" + ownId + ";" + superstepNo + ";" + activeVertices);
+	}
+
+	private void sendFinishedMessage() {
+		messaging.sendMessageTo(masterId, MessageType.Control_Node_Finished + ";" + ownId + ";" + superstepNo + ";" + "terminating now");
 	}
 
 	public void sendVertexMessage(int fromVertex, int toVertex, String content) {

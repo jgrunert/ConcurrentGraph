@@ -23,7 +23,12 @@ public class QuickTest {
 		final String host = "localhost";
 		final int basePort = 23499;
 
-		new File(output).mkdirs();
+		final File outFile = new File(output);
+		if(outFile.exists())
+			for(final File f : outFile.listFiles())
+				f.delete();
+		else
+			outFile.mkdirs();
 
 		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
 		final List<Integer> allWorkerIds= new ArrayList<>();
@@ -40,7 +45,7 @@ public class QuickTest {
 
 		System.out.println("Starting");
 		//final MasterNode master =
-		startMaster(allCfg, -1, allWorkerIds);
+		startMaster(allCfg, -1, allWorkerIds, output);
 
 		final List<WorkerNode> workers = new ArrayList<>();
 		for(int i = 0; i < numWorkers; i++) {
@@ -73,8 +78,8 @@ public class QuickTest {
 	}
 
 	private static MasterNode startMaster(Map<Integer, Pair<String, Integer>> allCfg,
-			int id, List<Integer> allWorkers) {
-		final MasterNode node = new MasterNode(allCfg, id, allWorkers);
+			int id, List<Integer> allWorkers, String output) {
+		final MasterNode node = new MasterNode(allCfg, id, allWorkers, output);
 		node.start();
 		return node;
 	}
