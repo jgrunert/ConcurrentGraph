@@ -19,11 +19,14 @@ public class Pair<A, B> {
 		return (x == null && y == null) || (x != null && x.equals(y));
 	}
 
+	@SuppressWarnings("rawtypes")
+	@Override
 	public boolean equals(Object other) {
 		return other instanceof Pair && equals(fst, ((Pair) other).fst)
-			&& equals(snd, ((Pair) other).snd);
+				&& equals(snd, ((Pair) other).snd);
 	}
 
+	@Override
 	public int hashCode() {
 		if (fst == null)
 			return (snd == null) ? 0 : snd.hashCode() + 1;

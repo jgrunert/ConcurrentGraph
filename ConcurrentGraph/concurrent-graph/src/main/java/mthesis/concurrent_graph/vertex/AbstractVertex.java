@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.vertex;
 
+import java.util.Collection;
 import java.util.List;
 
 import mthesis.concurrent_graph.communication.VertexMessage;
@@ -8,7 +9,7 @@ import mthesis.concurrent_graph.worker.WorkerNode;
 
 public abstract class AbstractVertex {
 	public final int id;
-	protected final List<Integer> neighbors;
+	protected final List<Integer> outgoingNeighbors;
 	protected int superstepNo = 0;
 	private final WorkerNode workerManager;
 	private boolean active = true;
@@ -17,7 +18,7 @@ public abstract class AbstractVertex {
 	public AbstractVertex(List<Integer> neighbors, int id, WorkerNode workerManager) {
 		super();
 		this.id = id;
-		this.neighbors = neighbors;
+		this.outgoingNeighbors = neighbors;
 		this.workerManager = workerManager;
 	}
 
@@ -32,9 +33,19 @@ public abstract class AbstractVertex {
 	protected abstract void compute(List<VertexMessage> messages);
 
 
-	protected void sendMessageToAllNeighbors(String message) {
-		for (int i = 0; i < neighbors.size(); i++) {
-			workerManager.sendVertexMessage(id, neighbors.get(i), message);
+	protected void sendMessageToAllOutgoing(String message) {
+		for (final Integer nb : outgoingNeighbors) {
+			workerManager.sendVertexMessage(id, nb, message);
+		}
+	}
+
+	protected void sendMessageToVertex(String message, int sendTo) {
+		workerManager.sendVertexMessage(id, sendTo, message);
+	}
+
+	protected void sendMessageToVertices(String message, Collection<Integer> sendTo) {
+		for (final Integer st : sendTo) {
+			workerManager.sendVertexMessage(id, st, message);
 		}
 	}
 

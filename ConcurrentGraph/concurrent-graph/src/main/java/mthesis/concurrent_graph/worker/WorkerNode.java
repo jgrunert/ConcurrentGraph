@@ -141,11 +141,14 @@ public class WorkerNode extends AbstractNode {
 							logger.error("Received Control_Master_Next_Superstep with wrong superstepNo: "
 									+ msg.SuperstepNo + " after " + superstepNo);
 						}
+						break;
 					case Control_Master_Finish:
 						logger.info("Received Control_Master_Finish");
+						break;
 
 					default:
 						logger.error("Illegal control while waitForNextSuperstep: " + msg.Type);
+						break;
 				}
 			}
 			return false;
