@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.communication;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -83,19 +84,21 @@ public class MessageSenderAndReceiver {
 				}
 			}
 		}
-
-		//waitStarted();
 	}
 
-	public void waitUntilStarted() {
+	public boolean waitUntilConnected() {
 		final long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
 		while(System.currentTimeMillis() <= timeoutTime && activeChannels.size() < (machines.size() - 1)) {
 			Thread.yield();
 		}
-		if(activeChannels.size() == (machines.size() - 1))
+		if(activeChannels.size() == (machines.size() - 1)) {
 			logger.info("Established all connections");
-		else
-			logger.error("Failed to establish all connections");
+			return true;
+		}
+		else {
+			logger.error("Timeout while wait for establish all connections");
+			return false;
+		}
 	}
 
 	public void stop() {
@@ -104,16 +107,15 @@ public class MessageSenderAndReceiver {
 	}
 
 
-	public void sendMessageToMachine(int machineId, String message) {
-		// TODO Check
+	public void sendMessageTo(int machineId, String message) {
+		// TODO Checks
 		activeChannels.get(machineId).writeAndFlush(message + "\n");
 	}
 
-	public void sendMessageToAll(String message) {
-		// TODO Check
-		for(final Channel ch : activeChannels.values()) {
-			ch.writeAndFlush(message + "\n");
-			//ch.writeAndFlush("YES!\n");
+	public void sendMessageTo(List<Integer> machineIds, String message) {
+		// TODO Checks
+		for(final Integer machineId : machineIds) {
+			activeChannels.get(machineId).writeAndFlush(message + "\n");
 		}
 	}
 

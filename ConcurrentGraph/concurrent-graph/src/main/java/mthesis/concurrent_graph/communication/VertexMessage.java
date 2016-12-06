@@ -1,15 +1,17 @@
 package mthesis.concurrent_graph.communication;
 
 public class VertexMessage {
-	public final int From;
-	public final int To;
+	public final int FromNode;
+	public final int FromVertex;
+	public final int ToVertex;
 	public final int SuperstepNo;
-	public final String Content;	
+	public final String Content;
 
-	public VertexMessage(int from, int to, int superstepNo, String content) {
+	public VertexMessage(int fromNode, int from, int to, int superstepNo, String content) {
 		super();
-		From = from;
-		To = to;
+		FromNode = fromNode;
+		FromVertex = from;
+		ToVertex = to;
 		SuperstepNo = superstepNo;
 		Content = content;
 	}

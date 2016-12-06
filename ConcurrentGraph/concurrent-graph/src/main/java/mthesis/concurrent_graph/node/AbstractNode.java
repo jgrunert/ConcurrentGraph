@@ -1,8 +1,5 @@
 package mthesis.concurrent_graph.node;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -28,9 +25,9 @@ public abstract class AbstractNode {
 	//private final Map<Integer, Pair<String, Integer>> machines;
 	protected final int ownId;
 
-	private final MessageSenderAndReceiver messaging;
+	protected final MessageSenderAndReceiver messaging;
 	protected final BlockingQueue<VertexMessage> inWorkerMessages = new LinkedBlockingQueue<>();
-	protected final Map<MessageType, List<ControlMessage>> inControlMessages = new HashMap<>();
+	protected final BlockingQueue<ControlMessage> inControlMessages = new LinkedBlockingQueue<>();
 
 	private Thread runThread;
 
@@ -48,6 +45,10 @@ public abstract class AbstractNode {
 
 			@Override
 			public void run() {
+				if(!messaging.waitUntilConnected()) {
+					logger.error("Connecting node failed");
+					return;
+				}
 				AbstractNode.this.run();
 			}
 		});
@@ -55,9 +56,6 @@ public abstract class AbstractNode {
 		runThread.start();
 	}
 
-	public void waitUntilStarted() {
-		messaging.waitUntilStarted();
-	}
 
 	public void stop() {
 		messaging.stop();
@@ -73,33 +71,17 @@ public abstract class AbstractNode {
 
 		final String[] msgSplit = message.split(";");
 		final MessageType type = MessageType.valueOf(msgSplit[0]);
-		final int superstepNo = Integer.parseInt(msgSplit[1]);
+		final int fromNode = Integer.parseInt(msgSplit[1]);
+		final int superstepNo = Integer.parseInt(msgSplit[2]);
 
 		if (type == MessageType.Vertex) {
 			logger.debug("Vertex message: " + message);
-			final int fromVertex = Integer.parseInt(msgSplit[2]);
-			final int toVertex = Integer.parseInt(msgSplit[3]);
-			inWorkerMessages.add(new VertexMessage(fromVertex, toVertex, superstepNo, msgSplit[4]));
+			final int fromVertex = Integer.parseInt(msgSplit[3]);
+			final int toVertex = Integer.parseInt(msgSplit[4]);
+			inWorkerMessages.add(new VertexMessage(fromNode, fromVertex, toVertex, superstepNo, msgSplit[5]));
 		} else {
 			logger.trace("Control message: " + message);
-			synchronized (inControlMessages) {
-				List<ControlMessage> messages = inControlMessages.get(type);
-				if (messages == null) {
-					messages = new ArrayList<>();
-					inControlMessages.put(type, messages);
-				}
-				messages.add(new ControlMessage(superstepNo, msgSplit[2]));
-			}
+			inControlMessages.add(new ControlMessage(type, fromNode, superstepNo, msgSplit[3]));
 		}
-	}
-
-
-	public void broadcastControlMessage(MessageType type, int superstepNo, String content) {
-		messaging.sendMessageToAll(type + ";" + superstepNo + ";" + content);
-	}
-
-	public void sendVertexMessage(int fromVertex, int toVertex, int superstepNo, String content) {
-		messaging.sendMessageToAll(MessageType.Vertex + ";" + superstepNo + ";" + fromVertex + ";" + toVertex + ";" + content);
-		inWorkerMessages.add(new VertexMessage(fromVertex, toVertex, superstepNo, content));
 	}
 }

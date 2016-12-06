@@ -30,7 +30,7 @@ public class CCDetectVertex extends AbstractVertex {
 		int min = value;
 		for(final VertexMessage msg : messages) {
 			final int msgValue = Integer.parseInt(msg.Content);
-			System.out.println("Get " + msgValue + " on " + id + " from " + msg.From);
+			System.out.println("Get " + msgValue + " on " + id + " from " + msg.FromVertex);
 			min = Math.min(min, msgValue);
 		}
 

@@ -33,7 +33,7 @@ public abstract class AbstractVertex {
 
 	protected void sendMessageToAllNeighbors(String message) {
 		for (int i = 0; i < neighbors.size(); i++) {
-			workerManager.sendVertexMessage(id, neighbors.get(i), superstepNo, message);
+			workerManager.sendVertexMessage(id, neighbors.get(i), message);
 		}
 	}
 

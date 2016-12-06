@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import mthesis.concurrent_graph.communication.ControlMessage;
 import mthesis.concurrent_graph.communication.MessageType;
@@ -20,8 +21,8 @@ import mthesis.concurrent_graph.vertex.CCDetectVertex;
  * Concurrent graph processing worker main
  */
 public class WorkerNode extends AbstractNode {
-	//private List<Integer> workers;
-	private final int otherWorkerCount;
+	private final List<Integer> otherWorkerIds;
+	private final int masterId;
 
 	private final List<CCDetectVertex> vertices;
 
@@ -29,11 +30,11 @@ public class WorkerNode extends AbstractNode {
 	private final Map<Integer, List<VertexMessage>> vertexMessageBuckets = new HashMap<>();
 
 
-	public WorkerNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> allWorkers,
+	public WorkerNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
 			Set<Integer> vertexIds, String dataDir) {
 		super(machines, ownId);
-		//this.workers = workers;
-		otherWorkerCount = allWorkers.size() - 1;
+		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
+		this.masterId = masterId;
 
 		this.vertices = new ArrayList<>(vertexIds.size());
 		loadVertices(vertexIds, dataDir);
@@ -78,67 +79,78 @@ public class WorkerNode extends AbstractNode {
 	@Override
 	public void run() {
 		logger.info("Waiting for started worker node " + ownId);
-		waitUntilStarted();
 
 		logger.info("Starting run worker node " + ownId);
-
-		broadcastControlMessage(MessageType.Control_Node_Superstep_Finished, -1, "Ready");
-		if (!waitForNextSuperstep()) {
-			logger.error("Failed to wait for superstep");
-			return;
-		}
-		superstepNo = 0;
+		superstepNo = -1;
+		sendSuperstepFinishedMessage(vertices.size());
 
 		while(true) {
-			logger.debug("Starting superstep " + superstepNo); // TODO trace?
+			if (!waitForNextSuperstep()) {
+				logger.info("Worker Finished");
+				return;
+			}
+			superstepNo++;
+
+			logger.debug("Starting superstep " + superstepNo); // TODO trace
 
 			// Sort incoming messages
 			for(final VertexMessage msg : inWorkerMessages) {
-				final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.To);
+				final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
 				if(vertMsgs != null)
 					vertMsgs.add(msg);
 			}
 			inWorkerMessages.clear();
 
 			// Compute and Messaging (done by vertices)
+			int activeVertices = 0;
 			for(final AbstractVertex vertex : vertices) {
 				final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(vertex.id);
 				vertex.superstep(vertMsgs, superstepNo);
 				vertMsgs.clear();
+				if(vertex.isActive())
+					activeVertices++;
 			}
-
-			// TODO Evaluate if all nodes inactive
 
 			// Barrier sync
-			broadcastControlMessage(MessageType.Control_Node_Superstep_Finished, superstepNo, "Ready");
-			if (!waitForNextSuperstep()) {
-				logger.error("Failed to wait for superstep");
-				return;
-			}
-			superstepNo++;
+			logger.debug("Finished superstep " + superstepNo + " activeVertices:" + activeVertices); // TODO trace
+			sendSuperstepFinishedMessage(activeVertices);
 		}
 	}
 
 
 	public boolean waitForNextSuperstep() {
-		final boolean success = waitForControlMessages(MessageType.Control_Node_Superstep_Finished);
-		synchronized (inControlMessages) {
-			final List<ControlMessage> messages = inControlMessages.get(MessageType.Control_Node_Superstep_Finished);
-			if(messages != null)
-				messages.clear();
+		try {
+			final ControlMessage msg = inControlMessages.take();
+			if(msg != null) {
+				switch (msg.Type) {
+					case Control_Master_Next_Superstep:
+						if(msg.SuperstepNo == superstepNo + 1) {
+							return true;
+						} else {
+							logger.error("Received Control_Master_Next_Superstep with wrong superstepNo: "
+									+ msg.SuperstepNo + " after " + superstepNo);
+						}
+					case Control_Master_Terminate:
+						logger.info("Received Control_Master_Terminate");
+
+					default:
+						logger.error("Illegal control while waitForNextSuperstep: " + msg.Type);
+				}
+			}
+			return false;
 		}
-		return success;
+		catch (final InterruptedException e) {
+			return false;
+		}
 	}
 
-	public boolean waitForControlMessages(MessageType type) {
-		while(!Thread.interrupted()) {
-			synchronized (inControlMessages) {
-				final List<ControlMessage> messages = inControlMessages.get(type);
-				if(messages != null && messages.size() >= otherWorkerCount)
-					return true;
-			}
-			Thread.yield(); // TODO
-		}
-		return false;
+
+	private void sendSuperstepFinishedMessage(int activeVertices) {
+		messaging.sendMessageTo(masterId, MessageType.Control_Node_Superstep_Finished + ";" + ownId + ";" + superstepNo + ";" + activeVertices);
+	}
+
+	public void sendVertexMessage(int fromVertex, int toVertex, String content) {
+		messaging.sendMessageTo(otherWorkerIds, MessageType.Vertex + ";" + ownId + ";" + superstepNo + ";" + fromVertex + ";" + toVertex + ";" + content);
+		inWorkerMessages.add(new VertexMessage(ownId, fromVertex, toVertex, superstepNo, content));
 	}
 }
