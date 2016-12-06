@@ -31,18 +31,21 @@ public abstract class AbstractVertex {
 
 	protected abstract void compute(List<VertexMessage> messages);
 
+
 	protected void sendMessageToAllNeighbors(String message) {
 		for (int i = 0; i < neighbors.size(); i++) {
 			workerManager.sendVertexMessage(id, neighbors.get(i), message);
 		}
 	}
 
+
 	protected void voteHalt() {
 		active = false;
 	}
 
-
 	public boolean isActive() {
 		return active;
 	}
+
+	public abstract String getOutput();
 }

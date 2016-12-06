@@ -42,4 +42,10 @@ public class CCDetectVertex extends AbstractVertex {
 			voteHalt();
 		}
 	}
+
+
+	@Override
+	public String getOutput() {
+		return Integer.toString(value);
+	}
 }

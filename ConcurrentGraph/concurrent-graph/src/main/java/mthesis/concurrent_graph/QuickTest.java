@@ -1,10 +1,12 @@
 package mthesis.concurrent_graph;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import mthesis.concurrent_graph.master.MasterNode;
@@ -18,29 +20,50 @@ public class QuickTest {
 		final Pair<String, Integer> worker0Cfg = new Pair<String, Integer>("localhost", 23500);
 		final Pair<String, Integer> worker1Cfg = new Pair<String, Integer>("localhost", 23501);
 
+		final String input = "../../Data/cctest.txt";
+		final String outDir = "output";
+		final int numWorkers = 3;
+		final String host = "localhost";
+		final int basePort = 23499;
+
 		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
-		allCfg.put(-1, masterCfg);
-		allCfg.put(0, worker0Cfg);
-		allCfg.put(1, worker1Cfg);
-		final List<Integer> allWorkers = Arrays.asList(0, 1);
+		final List<Integer> allWorkerIds= new ArrayList<>();
+		allCfg.put(-1, new Pair<String, Integer>(host, basePort));
+		for(int i = 0; i < numWorkers; i++) {
+			allWorkerIds.add(i);
+			allCfg.put(i, new Pair<String, Integer>(host, basePort + 1 + i));
+		}
+
+		final List<Integer> graphNodes = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7));
+		final int totalNodes = graphNodes.size();
+		final int nodesPerWorker = (totalNodes + numWorkers - 1) / numWorkers;
+		final Random random = new Random(0);
 
 		System.out.println("Starting");
-		final MasterNode master = startMaster(allCfg, -1, allWorkers);
-		final WorkerNode worker0 = startWorker(allCfg, 0, allWorkers, new HashSet<Integer>(Arrays.asList(1, 2, 6, 7)), "../../Data/cctest.txt");
-		final WorkerNode worker1 = startWorker(allCfg, 1, allWorkers, new HashSet<Integer>(Arrays.asList(3, 4, 5)), "../../Data/cctest.txt");
+		//final MasterNode master =
+		startMaster(allCfg, -1, allWorkerIds);
+
+		final List<WorkerNode> workers = new ArrayList<>();
+		for(int i = 0; i < numWorkers; i++) {
+			final Set<Integer> workerNodes = new HashSet<>();
+			for(int j = 0; j < nodesPerWorker && !graphNodes.isEmpty(); j++) {
+				workerNodes.add(graphNodes.remove(random.nextInt(graphNodes.size())));
+			}
+			workers.add(startWorker(allCfg, i, allWorkerIds, workerNodes, input));
+		}
+
 
 		//		master.waitUntilStarted();
 		//		worker0.waitUntilStarted();
 		//		worker1.waitUntilStarted();
 		//		System.out.println("All started");
+		//		Thread.sleep(240000);
 
-		Thread.sleep(240000);
-
-		System.out.println("Shutting down");
-		master.stop();
-		worker0.stop();
-		worker1.stop();
-		System.out.println("End");
+		//		System.out.println("Shutting down");
+		//		master.stop();
+		//		worker0.stop();
+		//		worker1.stop();
+		//		System.out.println("End");
 	}
 
 	private static WorkerNode startWorker(Map<Integer, Pair<String, Integer>> allCfg,
