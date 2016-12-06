@@ -87,7 +87,7 @@ public class MessageSenderAndReceiver {
 		//waitStarted();
 	}
 	
-	public void waitStarted() {		
+	public void waitUntilStarted() {		
 		long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
 		while(System.currentTimeMillis() <= timeoutTime && activeChannels.size() < (machines.size() - 1)) {
 			Thread.yield();
@@ -95,7 +95,7 @@ public class MessageSenderAndReceiver {
 		if(activeChannels.size() == (machines.size() - 1))
 			logger.info("Established all connections");
 		else
-			logger.error("Failed to establish all connections");		
+			logger.error("Failed to establish all connections");
 	}
 	
 	public void stop() {
@@ -113,6 +113,7 @@ public class MessageSenderAndReceiver {
 		// TODO Check
 		for(Channel ch : activeChannels.values()) {
 			ch.writeAndFlush(message + "\n");
+			//ch.writeAndFlush("YES!\n");	
 		}
 	}
 	
@@ -154,11 +155,7 @@ public class MessageSenderAndReceiver {
 				});
 
 		// Start the client.
-		//ChannelFuture f = b.connect(host, port).sync();	
-		Channel channel = b.connect(host, port).channel();
-		channel.writeAndFlush("A test");
-		channel.write("A test2");
-		channel.flush();
+		b.connect(host, port).channel();
 	}
 	
 	

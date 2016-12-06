@@ -77,7 +77,10 @@ public class WorkerNode extends AbstractNode {
 
 	@Override
 	public void run() {
-		logger.info("Starting worker node " + ownId); // TODO trace
+		logger.info("Waiting for started worker node " + ownId);
+		waitUntilStarted();
+		
+		logger.info("Starting run worker node " + ownId);
 		
 		broadcastControlMessage(MessageType.Control_Node_Superstep_Finished, -1, "Ready");
 		if (!waitForNextSuperstep()) {

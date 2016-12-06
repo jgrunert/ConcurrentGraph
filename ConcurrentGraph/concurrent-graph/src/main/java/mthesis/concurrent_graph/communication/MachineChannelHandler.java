@@ -55,7 +55,7 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-    	logger.debug("channelRead " + ctx.channel().id() + " " + msg); // TODO trace
+    	//logger.trace("channelRead " + ctx.channel().id() + " " + msg);
     	
     	if (channelState == ChannelState.Active) {
     		messageListner.onIncomingMessage((String)msg);
@@ -63,7 +63,7 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
 			connectedMachine = Integer.parseInt((String)msg);
 			activeChannels.put(connectedMachine, ctx.channel());
 			channelState = ChannelState.Active;
-        	logger.debug("Channel handshake finished. Connected " + msg + " via " + ctx.channel().id());		
+        	logger.debug("Channel handshake finished. Connected " + msg + " via " + ctx.channel().id());
 		}
     }
 

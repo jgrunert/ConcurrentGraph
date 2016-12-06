@@ -56,8 +56,8 @@ public abstract class AbstractNode {
 		runThread.start();
 	}
 	
-	public void waitStarted() {		
-		messaging.waitStarted();	
+	public void waitUntilStarted() {		
+		messaging.waitUntilStarted();	
 	}
 	
 	public void stop() {
@@ -70,7 +70,7 @@ public abstract class AbstractNode {
 
 	
 	public void onIncomingMessage(String message) {
-		logger.debug(message); // TODO Remove
+		logger.trace(message);
 		
 		String[] msgSplit = message.split(";");
 		MessageType type = MessageType.valueOf(msgSplit[0]);

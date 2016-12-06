@@ -29,8 +29,8 @@ public class QuickTest {
 		WorkerNode worker0 = startWorker(allCfg, 0, allWorkers, new HashSet<Integer>(Arrays.asList(1, 2, 6, 7)), "../../Data/cctest.txt");
 		WorkerNode worker1 = startWorker(allCfg, 1, allWorkers, new HashSet<Integer>(Arrays.asList(3, 4, 5)), "../../Data/cctest.txt");
 
-		worker0.waitStarted();
-		worker1.waitStarted();
+		worker0.waitUntilStarted();
+		worker1.waitUntilStarted();
 		
 		Thread.sleep(5000);
 
