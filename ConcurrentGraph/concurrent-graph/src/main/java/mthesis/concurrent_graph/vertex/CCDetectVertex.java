@@ -21,20 +21,25 @@ public class CCDetectVertex extends AbstractVertex {
 	}
 
 	@Override
-	public void compute(List<VertexMessage> messages) {
+	protected void compute(List<VertexMessage> messages) {
 		if(superstepNo == 0) {
 			sendMessageToAllNeighbors(Integer.toString(value));
+			return;
 		}
 
 		int min = value;
 		for(final VertexMessage msg : messages) {
 			final int msgValue = Integer.parseInt(msg.Content);
+			System.out.println("Get " + msgValue + " on " + id + " from " + msg.From);
 			min = Math.min(min, msgValue);
 		}
 
 		if(min < value) {
 			value = min;
 			sendMessageToAllNeighbors(Integer.toString(value));
+		} else {
+			System.out.println("Vote halt on " + id + " with " + value);
+			voteHalt();
 		}
 	}
 }

@@ -30,7 +30,7 @@ public class QuickTest {
 		worker0.waitUntilStarted();
 		worker1.waitUntilStarted();
 
-		Thread.sleep(5000);
+		Thread.sleep(240000);
 
 		System.out.println("Shutting down");
 		//master.stop();

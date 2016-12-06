@@ -56,6 +56,7 @@ public class WorkerNode extends AbstractNode {
 				} else {
 					if(vertexIds.contains(currentVertex))
 						addVertex(currentVertex, edges);
+					edges.clear();
 					currentVertex = Integer.parseInt(line);
 				}
 			}
@@ -68,7 +69,7 @@ public class WorkerNode extends AbstractNode {
 		}
 	}
 	private void addVertex(int vertexId, List<Integer> edges) {
-		vertices.add(new CCDetectVertex(edges, vertexId, this));
+		vertices.add(new CCDetectVertex(new ArrayList<>(edges), vertexId, this));
 	}
 
 
@@ -100,7 +101,7 @@ public class WorkerNode extends AbstractNode {
 			// Compute and Messaging (done by vertices)
 			for(final AbstractVertex vertex : vertices) {
 				final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(vertex.id);
-				vertex.compute(vertMsgs);
+				vertex.superstep(vertMsgs, superstepNo);
 				vertMsgs.clear();
 			}
 

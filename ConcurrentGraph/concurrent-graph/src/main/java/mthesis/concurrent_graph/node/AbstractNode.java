@@ -69,17 +69,19 @@ public abstract class AbstractNode {
 
 
 	public void onIncomingMessage(String message) {
-		logger.trace(message);
+		//logger.trace(message);
 
 		final String[] msgSplit = message.split(";");
 		final MessageType type = MessageType.valueOf(msgSplit[0]);
 		final int superstepNo = Integer.parseInt(msgSplit[1]);
 
-		if (type == MessageType.Worker) {
+		if (type == MessageType.Vertex) {
+			logger.debug("Vertex message: " + message);
 			final int fromVertex = Integer.parseInt(msgSplit[2]);
 			final int toVertex = Integer.parseInt(msgSplit[3]);
 			inWorkerMessages.add(new VertexMessage(fromVertex, toVertex, superstepNo, msgSplit[3]));
 		} else {
+			logger.trace("Control message: " + message);
 			synchronized (inControlMessages) {
 				List<ControlMessage> messages = inControlMessages.get(type);
 				if (messages == null) {
@@ -97,7 +99,7 @@ public abstract class AbstractNode {
 	}
 
 	public void sendVertexMessage(int fromVertex, int toVertex, int superstepNo, String content) {
-		messaging.sendMessageToAll(MessageType.Worker + ";" + superstepNo + ";" + fromVertex + ";" + toVertex + ";" + content);
+		messaging.sendMessageToAll(MessageType.Vertex + ";" + superstepNo + ";" + fromVertex + ";" + toVertex + ";" + content);
 		inWorkerMessages.add(new VertexMessage(fromVertex, toVertex, superstepNo, content));
 	}
 }

@@ -29,7 +29,7 @@ public abstract class AbstractVertex {
 		compute(messages);
 	}
 
-	public abstract void compute(List<VertexMessage> messages);
+	protected abstract void compute(List<VertexMessage> messages);
 
 	protected void sendMessageToAllNeighbors(String message) {
 		for (int i = 0; i < neighbors.size(); i++) {
