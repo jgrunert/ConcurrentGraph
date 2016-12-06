@@ -23,7 +23,7 @@ public class CCDetectVertex extends AbstractVertex {
 	@Override
 	protected void compute(List<VertexMessage> messages) {
 		if(superstepNo == 0) {
-			sendMessageToAllNeighbors(Integer.toString(value));
+			sendMessageToAllNeighbors(Integer.toString(id));
 			return;
 		}
 

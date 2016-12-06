@@ -79,7 +79,7 @@ public abstract class AbstractNode {
 			logger.debug("Vertex message: " + message);
 			final int fromVertex = Integer.parseInt(msgSplit[2]);
 			final int toVertex = Integer.parseInt(msgSplit[3]);
-			inWorkerMessages.add(new VertexMessage(fromVertex, toVertex, superstepNo, msgSplit[3]));
+			inWorkerMessages.add(new VertexMessage(fromVertex, toVertex, superstepNo, msgSplit[4]));
 		} else {
 			logger.trace("Control message: " + message);
 			synchronized (inControlMessages) {

@@ -60,6 +60,8 @@ public class WorkerNode extends AbstractNode {
 					currentVertex = Integer.parseInt(line);
 				}
 			}
+			if(vertexIds.contains(currentVertex))
+				addVertex(currentVertex, edges);
 		} catch (final Exception e) {
 			logger.error("loadVertices failed", e);
 		}
