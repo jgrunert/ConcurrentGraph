@@ -14,6 +14,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
 	private final Logger logger;
 	private final int ownId;
+	private final MessageSenderAndReceiver messageListner;
 	private final ConcurrentHashMap<Integer, Channel> activeChannels;
 	
 	private enum ChannelState { Inactive, Handshake, Active }
@@ -23,11 +24,13 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
     //private ByteBuf buffer;
 	
 	
-	public MachineChannelHandler(ConcurrentHashMap<Integer, Channel> activeChannels, int ownId) {
+	public MachineChannelHandler(ConcurrentHashMap<Integer, Channel> activeChannels, int ownId, 
+			MessageSenderAndReceiver messageListner) {
 		super();
 		this.ownId = ownId;
 		this.logger = LoggerFactory.getLogger(MachineChannelHandler.class + "[" + ownId + "]");
 		this.activeChannels = activeChannels;
+		this.messageListner = messageListner;
 	}
 
 
@@ -55,7 +58,7 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
     	logger.debug("channelRead " + ctx.channel().id() + " " + msg); // TODO trace
     	
     	if (channelState == ChannelState.Active) {
-			// TODO
+    		messageListner.onIncomingMessage((String)msg);
 		} else if (channelState == ChannelState.Handshake) {
 			connectedMachine = Integer.parseInt((String)msg);
 			activeChannels.put(connectedMachine, ctx.channel());

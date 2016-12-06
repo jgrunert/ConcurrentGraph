@@ -30,9 +30,17 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
 
 
+/**
+ * Class to handle messaging between nodes.
+ * Based on Netty channels.
+ * 
+ * @author jonas
+ *
+ */
 public class MessageSenderAndReceiver {
 	private final Logger logger;
 
@@ -42,13 +50,21 @@ public class MessageSenderAndReceiver {
 	
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
+	
+	private AbstractNode messageListener;
 
 	
-	public MessageSenderAndReceiver(Map<Integer, Pair<String, Integer>> machines, int ownId) {
+	public MessageSenderAndReceiver(Map<Integer, Pair<String, Integer>> machines, int ownId, 
+			AbstractNode listener) {
 		this.logger = LoggerFactory.getLogger(this.getClass() + "[" + ownId + "]");
 		this.ownId = ownId;
 		this.machines = machines;
+		this.messageListener = listener;
 	}
+	
+//	public void setMessageListner(AbstractNode listener) {
+//		this.messageListener = listener;
+//	}
 	
 	
 	public void start() {
@@ -68,6 +84,10 @@ public class MessageSenderAndReceiver {
 			}
 		}
 		
+		//waitStarted();
+	}
+	
+	public void waitStarted() {		
 		long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
 		while(System.currentTimeMillis() <= timeoutTime && activeChannels.size() < (machines.size() - 1)) {
 			Thread.yield();
@@ -75,7 +95,7 @@ public class MessageSenderAndReceiver {
 		if(activeChannels.size() == (machines.size() - 1))
 			logger.info("Established all connections");
 		else
-			logger.error("Failed to establish all connections");
+			logger.error("Failed to establish all connections");		
 	}
 	
 	public void stop() {
@@ -94,6 +114,12 @@ public class MessageSenderAndReceiver {
 		for(Channel ch : activeChannels.values()) {
 			ch.writeAndFlush(message + "\n");
 		}
+	}
+	
+	
+	public void onIncomingMessage(String message) {
+		if(messageListener != null)
+			messageListener.onIncomingMessage(message);
 	}
 
 	
@@ -121,7 +147,7 @@ public class MessageSenderAndReceiver {
 						p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
 						p.addLast(new StringEncoder());
 						p.addLast(new StringDecoder());
-						p.addLast(new MachineChannelHandler(activeChannels, ownId));
+						p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 					}
 				});
 
@@ -145,7 +171,7 @@ public class MessageSenderAndReceiver {
 			}
 		});
 		serverThread.setName("ServerThread-Machine" + ownId);
-		//serverThread.setDaemon(true);
+		serverThread.setDaemon(true);
 		serverThread.start();
 	}
 	
@@ -176,7 +202,7 @@ public class MessageSenderAndReceiver {
 						p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
 						p.addLast(new StringEncoder());
 						p.addLast(new StringDecoder());
-						p.addLast(new MachineChannelHandler(activeChannels, ownId));
+						p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 					}
 				});
 
