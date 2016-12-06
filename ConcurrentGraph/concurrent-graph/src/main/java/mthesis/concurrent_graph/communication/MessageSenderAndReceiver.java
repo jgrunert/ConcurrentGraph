@@ -134,7 +134,9 @@ public class MessageSenderAndReceiver {
 
 		// Configure the client.
 		Bootstrap b = new Bootstrap();
-		b.group(workerGroup).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY)
+		b.group(workerGroup)
+				.channel(NioSocketChannel.class)
+				.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY)
 				.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
 				.handler(new ChannelInitializer<SocketChannel>() {
 					@Override
@@ -153,7 +155,10 @@ public class MessageSenderAndReceiver {
 
 		// Start the client.
 		//ChannelFuture f = b.connect(host, port).sync();	
-		b.connect(host, port);
+		Channel channel = b.connect(host, port).channel();
+		channel.writeAndFlush("A test");
+		channel.write("A test2");
+		channel.flush();
 	}
 	
 	
@@ -188,7 +193,9 @@ public class MessageSenderAndReceiver {
         }
 
 		ServerBootstrap b = new ServerBootstrap();
-		b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).option(ChannelOption.SO_BACKLOG, 100)
+		b.group(bossGroup, workerGroup)
+				.channel(NioServerSocketChannel.class)
+				.option(ChannelOption.SO_BACKLOG, 100)
 				.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
 				.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY).handler(new LoggingHandler(LogLevel.INFO))
 				.childHandler(new ChannelInitializer<SocketChannel>() {

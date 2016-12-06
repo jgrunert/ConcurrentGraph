@@ -80,7 +80,10 @@ public class WorkerNode extends AbstractNode {
 		logger.info("Starting worker node " + ownId); // TODO trace
 		
 		broadcastControlMessage(MessageType.Control_Node_Superstep_Finished, -1, "Ready");
-		waitForNextSuperstep();
+		if (!waitForNextSuperstep()) {
+			logger.error("Failed to wait for superstep");
+			return;
+		}
 		superstepNo = 0;
 		
 		while(true) {			
@@ -105,27 +108,34 @@ public class WorkerNode extends AbstractNode {
 			
 			// Barrier sync
 			broadcastControlMessage(MessageType.Control_Node_Superstep_Finished, superstepNo, "Ready");
-			waitForNextSuperstep();
+			if (!waitForNextSuperstep()) {
+				logger.error("Failed to wait for superstep");
+				return;
+			}
 			superstepNo++;
 		}
 	}
 	
 	
-	public void waitForNextSuperstep() {
-		waitForControlMessages(MessageType.Control_Node_Superstep_Finished);		
+	public boolean waitForNextSuperstep() {
+		boolean success = waitForControlMessages(MessageType.Control_Node_Superstep_Finished);		
 		synchronized (inControlMessages) {
-			inControlMessages.get(MessageType.Control_Node_Superstep_Finished).clear();
+			List<ControlMessage> messages = inControlMessages.get(MessageType.Control_Node_Superstep_Finished);
+			if(messages != null)
+				messages.clear();
 		}
+		return success;
 	}
 	
-	public void waitForControlMessages(MessageType type) {
-		while(true) {
+	public boolean waitForControlMessages(MessageType type) {
+		while(!Thread.interrupted()) {
 			synchronized (inControlMessages) {
 				List<ControlMessage> messages = inControlMessages.get(type);
 				if(messages != null && messages.size() >= otherWorkerCount)
-					break;
+					return true;
 			}
 			Thread.yield(); // TODO
 		}
+		return false;
 	}
 }
