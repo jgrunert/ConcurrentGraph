@@ -27,6 +27,8 @@ public class EdgeListReader extends AbstractMasterInputReader {
 	private final Random random = new Random(0);
 	private final List<String> edges = new ArrayList<>();
 	private String currentVertex;
+	private int vertexCount = 0;
+	private int edgeCount = 0;
 
 
 	@Override
@@ -49,21 +51,28 @@ public class EdgeListReader extends AbstractMasterInputReader {
 				}
 			}
 
-			// Read and partition input
 			String line;
-			if((line = br.readLine()) != null)
-				currentVertex = line;
+			while ((line = br.readLine()) != null && line.startsWith("#")) { }
+
+			// Read and partition input
+			String[] lineSplit;
+			if(line != null) {
+				lineSplit = line.split("\t");
+				currentVertex = lineSplit[0];
+				edges.add(lineSplit[1]);
+			}
 
 			while ((line = br.readLine()) != null) {
-				if (line.startsWith("\t")) {
-					edges.add(line);
-				} else {
+				lineSplit = line.split("\t");
+				if(!lineSplit[0].equals(currentVertex)) {
 					writeVertex(partitionWriters);
 					edges.clear();
-					currentVertex = line;
+					currentVertex = lineSplit[0];
 				}
+				edges.add("\t" + lineSplit[1]);
 			}
 			writeVertex(partitionWriters);
+			edges.clear();
 		}
 		catch (final Exception e) {
 			logger.error("loadVertices failed", e);
@@ -72,6 +81,7 @@ public class EdgeListReader extends AbstractMasterInputReader {
 			for(final PrintWriter writer : partitionWriters) {
 				writer.close();
 			}
+			System.out.println("Loaded " + vertexCount + " vertices " + edgeCount + " edges");
 		}
 
 		return partitions;
@@ -83,5 +93,7 @@ public class EdgeListReader extends AbstractMasterInputReader {
 		for(final String edge : edges) {
 			writer.println(edge);
 		}
+		vertexCount++;
+		edgeCount += edges.size();
 	}
 }

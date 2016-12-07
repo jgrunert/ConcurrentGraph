@@ -19,10 +19,10 @@ import mthesis.concurrent_graph.worker.WorkerNode;
 public class QuickTest {
 
 	public static void main(String[] args) throws Exception {
-		final String inputData = "../../Data/cctest.txt";
+		final String inputData = "../../Data/Wiki-Vote.txt";
 		final String inputDir = "input";
 		final String outputDir = "output";
-		final int numWorkers = 3;
+		final int numWorkers = 4;
 		final String host = "localhost";
 		final int basePort = 23499;
 		final Class<? extends AbstractMasterInputReader> inputReader = EdgeListReader.class;

@@ -45,10 +45,11 @@ public class MasterNode extends AbstractNode {
 	@Override
 	public void run() {
 		logger.info("Master started");
+		final long startTime = System.currentTimeMillis();
 
 		try {
 			inputReader.newInstance().readAndPartition(inputData, inputDir, workerIds.size());
-			logger.info("Master input read and partitioned");
+			logger.info("Master input read and partitioned after " + (System.currentTimeMillis() - startTime) + "ms");
 			superstepNo = -1;
 			signalWorkersStartingSuperstep();  // Signal that input ready
 
@@ -59,7 +60,7 @@ public class MasterNode extends AbstractNode {
 
 				// Wait for workers to send finished control messages.
 				int activeWorkers = 0;
-				//int activeVertices = 0;
+				int activeVertices = 0;
 				while(!workersWaitingFor.isEmpty()) {
 					final ControlMessage msg = inControlMessages.take();
 					if(msg.Type == MessageType.Control_Node_Superstep_Finished) {
@@ -67,7 +68,7 @@ public class MasterNode extends AbstractNode {
 							final int msgActiveVertices = Integer.parseInt(msg.Content);
 							if(msgActiveVertices > 0)
 								activeWorkers++;
-							//activeVertices += msgActiveVertices;
+							activeVertices += msgActiveVertices;
 							workersWaitingFor.remove(msg.FromNode);
 						}
 						else {
@@ -83,13 +84,15 @@ public class MasterNode extends AbstractNode {
 
 				if(activeWorkers > 0) {
 					// Next superstep
+					logger.debug(String.format("Master finished superstep %d activeWorkers %d activeVertices %d after %dms",
+							superstepNo, activeWorkers, activeVertices, (System.currentTimeMillis() - startTime)));
 					superstepNo++;
 					logger.trace("Next master superstep: " + superstepNo);
 					signalWorkersStartingSuperstep();
 				}
 				else {
 					// Finished
-					logger.info("All workers finished");
+					logger.info("All workers finished after " + (System.currentTimeMillis() - startTime) + "ms");
 					break;
 				}
 			}
@@ -102,10 +105,10 @@ public class MasterNode extends AbstractNode {
 		}
 		finally {
 			// End sequence: Let workers finish and output, then finish master before terminating
-			logger.info("Master finishing");
+			logger.info("Master finishing after " + (System.currentTimeMillis() - startTime) + "ms");
 			finishWorkers();
 			finishMaster();
-			logger.info("Master terminating");
+			logger.info("Master terminating after " + (System.currentTimeMillis() - startTime) + "ms");
 			stop();
 		}
 	}

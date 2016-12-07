@@ -75,7 +75,7 @@ public abstract class AbstractNode {
 		final int superstepNo = Integer.parseInt(msgSplit[2]);
 
 		if (type == MessageType.Vertex) {
-			logger.debug("Vertex message: " + message);
+			logger.trace("Vertex message: " + message);
 			final int fromVertex = Integer.parseInt(msgSplit[3]);
 			final int toVertex = Integer.parseInt(msgSplit[4]);
 			inWorkerMessages.add(new VertexMessage(fromNode, fromVertex, toVertex, superstepNo, msgSplit[5]));

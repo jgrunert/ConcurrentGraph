@@ -28,6 +28,8 @@ public class VertexEdgesInputReader extends AbstractMasterInputReader {
 	private final Random random = new Random(0);
 	private final List<String> edges = new ArrayList<>();
 	private String currentVertex;
+	private int vertexCount = 0;
+	private int edgeCount = 0;
 
 
 	@Override
@@ -45,7 +47,7 @@ public class VertexEdgesInputReader extends AbstractMasterInputReader {
 					partitionWriters.add(new PrintWriter(new FileWriter(fileName)));
 				}
 				catch (final IOException e) {
-					logger.error("opening files failed", e);
+					logger.error("Opening files failed", e);
 					return partitions;
 				}
 			}
@@ -73,6 +75,7 @@ public class VertexEdgesInputReader extends AbstractMasterInputReader {
 			for(final PrintWriter writer : partitionWriters) {
 				writer.close();
 			}
+			System.out.println("Loaded " + vertexCount + " vertices " + edgeCount + " edges");
 		}
 
 		return partitions;
@@ -84,5 +87,7 @@ public class VertexEdgesInputReader extends AbstractMasterInputReader {
 		for(final String edge : edges) {
 			writer.println(edge);
 		}
+		vertexCount++;
+		edgeCount += edges.size();
 	}
 }

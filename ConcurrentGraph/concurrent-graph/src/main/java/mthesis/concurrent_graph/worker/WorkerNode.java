@@ -134,7 +134,7 @@ public class WorkerNode extends AbstractNode {
 				}
 
 				// Barrier sync
-				logger.debug("Finished superstep " + superstepNo + " activeVertices:" + activeVertices); // TODO trace
+				logger.debug("Worker finished superstep " + superstepNo + " activeVertices: " + activeVertices);
 				sendSuperstepFinishedMessage(activeVertices);
 			}
 		}
