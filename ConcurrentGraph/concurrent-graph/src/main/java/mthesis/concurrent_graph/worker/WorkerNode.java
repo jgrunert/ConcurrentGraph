@@ -101,46 +101,24 @@ public class WorkerNode extends AbstractNode {
 
 		// Wait for master to signal that input ready
 		superstepNo = -2;
-		if (!waitForNextSuperstep(false)) {
+		if (!waitForMasterNextSuperstep()) {
 			logger.error("Wait for input ready failed");
 			return;
 		}
 		superstepNo++;
 		loadVertices(input);
-		sendSuperstepFinishedMessages(vertices.size());
+		sendMasterSuperstepFinished(vertices.size());
 
 		try {
 			while(!Thread.interrupted()) {
-				if (!waitForNextSuperstep(true)) {
+				// Wait for start superstep from master
+				if (!waitForMasterNextSuperstep()) {
 					break;
 				}
 				superstepNo++;
 				superstepMessagesSent = 0;
-
 				logger.debug("Starting superstep " + superstepNo); // TODO trace
 
-				// Sort incoming messages
-				for(final VertexMessage msg : inVertexMessages) {
-					if(msg.SuperstepNo != superstepNo - 1) {
-						logger.error("Message from wrong superstep: " + msg);
-						continue;
-					}
-					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
-					if(vertMsgs != null)
-						vertMsgs.add(msg);
-				}
-				inVertexMessages.clear();
-				// Sort loopback messages
-				for(final VertexMessage msg : bufferedLoopbackMessages) {
-					if(msg.SuperstepNo != superstepNo - 1) {
-						logger.error("Message from wrong superstep: " + msg);
-						continue;
-					}
-					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
-					if(vertMsgs != null)
-						vertMsgs.add(msg);
-				}
-				bufferedLoopbackMessages.clear();
 
 				// Compute and Messaging (done by vertices)
 				int activeVertices = 0;
@@ -151,10 +129,43 @@ public class WorkerNode extends AbstractNode {
 					if(vertex.isActive())
 						activeVertices++;
 				}
+				logger.debug("Worker finished superstep compute " + superstepNo + " activeVertices: " + activeVertices);
 
-				// Barrier sync
-				logger.debug("Worker finished superstep " + superstepNo + " activeVertices: " + activeVertices);
-				sendSuperstepFinishedMessages(activeVertices);
+
+				// Barrier sync with other workers;
+				sendWorkersSuperstepFinished();
+				waitForWorkerSuperstepsFinished();
+				logger.debug("Worker finished superstep barrier " + superstepNo);
+
+
+				// Sort messages from buffers after barrier sync
+				// Incoming messages
+				for(final VertexMessage msg : inVertexMessages) {
+					if(msg.SuperstepNo != superstepNo) {
+						logger.error("Message from wrong superstep: " + msg);
+						continue;
+					}
+					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
+					if(vertMsgs != null)
+						vertMsgs.add(msg);
+				}
+				inVertexMessages.clear();
+				// Loopback messages
+				for(final VertexMessage msg : bufferedLoopbackMessages) {
+					if(msg.SuperstepNo != superstepNo) {
+						logger.error("Message from wrong superstep: " + msg);
+						continue;
+					}
+					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
+					if(vertMsgs != null)
+						vertMsgs.add(msg);
+				}
+				bufferedLoopbackMessages.clear();
+				logger.debug("Worker finished superstep message sort " + superstepNo);
+
+
+				// Signal master that ready
+				sendMasterSuperstepFinished(activeVertices);
 			}
 		}
 		finally {
@@ -166,25 +177,15 @@ public class WorkerNode extends AbstractNode {
 	}
 
 
-	public boolean waitForNextSuperstep(boolean waitForWorkers) {
+	public boolean waitForWorkerSuperstepsFinished() {
 		try {
-			boolean masterSignaledNext = false;
-			if(waitForWorkers)
-				channelBarrierWaitSet.addAll(otherWorkerIds);
+			channelBarrierWaitSet.addAll(otherWorkerIds);
 
-			while(!Thread.interrupted() && !(masterSignaledNext && channelBarrierWaitSet.isEmpty())){
+			while(!Thread.interrupted() && !channelBarrierWaitSet.isEmpty()) {
 				final ControlMessage msg = inControlMessages.take();
 				if(msg != null) {
 					switch (msg.Type) {
-						case Control_Master_Next_Superstep:
-							if(msg.SuperstepNo == superstepNo + 1) {
-								masterSignaledNext = true;
-							} else {
-								logger.error("Received Control_Master_Next_Superstep with wrong superstepNo: "
-										+ msg.SuperstepNo + " at step " + superstepNo);
-							}
-							break;
-						case Control_Worker_Superstep_Channel_Barrier:
+						case Control_Worker_Superstep_Barrier:
 							if(msg.SuperstepNo == superstepNo) {
 								channelBarrierWaitSet.remove(msg.FromNode);
 							} else {
@@ -192,17 +193,43 @@ public class WorkerNode extends AbstractNode {
 										+ msg.SuperstepNo + " at step " + superstepNo);
 							}
 							break;
-						case Control_Master_Finish:
-							logger.info("Received Control_Master_Finish");
-							return false;
 
 						default:
-							logger.error("Illegal control while waitForNextSuperstep: " + msg.Type);
+							logger.error("Illegal control while waitForWorkerSuperstepsFinished: " + msg.Type);
 							break;
 					}
 				}
 			}
-			return masterSignaledNext && channelBarrierWaitSet.isEmpty();
+			return channelBarrierWaitSet.isEmpty();
+		}
+		catch (final InterruptedException e) {
+			return false;
+		}
+	}
+
+	public boolean waitForMasterNextSuperstep() {
+		try {
+			final ControlMessage msg = inControlMessages.take();
+			if(msg != null) {
+				switch (msg.Type) {
+					case Control_Master_Next_Superstep:
+						if(msg.SuperstepNo == superstepNo + 1) {
+							return true;
+						} else {
+							logger.error("Received Control_Master_Next_Superstep with wrong superstepNo: "
+									+ msg.SuperstepNo + " at step " + superstepNo);
+						}
+						break;
+					case Control_Master_Finish:
+						logger.info("Received Control_Master_Finish");
+						return false;
+
+					default:
+						logger.error("Illegal control while waitForMasterNextSuperstep: " + msg.Type);
+						break;
+				}
+			}
+			return false;
 		}
 		catch (final InterruptedException e) {
 			return false;
@@ -210,10 +237,13 @@ public class WorkerNode extends AbstractNode {
 	}
 
 
-	private void sendSuperstepFinishedMessages(int activeVertices) {
+	private void sendWorkersSuperstepFinished() {
+		messaging.sendMessageTo(otherWorkerIds, MessageType.Control_Worker_Superstep_Barrier + ";" + ownId + ";" + superstepNo + ";barrier");
+	}
+
+	private void sendMasterSuperstepFinished(int activeVertices) {
 		messaging.sendMessageTo(masterId, MessageType.Control_Worker_Superstep_Finished + ";" + ownId + ";" + superstepNo + ";" + activeVertices + "," +
 				superstepMessagesSent);
-		messaging.sendMessageTo(otherWorkerIds, MessageType.Control_Worker_Superstep_Channel_Barrier + ";" + ownId + ";" + superstepNo + ";barrier");
 	}
 
 	private void sendFinishedMessage() {
