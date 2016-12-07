@@ -1,7 +1,5 @@
 package mthesis.concurrent_graph.master;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,5 +15,5 @@ public abstract class AbstractMasterOutputWriter {
 	/**
 	 * Reads input file
 	 */
-	public abstract List<String> readAndPartition(String outputDir);
+	public abstract void writeOutput(String outputDir);
 }

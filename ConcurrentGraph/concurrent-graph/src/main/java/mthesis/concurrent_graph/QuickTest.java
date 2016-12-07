@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 import mthesis.concurrent_graph.examples.CCDetectVertex;
+import mthesis.concurrent_graph.examples.CCOutputWriter;
 import mthesis.concurrent_graph.examples.EdgeListReader;
 import mthesis.concurrent_graph.master.AbstractMasterInputReader;
+import mthesis.concurrent_graph.master.AbstractMasterOutputWriter;
 import mthesis.concurrent_graph.master.MasterNode;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
@@ -24,7 +26,7 @@ public class QuickTest {
 		final String host = "localhost";
 		final int basePort = 23499;
 		final Class<? extends AbstractMasterInputReader> inputReader = EdgeListReader.class;
-		//final Class<? extends AbstractMasterOutputWriter> outputWriter = EdgeListReader.class;
+		final Class<? extends AbstractMasterOutputWriter> outputWriter = CCOutputWriter.class;
 		final Class<? extends AbstractVertex> vertexClass = CCDetectVertex.class;
 
 		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
@@ -37,7 +39,7 @@ public class QuickTest {
 
 		System.out.println("Starting");
 		//final MasterNode master =
-		startMaster(allCfg, -1, allWorkerIds, inputData, inputDir, outputDir, inputReader);
+		startMaster(allCfg, -1, allWorkerIds, inputData, inputDir, outputDir, inputReader, outputWriter);
 
 		final List<WorkerNode> workers = new ArrayList<>();
 		for(int i = 0; i < numWorkers; i++) {
@@ -68,8 +70,9 @@ public class QuickTest {
 
 	private static MasterNode startMaster(Map<Integer, Pair<String, Integer>> allCfg,
 			int id, List<Integer> allWorkers, String inputData, String inputDir, String outputDir,
-			Class<? extends AbstractMasterInputReader> inputReader) {
-		final MasterNode node = new MasterNode(allCfg, id, allWorkers, inputData, inputDir, outputDir, inputReader);
+			Class<? extends AbstractMasterInputReader> inputReader,
+			Class<? extends AbstractMasterOutputWriter> outputWriter) {
+		final MasterNode node = new MasterNode(allCfg, id, allWorkers, inputData, inputDir, outputDir, inputReader, outputWriter);
 		node.start();
 		return node;
 	}

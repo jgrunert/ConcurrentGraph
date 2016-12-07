@@ -1,11 +1,6 @@
 package mthesis.concurrent_graph.master;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,16 +23,20 @@ public class MasterNode extends AbstractNode {
 	private final String inputDir;
 	private final String outputDir;
 	private final Class<? extends AbstractMasterInputReader> inputReader;
+	private final Class<? extends AbstractMasterOutputWriter> outputWriter;
 
 
 	public MasterNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
-			String inputData, String inputDir, String outputDir, Class<? extends AbstractMasterInputReader> inputReader) {
+			String inputData, String inputDir, String outputDir,
+			Class<? extends AbstractMasterInputReader> inputReader,
+			Class<? extends AbstractMasterOutputWriter> outputWriter) {
 		super(machines, ownId);
 		this.workerIds = workerIds;
 		this.inputData = inputData;
 		this.inputDir = inputDir;
 		this.outputDir = outputDir;
 		this.inputReader = inputReader;
+		this.outputWriter = outputWriter;
 		makeCleanDirectory(inputDir);
 		makeCleanDirectory(outputDir);
 	}
@@ -133,14 +132,9 @@ public class MasterNode extends AbstractNode {
 
 	private void finishMaster() {
 		// Aggregate output
-		try(PrintWriter writer = new PrintWriter(new FileWriter(outputDir + File.separator + "combined.txt")))
+		try
 		{
-			final File outFolder = new File(outputDir);
-			for(final File f : outFolder.listFiles()) {
-				for(final String line : Files.readAllLines(Paths.get(f.getPath()), Charset.forName("UTF-8")) ){
-					writer.println(line);
-				}
-			}
+			outputWriter.newInstance().writeOutput(outputDir);
 		}
 		catch(final Exception e)
 		{
