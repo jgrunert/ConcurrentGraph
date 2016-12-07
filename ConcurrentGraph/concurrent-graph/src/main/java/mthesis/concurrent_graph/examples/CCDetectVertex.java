@@ -28,9 +28,9 @@ public class CCDetectVertex extends AbstractVertex {
 	@Override
 	protected void compute(List<VertexMessage> messages) {
 		if(superstepNo == 0) {
-			//			for(final Integer nb : outgoingNeighbors) {
-			//				System.out.println("Send0 " + value + " to " + nb + " from " + id);
-			//			}
+			for(final Integer nb : outgoingNeighbors) {
+				System.out.println(superstepNo + " Send0 " + value + " to " + nb + " from " + id);
+			}
 			sendMessageToAllOutgoing(Integer.toString(id));
 			return;
 		}
@@ -39,21 +39,21 @@ public class CCDetectVertex extends AbstractVertex {
 		for(final VertexMessage msg : messages) {
 			allNeighbors.add(msg.FromVertex);
 			final int msgValue = Integer.parseInt(msg.Content);
-			//			System.out.println("Get " + msgValue + " on " + id + " from " + msg.FromVertex);
+			System.out.println(superstepNo + " Get " + msgValue + " on " + id + " from " + msg.FromVertex);
 			min = Math.min(min, msgValue);
 		}
 
 		if(min < value) {
-			//			System.out.println("Update on " + id + " to " + min);
+			System.out.println(superstepNo + " Update on " + id + " to " + min);
 			value = min;
 		} else {
-			//			System.out.println("Vote halt on " + id + " with " + value);
+			System.out.println(superstepNo + " Vote halt on " + id + " with " + value);
 			voteHalt();
 		}
 
-		//		for(final Integer nb : allNeighbors) {
-		//			System.out.println("Send " + value + " to " + nb + " from " + id);
-		//		}
+		for(final Integer nb : allNeighbors) {
+			System.out.println(superstepNo + " Send " + value + " to " + nb + " from " + id);
+		}
 		sendMessageToVertices(Integer.toString(value), allNeighbors);
 	}
 

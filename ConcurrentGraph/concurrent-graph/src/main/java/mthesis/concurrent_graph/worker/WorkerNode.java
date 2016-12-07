@@ -34,7 +34,10 @@ public class WorkerNode extends AbstractNode {
 	private final List<AbstractVertex> vertices;
 	private final Set<Integer> vertexIds = new HashSet<>();
 	private int superstepNo;
+	private int superstepMessagesSent;
+	private final Set<Integer> channelBarrierWaitSet = new HashSet<>();
 	private final Map<Integer, List<VertexMessage>> vertexMessageBuckets = new HashMap<>();
+	private final List<VertexMessage> bufferedLoopbackMessages = new ArrayList<>();
 
 
 	public WorkerNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
@@ -98,30 +101,46 @@ public class WorkerNode extends AbstractNode {
 
 		// Wait for master to signal that input ready
 		superstepNo = -2;
-		if (!waitForNextSuperstep()) {
+		if (!waitForNextSuperstep(false)) {
 			logger.error("Wait for input ready failed");
 			return;
 		}
 		superstepNo++;
 		loadVertices(input);
-		sendSuperstepFinishedMessage(vertices.size());
+		sendSuperstepFinishedMessages(vertices.size());
 
 		try {
 			while(!Thread.interrupted()) {
-				if (!waitForNextSuperstep()) {
+				if (!waitForNextSuperstep(true)) {
 					break;
 				}
 				superstepNo++;
+				superstepMessagesSent = 0;
 
 				logger.debug("Starting superstep " + superstepNo); // TODO trace
 
 				// Sort incoming messages
-				for(final VertexMessage msg : inWorkerMessages) {
+				for(final VertexMessage msg : inVertexMessages) {
+					if(msg.SuperstepNo != superstepNo - 1) {
+						logger.error("Message from wrong superstep: " + msg);
+						continue;
+					}
 					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
 					if(vertMsgs != null)
 						vertMsgs.add(msg);
 				}
-				inWorkerMessages.clear();
+				inVertexMessages.clear();
+				// Sort loopback messages
+				for(final VertexMessage msg : bufferedLoopbackMessages) {
+					if(msg.SuperstepNo != superstepNo - 1) {
+						logger.error("Message from wrong superstep: " + msg);
+						continue;
+					}
+					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
+					if(vertMsgs != null)
+						vertMsgs.add(msg);
+				}
+				bufferedLoopbackMessages.clear();
 
 				// Compute and Messaging (done by vertices)
 				int activeVertices = 0;
@@ -135,7 +154,7 @@ public class WorkerNode extends AbstractNode {
 
 				// Barrier sync
 				logger.debug("Worker finished superstep " + superstepNo + " activeVertices: " + activeVertices);
-				sendSuperstepFinishedMessage(activeVertices);
+				sendSuperstepFinishedMessages(activeVertices);
 			}
 		}
 		finally {
@@ -147,29 +166,43 @@ public class WorkerNode extends AbstractNode {
 	}
 
 
-	public boolean waitForNextSuperstep() {
+	public boolean waitForNextSuperstep(boolean waitForWorkers) {
 		try {
-			final ControlMessage msg = inControlMessages.take();
-			if(msg != null) {
-				switch (msg.Type) {
-					case Control_Master_Next_Superstep:
-						if(msg.SuperstepNo == superstepNo + 1) {
-							return true;
-						} else {
-							logger.error("Received Control_Master_Next_Superstep with wrong superstepNo: "
-									+ msg.SuperstepNo + " after " + superstepNo);
-						}
-						break;
-					case Control_Master_Finish:
-						logger.info("Received Control_Master_Finish");
-						break;
+			boolean masterSignaledNext = false;
+			if(waitForWorkers)
+				channelBarrierWaitSet.addAll(otherWorkerIds);
 
-					default:
-						logger.error("Illegal control while waitForNextSuperstep: " + msg.Type);
-						break;
+			while(!Thread.interrupted() && !(masterSignaledNext && channelBarrierWaitSet.isEmpty())){
+				final ControlMessage msg = inControlMessages.take();
+				if(msg != null) {
+					switch (msg.Type) {
+						case Control_Master_Next_Superstep:
+							if(msg.SuperstepNo == superstepNo + 1) {
+								masterSignaledNext = true;
+							} else {
+								logger.error("Received Control_Master_Next_Superstep with wrong superstepNo: "
+										+ msg.SuperstepNo + " at step " + superstepNo);
+							}
+							break;
+						case Control_Worker_Superstep_Channel_Barrier:
+							if(msg.SuperstepNo == superstepNo) {
+								channelBarrierWaitSet.remove(msg.FromNode);
+							} else {
+								logger.error("Received Control_Worker_Superstep_Channel_Barrier with wrong superstepNo: "
+										+ msg.SuperstepNo + " at step " + superstepNo);
+							}
+							break;
+						case Control_Master_Finish:
+							logger.info("Received Control_Master_Finish");
+							return false;
+
+						default:
+							logger.error("Illegal control while waitForNextSuperstep: " + msg.Type);
+							break;
+					}
 				}
 			}
-			return false;
+			return masterSignaledNext && channelBarrierWaitSet.isEmpty();
 		}
 		catch (final InterruptedException e) {
 			return false;
@@ -177,17 +210,20 @@ public class WorkerNode extends AbstractNode {
 	}
 
 
-	private void sendSuperstepFinishedMessage(int activeVertices) {
-		messaging.sendMessageTo(masterId, MessageType.Control_Node_Superstep_Finished + ";" + ownId + ";" + superstepNo + ";" + activeVertices);
+	private void sendSuperstepFinishedMessages(int activeVertices) {
+		messaging.sendMessageTo(masterId, MessageType.Control_Worker_Superstep_Finished + ";" + ownId + ";" + superstepNo + ";" + activeVertices + "," +
+				superstepMessagesSent);
+		messaging.sendMessageTo(otherWorkerIds, MessageType.Control_Worker_Superstep_Channel_Barrier + ";" + ownId + ";" + superstepNo + ";barrier");
 	}
 
 	private void sendFinishedMessage() {
-		messaging.sendMessageTo(masterId, MessageType.Control_Node_Finished + ";" + ownId + ";" + superstepNo + ";" + "terminating now");
+		messaging.sendMessageTo(masterId, MessageType.Control_Worker_Finished + ";" + ownId + ";" + superstepNo + ";" + "terminating now");
 	}
 
 	public void sendVertexMessage(int fromVertex, int toVertex, String content) {
+		superstepMessagesSent++;
 		messaging.sendMessageTo(otherWorkerIds, MessageType.Vertex + ";" + ownId + ";" + superstepNo + ";" + fromVertex + ";" + toVertex + ";" + content);
-		inWorkerMessages.add(new VertexMessage(ownId, fromVertex, toVertex, superstepNo, content));
+		bufferedLoopbackMessages.add(new VertexMessage(ownId, fromVertex, toVertex, superstepNo, content));
 	}
 
 

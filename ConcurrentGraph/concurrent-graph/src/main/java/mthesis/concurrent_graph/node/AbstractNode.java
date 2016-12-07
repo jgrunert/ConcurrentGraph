@@ -26,7 +26,7 @@ public abstract class AbstractNode {
 	protected final int ownId;
 
 	protected final MessageSenderAndReceiver messaging;
-	protected final BlockingQueue<VertexMessage> inWorkerMessages = new LinkedBlockingQueue<>();
+	protected final BlockingQueue<VertexMessage> inVertexMessages = new LinkedBlockingQueue<>();
 	protected final BlockingQueue<ControlMessage> inControlMessages = new LinkedBlockingQueue<>();
 
 	private Thread runThread;
@@ -78,7 +78,7 @@ public abstract class AbstractNode {
 			logger.trace("Vertex message: " + message);
 			final int fromVertex = Integer.parseInt(msgSplit[3]);
 			final int toVertex = Integer.parseInt(msgSplit[4]);
-			inWorkerMessages.add(new VertexMessage(fromNode, fromVertex, toVertex, superstepNo, msgSplit[5]));
+			inVertexMessages.add(new VertexMessage(fromNode, fromVertex, toVertex, superstepNo, msgSplit[5]));
 		} else {
 			logger.trace("Control message: " + message);
 			inControlMessages.add(new ControlMessage(type, fromNode, superstepNo, msgSplit[3]));

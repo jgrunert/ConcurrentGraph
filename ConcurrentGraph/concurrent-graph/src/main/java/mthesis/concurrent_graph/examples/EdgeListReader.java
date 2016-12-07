@@ -81,7 +81,7 @@ public class EdgeListReader extends AbstractMasterInputReader {
 			for(final PrintWriter writer : partitionWriters) {
 				writer.close();
 			}
-			System.out.println("Loaded " + vertexCount + " vertices " + edgeCount + " edges");
+			logger.info("Loaded " + vertexCount + " vertices " + edgeCount + " edges");
 		}
 
 		return partitions;

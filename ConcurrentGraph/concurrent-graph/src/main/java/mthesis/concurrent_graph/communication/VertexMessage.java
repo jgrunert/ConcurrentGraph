@@ -15,4 +15,10 @@ public class VertexMessage {
 		SuperstepNo = superstepNo;
 		Content = content;
 	}
+
+
+	@Override
+	public String toString() {
+		return "VertexMessage(" + SuperstepNo + " " + FromVertex + " " + ToVertex + " " + Content + ")";
+	}
 }

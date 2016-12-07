@@ -61,14 +61,17 @@ public class MasterNode extends AbstractNode {
 				// Wait for workers to send finished control messages.
 				int activeWorkers = 0;
 				int activeVertices = 0;
+				int messagesSent = 0;
 				while(!workersWaitingFor.isEmpty()) {
 					final ControlMessage msg = inControlMessages.take();
-					if(msg.Type == MessageType.Control_Node_Superstep_Finished) {
+					if(msg.Type == MessageType.Control_Worker_Superstep_Finished) {
 						if(msg.SuperstepNo == superstepNo) {
-							final int msgActiveVertices = Integer.parseInt(msg.Content);
+							final String[] msgSplit = msg.Content.split(",");
+							final int msgActiveVertices = Integer.parseInt(msgSplit[0]);
 							if(msgActiveVertices > 0)
 								activeWorkers++;
 							activeVertices += msgActiveVertices;
+							messagesSent += Integer.parseInt(msgSplit[1]);
 							workersWaitingFor.remove(msg.FromNode);
 						}
 						else {
@@ -84,8 +87,11 @@ public class MasterNode extends AbstractNode {
 
 				if(activeWorkers > 0) {
 					// Next superstep
-					logger.debug(String.format("Master finished superstep %d activeWorkers %d activeVertices %d after %dms",
-							superstepNo, activeWorkers, activeVertices, (System.currentTimeMillis() - startTime)));
+					logger.debug(String.format("Master finished superstep %d after %dms. activeWorkers: %d activeVertices: %d messages: %d",
+							superstepNo, (System.currentTimeMillis() - startTime), activeWorkers, activeVertices, messagesSent));
+					// TODO Test
+					System.out.println(String.format("Master finished superstep %d after %dms. activeWorkers: %d activeVertices: %d messages: %d",
+							superstepNo, (System.currentTimeMillis() - startTime), activeWorkers, activeVertices, messagesSent));
 					superstepNo++;
 					logger.trace("Next master superstep: " + superstepNo);
 					signalWorkersStartingSuperstep();
@@ -123,7 +129,7 @@ public class MasterNode extends AbstractNode {
 			while(!workersWaitingFor.isEmpty()) {
 				ControlMessage msg;
 				msg = inControlMessages.take();
-				if(msg.Type == MessageType.Control_Node_Finished) {
+				if(msg.Type == MessageType.Control_Worker_Finished) {
 					workersWaitingFor.remove(msg.FromNode);
 				}
 			}
@@ -147,6 +153,7 @@ public class MasterNode extends AbstractNode {
 
 
 	private void signalWorkersStartingSuperstep() {
+		System.out.println(superstepNo);
 		messaging.sendMessageTo(workerIds, MessageType.Control_Master_Next_Superstep + ";" + ownId + ";" + superstepNo + ";" + "next");
 	}
 
