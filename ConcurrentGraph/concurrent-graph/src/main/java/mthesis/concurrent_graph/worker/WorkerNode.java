@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,10 +16,10 @@ import java.util.stream.Collectors;
 import mthesis.concurrent_graph.communication.ControlMessage;
 import mthesis.concurrent_graph.communication.MessageType;
 import mthesis.concurrent_graph.communication.VertexMessage;
+import mthesis.concurrent_graph.examples.CCDetectVertex;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
-import mthesis.concurrent_graph.vertex.CCDetectVertex;
 
 /**
  * Concurrent graph processing worker main
@@ -26,25 +27,27 @@ import mthesis.concurrent_graph.vertex.CCDetectVertex;
 public class WorkerNode extends AbstractNode {
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
+	private final String input;
 	private final String output;
 
 	private final List<CCDetectVertex> vertices;
+	private final Set<Integer> vertexIds = new HashSet<>();
 	private int superstepNo;
 	private final Map<Integer, List<VertexMessage>> vertexMessageBuckets = new HashMap<>();
 
 
 	public WorkerNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
-			Set<Integer> vertexIds, String input, String output) {
+			String input, String output) {
 		super(machines, ownId);
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
 		this.masterId = masterId;
 
-		this.vertices = new ArrayList<>(vertexIds.size());
+		this.vertices = new ArrayList<>();
+		this.input = input;
 		this.output = output;
-		loadVertices(vertexIds, input);
 	}
 
-	private void loadVertices(Set<Integer> vertexIds, String input) {
+	private void loadVertices(String input) {
 		try (BufferedReader br = new BufferedReader(new FileReader(input))) {
 			String line;
 			final List<Integer> edges = new ArrayList<>();
@@ -59,14 +62,12 @@ public class WorkerNode extends AbstractNode {
 				if (line.startsWith("\t")) {
 					edges.add(Integer.parseInt(line.substring(1)));
 				} else {
-					if(vertexIds.contains(currentVertex))
-						addVertex(currentVertex, edges);
+					addVertex(currentVertex, edges);
 					edges.clear();
 					currentVertex = Integer.parseInt(line);
 				}
 			}
-			if(vertexIds.contains(currentVertex))
-				addVertex(currentVertex, edges);
+			addVertex(currentVertex, edges);
 		} catch (final Exception e) {
 			logger.error("loadVertices failed", e);
 		}
@@ -76,16 +77,23 @@ public class WorkerNode extends AbstractNode {
 		}
 	}
 	private void addVertex(int vertexId, List<Integer> edges) {
+		vertexIds.add(vertexId);
 		vertices.add(new CCDetectVertex(new ArrayList<>(edges), vertexId, this));
 	}
 
 
 	@Override
 	public void run() {
-		logger.info("Waiting for started worker node " + ownId);
-
 		logger.info("Starting run worker node " + ownId);
-		superstepNo = -1;
+
+		// Wait for master to signal that input ready
+		superstepNo = -2;
+		if (!waitForNextSuperstep()) {
+			logger.error("Wait for input ready failed");
+			return;
+		}
+		superstepNo++;
+		loadVertices(input);
 		sendSuperstepFinishedMessage(vertices.size());
 
 		try {

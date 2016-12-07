@@ -1,8 +1,9 @@
-package mthesis.concurrent_graph.vertex;
+package mthesis.concurrent_graph.examples;
 
 import java.util.List;
 
 import mthesis.concurrent_graph.communication.VertexMessage;
+import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.worker.WorkerNode;
 
 /**

@@ -13,6 +13,7 @@ import java.util.Set;
 
 import mthesis.concurrent_graph.communication.ControlMessage;
 import mthesis.concurrent_graph.communication.MessageType;
+import mthesis.concurrent_graph.examples.VertexEdgesInputReader;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
 
@@ -23,14 +24,21 @@ public class MasterNode extends AbstractNode {
 
 	private final List<Integer> workerIds;
 	private int superstepNo = -1;
-	private final String output;
+
+	private final String inputData;
+	private final String inputDir;
+	private final String outputDir;
 
 
 	public MasterNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
-			String output) {
+			String inputData, String inputDir, String outputDir) {
 		super(machines, ownId);
 		this.workerIds = workerIds;
-		this.output = output;
+		this.inputData = inputData;
+		this.inputDir = inputDir;
+		this.outputDir = outputDir;
+		makeCleanDirectory(inputDir);
+		makeCleanDirectory(outputDir);
 	}
 
 
@@ -38,10 +46,13 @@ public class MasterNode extends AbstractNode {
 	public void run() {
 		logger.info("Master started");
 
-		final Set<Integer> workersWaitingFor = new HashSet<>(workerIds.size());
+		new VertexEdgesInputReader().readAndPartition(inputData, inputDir, workerIds.size());
+		logger.info("Master input read and partitioned");
 		superstepNo = -1;
+		signalWorkersStartingSuperstep();  // Signal that input ready
 
 		try {
+			final Set<Integer> workersWaitingFor = new HashSet<>(workerIds.size());
 			while(!Thread.interrupted()) {
 				// New superstep
 				workersWaitingFor.addAll(workerIds);
@@ -74,7 +85,7 @@ public class MasterNode extends AbstractNode {
 					// Next superstep
 					superstepNo++;
 					logger.trace("Next master superstep: " + superstepNo);
-					signalWorkersNextSuperstep();
+					signalWorkersStartingSuperstep();
 				}
 				else {
 					// Finished
@@ -118,9 +129,9 @@ public class MasterNode extends AbstractNode {
 
 	private void finishMaster() {
 		// Aggregate output
-		try(PrintWriter writer = new PrintWriter(new FileWriter(output + File.separator + "combined.txt")))
+		try(PrintWriter writer = new PrintWriter(new FileWriter(outputDir + File.separator + "combined.txt")))
 		{
-			final File outFolder = new File(output);
+			final File outFolder = new File(outputDir);
 			for(final File f : outFolder.listFiles()) {
 				for(final String line : Files.readAllLines(Paths.get(f.getPath()), Charset.forName("UTF-8")) ){
 					writer.println(line);
@@ -134,11 +145,21 @@ public class MasterNode extends AbstractNode {
 	}
 
 
-	private void signalWorkersNextSuperstep() {
+	private void signalWorkersStartingSuperstep() {
 		messaging.sendMessageTo(workerIds, MessageType.Control_Master_Next_Superstep + ";" + ownId + ";" + superstepNo + ";" + "next");
 	}
 
 	private void signalWorkersFinish() {
 		messaging.sendMessageTo(workerIds, MessageType.Control_Master_Finish + ";" + ownId + ";" + superstepNo + ";" + "terminate");
+	}
+
+
+	private static void makeCleanDirectory(String dir) {
+		final File outFile = new File(dir);
+		if(outFile.exists())
+			for(final File f : outFile.listFiles())
+				f.delete();
+		else
+			outFile.mkdirs();
 	}
 }
