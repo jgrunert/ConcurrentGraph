@@ -7,7 +7,7 @@
 		<filter class="mthesis.concurrent_graph.logging.NettyLogFilter" />
 		<encoder>
 			<pattern>
-				%-4relative [%thread] %-5level %logger{30} - %msg%n
+				%d [%thread] %-5level %logger{30} - %msg%n
 			</pattern>
 		</encoder>
 	</appender>
