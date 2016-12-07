@@ -13,7 +13,6 @@ import java.util.Set;
 
 import mthesis.concurrent_graph.communication.ControlMessage;
 import mthesis.concurrent_graph.communication.MessageType;
-import mthesis.concurrent_graph.examples.VertexEdgesInputReader;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
 
@@ -28,15 +27,17 @@ public class MasterNode extends AbstractNode {
 	private final String inputData;
 	private final String inputDir;
 	private final String outputDir;
+	private final Class<? extends AbstractMasterInputReader> inputReader;
 
 
 	public MasterNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
-			String inputData, String inputDir, String outputDir) {
+			String inputData, String inputDir, String outputDir, Class<? extends AbstractMasterInputReader> inputReader) {
 		super(machines, ownId);
 		this.workerIds = workerIds;
 		this.inputData = inputData;
 		this.inputDir = inputDir;
 		this.outputDir = outputDir;
+		this.inputReader = inputReader;
 		makeCleanDirectory(inputDir);
 		makeCleanDirectory(outputDir);
 	}
@@ -46,12 +47,12 @@ public class MasterNode extends AbstractNode {
 	public void run() {
 		logger.info("Master started");
 
-		new VertexEdgesInputReader().readAndPartition(inputData, inputDir, workerIds.size());
-		logger.info("Master input read and partitioned");
-		superstepNo = -1;
-		signalWorkersStartingSuperstep();  // Signal that input ready
-
 		try {
+			inputReader.newInstance().readAndPartition(inputData, inputDir, workerIds.size());
+			logger.info("Master input read and partitioned");
+			superstepNo = -1;
+			signalWorkersStartingSuperstep();  // Signal that input ready
+
 			final Set<Integer> workersWaitingFor = new HashSet<>(workerIds.size());
 			while(!Thread.interrupted()) {
 				// New superstep
@@ -96,6 +97,9 @@ public class MasterNode extends AbstractNode {
 		}
 		catch (final InterruptedException e) {
 			logger.info("Master interrupted");
+		}
+		catch (final Exception e) {
+			logger.error("Master exception", e);
 		}
 		finally {
 			// End sequence: Let workers finish and output, then finish master before terminating

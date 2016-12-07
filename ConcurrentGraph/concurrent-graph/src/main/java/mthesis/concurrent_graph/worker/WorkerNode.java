@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +17,6 @@ import java.util.stream.Collectors;
 import mthesis.concurrent_graph.communication.ControlMessage;
 import mthesis.concurrent_graph.communication.MessageType;
 import mthesis.concurrent_graph.communication.VertexMessage;
-import mthesis.concurrent_graph.examples.CCDetectVertex;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
@@ -30,14 +30,15 @@ public class WorkerNode extends AbstractNode {
 	private final String input;
 	private final String output;
 
-	private final List<CCDetectVertex> vertices;
+	private final Class<? extends AbstractVertex> vertexClass;
+	private final List<AbstractVertex> vertices;
 	private final Set<Integer> vertexIds = new HashSet<>();
 	private int superstepNo;
 	private final Map<Integer, List<VertexMessage>> vertexMessageBuckets = new HashMap<>();
 
 
 	public WorkerNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
-			String input, String output) {
+			String input, String output, Class<? extends AbstractVertex> vertexClass) {
 		super(machines, ownId);
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
 		this.masterId = masterId;
@@ -45,6 +46,7 @@ public class WorkerNode extends AbstractNode {
 		this.vertices = new ArrayList<>();
 		this.input = input;
 		this.output = output;
+		this.vertexClass = vertexClass;
 	}
 
 	private void loadVertices(String input) {
@@ -77,8 +79,16 @@ public class WorkerNode extends AbstractNode {
 		}
 	}
 	private void addVertex(int vertexId, List<Integer> edges) {
-		vertexIds.add(vertexId);
-		vertices.add(new CCDetectVertex(new ArrayList<>(edges), vertexId, this));
+		Constructor<?> c;
+		try {
+			c = vertexClass.getDeclaredConstructor(List.class, int.class, WorkerNode.class);
+			c.setAccessible(true);
+			vertices.add((AbstractVertex)c.newInstance(new ArrayList<>(edges), vertexId, this));
+			vertexIds.add(vertexId);
+		}
+		catch (final Exception e) {
+			logger.error("Creating vertex " + vertexId + " failed", e);
+		}
 	}
 
 
