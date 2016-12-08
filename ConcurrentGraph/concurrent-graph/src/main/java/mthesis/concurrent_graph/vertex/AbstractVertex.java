@@ -33,17 +33,17 @@ public abstract class AbstractVertex {
 	protected abstract void compute(List<VertexMessage> messages);
 
 
-	protected void sendMessageToAllOutgoing(String message) {
+	protected void sendMessageToAllOutgoing(int message) {
 		for (final Integer nb : outgoingNeighbors) {
 			workerManager.sendVertexMessage(id, nb, message);
 		}
 	}
 
-	protected void sendMessageToVertex(String message, int sendTo) {
+	protected void sendMessageToVertex(int message, int sendTo) {
 		workerManager.sendVertexMessage(id, sendTo, message);
 	}
 
-	protected void sendMessageToVertices(String message, Collection<Integer> sendTo) {
+	protected void sendMessageToVertices(int message, Collection<Integer> sendTo) {
 		for (final Integer st : sendTo) {
 			workerManager.sendVertexMessage(id, st, message);
 		}

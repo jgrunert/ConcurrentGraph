@@ -31,14 +31,14 @@ public class CCDetectVertex extends AbstractVertex {
 			//			for(final Integer nb : outgoingNeighbors) {
 			//				System.out.println(superstepNo + " Send0 " + value + " to " + nb + " from " + id);
 			//			}
-			sendMessageToAllOutgoing(Integer.toString(id));
+			sendMessageToAllOutgoing(id);
 			return;
 		}
 
 		int min = value;
 		for(final VertexMessage msg : messages) {
 			allNeighbors.add(msg.FromVertex);
-			final int msgValue = Integer.parseInt(msg.Content);
+			final int msgValue = msg.Content;
 			//			System.out.println(superstepNo + " Get " + msgValue + " on " + id + " from " + msg.FromVertex);
 			min = Math.min(min, msgValue);
 		}
@@ -54,7 +54,7 @@ public class CCDetectVertex extends AbstractVertex {
 		//		for(final Integer nb : allNeighbors) {
 		//			System.out.println(superstepNo + " Send " + value + " to " + nb + " from " + id);
 		//		}
-		sendMessageToVertices(Integer.toString(value), allNeighbors);
+		sendMessageToVertices(value, allNeighbors);
 	}
 
 

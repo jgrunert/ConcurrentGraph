@@ -26,7 +26,7 @@ public class QuickTest {
 
 		final String inputDir = "input";
 		final String outputDir = "output";
-		final int numWorkers = 4;
+		final int numWorkers = 2;
 		final String host = "localhost";
 		final int basePort = 23499;
 		final Class<? extends AbstractMasterOutputWriter> outputWriter = CCOutputWriter.class;

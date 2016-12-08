@@ -24,20 +24,20 @@ public class SCCDetectVertex extends AbstractVertex {
 	@Override
 	protected void compute(List<VertexMessage> messages) {
 		if(superstepNo == 0) {
-			sendMessageToAllOutgoing(Integer.toString(id));
+			sendMessageToAllOutgoing(id);
 			return;
 		}
 
 		int min = value;
 		for(final VertexMessage msg : messages) {
-			final int msgValue = Integer.parseInt(msg.Content);
+			final int msgValue = msg.Content;
 			System.out.println("Get " + msgValue + " on " + id + " from " + msg.FromVertex);
 			min = Math.min(min, msgValue);
 		}
 
 		if(min < value) {
 			value = min;
-			sendMessageToAllOutgoing(Integer.toString(value));
+			sendMessageToAllOutgoing(value);
 		} else {
 			System.out.println("Vote halt on " + id + " with " + value);
 			voteHalt();

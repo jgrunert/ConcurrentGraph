@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.communication.ControlMessage;
 import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
-import mthesis.concurrent_graph.communication.MessageType;
 import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.util.Pair;
 
@@ -66,22 +65,12 @@ public abstract class AbstractNode {
 	public abstract void run();
 
 
-	public void onIncomingMessage(String message) {
-		//logger.trace(message);
+	public void onIncomingControlMessage(ControlMessage message) {
+		inControlMessages.add(message);
 
-		final String[] msgSplit = message.split(";");
-		final MessageType type = MessageType.valueOf(msgSplit[0]);
-		final int fromNode = Integer.parseInt(msgSplit[1]);
-		final int superstepNo = Integer.parseInt(msgSplit[2]);
+	}
 
-		if (type == MessageType.Vertex) {
-			logger.trace("Vertex message: " + message);
-			final int fromVertex = Integer.parseInt(msgSplit[3]);
-			final int toVertex = Integer.parseInt(msgSplit[4]);
-			inVertexMessages.add(new VertexMessage(fromNode, fromVertex, toVertex, superstepNo, msgSplit[5]));
-		} else {
-			logger.trace("Control message: " + message);
-			inControlMessages.add(new ControlMessage(type, fromNode, superstepNo, msgSplit[3]));
-		}
+	public void onIncomingVertexMessage(VertexMessage message) {
+		inVertexMessages.add(message);
 	}
 }

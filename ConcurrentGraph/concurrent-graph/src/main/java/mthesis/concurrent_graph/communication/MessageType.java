@@ -14,5 +14,10 @@ public enum MessageType {
 	// Message to signal workers to start with next superstep
 	Control_Master_Next_Superstep,
 	// Message to signal workers to finish, output and terminate
-	Control_Master_Finish
+	Control_Master_Finish;
+
+	private static MessageType[] allValues = values();
+	public static MessageType fromOrdinal(int n) {
+		return allValues[n];
+	}
 }

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -20,10 +21,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
@@ -107,22 +104,63 @@ public class MessageSenderAndReceiver {
 	}
 
 
-	public void sendMessageTo(int machineId, String message) {
-		// TODO Checks
-		activeChannels.get(machineId).writeAndFlush(message + "\n");
-	}
-
-	public void sendMessageTo(List<Integer> machineIds, String message) {
+	public void sendVertexMessage(List<Integer> machineIds, VertexMessage message) {
 		// TODO Checks
 		for(final Integer machineId : machineIds) {
-			activeChannels.get(machineId).writeAndFlush(message + "\n");
+			sendVertexMessage(machineId, message);// TODO Reu se buffer
+		}
+	}
+
+	public void sendVertexMessage(int machineId, VertexMessage message) {
+		// TODO Checks
+		final Channel ch = activeChannels.get(machineId);
+		final ByteBuf outBuf = ch.alloc().buffer(6*4);
+		outBuf.writeInt(MessageType.Vertex.ordinal());
+		outBuf.writeInt(message.FromNode);
+		outBuf.writeInt(message.FromVertex);
+		outBuf.writeInt(message.ToVertex);
+		outBuf.writeInt(message.SuperstepNo);
+		outBuf.writeInt(message.Content);
+		ch.writeAndFlush(outBuf);
+	}
+
+	public void sendControlMessage(int machineId, ControlMessage message) {
+		// TODO Checks
+		final Channel ch = activeChannels.get(machineId);;
+		final ByteBuf outBuf = ch.alloc().buffer(5*4);
+		outBuf.writeInt(message.Type.ordinal());
+		outBuf.writeInt(message.FromNode);
+		outBuf.writeInt(message.SuperstepNo);
+		outBuf.writeInt(message.Content1);
+		outBuf.writeInt(message.Content2);
+		ch.writeAndFlush(outBuf);
+	}
+
+	public void sendControlMessage(List<Integer> machineIds, ControlMessage message) {
+		// TODO Checks
+		for(final Integer machineId : machineIds) {
+			sendControlMessage(machineId, message);// TODO Reu se buffer
 		}
 	}
 
 
-	public void onIncomingMessage(String message) {
-		if(messageListener != null)
-			messageListener.onIncomingMessage(message);
+	public void onIncomingMessage(ByteBuf inBuf) {
+		final MessageType type = MessageType.fromOrdinal(inBuf.readInt());
+		final int fromNode = inBuf.readInt();
+		final int superstepNo = inBuf.readInt();
+
+		if (type == MessageType.Vertex) {
+			//logger.trace("Vertex message: " + message);
+			final int fromVertex = inBuf.readInt();
+			final int toVertex = inBuf.readInt();
+			final int content = inBuf.readInt();
+			messageListener.onIncomingVertexMessage(new VertexMessage(fromNode, fromVertex, toVertex, superstepNo, content));
+		} else {
+			//logger.trace("Control message: " + message);
+			final int content1 = inBuf.readInt();
+			final int content2 = inBuf.readInt();
+			messageListener.onIncomingControlMessage(new ControlMessage(type, fromNode,superstepNo, content1, content2));
+		}
 	}
 
 
@@ -149,9 +187,9 @@ public class MessageSenderAndReceiver {
 					p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
 				}
 				// p.addLast(new LoggingHandler(LogLevel.INFO));
-				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-				p.addLast(new StringEncoder());
-				p.addLast(new StringDecoder());
+				//				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
+				//				p.addLast(new StringEncoder());
+				//				p.addLast(new StringDecoder());
 				p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 			}
 		});
@@ -205,9 +243,9 @@ public class MessageSenderAndReceiver {
 					p.addLast(sslCtx.newHandler(ch.alloc()));
 				}
 				// p.addLast(new LoggingHandler(LogLevel.INFO));
-				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-				p.addLast(new StringEncoder());
-				p.addLast(new StringDecoder());
+				//				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
+				//				p.addLast(new StringEncoder());
+				//				p.addLast(new StringDecoder());
 				p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 			}
 		});

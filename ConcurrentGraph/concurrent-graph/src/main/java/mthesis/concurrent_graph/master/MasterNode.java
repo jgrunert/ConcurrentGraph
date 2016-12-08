@@ -66,12 +66,11 @@ public class MasterNode extends AbstractNode {
 					final ControlMessage msg = inControlMessages.take();
 					if(msg.Type == MessageType.Control_Worker_Superstep_Finished) {
 						if(msg.SuperstepNo == superstepNo) {
-							final String[] msgSplit = msg.Content.split(",");
-							final int msgActiveVertices = Integer.parseInt(msgSplit[0]);
+							final int msgActiveVertices = msg.Content1;
 							if(msgActiveVertices > 0)
 								activeWorkers++;
 							activeVertices += msgActiveVertices;
-							messagesSent += Integer.parseInt(msgSplit[1]);
+							messagesSent += msg.Content2;
 							workersWaitingFor.remove(msg.FromNode);
 						}
 						else {
@@ -154,11 +153,11 @@ public class MasterNode extends AbstractNode {
 
 	private void signalWorkersStartingSuperstep() {
 		System.out.println(superstepNo);
-		messaging.sendMessageTo(workerIds, MessageType.Control_Master_Next_Superstep + ";" + ownId + ";" + superstepNo + ";" + "next");
+		messaging.sendControlMessage(workerIds, new ControlMessage(MessageType.Control_Master_Next_Superstep, ownId, superstepNo, 0, 0));
 	}
 
 	private void signalWorkersFinish() {
-		messaging.sendMessageTo(workerIds, MessageType.Control_Master_Finish + ";" + ownId + ";" + superstepNo + ";" + "terminate");
+		messaging.sendControlMessage(workerIds, new ControlMessage(MessageType.Control_Master_Finish, ownId, superstepNo, 0, 0));
 	}
 
 

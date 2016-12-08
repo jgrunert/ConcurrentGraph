@@ -238,22 +238,22 @@ public class WorkerNode extends AbstractNode {
 
 
 	private void sendWorkersSuperstepFinished() {
-		messaging.sendMessageTo(otherWorkerIds, MessageType.Control_Worker_Superstep_Barrier + ";" + ownId + ";" + superstepNo + ";barrier");
+		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Superstep_Barrier, ownId, superstepNo, 0, 0));
 	}
 
 	private void sendMasterSuperstepFinished(int activeVertices) {
-		messaging.sendMessageTo(masterId, MessageType.Control_Worker_Superstep_Finished + ";" + ownId + ";" + superstepNo + ";" + activeVertices + "," +
-				superstepMessagesSent);
+		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Superstep_Finished, ownId, superstepNo, activeVertices, superstepMessagesSent));
 	}
 
 	private void sendFinishedMessage() {
-		messaging.sendMessageTo(masterId, MessageType.Control_Worker_Finished + ";" + ownId + ";" + superstepNo + ";" + "terminating now");
+		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Finished, ownId, superstepNo, 0, 0));
 	}
 
-	public void sendVertexMessage(int fromVertex, int toVertex, String content) {
+	public void sendVertexMessage(int fromVertex, int toVertex, int content) {
 		superstepMessagesSent++;
-		messaging.sendMessageTo(otherWorkerIds, MessageType.Vertex + ";" + ownId + ";" + superstepNo + ";" + fromVertex + ";" + toVertex + ";" + content);
-		bufferedLoopbackMessages.add(new VertexMessage(ownId, fromVertex, toVertex, superstepNo, content));
+		final VertexMessage message = new VertexMessage(ownId, fromVertex, toVertex, superstepNo, content);
+		messaging.sendVertexMessage(otherWorkerIds, message);
+		bufferedLoopbackMessages.add(message);
 	}
 
 

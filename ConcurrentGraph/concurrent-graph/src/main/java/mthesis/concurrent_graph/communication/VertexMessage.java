@@ -5,9 +5,9 @@ public class VertexMessage {
 	public final int FromVertex;
 	public final int ToVertex;
 	public final int SuperstepNo;
-	public final String Content;
+	public final int Content;//TODO Type
 
-	public VertexMessage(int fromNode, int from, int to, int superstepNo, String content) {
+	public VertexMessage(int fromNode, int from, int to, int superstepNo, int content) {
 		super();
 		FromNode = fromNode;
 		FromVertex = from;
