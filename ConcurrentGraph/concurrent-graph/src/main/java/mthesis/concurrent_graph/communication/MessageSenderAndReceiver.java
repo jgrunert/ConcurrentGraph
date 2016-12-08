@@ -69,7 +69,12 @@ public class MessageSenderAndReceiver {
 		bossGroup = new NioEventLoopGroup(1);
 		workerGroup = new NioEventLoopGroup();
 
-		startServer();
+		try {
+			startServer();
+		}
+		catch (final Exception e2) {
+			logger.error("Starting server failed", e2);
+		}
 
 		// Connect to all other machines with smaller IDs
 		for(final Entry<Integer, Pair<String, Integer>> machine : machines.entrySet()) {
@@ -199,25 +204,7 @@ public class MessageSenderAndReceiver {
 	}
 
 
-	private void startServer() {
-		final Thread serverThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					logger.info("Start run connection server");
-					runServer();
-					logger.info("End run connection server");
-				} catch (final Exception e) {
-					logger.error("Exception at runServer", e);
-				}
-			}
-		});
-		serverThread.setName("ServerThread-Machine" + ownId);
-		serverThread.setDaemon(true);
-		serverThread.start();
-	}
-
-	private void runServer() throws Exception {
+	private void startServer() throws Exception {
 		final int port = machines.get(ownId).snd;
 
 		// Configure SSL.
@@ -252,8 +239,6 @@ public class MessageSenderAndReceiver {
 
 		// Start the server.
 		final ChannelFuture f = b.bind(port).sync();
-
-		// Wait until the server socket is closed.
-		f.channel().closeFuture().sync();
+		logger.info("Started connection server");
 	}
 }
