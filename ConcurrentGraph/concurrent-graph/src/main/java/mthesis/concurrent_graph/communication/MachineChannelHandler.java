@@ -44,7 +44,6 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
 			channelState = ChannelState.Handshake;
 			final ByteBuf outBuf = ctx.alloc().buffer(4); // (2)
 			outBuf.writeInt(ownId);
-			System.out.println("send " + ownId);
 			ctx.writeAndFlush(outBuf);
 		} else {
 			logger.warn("Channel not inactive ignoring active channel " + ctx.channel().id());

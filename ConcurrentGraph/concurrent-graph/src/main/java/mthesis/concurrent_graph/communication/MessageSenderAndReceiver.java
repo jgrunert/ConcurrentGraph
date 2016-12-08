@@ -117,6 +117,8 @@ public class MessageSenderAndReceiver {
 	}
 
 	public void sendVertexMessage(int machineId, VertexMessage message) {
+
+		logger.debug("send msgt " + MessageType.Vertex.ordinal());
 		// TODO Checks
 		final Channel ch = activeChannels.get(machineId);
 		final ByteBuf outBuf = ch.alloc().buffer(6*4);
@@ -131,6 +133,8 @@ public class MessageSenderAndReceiver {
 
 	public void sendControlMessage(int machineId, ControlMessage message) {
 		// TODO Checks
+
+		logger.debug("send msgt " + message.Type.ordinal());
 		final Channel ch = activeChannels.get(machineId);;
 		final ByteBuf outBuf = ch.alloc().buffer(5*4);
 		outBuf.writeInt(message.Type.ordinal());
@@ -150,7 +154,9 @@ public class MessageSenderAndReceiver {
 
 
 	public void onIncomingMessage(ByteBuf inBuf) {
-		final MessageType type = MessageType.fromOrdinal(inBuf.readInt());
+		final int msgt = inBuf.readInt();
+		logger.debug("rec msgt " + msgt);
+		final MessageType type = MessageType.fromOrdinal(msgt);
 		final int fromNode = inBuf.readInt();
 		final int superstepNo = inBuf.readInt();
 
