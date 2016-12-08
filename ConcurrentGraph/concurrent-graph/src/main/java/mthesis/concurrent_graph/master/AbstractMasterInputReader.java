@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class AbstractMasterInputReader {
-	protected static final Logger logger = LoggerFactory.getLogger(AbstractMasterInputReader.class);
+	protected static final Logger logger = LoggerFactory.getLogger(AbstractMasterInputReader.class.getCanonicalName());
 
 	/**
 	 * Reads input file and partitions it

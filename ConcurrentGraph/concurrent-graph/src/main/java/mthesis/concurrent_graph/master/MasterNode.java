@@ -74,12 +74,12 @@ public class MasterNode extends AbstractNode {
 							workersWaitingFor.remove(msg.FromNode);
 						}
 						else {
-							logger.info("Recieved Control_Node_Superstep_Finished for wrong superstep: " + msg.SuperstepNo +
+							logger.error("Recieved Control_Worker_Superstep_Finished for wrong superstep: " + msg.SuperstepNo +
 									" from " + msg.FromNode);
 						}
 					}
 					else {
-						logger.info("Recieved non Control_Node_Superstep_Finished message: " + msg.Type +
+						logger.error("Recieved non Control_Worker_Superstep_Finished message: " + msg.Type +
 								" from " + msg.FromNode);
 					}
 				}

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class AbstractMasterOutputWriter {
-	protected static final Logger logger = LoggerFactory.getLogger(AbstractMasterOutputWriter.class);
+	protected static final Logger logger = LoggerFactory.getLogger(AbstractMasterOutputWriter.class.getCanonicalName());
 
 	/**
 	 * Reads input file

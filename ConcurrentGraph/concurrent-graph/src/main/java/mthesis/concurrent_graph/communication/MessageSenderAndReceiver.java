@@ -54,7 +54,7 @@ public class MessageSenderAndReceiver {
 
 	public MessageSenderAndReceiver(Map<Integer, Pair<String, Integer>> machines, int ownId,
 			AbstractNode listener) {
-		this.logger = LoggerFactory.getLogger(this.getClass() + "[" + ownId + "]");
+		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.ownId = ownId;
 		this.machines = machines;
 		this.messageListener = listener;
@@ -118,7 +118,7 @@ public class MessageSenderAndReceiver {
 
 	public void sendVertexMessage(int machineId, VertexMessage message) {
 
-		logger.debug("send msgt " + MessageType.Vertex.ordinal());
+		logger.debug("send msgt " + MessageType.Vertex + " " + MessageType.Vertex.ordinal());
 		// TODO Checks
 		final Channel ch = activeChannels.get(machineId);
 		final ByteBuf outBuf = ch.alloc().buffer(6*4);
@@ -134,7 +134,7 @@ public class MessageSenderAndReceiver {
 	public void sendControlMessage(int machineId, ControlMessage message) {
 		// TODO Checks
 
-		logger.debug("send msgt " + message.Type.ordinal());
+		logger.debug("send msgt " + message.Type + " " + message.Type.ordinal());
 		final Channel ch = activeChannels.get(machineId);;
 		final ByteBuf outBuf = ch.alloc().buffer(5*4);
 		outBuf.writeInt(message.Type.ordinal());
@@ -155,8 +155,8 @@ public class MessageSenderAndReceiver {
 
 	public void onIncomingMessage(ByteBuf inBuf) {
 		final int msgt = inBuf.readInt();
-		logger.debug("rec msgt " + msgt);
 		final MessageType type = MessageType.fromOrdinal(msgt);
+		logger.debug("rec msgt " + type + " " + msgt);
 		final int fromNode = inBuf.readInt();
 		final int superstepNo = inBuf.readInt();
 

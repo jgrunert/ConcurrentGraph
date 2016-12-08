@@ -5,11 +5,11 @@ import ch.qos.logback.core.filter.Filter;
 import ch.qos.logback.core.spi.FilterReply;
 import mthesis.concurrent_graph.Settings;
 
-public class NettyLogFilter extends Filter<ILoggingEvent> {
+public class MainLogFilter extends Filter<ILoggingEvent> {
 
 	@Override
 	public FilterReply decide(ILoggingEvent event) {
-		if (event.getLoggerName().startsWith("io.netty") && event.getLevel().toInteger() < Settings.LOG_LEVEL_NETTY) {
+		if (event.getLevel().toInteger() < Settings.LOG_LEVEL_Main) {
 			return FilterReply.DENY;
 		} else {
 			return FilterReply.NEUTRAL;

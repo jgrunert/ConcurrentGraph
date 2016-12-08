@@ -9,5 +9,6 @@ public class Settings {
 	public static final int CONNECT_TIMEOUT = 5000;
 	public static final int MESSAGE_TIMEOUT = 2000;
 
+	public static final int LOG_LEVEL_Main = Level.DEBUG_INT;
 	public static final int LOG_LEVEL_NETTY = Level.INFO_INT;
 }

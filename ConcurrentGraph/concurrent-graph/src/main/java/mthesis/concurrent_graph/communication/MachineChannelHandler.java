@@ -30,7 +30,7 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
 			MessageSenderAndReceiver messageListner) {
 		super();
 		this.ownId = ownId;
-		this.logger = LoggerFactory.getLogger(MachineChannelHandler.class + "[" + ownId + "]");
+		this.logger = LoggerFactory.getLogger(MachineChannelHandler.class.getCanonicalName() + "[" + ownId + "]");
 		this.activeChannels = activeChannels;
 		this.messageListner = messageListner;
 	}

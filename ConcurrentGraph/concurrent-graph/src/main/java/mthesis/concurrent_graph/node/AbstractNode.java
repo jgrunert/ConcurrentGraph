@@ -32,7 +32,7 @@ public abstract class AbstractNode {
 
 
 	protected AbstractNode(Map<Integer, Pair<String, Integer>> machines, int ownId) {
-		this.logger = LoggerFactory.getLogger(this.getClass() + "[" + ownId + "]");
+		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		//this.machines = machines;
 		this.ownId = ownId;
 		this.messaging = new MessageSenderAndReceiver(machines, ownId, this);
