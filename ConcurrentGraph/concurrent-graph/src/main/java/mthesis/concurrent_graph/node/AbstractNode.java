@@ -67,7 +67,6 @@ public abstract class AbstractNode {
 
 	public void onIncomingControlMessage(Messages.ControlMessage message) {
 		inControlMessages.add(message);
-
 	}
 
 	public void onIncomingVertexMessage(VertexMessage message) {

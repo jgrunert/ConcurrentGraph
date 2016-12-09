@@ -257,12 +257,12 @@ public class WorkerNode extends AbstractNode {
 	}
 
 	private void sendMasterSuperstepFinished(int activeVertices) {
-		messaging.sendControlMessage(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
+		messaging.sendControlMessage(masterId, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
 				activeVertices, superstepMessagesSent), true);
 	}
 
 	private void sendMasterFinishedMessage() {
-		messaging.sendControlMessage(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
+		messaging.sendControlMessage(masterId, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
 	}
 
 	public void sendVertexMessage(int fromVertex, int toVertex, int content) {
