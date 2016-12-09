@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mthesis.concurrent_graph.communication.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.worker.WorkerNode;
 
@@ -37,8 +37,8 @@ public class CCDetectVertex extends AbstractVertex {
 
 		int min = value;
 		for(final VertexMessage msg : messages) {
-			allNeighbors.add(msg.FromVertex);
-			final int msgValue = msg.Content;
+			allNeighbors.add(msg.getFromVertex());
+			final int msgValue = msg.getContent();
 			//			System.out.println(superstepNo + " Get " + msgValue + " on " + id + " from " + msg.FromVertex);
 			min = Math.min(min, msgValue);
 		}

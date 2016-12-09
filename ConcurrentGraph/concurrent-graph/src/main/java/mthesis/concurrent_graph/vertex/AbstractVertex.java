@@ -3,7 +3,7 @@ package mthesis.concurrent_graph.vertex;
 import java.util.Collection;
 import java.util.List;
 
-import mthesis.concurrent_graph.communication.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.worker.WorkerNode;
 
 

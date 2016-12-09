@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
-import mthesis.concurrent_graph.communication.Messages;
-import mthesis.concurrent_graph.communication.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.util.Pair;
 
 
@@ -26,7 +26,7 @@ public abstract class AbstractNode {
 
 	protected final MessageSenderAndReceiver messaging;
 	protected final BlockingQueue<VertexMessage> inVertexMessages = new LinkedBlockingQueue<>();
-	protected final BlockingQueue<Messages.ControlMessage> inControlMessages = new LinkedBlockingQueue<>();
+	protected final BlockingQueue<ControlMessage> inControlMessages = new LinkedBlockingQueue<>();
 
 	private Thread runThread;
 
@@ -65,7 +65,7 @@ public abstract class AbstractNode {
 	public abstract void run();
 
 
-	public void onIncomingControlMessage(Messages.ControlMessage message) {
+	public void onIncomingControlMessage(ControlMessage message) {
 		inControlMessages.add(message);
 	}
 

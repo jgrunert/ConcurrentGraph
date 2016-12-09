@@ -2,7 +2,7 @@ package mthesis.concurrent_graph.examples;
 
 import java.util.List;
 
-import mthesis.concurrent_graph.communication.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.worker.WorkerNode;
 
@@ -30,8 +30,8 @@ public class SCCDetectVertex extends AbstractVertex {
 
 		int min = value;
 		for(final VertexMessage msg : messages) {
-			final int msgValue = msg.Content;
-			System.out.println("Get " + msgValue + " on " + id + " from " + msg.FromVertex);
+			final int msgValue = msg.getContent();
+			System.out.println("Get " + msgValue + " on " + id + " from " + msg.getFromVertex());
 			min = Math.min(min, msgValue);
 		}
 

@@ -23,8 +23,6 @@ public class ControlMessageHandler  extends SimpleChannelInboundHandler<ControlM
 	private ChannelState channelState = ChannelState.Inactive;
 	private int connectedMachine;
 
-	//private ByteBuf buffer;
-
 
 	public ControlMessageHandler(ConcurrentHashMap<Integer, Channel> activeChannels, int ownId,
 			MessageSenderAndReceiver messageListner) {

@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
-import mthesis.concurrent_graph.communication.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessage;
+import mthesis.concurrent_graph.communication.VertexMessageBuildUtil;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
@@ -143,22 +144,22 @@ public class WorkerNode extends AbstractNode {
 				// Sort messages from buffers after barrier sync
 				// Incoming messages
 				for(final VertexMessage msg : inVertexMessages) {
-					if(msg.SuperstepNo != superstepNo) {
+					if(msg.getSuperstepNo() != superstepNo) {
 						logger.error("Message from wrong superstep: " + msg);
 						continue;
 					}
-					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
+					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getToVertex());
 					if(vertMsgs != null)
 						vertMsgs.add(msg);
 				}
 				inVertexMessages.clear();
 				// Loopback messages
 				for(final VertexMessage msg : bufferedLoopbackMessages) {
-					if(msg.SuperstepNo != superstepNo) {
+					if(msg.getSuperstepNo() != superstepNo) {
 						logger.error("Message from wrong superstep: " + msg);
 						continue;
 					}
-					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.ToVertex);
+					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getToVertex());
 					if(vertMsgs != null)
 						vertMsgs.add(msg);
 				}
@@ -267,7 +268,7 @@ public class WorkerNode extends AbstractNode {
 
 	public void sendVertexMessage(int fromVertex, int toVertex, int content) {
 		superstepMessagesSent++;
-		final VertexMessage message = new VertexMessage(superstepNo, ownId, fromVertex, toVertex, content);
+		final VertexMessage message = VertexMessageBuildUtil.Build(superstepNo, ownId, fromVertex, toVertex, content);
 		messaging.sendVertexMessage(otherWorkerIds, message);
 		bufferedLoopbackMessages.add(message);
 	}

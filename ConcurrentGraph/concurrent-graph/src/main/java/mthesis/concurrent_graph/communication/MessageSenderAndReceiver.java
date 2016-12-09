@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -31,6 +30,8 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
 
@@ -117,20 +118,12 @@ public class MessageSenderAndReceiver {
 	public void sendVertexMessage(int machineId, VertexMessage message) {
 		// TODO Checks
 		final Channel ch = activeChannels.get(machineId);
-		final ByteBuf outBuf = ch.alloc().buffer(6*4);
-		outBuf.writeInt(MessageType.Vertex.ordinal());
-		outBuf.writeInt(message.SuperstepNo);
-		outBuf.writeInt(message.FromNode);
-		outBuf.writeInt(message.FromVertex);
-		outBuf.writeInt(message.ToVertex);
-		outBuf.writeInt(message.Content);
-		ch.write(outBuf);
-		//logger.debug("S Vertex message: " + msgvs++);
+		ch.write(message);
 	}
 	public void sendVertexMessage(List<Integer> machineIds, VertexMessage message) {
 		// TODO Checks
 		for(final Integer machineId : machineIds) {
-			sendVertexMessage(machineId, message);// TODO Reu se buffer
+			sendVertexMessage(machineId, message);// TODO Re-use message
 		}
 	}
 
@@ -145,50 +138,16 @@ public class MessageSenderAndReceiver {
 	public void sendControlMessage(List<Integer> dstIds, Messages.ControlMessage message, boolean flush) {
 		// TODO Checks
 		for(final Integer machineId : dstIds) {
-			sendControlMessage(machineId, message, flush);// TODO Reu se buffer
+			sendControlMessage(machineId, message, flush);// TODO Re-use message
 		}
 	}
 
-	public void onIncomingControlMessage(Messages.ControlMessage message) {
+	public void onIncomingControlMessage(ControlMessage message) {
 		messageListener.onIncomingControlMessage(message);
 	}
 
-
-	int msgv = 0;
-	int msgc = 0;
-	public void onIncomingMessage(ByteBuf inBuf) {
-		//logger.debug("msg " + msgi++);
-		final int msgt = inBuf.readInt();
-		final MessageType type = MessageType.fromOrdinal(msgt);
-		final int superstepNo = inBuf.readInt();
-		final int fromNode = inBuf.readInt();
-
-		if (type == MessageType.Vertex) {
-			logger.debug("R Vertex message: " + msgv++);
-			final int fromVertex = inBuf.readInt();
-			if(!inBuf.isReadable()) {
-				System.out.println("WAIT!");
-				try {
-					Thread.sleep(500);
-				}
-				catch (final InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				System.out.println("WAIT DONE!");
-			}
-
-			final int toVertex = inBuf.readInt();
-			final int content = inBuf.readInt();
-			messageListener.onIncomingVertexMessage(new VertexMessage(superstepNo, fromNode, fromVertex, toVertex, content));
-		}
-		//		else {
-		//			logger.debug("R Control message: " + type + " " + msgc++);
-		//			final int content1 = inBuf.readInt();
-		//			final int content2 = inBuf.readInt();
-		//			(type, superstepNo, fromNode, content1, content2)
-		//			messageListener.onIncomingControlMessage(Messages.ControlMessage.newBuilder().set);
-		//		}
+	public void onIncomingVertexMessage(VertexMessage message) {
+		messageListener.onIncomingVertexMessage(message);
 	}
 
 
@@ -222,11 +181,12 @@ public class MessageSenderAndReceiver {
 				//				p.addLast(new StringDecoder());
 				//p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 2, 0, 2));
 				p.addLast(new ProtobufVarint32FrameDecoder());
-				//p.addLast(new ProtobufDecoder(Messages.VertexMessage.getDefaultInstance()));
 				p.addLast(new ProtobufDecoder(Messages.ControlMessage.getDefaultInstance()));
+				p.addLast(new ProtobufDecoder(Messages.VertexMessage.getDefaultInstance()));
 				p.addLast(new ProtobufVarint32LengthFieldPrepender());
 				p.addLast(new ProtobufEncoder());
 				p.addLast(new ControlMessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
+				p.addLast(new VertexMessageHandler(ownId, MessageSenderAndReceiver.this));
 			}
 		});
 
@@ -269,11 +229,12 @@ public class MessageSenderAndReceiver {
 				// TODO maxFrameLength config
 				//p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 2, 0, 2));
 				p.addLast(new ProtobufVarint32FrameDecoder());
-				//p.addLast(new ProtobufDecoder(Messages.VertexMessage.getDefaultInstance()));
 				p.addLast(new ProtobufDecoder(Messages.ControlMessage.getDefaultInstance()));
+				p.addLast(new ProtobufDecoder(Messages.VertexMessage.getDefaultInstance()));
 				p.addLast(new ProtobufVarint32LengthFieldPrepender());
 				p.addLast(new ProtobufEncoder());
 				p.addLast(new ControlMessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
+				p.addLast(new VertexMessageHandler(ownId, MessageSenderAndReceiver.this));
 			}
 		});
 
