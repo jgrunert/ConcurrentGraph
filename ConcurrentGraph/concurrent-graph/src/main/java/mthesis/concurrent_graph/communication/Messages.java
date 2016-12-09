@@ -8,93 +8,260 @@ public final class Messages {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
-  public interface PersonOrBuilder
+  /**
+   * Protobuf enum {@code mthesis.concurrent_graph.communication.messages.ControlMessageType}
+   */
+  public enum ControlMessageType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>Channel_Handshake = 1;</code>
+     *
+     * <pre>
+     * Handshake at channel startup
+     * </pre>
+     */
+    Channel_Handshake(0, 1),
+    /**
+     * <code>Worker_Superstep_Barrier = 2;</code>
+     *
+     * <pre>
+     * Message from workers to workers to signal superstep barrier
+     * </pre>
+     */
+    Worker_Superstep_Barrier(1, 2),
+    /**
+     * <code>Worker_Superstep_Finished = 3;</code>
+     *
+     * <pre>
+     * Message from workers to signal master that a superstep is finished, including barrier and message sort
+     * </pre>
+     */
+    Worker_Superstep_Finished(2, 3),
+    /**
+     * <code>Worker_Finished = 4;</code>
+     *
+     * <pre>
+     * Message from workers to signal master that the worker is completely finished
+     * </pre>
+     */
+    Worker_Finished(3, 4),
+    /**
+     * <code>Master_Next_Superstep = 5;</code>
+     *
+     * <pre>
+     * Message to signal workers to start with next superstep
+     * </pre>
+     */
+    Master_Next_Superstep(4, 5),
+    /**
+     * <code>Master_Finish = 6;</code>
+     *
+     * <pre>
+     * Message to signal workers to finish, output and terminate
+     * </pre>
+     */
+    Master_Finish(5, 6),
+    ;
+
+    /**
+     * <code>Channel_Handshake = 1;</code>
+     *
+     * <pre>
+     * Handshake at channel startup
+     * </pre>
+     */
+    public static final int Channel_Handshake_VALUE = 1;
+    /**
+     * <code>Worker_Superstep_Barrier = 2;</code>
+     *
+     * <pre>
+     * Message from workers to workers to signal superstep barrier
+     * </pre>
+     */
+    public static final int Worker_Superstep_Barrier_VALUE = 2;
+    /**
+     * <code>Worker_Superstep_Finished = 3;</code>
+     *
+     * <pre>
+     * Message from workers to signal master that a superstep is finished, including barrier and message sort
+     * </pre>
+     */
+    public static final int Worker_Superstep_Finished_VALUE = 3;
+    /**
+     * <code>Worker_Finished = 4;</code>
+     *
+     * <pre>
+     * Message from workers to signal master that the worker is completely finished
+     * </pre>
+     */
+    public static final int Worker_Finished_VALUE = 4;
+    /**
+     * <code>Master_Next_Superstep = 5;</code>
+     *
+     * <pre>
+     * Message to signal workers to start with next superstep
+     * </pre>
+     */
+    public static final int Master_Next_Superstep_VALUE = 5;
+    /**
+     * <code>Master_Finish = 6;</code>
+     *
+     * <pre>
+     * Message to signal workers to finish, output and terminate
+     * </pre>
+     */
+    public static final int Master_Finish_VALUE = 6;
+
+
+    public final int getNumber() { return value; }
+
+    public static ControlMessageType valueOf(int value) {
+      switch (value) {
+        case 1: return Channel_Handshake;
+        case 2: return Worker_Superstep_Barrier;
+        case 3: return Worker_Superstep_Finished;
+        case 4: return Worker_Finished;
+        case 5: return Master_Next_Superstep;
+        case 6: return Master_Finish;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<ControlMessageType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static com.google.protobuf.Internal.EnumLiteMap<ControlMessageType>
+        internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<ControlMessageType>() {
+            public ControlMessageType findValueByNumber(int number) {
+              return ControlMessageType.valueOf(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(index);
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return mthesis.concurrent_graph.communication.Messages.getDescriptor().getEnumTypes().get(0);
+    }
+
+    private static final ControlMessageType[] VALUES = values();
+
+    public static ControlMessageType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int index;
+    private final int value;
+
+    private ControlMessageType(int index, int value) {
+      this.index = index;
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:mthesis.concurrent_graph.communication.messages.ControlMessageType)
+  }
+
+  public interface VertexMessageOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // required string name = 1;
+    // optional int32 SuperstepNo = 1;
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional int32 SuperstepNo = 1;</code>
      */
-    boolean hasName();
+    boolean hasSuperstepNo();
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional int32 SuperstepNo = 1;</code>
      */
-    java.lang.String getName();
-    /**
-     * <code>required string name = 1;</code>
-     */
-    com.google.protobuf.ByteString
-        getNameBytes();
+    int getSuperstepNo();
 
-    // required int32 id = 2;
+    // optional int32 FromNode = 2;
     /**
-     * <code>required int32 id = 2;</code>
+     * <code>optional int32 FromNode = 2;</code>
+     *
+     * <pre>
+     * TODO ToNode?
+     * </pre>
      */
-    boolean hasId();
+    boolean hasFromNode();
     /**
-     * <code>required int32 id = 2;</code>
+     * <code>optional int32 FromNode = 2;</code>
+     *
+     * <pre>
+     * TODO ToNode?
+     * </pre>
      */
-    int getId();
+    int getFromNode();
 
-    // optional string email = 3;
+    // optional int32 FromVertex = 3;
     /**
-     * <code>optional string email = 3;</code>
+     * <code>optional int32 FromVertex = 3;</code>
      */
-    boolean hasEmail();
+    boolean hasFromVertex();
     /**
-     * <code>optional string email = 3;</code>
+     * <code>optional int32 FromVertex = 3;</code>
      */
-    java.lang.String getEmail();
-    /**
-     * <code>optional string email = 3;</code>
-     */
-    com.google.protobuf.ByteString
-        getEmailBytes();
+    int getFromVertex();
 
-    // repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;
+    // optional int32 ToVertex = 4;
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+     * <code>optional int32 ToVertex = 4;</code>
      */
-    java.util.List<mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber> 
-        getPhoneList();
+    boolean hasToVertex();
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+     * <code>optional int32 ToVertex = 4;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber getPhone(int index);
+    int getToVertex();
+
+    // optional int32 Content = 5;
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+     * <code>optional int32 Content = 5;</code>
+     *
+     * <pre>
+     * TODO Type
+     * </pre>
      */
-    int getPhoneCount();
+    boolean hasContent();
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+     * <code>optional int32 Content = 5;</code>
+     *
+     * <pre>
+     * TODO Type
+     * </pre>
      */
-    java.util.List<? extends mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder> 
-        getPhoneOrBuilderList();
-    /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-     */
-    mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder getPhoneOrBuilder(
-        int index);
+    int getContent();
   }
   /**
-   * Protobuf type {@code mthesis.concurrent_graph.communication.messages.Person}
+   * Protobuf type {@code mthesis.concurrent_graph.communication.messages.VertexMessage}
    */
-  public static final class Person extends
+  public static final class VertexMessage extends
       com.google.protobuf.GeneratedMessage
-      implements PersonOrBuilder {
-    // Use Person.newBuilder() to construct.
-    private Person(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements VertexMessageOrBuilder {
+    // Use VertexMessage.newBuilder() to construct.
+    private VertexMessage(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private Person(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private VertexMessage(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final Person defaultInstance;
-    public static Person getDefaultInstance() {
+    private static final VertexMessage defaultInstance;
+    public static VertexMessage getDefaultInstance() {
       return defaultInstance;
     }
 
-    public Person getDefaultInstanceForType() {
+    public VertexMessage getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -104,7 +271,7 @@ public final class Messages {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private Person(
+    private VertexMessage(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -127,27 +294,29 @@ public final class Messages {
               }
               break;
             }
-            case 10: {
+            case 8: {
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              superstepNo_ = input.readInt32();
               break;
             }
             case 16: {
               bitField0_ |= 0x00000002;
-              id_ = input.readInt32();
+              fromNode_ = input.readInt32();
               break;
             }
-            case 26: {
+            case 24: {
               bitField0_ |= 0x00000004;
-              email_ = input.readBytes();
+              fromVertex_ = input.readInt32();
               break;
             }
-            case 34: {
-              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
-                phone_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber>();
-                mutable_bitField0_ |= 0x00000008;
-              }
-              phone_.add(input.readMessage(mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.PARSER, extensionRegistry));
+            case 32: {
+              bitField0_ |= 0x00000008;
+              toVertex_ = input.readInt32();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000010;
+              content_ = input.readInt32();
               break;
             }
           }
@@ -158,864 +327,146 @@ public final class Messages {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
-          phone_ = java.util.Collections.unmodifiableList(phone_);
-        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_descriptor;
+      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_fieldAccessorTable
+      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              mthesis.concurrent_graph.communication.Messages.Person.class, mthesis.concurrent_graph.communication.Messages.Person.Builder.class);
+              mthesis.concurrent_graph.communication.Messages.VertexMessage.class, mthesis.concurrent_graph.communication.Messages.VertexMessage.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<Person> PARSER =
-        new com.google.protobuf.AbstractParser<Person>() {
-      public Person parsePartialFrom(
+    public static com.google.protobuf.Parser<VertexMessage> PARSER =
+        new com.google.protobuf.AbstractParser<VertexMessage>() {
+      public VertexMessage parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Person(input, extensionRegistry);
+        return new VertexMessage(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<Person> getParserForType() {
+    public com.google.protobuf.Parser<VertexMessage> getParserForType() {
       return PARSER;
     }
 
-    /**
-     * Protobuf enum {@code mthesis.concurrent_graph.communication.messages.Person.PhoneType}
-     */
-    public enum PhoneType
-        implements com.google.protobuf.ProtocolMessageEnum {
-      /**
-       * <code>MOBILE = 0;</code>
-       */
-      MOBILE(0, 0),
-      /**
-       * <code>HOME = 1;</code>
-       */
-      HOME(1, 1),
-      /**
-       * <code>WORK = 2;</code>
-       */
-      WORK(2, 2),
-      ;
-
-      /**
-       * <code>MOBILE = 0;</code>
-       */
-      public static final int MOBILE_VALUE = 0;
-      /**
-       * <code>HOME = 1;</code>
-       */
-      public static final int HOME_VALUE = 1;
-      /**
-       * <code>WORK = 2;</code>
-       */
-      public static final int WORK_VALUE = 2;
-
-
-      public final int getNumber() { return value; }
-
-      public static PhoneType valueOf(int value) {
-        switch (value) {
-          case 0: return MOBILE;
-          case 1: return HOME;
-          case 2: return WORK;
-          default: return null;
-        }
-      }
-
-      public static com.google.protobuf.Internal.EnumLiteMap<PhoneType>
-          internalGetValueMap() {
-        return internalValueMap;
-      }
-      private static com.google.protobuf.Internal.EnumLiteMap<PhoneType>
-          internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<PhoneType>() {
-              public PhoneType findValueByNumber(int number) {
-                return PhoneType.valueOf(number);
-              }
-            };
-
-      public final com.google.protobuf.Descriptors.EnumValueDescriptor
-          getValueDescriptor() {
-        return getDescriptor().getValues().get(index);
-      }
-      public final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptorForType() {
-        return getDescriptor();
-      }
-      public static final com.google.protobuf.Descriptors.EnumDescriptor
-          getDescriptor() {
-        return mthesis.concurrent_graph.communication.Messages.Person.getDescriptor().getEnumTypes().get(0);
-      }
-
-      private static final PhoneType[] VALUES = values();
-
-      public static PhoneType valueOf(
-          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-        if (desc.getType() != getDescriptor()) {
-          throw new java.lang.IllegalArgumentException(
-            "EnumValueDescriptor is not for this type.");
-        }
-        return VALUES[desc.getIndex()];
-      }
-
-      private final int index;
-      private final int value;
-
-      private PhoneType(int index, int value) {
-        this.index = index;
-        this.value = value;
-      }
-
-      // @@protoc_insertion_point(enum_scope:mthesis.concurrent_graph.communication.messages.Person.PhoneType)
-    }
-
-    public interface PhoneNumberOrBuilder
-        extends com.google.protobuf.MessageOrBuilder {
-
-      // required string number = 1;
-      /**
-       * <code>required string number = 1;</code>
-       */
-      boolean hasNumber();
-      /**
-       * <code>required string number = 1;</code>
-       */
-      java.lang.String getNumber();
-      /**
-       * <code>required string number = 1;</code>
-       */
-      com.google.protobuf.ByteString
-          getNumberBytes();
-
-      // optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];</code>
-       */
-      boolean hasType();
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];</code>
-       */
-      mthesis.concurrent_graph.communication.Messages.Person.PhoneType getType();
-    }
-    /**
-     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.Person.PhoneNumber}
-     */
-    public static final class PhoneNumber extends
-        com.google.protobuf.GeneratedMessage
-        implements PhoneNumberOrBuilder {
-      // Use PhoneNumber.newBuilder() to construct.
-      private PhoneNumber(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-        super(builder);
-        this.unknownFields = builder.getUnknownFields();
-      }
-      private PhoneNumber(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-      private static final PhoneNumber defaultInstance;
-      public static PhoneNumber getDefaultInstance() {
-        return defaultInstance;
-      }
-
-      public PhoneNumber getDefaultInstanceForType() {
-        return defaultInstance;
-      }
-
-      private final com.google.protobuf.UnknownFieldSet unknownFields;
-      @java.lang.Override
-      public final com.google.protobuf.UnknownFieldSet
-          getUnknownFields() {
-        return this.unknownFields;
-      }
-      private PhoneNumber(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        initFields();
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              default: {
-                if (!parseUnknownField(input, unknownFields,
-                                       extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-              case 10: {
-                bitField0_ |= 0x00000001;
-                number_ = input.readBytes();
-                break;
-              }
-              case 16: {
-                int rawValue = input.readEnum();
-                mthesis.concurrent_graph.communication.Messages.Person.PhoneType value = mthesis.concurrent_graph.communication.Messages.Person.PhoneType.valueOf(rawValue);
-                if (value == null) {
-                  unknownFields.mergeVarintField(2, rawValue);
-                } else {
-                  bitField0_ |= 0x00000002;
-                  type_ = value;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e.getMessage()).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.class, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder.class);
-      }
-
-      public static com.google.protobuf.Parser<PhoneNumber> PARSER =
-          new com.google.protobuf.AbstractParser<PhoneNumber>() {
-        public PhoneNumber parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new PhoneNumber(input, extensionRegistry);
-        }
-      };
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<PhoneNumber> getParserForType() {
-        return PARSER;
-      }
-
-      private int bitField0_;
-      // required string number = 1;
-      public static final int NUMBER_FIELD_NUMBER = 1;
-      private java.lang.Object number_;
-      /**
-       * <code>required string number = 1;</code>
-       */
-      public boolean hasNumber() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>required string number = 1;</code>
-       */
-      public java.lang.String getNumber() {
-        java.lang.Object ref = number_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            number_ = s;
-          }
-          return s;
-        }
-      }
-      /**
-       * <code>required string number = 1;</code>
-       */
-      public com.google.protobuf.ByteString
-          getNumberBytes() {
-        java.lang.Object ref = number_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          number_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      // optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];
-      public static final int TYPE_FIELD_NUMBER = 2;
-      private mthesis.concurrent_graph.communication.Messages.Person.PhoneType type_;
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];</code>
-       */
-      public boolean hasType() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.Person.PhoneType getType() {
-        return type_;
-      }
-
-      private void initFields() {
-        number_ = "";
-        type_ = mthesis.concurrent_graph.communication.Messages.Person.PhoneType.HOME;
-      }
-      private byte memoizedIsInitialized = -1;
-      public final boolean isInitialized() {
-        byte isInitialized = memoizedIsInitialized;
-        if (isInitialized != -1) return isInitialized == 1;
-
-        if (!hasNumber()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-        memoizedIsInitialized = 1;
-        return true;
-      }
-
-      public void writeTo(com.google.protobuf.CodedOutputStream output)
-                          throws java.io.IOException {
-        getSerializedSize();
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeBytes(1, getNumberBytes());
-        }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          output.writeEnum(2, type_.getNumber());
-        }
-        getUnknownFields().writeTo(output);
-      }
-
-      private int memoizedSerializedSize = -1;
-      public int getSerializedSize() {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-
-        size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeBytesSize(1, getNumberBytes());
-        }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeEnumSize(2, type_.getNumber());
-        }
-        size += getUnknownFields().getSerializedSize();
-        memoizedSerializedSize = size;
-        return size;
-      }
-
-      private static final long serialVersionUID = 0L;
-      @java.lang.Override
-      protected java.lang.Object writeReplace()
-          throws java.io.ObjectStreamException {
-        return super.writeReplace();
-      }
-
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseFrom(
-          com.google.protobuf.ByteString data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseFrom(
-          com.google.protobuf.ByteString data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseFrom(byte[] data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseFrom(
-          byte[] data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseDelimitedFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseDelimitedFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input, extensionRegistry);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parseFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
-      }
-
-      public static Builder newBuilder() { return Builder.create(); }
-      public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber prototype) {
-        return newBuilder().mergeFrom(prototype);
-      }
-      public Builder toBuilder() { return newBuilder(this); }
-
-      @java.lang.Override
-      protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
-      }
-      /**
-       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.Person.PhoneNumber}
-       */
-      public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder>
-         implements mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_descriptor;
-        }
-
-        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-            internalGetFieldAccessorTable() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_fieldAccessorTable
-              .ensureFieldAccessorsInitialized(
-                  mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.class, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder.class);
-        }
-
-        // Construct using mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.newBuilder()
-        private Builder() {
-          maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-          super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          }
-        }
-        private static Builder create() {
-          return new Builder();
-        }
-
-        public Builder clear() {
-          super.clear();
-          number_ = "";
-          bitField0_ = (bitField0_ & ~0x00000001);
-          type_ = mthesis.concurrent_graph.communication.Messages.Person.PhoneType.HOME;
-          bitField0_ = (bitField0_ & ~0x00000002);
-          return this;
-        }
-
-        public Builder clone() {
-          return create().mergeFrom(buildPartial());
-        }
-
-        public com.google.protobuf.Descriptors.Descriptor
-            getDescriptorForType() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_descriptor;
-        }
-
-        public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber getDefaultInstanceForType() {
-          return mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.getDefaultInstance();
-        }
-
-        public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber build() {
-          mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber result = buildPartial();
-          if (!result.isInitialized()) {
-            throw newUninitializedMessageException(result);
-          }
-          return result;
-        }
-
-        public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber buildPartial() {
-          mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber result = new mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber(this);
-          int from_bitField0_ = bitField0_;
-          int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-            to_bitField0_ |= 0x00000001;
-          }
-          result.number_ = number_;
-          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-            to_bitField0_ |= 0x00000002;
-          }
-          result.type_ = type_;
-          result.bitField0_ = to_bitField0_;
-          onBuilt();
-          return result;
-        }
-
-        public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber) {
-            return mergeFrom((mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber)other);
-          } else {
-            super.mergeFrom(other);
-            return this;
-          }
-        }
-
-        public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber other) {
-          if (other == mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.getDefaultInstance()) return this;
-          if (other.hasNumber()) {
-            bitField0_ |= 0x00000001;
-            number_ = other.number_;
-            onChanged();
-          }
-          if (other.hasType()) {
-            setType(other.getType());
-          }
-          this.mergeUnknownFields(other.getUnknownFields());
-          return this;
-        }
-
-        public final boolean isInitialized() {
-          if (!hasNumber()) {
-            
-            return false;
-          }
-          return true;
-        }
-
-        public Builder mergeFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber parsedMessage = null;
-          try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber) e.getUnfinishedMessage();
-            throw e;
-          } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
-          return this;
-        }
-        private int bitField0_;
-
-        // required string number = 1;
-        private java.lang.Object number_ = "";
-        /**
-         * <code>required string number = 1;</code>
-         */
-        public boolean hasNumber() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
-        }
-        /**
-         * <code>required string number = 1;</code>
-         */
-        public java.lang.String getNumber() {
-          java.lang.Object ref = number_;
-          if (!(ref instanceof java.lang.String)) {
-            java.lang.String s = ((com.google.protobuf.ByteString) ref)
-                .toStringUtf8();
-            number_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <code>required string number = 1;</code>
-         */
-        public com.google.protobuf.ByteString
-            getNumberBytes() {
-          java.lang.Object ref = number_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            number_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <code>required string number = 1;</code>
-         */
-        public Builder setNumber(
-            java.lang.String value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-          number_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>required string number = 1;</code>
-         */
-        public Builder clearNumber() {
-          bitField0_ = (bitField0_ & ~0x00000001);
-          number_ = getDefaultInstance().getNumber();
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>required string number = 1;</code>
-         */
-        public Builder setNumberBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-          number_ = value;
-          onChanged();
-          return this;
-        }
-
-        // optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];
-        private mthesis.concurrent_graph.communication.Messages.Person.PhoneType type_ = mthesis.concurrent_graph.communication.Messages.Person.PhoneType.HOME;
-        /**
-         * <code>optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];</code>
-         */
-        public boolean hasType() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
-        }
-        /**
-         * <code>optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];</code>
-         */
-        public mthesis.concurrent_graph.communication.Messages.Person.PhoneType getType() {
-          return type_;
-        }
-        /**
-         * <code>optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];</code>
-         */
-        public Builder setType(mthesis.concurrent_graph.communication.Messages.Person.PhoneType value) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          bitField0_ |= 0x00000002;
-          type_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>optional .mthesis.concurrent_graph.communication.messages.Person.PhoneType type = 2 [default = HOME];</code>
-         */
-        public Builder clearType() {
-          bitField0_ = (bitField0_ & ~0x00000002);
-          type_ = mthesis.concurrent_graph.communication.Messages.Person.PhoneType.HOME;
-          onChanged();
-          return this;
-        }
-
-        // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.Person.PhoneNumber)
-      }
-
-      static {
-        defaultInstance = new PhoneNumber(true);
-        defaultInstance.initFields();
-      }
-
-      // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.Person.PhoneNumber)
-    }
-
     private int bitField0_;
-    // required string name = 1;
-    public static final int NAME_FIELD_NUMBER = 1;
-    private java.lang.Object name_;
+    // optional int32 SuperstepNo = 1;
+    public static final int SUPERSTEPNO_FIELD_NUMBER = 1;
+    private int superstepNo_;
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional int32 SuperstepNo = 1;</code>
      */
-    public boolean hasName() {
+    public boolean hasSuperstepNo() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required string name = 1;</code>
+     * <code>optional int32 SuperstepNo = 1;</code>
      */
-    public java.lang.String getName() {
-      java.lang.Object ref = name_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          name_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>required string name = 1;</code>
-     */
-    public com.google.protobuf.ByteString
-        getNameBytes() {
-      java.lang.Object ref = name_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        name_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getSuperstepNo() {
+      return superstepNo_;
     }
 
-    // required int32 id = 2;
-    public static final int ID_FIELD_NUMBER = 2;
-    private int id_;
+    // optional int32 FromNode = 2;
+    public static final int FROMNODE_FIELD_NUMBER = 2;
+    private int fromNode_;
     /**
-     * <code>required int32 id = 2;</code>
+     * <code>optional int32 FromNode = 2;</code>
+     *
+     * <pre>
+     * TODO ToNode?
+     * </pre>
      */
-    public boolean hasId() {
+    public boolean hasFromNode() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required int32 id = 2;</code>
+     * <code>optional int32 FromNode = 2;</code>
+     *
+     * <pre>
+     * TODO ToNode?
+     * </pre>
      */
-    public int getId() {
-      return id_;
+    public int getFromNode() {
+      return fromNode_;
     }
 
-    // optional string email = 3;
-    public static final int EMAIL_FIELD_NUMBER = 3;
-    private java.lang.Object email_;
+    // optional int32 FromVertex = 3;
+    public static final int FROMVERTEX_FIELD_NUMBER = 3;
+    private int fromVertex_;
     /**
-     * <code>optional string email = 3;</code>
+     * <code>optional int32 FromVertex = 3;</code>
      */
-    public boolean hasEmail() {
+    public boolean hasFromVertex() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional string email = 3;</code>
+     * <code>optional int32 FromVertex = 3;</code>
      */
-    public java.lang.String getEmail() {
-      java.lang.Object ref = email_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          email_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string email = 3;</code>
-     */
-    public com.google.protobuf.ByteString
-        getEmailBytes() {
-      java.lang.Object ref = email_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        email_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public int getFromVertex() {
+      return fromVertex_;
     }
 
-    // repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;
-    public static final int PHONE_FIELD_NUMBER = 4;
-    private java.util.List<mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber> phone_;
+    // optional int32 ToVertex = 4;
+    public static final int TOVERTEX_FIELD_NUMBER = 4;
+    private int toVertex_;
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+     * <code>optional int32 ToVertex = 4;</code>
      */
-    public java.util.List<mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber> getPhoneList() {
-      return phone_;
+    public boolean hasToVertex() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+     * <code>optional int32 ToVertex = 4;</code>
      */
-    public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder> 
-        getPhoneOrBuilderList() {
-      return phone_;
+    public int getToVertex() {
+      return toVertex_;
+    }
+
+    // optional int32 Content = 5;
+    public static final int CONTENT_FIELD_NUMBER = 5;
+    private int content_;
+    /**
+     * <code>optional int32 Content = 5;</code>
+     *
+     * <pre>
+     * TODO Type
+     * </pre>
+     */
+    public boolean hasContent() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+     * <code>optional int32 Content = 5;</code>
+     *
+     * <pre>
+     * TODO Type
+     * </pre>
      */
-    public int getPhoneCount() {
-      return phone_.size();
-    }
-    /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-     */
-    public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber getPhone(int index) {
-      return phone_.get(index);
-    }
-    /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-     */
-    public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder getPhoneOrBuilder(
-        int index) {
-      return phone_.get(index);
+    public int getContent() {
+      return content_;
     }
 
     private void initFields() {
-      name_ = "";
-      id_ = 0;
-      email_ = "";
-      phone_ = java.util.Collections.emptyList();
+      superstepNo_ = 0;
+      fromNode_ = 0;
+      fromVertex_ = 0;
+      toVertex_ = 0;
+      content_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      if (!hasName()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasId()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      for (int i = 0; i < getPhoneCount(); i++) {
-        if (!getPhone(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -1024,16 +475,19 @@ public final class Messages {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getNameBytes());
+        output.writeInt32(1, superstepNo_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt32(2, id_);
+        output.writeInt32(2, fromNode_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getEmailBytes());
+        output.writeInt32(3, fromVertex_);
       }
-      for (int i = 0; i < phone_.size(); i++) {
-        output.writeMessage(4, phone_.get(i));
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt32(4, toVertex_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeInt32(5, content_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1046,19 +500,23 @@ public final class Messages {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getNameBytes());
+          .computeInt32Size(1, superstepNo_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, id_);
+          .computeInt32Size(2, fromNode_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getEmailBytes());
+          .computeInt32Size(3, fromVertex_);
       }
-      for (int i = 0; i < phone_.size(); i++) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, phone_.get(i));
+          .computeInt32Size(4, toVertex_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, content_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1072,53 +530,53 @@ public final class Messages {
       return super.writeReplace();
     }
 
-    public static mthesis.concurrent_graph.communication.Messages.Person parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static mthesis.concurrent_graph.communication.Messages.Person parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static mthesis.concurrent_graph.communication.Messages.Person parseFrom(byte[] data)
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static mthesis.concurrent_graph.communication.Messages.Person parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static mthesis.concurrent_graph.communication.Messages.Person parseFrom(java.io.InputStream input)
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static mthesis.concurrent_graph.communication.Messages.Person parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static mthesis.concurrent_graph.communication.Messages.Person parseDelimitedFrom(java.io.InputStream input)
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static mthesis.concurrent_graph.communication.Messages.Person parseDelimitedFrom(
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static mthesis.concurrent_graph.communication.Messages.Person parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static mthesis.concurrent_graph.communication.Messages.Person parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.VertexMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1127,7 +585,7 @@ public final class Messages {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.Person prototype) {
+    public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.VertexMessage prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -1139,24 +597,24 @@ public final class Messages {
       return builder;
     }
     /**
-     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.Person}
+     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.VertexMessage}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements mthesis.concurrent_graph.communication.Messages.PersonOrBuilder {
+       implements mthesis.concurrent_graph.communication.Messages.VertexMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_descriptor;
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_fieldAccessorTable
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                mthesis.concurrent_graph.communication.Messages.Person.class, mthesis.concurrent_graph.communication.Messages.Person.Builder.class);
+                mthesis.concurrent_graph.communication.Messages.VertexMessage.class, mthesis.concurrent_graph.communication.Messages.VertexMessage.Builder.class);
       }
 
-      // Construct using mthesis.concurrent_graph.communication.Messages.Person.newBuilder()
+      // Construct using mthesis.concurrent_graph.communication.Messages.VertexMessage.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1168,7 +626,6 @@ public final class Messages {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getPhoneFieldBuilder();
         }
       }
       private static Builder create() {
@@ -1177,18 +634,16 @@ public final class Messages {
 
       public Builder clear() {
         super.clear();
-        name_ = "";
+        superstepNo_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        id_ = 0;
+        fromNode_ = 0;
         bitField0_ = (bitField0_ & ~0x00000002);
-        email_ = "";
+        fromVertex_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
-        if (phoneBuilder_ == null) {
-          phone_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000008);
-        } else {
-          phoneBuilder_.clear();
-        }
+        toVertex_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        content_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -1198,120 +653,81 @@ public final class Messages {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_Person_descriptor;
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_descriptor;
       }
 
-      public mthesis.concurrent_graph.communication.Messages.Person getDefaultInstanceForType() {
-        return mthesis.concurrent_graph.communication.Messages.Person.getDefaultInstance();
+      public mthesis.concurrent_graph.communication.Messages.VertexMessage getDefaultInstanceForType() {
+        return mthesis.concurrent_graph.communication.Messages.VertexMessage.getDefaultInstance();
       }
 
-      public mthesis.concurrent_graph.communication.Messages.Person build() {
-        mthesis.concurrent_graph.communication.Messages.Person result = buildPartial();
+      public mthesis.concurrent_graph.communication.Messages.VertexMessage build() {
+        mthesis.concurrent_graph.communication.Messages.VertexMessage result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public mthesis.concurrent_graph.communication.Messages.Person buildPartial() {
-        mthesis.concurrent_graph.communication.Messages.Person result = new mthesis.concurrent_graph.communication.Messages.Person(this);
+      public mthesis.concurrent_graph.communication.Messages.VertexMessage buildPartial() {
+        mthesis.concurrent_graph.communication.Messages.VertexMessage result = new mthesis.concurrent_graph.communication.Messages.VertexMessage(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.name_ = name_;
+        result.superstepNo_ = superstepNo_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.id_ = id_;
+        result.fromNode_ = fromNode_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.email_ = email_;
-        if (phoneBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) == 0x00000008)) {
-            phone_ = java.util.Collections.unmodifiableList(phone_);
-            bitField0_ = (bitField0_ & ~0x00000008);
-          }
-          result.phone_ = phone_;
-        } else {
-          result.phone_ = phoneBuilder_.build();
+        result.fromVertex_ = fromVertex_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
         }
+        result.toVertex_ = toVertex_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.content_ = content_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof mthesis.concurrent_graph.communication.Messages.Person) {
-          return mergeFrom((mthesis.concurrent_graph.communication.Messages.Person)other);
+        if (other instanceof mthesis.concurrent_graph.communication.Messages.VertexMessage) {
+          return mergeFrom((mthesis.concurrent_graph.communication.Messages.VertexMessage)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.Person other) {
-        if (other == mthesis.concurrent_graph.communication.Messages.Person.getDefaultInstance()) return this;
-        if (other.hasName()) {
-          bitField0_ |= 0x00000001;
-          name_ = other.name_;
-          onChanged();
+      public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.VertexMessage other) {
+        if (other == mthesis.concurrent_graph.communication.Messages.VertexMessage.getDefaultInstance()) return this;
+        if (other.hasSuperstepNo()) {
+          setSuperstepNo(other.getSuperstepNo());
         }
-        if (other.hasId()) {
-          setId(other.getId());
+        if (other.hasFromNode()) {
+          setFromNode(other.getFromNode());
         }
-        if (other.hasEmail()) {
-          bitField0_ |= 0x00000004;
-          email_ = other.email_;
-          onChanged();
+        if (other.hasFromVertex()) {
+          setFromVertex(other.getFromVertex());
         }
-        if (phoneBuilder_ == null) {
-          if (!other.phone_.isEmpty()) {
-            if (phone_.isEmpty()) {
-              phone_ = other.phone_;
-              bitField0_ = (bitField0_ & ~0x00000008);
-            } else {
-              ensurePhoneIsMutable();
-              phone_.addAll(other.phone_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.phone_.isEmpty()) {
-            if (phoneBuilder_.isEmpty()) {
-              phoneBuilder_.dispose();
-              phoneBuilder_ = null;
-              phone_ = other.phone_;
-              bitField0_ = (bitField0_ & ~0x00000008);
-              phoneBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getPhoneFieldBuilder() : null;
-            } else {
-              phoneBuilder_.addAllMessages(other.phone_);
-            }
-          }
+        if (other.hasToVertex()) {
+          setToVertex(other.getToVertex());
+        }
+        if (other.hasContent()) {
+          setContent(other.getContent());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        if (!hasName()) {
-          
-          return false;
-        }
-        if (!hasId()) {
-          
-          return false;
-        }
-        for (int i = 0; i < getPhoneCount(); i++) {
-          if (!getPhone(i).isInitialized()) {
-            
-            return false;
-          }
-        }
         return true;
       }
 
@@ -1319,11 +735,11 @@ public final class Messages {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        mthesis.concurrent_graph.communication.Messages.Person parsedMessage = null;
+        mthesis.concurrent_graph.communication.Messages.VertexMessage parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (mthesis.concurrent_graph.communication.Messages.Person) e.getUnfinishedMessage();
+          parsedMessage = (mthesis.concurrent_graph.communication.Messages.VertexMessage) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -1334,485 +750,302 @@ public final class Messages {
       }
       private int bitField0_;
 
-      // required string name = 1;
-      private java.lang.Object name_ = "";
+      // optional int32 SuperstepNo = 1;
+      private int superstepNo_ ;
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional int32 SuperstepNo = 1;</code>
        */
-      public boolean hasName() {
+      public boolean hasSuperstepNo() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional int32 SuperstepNo = 1;</code>
        */
-      public java.lang.String getName() {
-        java.lang.Object ref = name_;
-        if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      public int getSuperstepNo() {
+        return superstepNo_;
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional int32 SuperstepNo = 1;</code>
        */
-      public com.google.protobuf.ByteString
-          getNameBytes() {
-        java.lang.Object ref = name_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          name_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>required string name = 1;</code>
-       */
-      public Builder setName(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        name_ = value;
+      public Builder setSuperstepNo(int value) {
+        bitField0_ |= 0x00000001;
+        superstepNo_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string name = 1;</code>
+       * <code>optional int32 SuperstepNo = 1;</code>
        */
-      public Builder clearName() {
+      public Builder clearSuperstepNo() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        name_ = getDefaultInstance().getName();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required string name = 1;</code>
-       */
-      public Builder setNameBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        name_ = value;
+        superstepNo_ = 0;
         onChanged();
         return this;
       }
 
-      // required int32 id = 2;
-      private int id_ ;
+      // optional int32 FromNode = 2;
+      private int fromNode_ ;
       /**
-       * <code>required int32 id = 2;</code>
+       * <code>optional int32 FromNode = 2;</code>
+       *
+       * <pre>
+       * TODO ToNode?
+       * </pre>
        */
-      public boolean hasId() {
+      public boolean hasFromNode() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required int32 id = 2;</code>
+       * <code>optional int32 FromNode = 2;</code>
+       *
+       * <pre>
+       * TODO ToNode?
+       * </pre>
        */
-      public int getId() {
-        return id_;
+      public int getFromNode() {
+        return fromNode_;
       }
       /**
-       * <code>required int32 id = 2;</code>
+       * <code>optional int32 FromNode = 2;</code>
+       *
+       * <pre>
+       * TODO ToNode?
+       * </pre>
        */
-      public Builder setId(int value) {
+      public Builder setFromNode(int value) {
         bitField0_ |= 0x00000002;
-        id_ = value;
+        fromNode_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required int32 id = 2;</code>
+       * <code>optional int32 FromNode = 2;</code>
+       *
+       * <pre>
+       * TODO ToNode?
+       * </pre>
        */
-      public Builder clearId() {
+      public Builder clearFromNode() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        id_ = 0;
+        fromNode_ = 0;
         onChanged();
         return this;
       }
 
-      // optional string email = 3;
-      private java.lang.Object email_ = "";
+      // optional int32 FromVertex = 3;
+      private int fromVertex_ ;
       /**
-       * <code>optional string email = 3;</code>
+       * <code>optional int32 FromVertex = 3;</code>
        */
-      public boolean hasEmail() {
+      public boolean hasFromVertex() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional string email = 3;</code>
+       * <code>optional int32 FromVertex = 3;</code>
        */
-      public java.lang.String getEmail() {
-        java.lang.Object ref = email_;
-        if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          email_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      public int getFromVertex() {
+        return fromVertex_;
       }
       /**
-       * <code>optional string email = 3;</code>
+       * <code>optional int32 FromVertex = 3;</code>
        */
-      public com.google.protobuf.ByteString
-          getEmailBytes() {
-        java.lang.Object ref = email_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          email_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string email = 3;</code>
-       */
-      public Builder setEmail(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
-        email_ = value;
+      public Builder setFromVertex(int value) {
+        bitField0_ |= 0x00000004;
+        fromVertex_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string email = 3;</code>
+       * <code>optional int32 FromVertex = 3;</code>
        */
-      public Builder clearEmail() {
+      public Builder clearFromVertex() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        email_ = getDefaultInstance().getEmail();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string email = 3;</code>
-       */
-      public Builder setEmailBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
-        email_ = value;
+        fromVertex_ = 0;
         onChanged();
         return this;
       }
 
-      // repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;
-      private java.util.List<mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber> phone_ =
-        java.util.Collections.emptyList();
-      private void ensurePhoneIsMutable() {
-        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
-          phone_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber>(phone_);
-          bitField0_ |= 0x00000008;
-         }
+      // optional int32 ToVertex = 4;
+      private int toVertex_ ;
+      /**
+       * <code>optional int32 ToVertex = 4;</code>
+       */
+      public boolean hasToVertex() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional int32 ToVertex = 4;</code>
+       */
+      public int getToVertex() {
+        return toVertex_;
+      }
+      /**
+       * <code>optional int32 ToVertex = 4;</code>
+       */
+      public Builder setToVertex(int value) {
+        bitField0_ |= 0x00000008;
+        toVertex_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 ToVertex = 4;</code>
+       */
+      public Builder clearToVertex() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        toVertex_ = 0;
+        onChanged();
+        return this;
       }
 
-      private com.google.protobuf.RepeatedFieldBuilder<
-          mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder> phoneBuilder_;
-
+      // optional int32 Content = 5;
+      private int content_ ;
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+       * <code>optional int32 Content = 5;</code>
+       *
+       * <pre>
+       * TODO Type
+       * </pre>
        */
-      public java.util.List<mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber> getPhoneList() {
-        if (phoneBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(phone_);
-        } else {
-          return phoneBuilder_.getMessageList();
-        }
+      public boolean hasContent() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+       * <code>optional int32 Content = 5;</code>
+       *
+       * <pre>
+       * TODO Type
+       * </pre>
        */
-      public int getPhoneCount() {
-        if (phoneBuilder_ == null) {
-          return phone_.size();
-        } else {
-          return phoneBuilder_.getCount();
-        }
+      public int getContent() {
+        return content_;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+       * <code>optional int32 Content = 5;</code>
+       *
+       * <pre>
+       * TODO Type
+       * </pre>
        */
-      public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber getPhone(int index) {
-        if (phoneBuilder_ == null) {
-          return phone_.get(index);
-        } else {
-          return phoneBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public Builder setPhone(
-          int index, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber value) {
-        if (phoneBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensurePhoneIsMutable();
-          phone_.set(index, value);
-          onChanged();
-        } else {
-          phoneBuilder_.setMessage(index, value);
-        }
+      public Builder setContent(int value) {
+        bitField0_ |= 0x00000010;
+        content_ = value;
+        onChanged();
         return this;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
+       * <code>optional int32 Content = 5;</code>
+       *
+       * <pre>
+       * TODO Type
+       * </pre>
        */
-      public Builder setPhone(
-          int index, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder builderForValue) {
-        if (phoneBuilder_ == null) {
-          ensurePhoneIsMutable();
-          phone_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          phoneBuilder_.setMessage(index, builderForValue.build());
-        }
+      public Builder clearContent() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        content_ = 0;
+        onChanged();
         return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public Builder addPhone(mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber value) {
-        if (phoneBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensurePhoneIsMutable();
-          phone_.add(value);
-          onChanged();
-        } else {
-          phoneBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public Builder addPhone(
-          int index, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber value) {
-        if (phoneBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensurePhoneIsMutable();
-          phone_.add(index, value);
-          onChanged();
-        } else {
-          phoneBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public Builder addPhone(
-          mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder builderForValue) {
-        if (phoneBuilder_ == null) {
-          ensurePhoneIsMutable();
-          phone_.add(builderForValue.build());
-          onChanged();
-        } else {
-          phoneBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public Builder addPhone(
-          int index, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder builderForValue) {
-        if (phoneBuilder_ == null) {
-          ensurePhoneIsMutable();
-          phone_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          phoneBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public Builder addAllPhone(
-          java.lang.Iterable<? extends mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber> values) {
-        if (phoneBuilder_ == null) {
-          ensurePhoneIsMutable();
-          super.addAll(values, phone_);
-          onChanged();
-        } else {
-          phoneBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public Builder clearPhone() {
-        if (phoneBuilder_ == null) {
-          phone_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000008);
-          onChanged();
-        } else {
-          phoneBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public Builder removePhone(int index) {
-        if (phoneBuilder_ == null) {
-          ensurePhoneIsMutable();
-          phone_.remove(index);
-          onChanged();
-        } else {
-          phoneBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder getPhoneBuilder(
-          int index) {
-        return getPhoneFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder getPhoneOrBuilder(
-          int index) {
-        if (phoneBuilder_ == null) {
-          return phone_.get(index);  } else {
-          return phoneBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder> 
-           getPhoneOrBuilderList() {
-        if (phoneBuilder_ != null) {
-          return phoneBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(phone_);
-        }
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder addPhoneBuilder() {
-        return getPhoneFieldBuilder().addBuilder(
-            mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder addPhoneBuilder(
-          int index) {
-        return getPhoneFieldBuilder().addBuilder(
-            index, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person.PhoneNumber phone = 4;</code>
-       */
-      public java.util.List<mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder> 
-           getPhoneBuilderList() {
-        return getPhoneFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilder<
-          mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder> 
-          getPhoneFieldBuilder() {
-        if (phoneBuilder_ == null) {
-          phoneBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumber.Builder, mthesis.concurrent_graph.communication.Messages.Person.PhoneNumberOrBuilder>(
-                  phone_,
-                  ((bitField0_ & 0x00000008) == 0x00000008),
-                  getParentForChildren(),
-                  isClean());
-          phone_ = null;
-        }
-        return phoneBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.Person)
+      // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.VertexMessage)
     }
 
     static {
-      defaultInstance = new Person(true);
+      defaultInstance = new VertexMessage(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.Person)
+    // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.VertexMessage)
   }
 
-  public interface AddressBookOrBuilder
+  public interface ControlMessageOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;
+    // optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;</code>
      */
-    java.util.List<mthesis.concurrent_graph.communication.Messages.Person> 
-        getPersonList();
+    boolean hasType();
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.Person getPerson(int index);
+    mthesis.concurrent_graph.communication.Messages.ControlMessageType getType();
+
+    // optional int32 SuperstepNo = 2;
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional int32 SuperstepNo = 2;</code>
      */
-    int getPersonCount();
+    boolean hasSuperstepNo();
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional int32 SuperstepNo = 2;</code>
      */
-    java.util.List<? extends mthesis.concurrent_graph.communication.Messages.PersonOrBuilder> 
-        getPersonOrBuilderList();
+    int getSuperstepNo();
+
+    // optional int32 FromNode = 3;
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional int32 FromNode = 3;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.PersonOrBuilder getPersonOrBuilder(
-        int index);
+    boolean hasFromNode();
+    /**
+     * <code>optional int32 FromNode = 3;</code>
+     */
+    int getFromNode();
+
+    // optional int32 Content1 = 4;
+    /**
+     * <code>optional int32 Content1 = 4;</code>
+     *
+     * <pre>
+     *TODO Type
+     * </pre>
+     */
+    boolean hasContent1();
+    /**
+     * <code>optional int32 Content1 = 4;</code>
+     *
+     * <pre>
+     *TODO Type
+     * </pre>
+     */
+    int getContent1();
+
+    // optional int32 Content2 = 5;
+    /**
+     * <code>optional int32 Content2 = 5;</code>
+     *
+     * <pre>
+     *TODO Type
+     * </pre>
+     */
+    boolean hasContent2();
+    /**
+     * <code>optional int32 Content2 = 5;</code>
+     *
+     * <pre>
+     *TODO Type
+     * </pre>
+     */
+    int getContent2();
   }
   /**
-   * Protobuf type {@code mthesis.concurrent_graph.communication.messages.AddressBook}
+   * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage}
    */
-  public static final class AddressBook extends
+  public static final class ControlMessage extends
       com.google.protobuf.GeneratedMessage
-      implements AddressBookOrBuilder {
-    // Use AddressBook.newBuilder() to construct.
-    private AddressBook(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      implements ControlMessageOrBuilder {
+    // Use ControlMessage.newBuilder() to construct.
+    private ControlMessage(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
       this.unknownFields = builder.getUnknownFields();
     }
-    private AddressBook(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+    private ControlMessage(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
 
-    private static final AddressBook defaultInstance;
-    public static AddressBook getDefaultInstance() {
+    private static final ControlMessage defaultInstance;
+    public static ControlMessage getDefaultInstance() {
       return defaultInstance;
     }
 
-    public AddressBook getDefaultInstanceForType() {
+    public ControlMessage getDefaultInstanceForType() {
       return defaultInstance;
     }
 
@@ -1822,7 +1055,7 @@ public final class Messages {
         getUnknownFields() {
       return this.unknownFields;
     }
-    private AddressBook(
+    private ControlMessage(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1845,12 +1078,35 @@ public final class Messages {
               }
               break;
             }
-            case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                person_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.Person>();
-                mutable_bitField0_ |= 0x00000001;
+            case 8: {
+              int rawValue = input.readEnum();
+              mthesis.concurrent_graph.communication.Messages.ControlMessageType value = mthesis.concurrent_graph.communication.Messages.ControlMessageType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                type_ = value;
               }
-              person_.add(input.readMessage(mthesis.concurrent_graph.communication.Messages.Person.PARSER, extensionRegistry));
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              superstepNo_ = input.readInt32();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              fromNode_ = input.readInt32();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              content1_ = input.readInt32();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000010;
+              content2_ = input.readInt32();
               break;
             }
           }
@@ -1861,90 +1117,146 @@ public final class Messages {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          person_ = java.util.Collections.unmodifiableList(person_);
-        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_descriptor;
+      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_fieldAccessorTable
+      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              mthesis.concurrent_graph.communication.Messages.AddressBook.class, mthesis.concurrent_graph.communication.Messages.AddressBook.Builder.class);
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<AddressBook> PARSER =
-        new com.google.protobuf.AbstractParser<AddressBook>() {
-      public AddressBook parsePartialFrom(
+    public static com.google.protobuf.Parser<ControlMessage> PARSER =
+        new com.google.protobuf.AbstractParser<ControlMessage>() {
+      public ControlMessage parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new AddressBook(input, extensionRegistry);
+        return new ControlMessage(input, extensionRegistry);
       }
     };
 
     @java.lang.Override
-    public com.google.protobuf.Parser<AddressBook> getParserForType() {
+    public com.google.protobuf.Parser<ControlMessage> getParserForType() {
       return PARSER;
     }
 
-    // repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;
-    public static final int PERSON_FIELD_NUMBER = 1;
-    private java.util.List<mthesis.concurrent_graph.communication.Messages.Person> person_;
+    private int bitField0_;
+    // optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private mthesis.concurrent_graph.communication.Messages.ControlMessageType type_;
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;</code>
      */
-    public java.util.List<mthesis.concurrent_graph.communication.Messages.Person> getPersonList() {
-      return person_;
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;</code>
      */
-    public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.PersonOrBuilder> 
-        getPersonOrBuilderList() {
-      return person_;
+    public mthesis.concurrent_graph.communication.Messages.ControlMessageType getType() {
+      return type_;
+    }
+
+    // optional int32 SuperstepNo = 2;
+    public static final int SUPERSTEPNO_FIELD_NUMBER = 2;
+    private int superstepNo_;
+    /**
+     * <code>optional int32 SuperstepNo = 2;</code>
+     */
+    public boolean hasSuperstepNo() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional int32 SuperstepNo = 2;</code>
      */
-    public int getPersonCount() {
-      return person_.size();
+    public int getSuperstepNo() {
+      return superstepNo_;
+    }
+
+    // optional int32 FromNode = 3;
+    public static final int FROMNODE_FIELD_NUMBER = 3;
+    private int fromNode_;
+    /**
+     * <code>optional int32 FromNode = 3;</code>
+     */
+    public boolean hasFromNode() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional int32 FromNode = 3;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.Person getPerson(int index) {
-      return person_.get(index);
+    public int getFromNode() {
+      return fromNode_;
+    }
+
+    // optional int32 Content1 = 4;
+    public static final int CONTENT1_FIELD_NUMBER = 4;
+    private int content1_;
+    /**
+     * <code>optional int32 Content1 = 4;</code>
+     *
+     * <pre>
+     *TODO Type
+     * </pre>
+     */
+    public boolean hasContent1() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+     * <code>optional int32 Content1 = 4;</code>
+     *
+     * <pre>
+     *TODO Type
+     * </pre>
      */
-    public mthesis.concurrent_graph.communication.Messages.PersonOrBuilder getPersonOrBuilder(
-        int index) {
-      return person_.get(index);
+    public int getContent1() {
+      return content1_;
+    }
+
+    // optional int32 Content2 = 5;
+    public static final int CONTENT2_FIELD_NUMBER = 5;
+    private int content2_;
+    /**
+     * <code>optional int32 Content2 = 5;</code>
+     *
+     * <pre>
+     *TODO Type
+     * </pre>
+     */
+    public boolean hasContent2() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional int32 Content2 = 5;</code>
+     *
+     * <pre>
+     *TODO Type
+     * </pre>
+     */
+    public int getContent2() {
+      return content2_;
     }
 
     private void initFields() {
-      person_ = java.util.Collections.emptyList();
+      type_ = mthesis.concurrent_graph.communication.Messages.ControlMessageType.Channel_Handshake;
+      superstepNo_ = 0;
+      fromNode_ = 0;
+      content1_ = 0;
+      content2_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized != -1) return isInitialized == 1;
 
-      for (int i = 0; i < getPersonCount(); i++) {
-        if (!getPerson(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -1952,8 +1264,20 @@ public final class Messages {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      for (int i = 0; i < person_.size(); i++) {
-        output.writeMessage(1, person_.get(i));
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt32(2, superstepNo_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, fromNode_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt32(4, content1_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeInt32(5, content2_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1964,9 +1288,25 @@ public final class Messages {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < person_.size(); i++) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, person_.get(i));
+          .computeEnumSize(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, superstepNo_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, fromNode_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(4, content1_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, content2_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1980,53 +1320,53 @@ public final class Messages {
       return super.writeReplace();
     }
 
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseFrom(byte[] data)
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseFrom(java.io.InputStream input)
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseFrom(input, extensionRegistry);
     }
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseDelimitedFrom(java.io.InputStream input)
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input);
     }
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseDelimitedFrom(
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return PARSER.parseDelimitedFrom(input, extensionRegistry);
     }
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return PARSER.parseFrom(input);
     }
-    public static mthesis.concurrent_graph.communication.Messages.AddressBook parseFrom(
+    public static mthesis.concurrent_graph.communication.Messages.ControlMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2035,7 +1375,7 @@ public final class Messages {
 
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.AddressBook prototype) {
+    public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
@@ -2047,24 +1387,24 @@ public final class Messages {
       return builder;
     }
     /**
-     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.AddressBook}
+     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements mthesis.concurrent_graph.communication.Messages.AddressBookOrBuilder {
+       implements mthesis.concurrent_graph.communication.Messages.ControlMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_descriptor;
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_fieldAccessorTable
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                mthesis.concurrent_graph.communication.Messages.AddressBook.class, mthesis.concurrent_graph.communication.Messages.AddressBook.Builder.class);
+                mthesis.concurrent_graph.communication.Messages.ControlMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.Builder.class);
       }
 
-      // Construct using mthesis.concurrent_graph.communication.Messages.AddressBook.newBuilder()
+      // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2076,7 +1416,6 @@ public final class Messages {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getPersonFieldBuilder();
         }
       }
       private static Builder create() {
@@ -2085,12 +1424,16 @@ public final class Messages {
 
       public Builder clear() {
         super.clear();
-        if (personBuilder_ == null) {
-          person_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
-        } else {
-          personBuilder_.clear();
-        }
+        type_ = mthesis.concurrent_graph.communication.Messages.ControlMessageType.Channel_Handshake;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        superstepNo_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        fromNode_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        content1_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        content2_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -2100,85 +1443,81 @@ public final class Messages {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_descriptor;
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor;
       }
 
-      public mthesis.concurrent_graph.communication.Messages.AddressBook getDefaultInstanceForType() {
-        return mthesis.concurrent_graph.communication.Messages.AddressBook.getDefaultInstance();
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage getDefaultInstanceForType() {
+        return mthesis.concurrent_graph.communication.Messages.ControlMessage.getDefaultInstance();
       }
 
-      public mthesis.concurrent_graph.communication.Messages.AddressBook build() {
-        mthesis.concurrent_graph.communication.Messages.AddressBook result = buildPartial();
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage build() {
+        mthesis.concurrent_graph.communication.Messages.ControlMessage result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public mthesis.concurrent_graph.communication.Messages.AddressBook buildPartial() {
-        mthesis.concurrent_graph.communication.Messages.AddressBook result = new mthesis.concurrent_graph.communication.Messages.AddressBook(this);
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage buildPartial() {
+        mthesis.concurrent_graph.communication.Messages.ControlMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage(this);
         int from_bitField0_ = bitField0_;
-        if (personBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            person_ = java.util.Collections.unmodifiableList(person_);
-            bitField0_ = (bitField0_ & ~0x00000001);
-          }
-          result.person_ = person_;
-        } else {
-          result.person_ = personBuilder_.build();
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
         }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.superstepNo_ = superstepNo_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.fromNode_ = fromNode_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.content1_ = content1_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.content2_ = content2_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof mthesis.concurrent_graph.communication.Messages.AddressBook) {
-          return mergeFrom((mthesis.concurrent_graph.communication.Messages.AddressBook)other);
+        if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage) {
+          return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.AddressBook other) {
-        if (other == mthesis.concurrent_graph.communication.Messages.AddressBook.getDefaultInstance()) return this;
-        if (personBuilder_ == null) {
-          if (!other.person_.isEmpty()) {
-            if (person_.isEmpty()) {
-              person_ = other.person_;
-              bitField0_ = (bitField0_ & ~0x00000001);
-            } else {
-              ensurePersonIsMutable();
-              person_.addAll(other.person_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.person_.isEmpty()) {
-            if (personBuilder_.isEmpty()) {
-              personBuilder_.dispose();
-              personBuilder_ = null;
-              person_ = other.person_;
-              bitField0_ = (bitField0_ & ~0x00000001);
-              personBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
-                   getPersonFieldBuilder() : null;
-            } else {
-              personBuilder_.addAllMessages(other.person_);
-            }
-          }
+      public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage other) {
+        if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        if (other.hasSuperstepNo()) {
+          setSuperstepNo(other.getSuperstepNo());
+        }
+        if (other.hasFromNode()) {
+          setFromNode(other.getFromNode());
+        }
+        if (other.hasContent1()) {
+          setContent1(other.getContent1());
+        }
+        if (other.hasContent2()) {
+          setContent2(other.getContent2());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getPersonCount(); i++) {
-          if (!getPerson(i).isInitialized()) {
-            
-            return false;
-          }
-        }
         return true;
       }
 
@@ -2186,11 +1525,11 @@ public final class Messages {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        mthesis.concurrent_graph.communication.Messages.AddressBook parsedMessage = null;
+        mthesis.concurrent_graph.communication.Messages.ControlMessage parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (mthesis.concurrent_graph.communication.Messages.AddressBook) e.getUnfinishedMessage();
+          parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage) e.getUnfinishedMessage();
           throw e;
         } finally {
           if (parsedMessage != null) {
@@ -2201,272 +1540,227 @@ public final class Messages {
       }
       private int bitField0_;
 
-      // repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;
-      private java.util.List<mthesis.concurrent_graph.communication.Messages.Person> person_ =
-        java.util.Collections.emptyList();
-      private void ensurePersonIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          person_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.Person>(person_);
-          bitField0_ |= 0x00000001;
-         }
+      // optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;
+      private mthesis.concurrent_graph.communication.Messages.ControlMessageType type_ = mthesis.concurrent_graph.communication.Messages.ControlMessageType.Channel_Handshake;
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;</code>
+       */
+      public mthesis.concurrent_graph.communication.Messages.ControlMessageType getType() {
+        return type_;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;</code>
+       */
+      public Builder setType(mthesis.concurrent_graph.communication.Messages.ControlMessageType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = mthesis.concurrent_graph.communication.Messages.ControlMessageType.Channel_Handshake;
+        onChanged();
+        return this;
       }
 
-      private com.google.protobuf.RepeatedFieldBuilder<
-          mthesis.concurrent_graph.communication.Messages.Person, mthesis.concurrent_graph.communication.Messages.Person.Builder, mthesis.concurrent_graph.communication.Messages.PersonOrBuilder> personBuilder_;
-
+      // optional int32 SuperstepNo = 2;
+      private int superstepNo_ ;
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+       * <code>optional int32 SuperstepNo = 2;</code>
        */
-      public java.util.List<mthesis.concurrent_graph.communication.Messages.Person> getPersonList() {
-        if (personBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(person_);
-        } else {
-          return personBuilder_.getMessageList();
-        }
+      public boolean hasSuperstepNo() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+       * <code>optional int32 SuperstepNo = 2;</code>
        */
-      public int getPersonCount() {
-        if (personBuilder_ == null) {
-          return person_.size();
-        } else {
-          return personBuilder_.getCount();
-        }
+      public int getSuperstepNo() {
+        return superstepNo_;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+       * <code>optional int32 SuperstepNo = 2;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.Person getPerson(int index) {
-        if (personBuilder_ == null) {
-          return person_.get(index);
-        } else {
-          return personBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public Builder setPerson(
-          int index, mthesis.concurrent_graph.communication.Messages.Person value) {
-        if (personBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensurePersonIsMutable();
-          person_.set(index, value);
-          onChanged();
-        } else {
-          personBuilder_.setMessage(index, value);
-        }
+      public Builder setSuperstepNo(int value) {
+        bitField0_ |= 0x00000002;
+        superstepNo_ = value;
+        onChanged();
         return this;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
+       * <code>optional int32 SuperstepNo = 2;</code>
        */
-      public Builder setPerson(
-          int index, mthesis.concurrent_graph.communication.Messages.Person.Builder builderForValue) {
-        if (personBuilder_ == null) {
-          ensurePersonIsMutable();
-          person_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          personBuilder_.setMessage(index, builderForValue.build());
-        }
+      public Builder clearSuperstepNo() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        superstepNo_ = 0;
+        onChanged();
         return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public Builder addPerson(mthesis.concurrent_graph.communication.Messages.Person value) {
-        if (personBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensurePersonIsMutable();
-          person_.add(value);
-          onChanged();
-        } else {
-          personBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public Builder addPerson(
-          int index, mthesis.concurrent_graph.communication.Messages.Person value) {
-        if (personBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensurePersonIsMutable();
-          person_.add(index, value);
-          onChanged();
-        } else {
-          personBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public Builder addPerson(
-          mthesis.concurrent_graph.communication.Messages.Person.Builder builderForValue) {
-        if (personBuilder_ == null) {
-          ensurePersonIsMutable();
-          person_.add(builderForValue.build());
-          onChanged();
-        } else {
-          personBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public Builder addPerson(
-          int index, mthesis.concurrent_graph.communication.Messages.Person.Builder builderForValue) {
-        if (personBuilder_ == null) {
-          ensurePersonIsMutable();
-          person_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          personBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public Builder addAllPerson(
-          java.lang.Iterable<? extends mthesis.concurrent_graph.communication.Messages.Person> values) {
-        if (personBuilder_ == null) {
-          ensurePersonIsMutable();
-          super.addAll(values, person_);
-          onChanged();
-        } else {
-          personBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public Builder clearPerson() {
-        if (personBuilder_ == null) {
-          person_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
-          onChanged();
-        } else {
-          personBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public Builder removePerson(int index) {
-        if (personBuilder_ == null) {
-          ensurePersonIsMutable();
-          person_.remove(index);
-          onChanged();
-        } else {
-          personBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.Person.Builder getPersonBuilder(
-          int index) {
-        return getPersonFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.PersonOrBuilder getPersonOrBuilder(
-          int index) {
-        if (personBuilder_ == null) {
-          return person_.get(index);  } else {
-          return personBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.PersonOrBuilder> 
-           getPersonOrBuilderList() {
-        if (personBuilder_ != null) {
-          return personBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(person_);
-        }
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.Person.Builder addPersonBuilder() {
-        return getPersonFieldBuilder().addBuilder(
-            mthesis.concurrent_graph.communication.Messages.Person.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.Person.Builder addPersonBuilder(
-          int index) {
-        return getPersonFieldBuilder().addBuilder(
-            index, mthesis.concurrent_graph.communication.Messages.Person.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.Person person = 1;</code>
-       */
-      public java.util.List<mthesis.concurrent_graph.communication.Messages.Person.Builder> 
-           getPersonBuilderList() {
-        return getPersonFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilder<
-          mthesis.concurrent_graph.communication.Messages.Person, mthesis.concurrent_graph.communication.Messages.Person.Builder, mthesis.concurrent_graph.communication.Messages.PersonOrBuilder> 
-          getPersonFieldBuilder() {
-        if (personBuilder_ == null) {
-          personBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
-              mthesis.concurrent_graph.communication.Messages.Person, mthesis.concurrent_graph.communication.Messages.Person.Builder, mthesis.concurrent_graph.communication.Messages.PersonOrBuilder>(
-                  person_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
-                  getParentForChildren(),
-                  isClean());
-          person_ = null;
-        }
-        return personBuilder_;
       }
 
-      // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.AddressBook)
+      // optional int32 FromNode = 3;
+      private int fromNode_ ;
+      /**
+       * <code>optional int32 FromNode = 3;</code>
+       */
+      public boolean hasFromNode() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional int32 FromNode = 3;</code>
+       */
+      public int getFromNode() {
+        return fromNode_;
+      }
+      /**
+       * <code>optional int32 FromNode = 3;</code>
+       */
+      public Builder setFromNode(int value) {
+        bitField0_ |= 0x00000004;
+        fromNode_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 FromNode = 3;</code>
+       */
+      public Builder clearFromNode() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        fromNode_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 Content1 = 4;
+      private int content1_ ;
+      /**
+       * <code>optional int32 Content1 = 4;</code>
+       *
+       * <pre>
+       *TODO Type
+       * </pre>
+       */
+      public boolean hasContent1() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional int32 Content1 = 4;</code>
+       *
+       * <pre>
+       *TODO Type
+       * </pre>
+       */
+      public int getContent1() {
+        return content1_;
+      }
+      /**
+       * <code>optional int32 Content1 = 4;</code>
+       *
+       * <pre>
+       *TODO Type
+       * </pre>
+       */
+      public Builder setContent1(int value) {
+        bitField0_ |= 0x00000008;
+        content1_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 Content1 = 4;</code>
+       *
+       * <pre>
+       *TODO Type
+       * </pre>
+       */
+      public Builder clearContent1() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        content1_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional int32 Content2 = 5;
+      private int content2_ ;
+      /**
+       * <code>optional int32 Content2 = 5;</code>
+       *
+       * <pre>
+       *TODO Type
+       * </pre>
+       */
+      public boolean hasContent2() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional int32 Content2 = 5;</code>
+       *
+       * <pre>
+       *TODO Type
+       * </pre>
+       */
+      public int getContent2() {
+        return content2_;
+      }
+      /**
+       * <code>optional int32 Content2 = 5;</code>
+       *
+       * <pre>
+       *TODO Type
+       * </pre>
+       */
+      public Builder setContent2(int value) {
+        bitField0_ |= 0x00000010;
+        content2_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 Content2 = 5;</code>
+       *
+       * <pre>
+       *TODO Type
+       * </pre>
+       */
+      public Builder clearContent2() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        content2_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage)
     }
 
     static {
-      defaultInstance = new AddressBook(true);
+      defaultInstance = new ControlMessage(true);
       defaultInstance.initFields();
     }
 
-    // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.AddressBook)
+    // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage)
   }
 
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_mthesis_concurrent_graph_communication_messages_Person_descriptor;
+    internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_mthesis_concurrent_graph_communication_messages_Person_fieldAccessorTable;
+      internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_descriptor;
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_fieldAccessorTable;
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -2477,42 +1771,38 @@ public final class Messages {
   static {
     java.lang.String[] descriptorData = {
       "\n\016Messages.proto\022/mthesis.concurrent_gra" +
-      "ph.communication.messages\"\250\002\n\006Person\022\014\n\004" +
-      "name\030\001 \002(\t\022\n\n\002id\030\002 \002(\005\022\r\n\005email\030\003 \001(\t\022R\n" +
-      "\005phone\030\004 \003(\0132C.mthesis.concurrent_graph." +
-      "communication.messages.Person.PhoneNumbe" +
-      "r\032t\n\013PhoneNumber\022\016\n\006number\030\001 \002(\t\022U\n\004type" +
-      "\030\002 \001(\0162A.mthesis.concurrent_graph.commun" +
-      "ication.messages.Person.PhoneType:\004HOME\"" +
-      "+\n\tPhoneType\022\n\n\006MOBILE\020\000\022\010\n\004HOME\020\001\022\010\n\004WO" +
-      "RK\020\002\"V\n\013AddressBook\022G\n\006person\030\001 \003(\01327.mt",
-      "hesis.concurrent_graph.communication.mes" +
-      "sages.PersonB2\n&mthesis.concurrent_graph" +
-      ".communicationB\010Messages"
+      "ph.communication.messages\"m\n\rVertexMessa" +
+      "ge\022\023\n\013SuperstepNo\030\001 \001(\005\022\020\n\010FromNode\030\002 \001(" +
+      "\005\022\022\n\nFromVertex\030\003 \001(\005\022\020\n\010ToVertex\030\004 \001(\005\022" +
+      "\017\n\007Content\030\005 \001(\005\"\256\001\n\016ControlMessage\022Q\n\004T" +
+      "ype\030\001 \001(\0162C.mthesis.concurrent_graph.com" +
+      "munication.messages.ControlMessageType\022\023" +
+      "\n\013SuperstepNo\030\002 \001(\005\022\020\n\010FromNode\030\003 \001(\005\022\020\n" +
+      "\010Content1\030\004 \001(\005\022\020\n\010Content2\030\005 \001(\005*\253\001\n\022Co" +
+      "ntrolMessageType\022\025\n\021Channel_Handshake\020\001\022",
+      "\034\n\030Worker_Superstep_Barrier\020\002\022\035\n\031Worker_" +
+      "Superstep_Finished\020\003\022\023\n\017Worker_Finished\020" +
+      "\004\022\031\n\025Master_Next_Superstep\020\005\022\021\n\rMaster_F" +
+      "inish\020\006B2\n&mthesis.concurrent_graph.comm" +
+      "unicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
         public com.google.protobuf.ExtensionRegistry assignDescriptors(
             com.google.protobuf.Descriptors.FileDescriptor root) {
           descriptor = root;
-          internal_static_mthesis_concurrent_graph_communication_messages_Person_descriptor =
+          internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_descriptor =
             getDescriptor().getMessageTypes().get(0);
-          internal_static_mthesis_concurrent_graph_communication_messages_Person_fieldAccessorTable = new
+          internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mthesis_concurrent_graph_communication_messages_Person_descriptor,
-              new java.lang.String[] { "Name", "Id", "Email", "Phone", });
-          internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_descriptor =
-            internal_static_mthesis_concurrent_graph_communication_messages_Person_descriptor.getNestedTypes().get(0);
-          internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mthesis_concurrent_graph_communication_messages_Person_PhoneNumber_descriptor,
-              new java.lang.String[] { "Number", "Type", });
-          internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_descriptor =
+              internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_descriptor,
+              new java.lang.String[] { "SuperstepNo", "FromNode", "FromVertex", "ToVertex", "Content", });
+          internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor =
             getDescriptor().getMessageTypes().get(1);
-          internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_fieldAccessorTable = new
+          internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mthesis_concurrent_graph_communication_messages_AddressBook_descriptor,
-              new java.lang.String[] { "Person", });
+              internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor,
+              new java.lang.String[] { "Type", "SuperstepNo", "FromNode", "Content1", "Content2", });
           return null;
         }
       };

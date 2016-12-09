@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import mthesis.concurrent_graph.communication.ControlMessage;
-import mthesis.concurrent_graph.communication.MessageType;
+import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
 
@@ -64,28 +65,28 @@ public class MasterNode extends AbstractNode {
 				int messagesSent = 0;
 				while(!workersWaitingFor.isEmpty()) {
 					final ControlMessage msg = inControlMessages.take();
-					if(msg.Type == MessageType.Control_Worker_Superstep_Finished) {
-						if(msg.SuperstepNo == superstepNo) {
-							final int msgActiveVertices = msg.Content1;
+					if(msg.getType() == ControlMessageType.Worker_Superstep_Finished) {
+						if(msg.getSuperstepNo() == superstepNo) {
+							final int msgActiveVertices = msg.getContent1();
 							if(msgActiveVertices > 0)
 								activeWorkers++;
 							activeVertices += msgActiveVertices;
-							messagesSent += msg.Content2;
-							workersWaitingFor.remove(msg.FromNode);
+							messagesSent += msg.getContent2();
+							workersWaitingFor.remove(msg.getFromNode());
 						}
 						else {
-							logger.error("Recieved Control_Worker_Superstep_Finished for wrong superstep: " + msg.SuperstepNo +
-									" from " + msg.FromNode);
+							logger.error("Recieved Control_Worker_Superstep_Finished for wrong superstep: " + msg.getSuperstepNo() +
+									" from " + msg.getFromNode());
 						}
 					}
-					else if(msg.Type == MessageType.Control_Worker_Finished) {
+					else if(msg.getType() == ControlMessageType.Worker_Finished) {
 						// Finished
 						logger.info("Received unexpected worker finish, terminate after " + (System.currentTimeMillis() - startTime) + "ms");
 						break;
 					}
 					else {
-						logger.error("Recieved non Control_Worker_Superstep_Finished message: " + msg.Type +
-								" from " + msg.FromNode);
+						logger.error("Recieved non Control_Worker_Superstep_Finished message: " + msg.getType() +
+								" from " + msg.getFromNode());
 					}
 				}
 
@@ -133,8 +134,8 @@ public class MasterNode extends AbstractNode {
 			while(!workersWaitingFor.isEmpty()) {
 				ControlMessage msg;
 				msg = inControlMessages.take();
-				if(msg.Type == MessageType.Control_Worker_Finished) {
-					workersWaitingFor.remove(msg.FromNode);
+				if(msg.getType() == ControlMessageType.Worker_Finished) {
+					workersWaitingFor.remove(msg.getFromNode());
 				}
 			}
 		}
@@ -158,11 +159,11 @@ public class MasterNode extends AbstractNode {
 
 	private void signalWorkersStartingSuperstep() {
 		System.out.println(superstepNo);
-		messaging.sendControlMessage(workerIds, new ControlMessage(MessageType.Control_Master_Next_Superstep, superstepNo, ownId, 0, 0), true);
+		messaging.sendControlMessage(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId), true);
 	}
 
 	private void signalWorkersFinish() {
-		messaging.sendControlMessage(workerIds, new ControlMessage(MessageType.Control_Master_Finish, superstepNo, ownId, 0, 0), true);
+		messaging.sendControlMessage(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
 	}
 
 

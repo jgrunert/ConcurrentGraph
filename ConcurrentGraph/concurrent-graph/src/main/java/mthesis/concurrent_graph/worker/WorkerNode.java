@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import mthesis.concurrent_graph.Settings;
-import mthesis.concurrent_graph.communication.ControlMessage;
-import mthesis.concurrent_graph.communication.MessageType;
+import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
@@ -186,23 +186,23 @@ public class WorkerNode extends AbstractNode {
 			while(!Thread.interrupted() && !channelBarrierWaitSet.isEmpty()) {
 				final ControlMessage msg = inControlMessages.poll(Settings.MESSAGE_TIMEOUT, TimeUnit.MILLISECONDS);
 				if(msg != null) {
-					switch (msg.Type) {
-						case Control_Worker_Superstep_Barrier:
-							if(msg.SuperstepNo == superstepNo) {
+					switch (msg.getType()) {
+						case Worker_Superstep_Barrier:
+							if(msg.getSuperstepNo() == superstepNo) {
 								final int a = channelBarrierWaitSet.size();
-								channelBarrierWaitSet.remove(msg.FromNode);
-								System.out.println("Remove Control_Worker_Superstep_Barrier " + msg.FromNode + " " + a + "->" + channelBarrierWaitSet.size());
+								channelBarrierWaitSet.remove(msg.getFromNode());
+								System.out.println("Remove Control_Worker_Superstep_Barrier " + msg.getFromNode() + " " + a + "->" + channelBarrierWaitSet.size());
 							} else {
 								logger.error("Received Control_Worker_Superstep_Channel_Barrier with wrong superstepNo: "
-										+ msg.SuperstepNo + " at step " + superstepNo);
+										+ msg.getSuperstepNo() + " at step " + superstepNo);
 							}
 							break;
-						case Control_Master_Finish:
+						case Master_Finish:
 							logger.info("Unexpected finish from master, finish now");
 							return false;
 
 						default:
-							logger.error("Illegal control while waitForWorkerSuperstepsFinished: " + msg.Type);
+							logger.error("Illegal control while waitForWorkerSuperstepsFinished: " + msg.getType());
 							break;
 					}
 				}
@@ -222,21 +222,21 @@ public class WorkerNode extends AbstractNode {
 		try {
 			final ControlMessage msg = inControlMessages.poll(Settings.MESSAGE_TIMEOUT, TimeUnit.MILLISECONDS);
 			if(msg != null) {
-				switch (msg.Type) {
-					case Control_Master_Next_Superstep:
-						if(msg.SuperstepNo == superstepNo + 1) {
+				switch (msg.getType()) {
+					case Master_Next_Superstep:
+						if(msg.getSuperstepNo() == superstepNo + 1) {
 							return true;
 						} else {
 							logger.error("Received Control_Master_Next_Superstep with wrong superstepNo: "
-									+ msg.SuperstepNo + " at step " + superstepNo);
+									+ msg.getSuperstepNo() + " at step " + superstepNo);
 						}
 						break;
-					case Control_Master_Finish:
+					case Master_Finish:
 						logger.info("Received Control_Master_Finish");
 						return false;
 
 					default:
-						logger.error("Illegal control while waitForMasterNextSuperstep: " + msg.Type);
+						logger.error("Illegal control while waitForMasterNextSuperstep: " + msg.getType());
 						break;
 				}
 			}
@@ -253,16 +253,16 @@ public class WorkerNode extends AbstractNode {
 
 
 	private void sendWorkersSuperstepFinished() {
-		messaging.sendControlMessage(otherWorkerIds, new ControlMessage(MessageType.Control_Worker_Superstep_Barrier, superstepNo, ownId, 13, 14), true);
+		messaging.sendControlMessage(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Barrier(superstepNo, ownId), true);
 	}
 
 	private void sendMasterSuperstepFinished(int activeVertices) {
-		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Superstep_Finished, superstepNo, ownId,
+		messaging.sendControlMessage(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
 				activeVertices, superstepMessagesSent), true);
 	}
 
 	private void sendMasterFinishedMessage() {
-		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Finished, superstepNo, ownId, 0, 0), true);
+		messaging.sendControlMessage(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
 	}
 
 	public void sendVertexMessage(int fromVertex, int toVertex, int content) {

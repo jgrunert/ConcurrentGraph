@@ -20,6 +20,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
@@ -130,26 +134,25 @@ public class MessageSenderAndReceiver {
 		}
 	}
 
-	public void sendControlMessage(int machineId, ControlMessage message, boolean flush) {
+	public void sendControlMessage(int dstId, Messages.ControlMessage message, boolean flush) {
 		// TODO Checks
-		final Channel ch = activeChannels.get(machineId);;
-		final ByteBuf outBuf = ch.alloc().buffer(5*4);
-		outBuf.writeInt(message.Type.ordinal());
-		outBuf.writeInt(message.SuperstepNo);
-		outBuf.writeInt(message.FromNode);
-		outBuf.writeInt(message.Content1);
-		outBuf.writeInt(message.Content2);
+		final Channel ch = activeChannels.get(dstId);
 		if(flush)
-			ch.writeAndFlush(outBuf);
+			ch.writeAndFlush(message);
 		else
-			ch.write(outBuf);
+			ch.write(message);
 	}
-	public void sendControlMessage(List<Integer> machineIds, ControlMessage message, boolean flush) {
+	public void sendControlMessage(List<Integer> dstIds, Messages.ControlMessage message, boolean flush) {
 		// TODO Checks
-		for(final Integer machineId : machineIds) {
+		for(final Integer machineId : dstIds) {
 			sendControlMessage(machineId, message, flush);// TODO Reu se buffer
 		}
 	}
+
+	public void onIncomingControlMessage(Messages.ControlMessage message) {
+		messageListener.onIncomingControlMessage(message);
+	}
+
 
 	int msgv = 0;
 	int msgc = 0;
@@ -178,12 +181,14 @@ public class MessageSenderAndReceiver {
 			final int toVertex = inBuf.readInt();
 			final int content = inBuf.readInt();
 			messageListener.onIncomingVertexMessage(new VertexMessage(superstepNo, fromNode, fromVertex, toVertex, content));
-		} else {
-			logger.debug("R Control message: " + type + " " + msgc++);
-			final int content1 = inBuf.readInt();
-			final int content2 = inBuf.readInt();
-			messageListener.onIncomingControlMessage(new ControlMessage(type, superstepNo, fromNode, content1, content2));
 		}
+		//		else {
+		//			logger.debug("R Control message: " + type + " " + msgc++);
+		//			final int content1 = inBuf.readInt();
+		//			final int content2 = inBuf.readInt();
+		//			(type, superstepNo, fromNode, content1, content2)
+		//			messageListener.onIncomingControlMessage(Messages.ControlMessage.newBuilder().set);
+		//		}
 	}
 
 
@@ -216,7 +221,12 @@ public class MessageSenderAndReceiver {
 				//				p.addLast(new StringEncoder());
 				//				p.addLast(new StringDecoder());
 				//p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 2, 0, 2));
-				p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
+				p.addLast(new ProtobufVarint32FrameDecoder());
+				//p.addLast(new ProtobufDecoder(Messages.VertexMessage.getDefaultInstance()));
+				p.addLast(new ProtobufDecoder(Messages.ControlMessage.getDefaultInstance()));
+				p.addLast(new ProtobufVarint32LengthFieldPrepender());
+				p.addLast(new ProtobufEncoder());
+				p.addLast(new ControlMessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 			}
 		});
 
@@ -258,7 +268,12 @@ public class MessageSenderAndReceiver {
 				//				p.addLast(new StringDecoder());
 				// TODO maxFrameLength config
 				//p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 2, 0, 2));
-				p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
+				p.addLast(new ProtobufVarint32FrameDecoder());
+				//p.addLast(new ProtobufDecoder(Messages.VertexMessage.getDefaultInstance()));
+				p.addLast(new ProtobufDecoder(Messages.ControlMessage.getDefaultInstance()));
+				p.addLast(new ProtobufVarint32LengthFieldPrepender());
+				p.addLast(new ProtobufEncoder());
+				p.addLast(new ControlMessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 			}
 		});
 
