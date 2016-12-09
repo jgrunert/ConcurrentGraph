@@ -62,18 +62,19 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
 		//logger.trace("channelRead " + ctx.channel().id() + " " + msg);
 		try {
 			final ByteBuf inBuf = (ByteBuf) msg;
-			if (channelState == ChannelState.Active) {
-				messageListner.onIncomingMessage(inBuf);
-			} else if (channelState == ChannelState.Handshake) {
-				//				int i =1;
-				while (inBuf.isReadable()){
+
+			while (inBuf.isReadable()){
+				if (channelState == ChannelState.Active) {
+					messageListner.onIncomingMessage(inBuf);
+				} else if (channelState == ChannelState.Handshake) {
+					//				int i =1;
 					//					System.out.println("a " + i++);
 					connectedMachine = inBuf.readInt();
 					activeChannels.put(connectedMachine, ctx.channel());
 					channelState = ChannelState.Active;
 					logger.debug("Channel handshake finished. Connected " + connectedMachine + " via " + ctx.channel().id());
+					//				System.out.println("b " + i);
 				}
-				//				System.out.println("b " + i);
 			}
 		} finally {
 			ReferenceCountUtil.release(msg);

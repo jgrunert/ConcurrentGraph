@@ -12,7 +12,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -109,16 +108,8 @@ public class MessageSenderAndReceiver {
 	}
 
 
-	public void sendVertexMessage(List<Integer> machineIds, VertexMessage message) {
-		// TODO Checks
-		for(final Integer machineId : machineIds) {
-			sendVertexMessage(machineId, message);// TODO Reu se buffer
-		}
-	}
 
 	public void sendVertexMessage(int machineId, VertexMessage message) {
-
-		logger.debug("send msgt " + MessageType.Vertex + " " + MessageType.Vertex.ordinal());
 		// TODO Checks
 		final Channel ch = activeChannels.get(machineId);
 		final ByteBuf outBuf = ch.alloc().buffer(6*4);
@@ -128,13 +119,17 @@ public class MessageSenderAndReceiver {
 		outBuf.writeInt(message.FromVertex);
 		outBuf.writeInt(message.ToVertex);
 		outBuf.writeInt(message.Content);
-		ch.writeAndFlush(outBuf);
+		ch.write(outBuf);
+	}
+	public void sendVertexMessage(List<Integer> machineIds, VertexMessage message) {
+		// TODO Checks
+		for(final Integer machineId : machineIds) {
+			sendVertexMessage(machineId, message);// TODO Reu se buffer
+		}
 	}
 
-	public void sendControlMessage(int machineId, ControlMessage message) {
+	public void sendControlMessage(int machineId, ControlMessage message, boolean flush) {
 		// TODO Checks
-
-		logger.debug("send msgt " + message.Type + " " + message.Type.ordinal());
 		final Channel ch = activeChannels.get(machineId);;
 		final ByteBuf outBuf = ch.alloc().buffer(5*4);
 		outBuf.writeInt(message.Type.ordinal());
@@ -142,13 +137,15 @@ public class MessageSenderAndReceiver {
 		outBuf.writeInt(message.FromNode);
 		outBuf.writeInt(message.Content1);
 		outBuf.writeInt(message.Content2);
-		ch.writeAndFlush(outBuf);
+		if(flush)
+			ch.writeAndFlush(outBuf);
+		else
+			ch.write(outBuf);
 	}
-
-	public void sendControlMessage(List<Integer> machineIds, ControlMessage message) {
+	public void sendControlMessage(List<Integer> machineIds, ControlMessage message, boolean flush) {
 		// TODO Checks
 		for(final Integer machineId : machineIds) {
-			sendControlMessage(machineId, message);// TODO Reu se buffer
+			sendControlMessage(machineId, message, flush);// TODO Reu se buffer
 		}
 	}
 
@@ -156,7 +153,6 @@ public class MessageSenderAndReceiver {
 	public void onIncomingMessage(ByteBuf inBuf) {
 		final int msgt = inBuf.readInt();
 		final MessageType type = MessageType.fromOrdinal(msgt);
-		logger.debug("rec msgt " + type + " " + msgt);
 		final int superstepNo = inBuf.readInt();
 		final int fromNode = inBuf.readInt();
 
@@ -244,7 +240,7 @@ public class MessageSenderAndReceiver {
 		});
 
 		// Start the server.
-		final ChannelFuture f = b.bind(port).sync();
+		b.bind(port).sync();
 		logger.info("Started connection server");
 	}
 }

@@ -173,7 +173,7 @@ public class WorkerNode extends AbstractNode {
 		finally {
 			logger.info("Worker finishing");
 			writeOutput();
-			sendFinishedMessage();
+			sendMasterFinishedMessage();
 			stop();
 		}
 	}
@@ -189,7 +189,9 @@ public class WorkerNode extends AbstractNode {
 					switch (msg.Type) {
 						case Control_Worker_Superstep_Barrier:
 							if(msg.SuperstepNo == superstepNo) {
+								final int a = channelBarrierWaitSet.size();
 								channelBarrierWaitSet.remove(msg.FromNode);
+								System.out.println("Remove Control_Worker_Superstep_Barrier " + msg.FromNode + " " + a + "->" + channelBarrierWaitSet.size());
 							} else {
 								logger.error("Received Control_Worker_Superstep_Channel_Barrier with wrong superstepNo: "
 										+ msg.SuperstepNo + " at step " + superstepNo);
@@ -251,15 +253,16 @@ public class WorkerNode extends AbstractNode {
 
 
 	private void sendWorkersSuperstepFinished() {
-		messaging.sendControlMessage(otherWorkerIds, new ControlMessage(MessageType.Control_Worker_Superstep_Barrier, superstepNo, ownId, 0, 0));
+		messaging.sendControlMessage(otherWorkerIds, new ControlMessage(MessageType.Control_Worker_Superstep_Barrier, superstepNo, ownId, 13, 14), true);
 	}
 
 	private void sendMasterSuperstepFinished(int activeVertices) {
-		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Superstep_Finished, superstepNo, ownId, activeVertices, superstepMessagesSent));
+		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Superstep_Finished, superstepNo, ownId,
+				activeVertices, superstepMessagesSent), true);
 	}
 
-	private void sendFinishedMessage() {
-		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Finished, superstepNo, ownId, 0, 0));
+	private void sendMasterFinishedMessage() {
+		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Finished, superstepNo, ownId, 0, 0), true);
 	}
 
 	public void sendVertexMessage(int fromVertex, int toVertex, int content) {

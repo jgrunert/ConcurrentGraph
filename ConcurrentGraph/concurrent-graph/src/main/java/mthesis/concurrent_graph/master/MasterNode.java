@@ -158,11 +158,11 @@ public class MasterNode extends AbstractNode {
 
 	private void signalWorkersStartingSuperstep() {
 		System.out.println(superstepNo);
-		messaging.sendControlMessage(workerIds, new ControlMessage(MessageType.Control_Master_Next_Superstep, superstepNo, ownId, 0, 0));
+		messaging.sendControlMessage(workerIds, new ControlMessage(MessageType.Control_Master_Next_Superstep, superstepNo, ownId, 0, 0), true);
 	}
 
 	private void signalWorkersFinish() {
-		messaging.sendControlMessage(workerIds, new ControlMessage(MessageType.Control_Master_Finish, superstepNo, ownId, 0, 0));
+		messaging.sendControlMessage(workerIds, new ControlMessage(MessageType.Control_Master_Finish, superstepNo, ownId, 0, 0), true);
 	}
 
 
