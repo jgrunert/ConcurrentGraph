@@ -63,17 +63,21 @@ public class MachineChannelHandler extends ChannelInboundHandlerAdapter {
 		try {
 			final ByteBuf inBuf = (ByteBuf) msg;
 
+			System.out.println("0 it is " + inBuf.isReadable());
 			while (inBuf.isReadable()){
-				if (channelState == ChannelState.Active) {
-					messageListner.onIncomingMessage(inBuf);
-				} else if (channelState == ChannelState.Handshake) {
-					//				int i =1;
-					//					System.out.println("a " + i++);
-					connectedMachine = inBuf.readInt();
-					activeChannels.put(connectedMachine, ctx.channel());
-					channelState = ChannelState.Active;
-					logger.debug("Channel handshake finished. Connected " + connectedMachine + " via " + ctx.channel().id());
-					//				System.out.println("b " + i);
+				switch (channelState) {
+					case Handshake:
+						connectedMachine = inBuf.readInt();
+						activeChannels.put(connectedMachine, ctx.channel());
+						channelState = ChannelState.Active;
+						logger.debug("Channel handshake finished. Connected " + connectedMachine + " via " + ctx.channel().id());
+						break;
+					case Active:
+						messageListner.onIncomingMessage(inBuf);
+						System.out.println("1 it is " + inBuf.isReadable());
+
+					default:
+						break;
 				}
 			}
 		} finally {

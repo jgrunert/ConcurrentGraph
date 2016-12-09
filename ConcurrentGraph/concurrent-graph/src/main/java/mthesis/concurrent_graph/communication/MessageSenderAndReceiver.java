@@ -109,6 +109,7 @@ public class MessageSenderAndReceiver {
 
 
 
+	int msgvs = 0;
 	public void sendVertexMessage(int machineId, VertexMessage message) {
 		// TODO Checks
 		final Channel ch = activeChannels.get(machineId);
@@ -120,6 +121,7 @@ public class MessageSenderAndReceiver {
 		outBuf.writeInt(message.ToVertex);
 		outBuf.writeInt(message.Content);
 		ch.write(outBuf);
+		//logger.debug("S Vertex message: " + msgvs++);
 	}
 	public void sendVertexMessage(List<Integer> machineIds, VertexMessage message) {
 		// TODO Checks
@@ -149,21 +151,35 @@ public class MessageSenderAndReceiver {
 		}
 	}
 
-
+	int msgv = 0;
+	int msgc = 0;
 	public void onIncomingMessage(ByteBuf inBuf) {
+		//logger.debug("msg " + msgi++);
 		final int msgt = inBuf.readInt();
 		final MessageType type = MessageType.fromOrdinal(msgt);
 		final int superstepNo = inBuf.readInt();
 		final int fromNode = inBuf.readInt();
 
 		if (type == MessageType.Vertex) {
-			//logger.trace("Vertex message: " + message);
+			logger.debug("R Vertex message: " + msgv++);
 			final int fromVertex = inBuf.readInt();
+			if(!inBuf.isReadable()) {
+				System.out.println("WAIT!");
+				try {
+					Thread.sleep(500);
+				}
+				catch (final InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.println("WAIT DONE!");
+			}
+
 			final int toVertex = inBuf.readInt();
 			final int content = inBuf.readInt();
 			messageListener.onIncomingVertexMessage(new VertexMessage(superstepNo, fromNode, fromVertex, toVertex, content));
 		} else {
-			//logger.trace("Control message: " + message);
+			logger.debug("R Control message: " + type + " " + msgc++);
 			final int content1 = inBuf.readInt();
 			final int content2 = inBuf.readInt();
 			messageListener.onIncomingControlMessage(new ControlMessage(type, superstepNo, fromNode, content1, content2));
@@ -184,8 +200,10 @@ public class MessageSenderAndReceiver {
 		final Bootstrap b = new Bootstrap();
 		b.group(workerGroup)
 		.channel(NioSocketChannel.class)
-		.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY)
 		.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
+		.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY)
+		//.option(ChannelOption.SO_RCVBUF, 2048)
+		.handler(new LoggingHandler(LogLevel.INFO))
 		.handler(new ChannelInitializer<SocketChannel>() {
 			@Override
 			public void initChannel(SocketChannel ch) throws Exception {
@@ -197,6 +215,7 @@ public class MessageSenderAndReceiver {
 				//				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
 				//				p.addLast(new StringEncoder());
 				//				p.addLast(new StringDecoder());
+				//p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 2, 0, 2));
 				p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 			}
 		});
@@ -223,7 +242,9 @@ public class MessageSenderAndReceiver {
 		.channel(NioServerSocketChannel.class)
 		.option(ChannelOption.SO_BACKLOG, 100)
 		.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
-		.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY).handler(new LoggingHandler(LogLevel.INFO))
+		.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY)
+		//.option(ChannelOption.SO_RCVBUF, 2048)
+		.handler(new LoggingHandler(LogLevel.INFO))
 		.childHandler(new ChannelInitializer<SocketChannel>() {
 			@Override
 			public void initChannel(SocketChannel ch) throws Exception {
@@ -235,6 +256,8 @@ public class MessageSenderAndReceiver {
 				//				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
 				//				p.addLast(new StringEncoder());
 				//				p.addLast(new StringDecoder());
+				// TODO maxFrameLength config
+				//p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 2, 0, 2));
 				p.addLast(new MachineChannelHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 			}
 		});
