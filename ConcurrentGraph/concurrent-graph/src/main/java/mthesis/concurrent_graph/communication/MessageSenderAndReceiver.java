@@ -31,6 +31,7 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.node.AbstractNode;
 import mthesis.concurrent_graph.util.Pair;
@@ -113,21 +114,7 @@ public class MessageSenderAndReceiver {
 	}
 
 
-
-	int msgvs = 0;
-	public void sendVertexMessage(int machineId, VertexMessage message) {
-		// TODO Checks
-		final Channel ch = activeChannels.get(machineId);
-		ch.write(message);
-	}
-	public void sendVertexMessage(List<Integer> machineIds, VertexMessage message) {
-		// TODO Checks
-		for(final Integer machineId : machineIds) {
-			sendVertexMessage(machineId, message);// TODO Re-use message
-		}
-	}
-
-	public void sendControlMessage(int dstId, Messages.ControlMessage message, boolean flush) {
+	public void sendMessage(int dstId, MessageEnvelope message, boolean flush) {
 		// TODO Checks
 		final Channel ch = activeChannels.get(dstId);
 		if(flush)
@@ -135,12 +122,13 @@ public class MessageSenderAndReceiver {
 		else
 			ch.write(message);
 	}
-	public void sendControlMessage(List<Integer> dstIds, Messages.ControlMessage message, boolean flush) {
+	public void sendMessage(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
 		// TODO Checks
 		for(final Integer machineId : dstIds) {
-			sendControlMessage(machineId, message, flush);// TODO Re-use message
+			sendMessage(machineId, message, flush);
 		}
 	}
+
 
 	public void onIncomingControlMessage(ControlMessage message) {
 		messageListener.onIncomingControlMessage(message);
@@ -175,18 +163,12 @@ public class MessageSenderAndReceiver {
 				if (sslCtx != null) {
 					p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
 				}
-				// p.addLast(new LoggingHandler(LogLevel.INFO));
-				//				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-				//				p.addLast(new StringEncoder());
-				//				p.addLast(new StringDecoder());
-				//p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 2, 0, 2));
+				// p.addLast(new LoggingHandler(LogLevel.INFO));;
 				p.addLast(new ProtobufVarint32FrameDecoder());
-				p.addLast(new ProtobufDecoder(Messages.ControlMessage.getDefaultInstance()));
-				p.addLast(new ProtobufDecoder(Messages.VertexMessage.getDefaultInstance()));
+				p.addLast(new ProtobufDecoder(Messages.MessageEnvelope.getDefaultInstance()));
 				p.addLast(new ProtobufVarint32LengthFieldPrepender());
 				p.addLast(new ProtobufEncoder());
-				p.addLast(new ControlMessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
-				p.addLast(new VertexMessageHandler(ownId, MessageSenderAndReceiver.this));
+				p.addLast(new MessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 			}
 		});
 
@@ -222,19 +204,12 @@ public class MessageSenderAndReceiver {
 				if (sslCtx != null) {
 					p.addLast(sslCtx.newHandler(ch.alloc()));
 				}
-				// p.addLast(new LoggingHandler(LogLevel.INFO));
-				//				p.addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-				//				p.addLast(new StringEncoder());
-				//				p.addLast(new StringDecoder());
-				// TODO maxFrameLength config
-				//p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 2, 0, 2));
+				// p.addLast(new LoggingHandler(LogLevel.INFO));;
 				p.addLast(new ProtobufVarint32FrameDecoder());
-				p.addLast(new ProtobufDecoder(Messages.ControlMessage.getDefaultInstance()));
-				p.addLast(new ProtobufDecoder(Messages.VertexMessage.getDefaultInstance()));
+				p.addLast(new ProtobufDecoder(Messages.MessageEnvelope.getDefaultInstance()));
 				p.addLast(new ProtobufVarint32LengthFieldPrepender());
 				p.addLast(new ProtobufEncoder());
-				p.addLast(new ControlMessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
-				p.addLast(new VertexMessageHandler(ownId, MessageSenderAndReceiver.this));
+				p.addLast(new MessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
 			}
 		});
 

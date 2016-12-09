@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.communication.VertexMessageBuildUtil;
 import mthesis.concurrent_graph.node.AbstractNode;
@@ -254,23 +255,23 @@ public class WorkerNode extends AbstractNode {
 
 
 	private void sendWorkersSuperstepFinished() {
-		messaging.sendControlMessage(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Barrier(superstepNo, ownId), true);
+		messaging.sendMessage(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Barrier(superstepNo, ownId), true);
 	}
 
 	private void sendMasterSuperstepFinished(int activeVertices) {
-		messaging.sendControlMessage(masterId, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
+		messaging.sendMessage(masterId, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
 				activeVertices, superstepMessagesSent), true);
 	}
 
 	private void sendMasterFinishedMessage() {
-		messaging.sendControlMessage(masterId, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
+		messaging.sendMessage(masterId, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
 	}
 
 	public void sendVertexMessage(int fromVertex, int toVertex, int content) {
 		superstepMessagesSent++;
-		final VertexMessage message = VertexMessageBuildUtil.Build(superstepNo, ownId, fromVertex, toVertex, content);
-		messaging.sendVertexMessage(otherWorkerIds, message);
-		bufferedLoopbackMessages.add(message);
+		final MessageEnvelope message = VertexMessageBuildUtil.Build(superstepNo, ownId, fromVertex, toVertex, content);
+		messaging.sendMessage(otherWorkerIds, message, false);
+		bufferedLoopbackMessages.add(message.getVertexMessage());
 	}
 
 

@@ -10,10 +10,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
+import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 
 
 // TODO Everything should be more robust, error handling etc.
-public class ControlMessageHandler  extends SimpleChannelInboundHandler<ControlMessage> {
+public class MessageHandler extends SimpleChannelInboundHandler<MessageEnvelope> {
 	private final Logger logger;
 	private final int ownId;
 	private final MessageSenderAndReceiver messageListner;
@@ -24,11 +25,11 @@ public class ControlMessageHandler  extends SimpleChannelInboundHandler<ControlM
 	private int connectedMachine;
 
 
-	public ControlMessageHandler(ConcurrentHashMap<Integer, Channel> activeChannels, int ownId,
+	public MessageHandler(ConcurrentHashMap<Integer, Channel> activeChannels, int ownId,
 			MessageSenderAndReceiver messageListner) {
 		super();
 		this.ownId = ownId;
-		this.logger = LoggerFactory.getLogger(ControlMessageHandler.class.getCanonicalName() + "[" + ownId + "]");
+		this.logger = LoggerFactory.getLogger(MessageHandler.class.getCanonicalName() + "[" + ownId + "]");
 		this.activeChannels = activeChannels;
 		this.messageListner = messageListner;
 	}
@@ -40,7 +41,9 @@ public class ControlMessageHandler  extends SimpleChannelInboundHandler<ControlM
 		logger.debug("Channel active: " + ctx.channel().id());
 		if (channelState == ChannelState.Inactive) {
 			channelState = ChannelState.Handshake;
-			ctx.writeAndFlush(ControlMessage.newBuilder().setType(ControlMessageType.Channel_Handshake).setFromNode(ownId).build());
+			ctx.writeAndFlush(
+					MessageEnvelope.newBuilder().setControlMessage(
+							ControlMessage.newBuilder().setType(ControlMessageType.Channel_Handshake).setFromNode(ownId).build()).build());
 			// TODO AndFlush
 		} else {
 			logger.warn("Channel not inactive ignoring active channel " + ctx.channel().id());
@@ -56,21 +59,28 @@ public class ControlMessageHandler  extends SimpleChannelInboundHandler<ControlM
 
 
 	@Override
-	protected void channelRead0(ChannelHandlerContext ctx,
-			mthesis.concurrent_graph.communication.Messages.ControlMessage msg) throws Exception {
-		switch (channelState) {
-			case Handshake:
-				connectedMachine = msg.getFromNode();
-				activeChannels.put(connectedMachine, ctx.channel());
-				channelState = ChannelState.Active;
-				logger.debug("Channel handshake finished. Connected " + connectedMachine + " via " + ctx.channel().id());
-				break;
-			case Active:
-				messageListner.onIncomingControlMessage(msg);
-				//System.out.println("1 it is " + inBuf.isReadable());
+	protected void channelRead0(ChannelHandlerContext ctx, MessageEnvelope msg) throws Exception {
+		if(msg.hasVertexMessage()) {
+			messageListner.onIncomingVertexMessage(msg.getVertexMessage());
+		}
+		else if(msg.hasControlMessage()) {
+			switch (channelState) {
+				case Handshake:
+					connectedMachine = msg.getControlMessage().getFromNode();
+					activeChannels.put(connectedMachine, ctx.channel());
+					channelState = ChannelState.Active;
+					logger.debug("Channel handshake finished. Connected " + connectedMachine + " via " + ctx.channel().id());
+					break;
+				case Active:
+					messageListner.onIncomingControlMessage(msg.getControlMessage());
+					//System.out.println("1 it is " + inBuf.isReadable());
 
-			default:
-				break;
+				default:
+					break;
+			}
+		}
+		else {
+			logger.warn("Received message envelope without valid inner message: " + msg);
 		}
 	}
 

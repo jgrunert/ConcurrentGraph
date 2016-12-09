@@ -94,9 +94,6 @@ public class MasterNode extends AbstractNode {
 					// Next superstep
 					logger.debug(String.format("Master finished superstep %d after %dms. activeWorkers: %d activeVertices: %d messages: %d",
 							superstepNo, (System.currentTimeMillis() - startTime), activeWorkers, activeVertices, messagesSent));
-					// TODO Test
-					System.out.println(String.format("Master finished superstep %d after %dms. activeWorkers: %d activeVertices: %d messages: %d",
-							superstepNo, (System.currentTimeMillis() - startTime), activeWorkers, activeVertices, messagesSent));
 					superstepNo++;
 					logger.trace("Next master superstep: " + superstepNo);
 					signalWorkersStartingSuperstep();
@@ -158,12 +155,12 @@ public class MasterNode extends AbstractNode {
 
 
 	private void signalWorkersStartingSuperstep() {
-		System.out.println(superstepNo);
-		messaging.sendControlMessage(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId), true);
+		System.out.println("----- superstep " + superstepNo + " -----");
+		messaging.sendMessage(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId), true);
 	}
 
 	private void signalWorkersFinish() {
-		messaging.sendControlMessage(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
+		messaging.sendMessage(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
 	}
 
 
