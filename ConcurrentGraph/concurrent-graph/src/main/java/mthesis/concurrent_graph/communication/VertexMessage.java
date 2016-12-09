@@ -1,17 +1,17 @@
 package mthesis.concurrent_graph.communication;
 
 public class VertexMessage {
+	public final int SuperstepNo;
 	public final int FromNode;
 	public final int FromVertex;
 	public final int ToVertex;
-	public final int SuperstepNo;
 	public final int Content;//TODO Type
 
-	public VertexMessage(int fromNode, int from, int to, int superstepNo, int content) {
+	public VertexMessage(int superstepNo, int fromNode, int fromVertex, int toVertex, int content) {
 		super();
 		FromNode = fromNode;
-		FromVertex = from;
-		ToVertex = to;
+		FromVertex = fromVertex;
+		ToVertex = toVertex;
 		SuperstepNo = superstepNo;
 		Content = content;
 	}
@@ -19,6 +19,6 @@ public class VertexMessage {
 
 	@Override
 	public String toString() {
-		return "VertexMessage(" + SuperstepNo + " " + FromVertex + " " + ToVertex + " " + Content + ")";
+		return "VertexMessage(" + SuperstepNo + " " + FromNode + " " + FromVertex + " " + ToVertex + " " + Content + ")";
 	}
 }

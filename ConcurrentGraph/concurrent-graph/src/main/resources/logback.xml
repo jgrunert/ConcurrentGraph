@@ -1,6 +1,5 @@
 <configuration>
 	<appender name="CONSOLE-stdout" class="ch.qos.logback.core.ConsoleAppender">
-		<!-- deny all events with a level below INFO, that is TRACE and DEBUG -->
 		<filter class="mthesis.concurrent_graph.logging.MainLogFilter" />
 		<filter class="mthesis.concurrent_graph.logging.NettyLogFilter" />
   		<filter class="mthesis.concurrent_graph.logging.StdOutFilter" />
@@ -13,7 +12,6 @@
 	</appender>
 	
 	<appender name="CONSOLE-stderr" class="ch.qos.logback.core.ConsoleAppender">
-		<!-- deny all events with a level below INFO, that is TRACE and DEBUG -->
 		<filter class="mthesis.concurrent_graph.logging.MainLogFilter" />
 		<filter class="mthesis.concurrent_graph.logging.NettyLogFilter" />
   		<filter class="mthesis.concurrent_graph.logging.ErrOutFilter" />

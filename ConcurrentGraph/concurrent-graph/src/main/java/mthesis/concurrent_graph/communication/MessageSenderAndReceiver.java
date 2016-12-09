@@ -123,10 +123,10 @@ public class MessageSenderAndReceiver {
 		final Channel ch = activeChannels.get(machineId);
 		final ByteBuf outBuf = ch.alloc().buffer(6*4);
 		outBuf.writeInt(MessageType.Vertex.ordinal());
+		outBuf.writeInt(message.SuperstepNo);
 		outBuf.writeInt(message.FromNode);
 		outBuf.writeInt(message.FromVertex);
 		outBuf.writeInt(message.ToVertex);
-		outBuf.writeInt(message.SuperstepNo);
 		outBuf.writeInt(message.Content);
 		ch.writeAndFlush(outBuf);
 	}
@@ -138,8 +138,8 @@ public class MessageSenderAndReceiver {
 		final Channel ch = activeChannels.get(machineId);;
 		final ByteBuf outBuf = ch.alloc().buffer(5*4);
 		outBuf.writeInt(message.Type.ordinal());
-		outBuf.writeInt(message.FromNode);
 		outBuf.writeInt(message.SuperstepNo);
+		outBuf.writeInt(message.FromNode);
 		outBuf.writeInt(message.Content1);
 		outBuf.writeInt(message.Content2);
 		ch.writeAndFlush(outBuf);
@@ -157,20 +157,20 @@ public class MessageSenderAndReceiver {
 		final int msgt = inBuf.readInt();
 		final MessageType type = MessageType.fromOrdinal(msgt);
 		logger.debug("rec msgt " + type + " " + msgt);
-		final int fromNode = inBuf.readInt();
 		final int superstepNo = inBuf.readInt();
+		final int fromNode = inBuf.readInt();
 
 		if (type == MessageType.Vertex) {
 			//logger.trace("Vertex message: " + message);
 			final int fromVertex = inBuf.readInt();
 			final int toVertex = inBuf.readInt();
 			final int content = inBuf.readInt();
-			messageListener.onIncomingVertexMessage(new VertexMessage(fromNode, fromVertex, toVertex, superstepNo, content));
+			messageListener.onIncomingVertexMessage(new VertexMessage(superstepNo, fromNode, fromVertex, toVertex, content));
 		} else {
 			//logger.trace("Control message: " + message);
 			final int content1 = inBuf.readInt();
 			final int content2 = inBuf.readInt();
-			messageListener.onIncomingControlMessage(new ControlMessage(type, fromNode,superstepNo, content1, content2));
+			messageListener.onIncomingControlMessage(new ControlMessage(type, superstepNo, fromNode, content1, content2));
 		}
 	}
 

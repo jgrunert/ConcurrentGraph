@@ -12,8 +12,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessage;
 import mthesis.concurrent_graph.communication.MessageType;
 import mthesis.concurrent_graph.communication.VertexMessage;
@@ -182,7 +184,7 @@ public class WorkerNode extends AbstractNode {
 			channelBarrierWaitSet.addAll(otherWorkerIds);
 
 			while(!Thread.interrupted() && !channelBarrierWaitSet.isEmpty()) {
-				final ControlMessage msg = inControlMessages.take();
+				final ControlMessage msg = inControlMessages.poll(Settings.MESSAGE_TIMEOUT, TimeUnit.MILLISECONDS);
 				if(msg != null) {
 					switch (msg.Type) {
 						case Control_Worker_Superstep_Barrier:
@@ -199,6 +201,10 @@ public class WorkerNode extends AbstractNode {
 							break;
 					}
 				}
+				else {
+					logger.error("Timeout while waitForWorkerSuperstepsFinished");
+					return false;
+				}
 			}
 			return channelBarrierWaitSet.isEmpty();
 		}
@@ -209,7 +215,7 @@ public class WorkerNode extends AbstractNode {
 
 	public boolean waitForMasterNextSuperstep() {
 		try {
-			final ControlMessage msg = inControlMessages.take();
+			final ControlMessage msg = inControlMessages.poll(Settings.MESSAGE_TIMEOUT, TimeUnit.MILLISECONDS);
 			if(msg != null) {
 				switch (msg.Type) {
 					case Control_Master_Next_Superstep:
@@ -229,6 +235,10 @@ public class WorkerNode extends AbstractNode {
 						break;
 				}
 			}
+			else {
+				logger.error("Timeout while waitForMasterNextSuperstep");
+				return false;
+			}
 			return false;
 		}
 		catch (final InterruptedException e) {
@@ -238,20 +248,20 @@ public class WorkerNode extends AbstractNode {
 
 
 	private void sendWorkersSuperstepFinished() {
-		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Superstep_Barrier, ownId, superstepNo, 0, 0));
+		messaging.sendControlMessage(otherWorkerIds, new ControlMessage(MessageType.Control_Worker_Superstep_Barrier, superstepNo, ownId, 0, 0));
 	}
 
 	private void sendMasterSuperstepFinished(int activeVertices) {
-		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Superstep_Finished, ownId, superstepNo, activeVertices, superstepMessagesSent));
+		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Superstep_Finished, superstepNo, ownId, activeVertices, superstepMessagesSent));
 	}
 
 	private void sendFinishedMessage() {
-		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Finished, ownId, superstepNo, 0, 0));
+		messaging.sendControlMessage(masterId, new ControlMessage(MessageType.Control_Worker_Finished, superstepNo, ownId, 0, 0));
 	}
 
 	public void sendVertexMessage(int fromVertex, int toVertex, int content) {
 		superstepMessagesSent++;
-		final VertexMessage message = new VertexMessage(ownId, fromVertex, toVertex, superstepNo, content);
+		final VertexMessage message = new VertexMessage(superstepNo, ownId, fromVertex, toVertex, content);
 		messaging.sendVertexMessage(otherWorkerIds, message);
 		bufferedLoopbackMessages.add(message);
 	}
