@@ -78,6 +78,11 @@ public class MasterNode extends AbstractNode {
 									" from " + msg.FromNode);
 						}
 					}
+					else if(msg.Type == MessageType.Control_Worker_Finished) {
+						// Finished
+						logger.info("Received unexpected worker finish, terminate after " + (System.currentTimeMillis() - startTime) + "ms");
+						break;
+					}
 					else {
 						logger.error("Recieved non Control_Worker_Superstep_Finished message: " + msg.Type +
 								" from " + msg.FromNode);

@@ -195,6 +195,9 @@ public class WorkerNode extends AbstractNode {
 										+ msg.SuperstepNo + " at step " + superstepNo);
 							}
 							break;
+						case Control_Master_Finish:
+							logger.info("Unexpected finish from master, finish now");
+							return false;
 
 						default:
 							logger.error("Illegal control while waitForWorkerSuperstepsFinished: " + msg.Type);
