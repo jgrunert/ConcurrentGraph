@@ -96,7 +96,12 @@ public class MessageSenderAndReceiver {
 	public boolean waitUntilConnected() {
 		final long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
 		while(System.currentTimeMillis() <= timeoutTime && activeChannels.size() < (machines.size() - 1)) {
-			Thread.yield();
+			try {
+				Thread.sleep(1);
+			}
+			catch (final InterruptedException e) {
+				break;
+			}
 		}
 		if(activeChannels.size() == (machines.size() - 1)) {
 			logger.info("Established all connections");
