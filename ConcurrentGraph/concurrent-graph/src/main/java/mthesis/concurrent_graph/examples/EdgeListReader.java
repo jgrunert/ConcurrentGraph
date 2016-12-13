@@ -7,8 +7,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import mthesis.concurrent_graph.master.AbstractMasterInputReader;
 
@@ -25,8 +27,8 @@ import mthesis.concurrent_graph.master.AbstractMasterInputReader;
 public class EdgeListReader extends AbstractMasterInputReader {
 
 	private final Random random = new Random(0);
-	private final List<String> edges = new ArrayList<>();
-	private String currentVertex;
+	private final List<Integer> edges = new ArrayList<>();
+	private int currentVertex;
 	private int vertexCount = 0;
 	private int edgeCount = 0;
 
@@ -54,25 +56,45 @@ public class EdgeListReader extends AbstractMasterInputReader {
 			String line;
 			while ((line = br.readLine()) != null && line.startsWith("#")) { }
 
+			final Set<Integer> vertices = new HashSet<>();
+			final Set<Integer> verticesWritten = new HashSet<>();
+
 			// Read and partition input
 			String[] lineSplit;
 			if(line != null) {
 				lineSplit = line.split("\t");
-				currentVertex = lineSplit[0];
-				edges.add(lineSplit[1]);
+				currentVertex = Integer.parseInt(lineSplit[0]);
+				final int edge = Integer.parseInt(lineSplit[1]);
+				edges.add(edge);
+				vertices.add(currentVertex);
+				verticesWritten.add(currentVertex);
+				vertices.add(edge);
 			}
 
+			// Read and partition vertices
 			while ((line = br.readLine()) != null) {
 				lineSplit = line.split("\t");
-				if(!lineSplit[0].equals(currentVertex)) {
+				final int vertex = Integer.parseInt(lineSplit[0]);
+				if(vertex != currentVertex) {
+					vertices.add(currentVertex);
+					verticesWritten.add(currentVertex);
 					writeVertex(partitionWriters);
 					edges.clear();
-					currentVertex = lineSplit[0];
+					currentVertex = vertex;
 				}
-				edges.add("\t" + lineSplit[1]);
+				final int edge = Integer.parseInt(lineSplit[1]);
+				vertices.add(edge);
+				edges.add(edge);
 			}
 			writeVertex(partitionWriters);
 			edges.clear();
+
+			// Write vertices without outgoing edges
+			vertices.removeAll(verticesWritten);
+			for (final Integer vertex : vertices) {
+				currentVertex = vertex;
+				writeVertex(partitionWriters);
+			}
 		}
 		catch (final Exception e) {
 			logger.error("loadVertices failed", e);
@@ -90,8 +112,8 @@ public class EdgeListReader extends AbstractMasterInputReader {
 	private void writeVertex(List<PrintWriter> partitionWriters) {
 		final PrintWriter writer = partitionWriters.get(random.nextInt(partitionWriters.size()));
 		writer.println(currentVertex);
-		for(final String edge : edges) {
-			writer.println(edge);
+		for(final Integer edge : edges) {
+			writer.println("\t" + edge);
 		}
 		vertexCount++;
 		edgeCount += edges.size();
