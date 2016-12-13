@@ -23,7 +23,7 @@ public class VertexEdgesInputReader extends VertexPartitionMasterInputReader {
 	private Integer currentVertex;
 
 
-	protected VertexEdgesInputReader(int partitionSize, String partitionOutputDir) {
+	public VertexEdgesInputReader(int partitionSize, String partitionOutputDir) {
 		super(partitionSize, partitionOutputDir);
 	}
 
@@ -38,7 +38,7 @@ public class VertexEdgesInputReader extends VertexPartitionMasterInputReader {
 
 			while ((line = br.readLine()) != null) {
 				if (line.startsWith("\t")) {
-					edges.add(Integer.parseInt(line));
+					edges.add(Integer.parseInt(line.substring(1)));
 				} else {
 					writeVertex(currentVertex, edges);
 					edges.clear();

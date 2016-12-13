@@ -26,13 +26,16 @@ public class QuickTest {
 		final String outputDir = "output";
 
 
-		//		final String inputData = "../../Data/cctest.txt";
-		//		final Class<? extends AbstractMasterInputReader> inputReader = VertexEdgesInputReader.class;
+		//		final String inputFile = "../../Data/cctest.txt";
+		//		final BaseMasterInputReader inputReader = new VertexEdgesInputReader(1, inputDir);
+		//		final BaseInputPartitionDistributor inputDistributor = new ContinousInputPartitionDistributor();
+		//		final BaseMasterOutputCombiner outputCombiner = new CCOutputWriter();
 
 		final String inputFile = "../../Data/Wiki-Vote.txt";
 		final BaseMasterInputReader inputReader = new EdgeListReader(4000, inputDir);
 		final BaseInputPartitionDistributor inputDistributor = new ContinousInputPartitionDistributor();
 		final BaseMasterOutputCombiner outputCombiner = new CCOutputWriter();
+
 		final Class<? extends AbstractVertex> vertexClass = CCDetectVertex.class;
 
 		//Thread.sleep(10000);
