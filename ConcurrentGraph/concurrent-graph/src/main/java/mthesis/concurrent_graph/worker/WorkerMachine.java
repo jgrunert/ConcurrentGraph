@@ -37,11 +37,15 @@ public class WorkerMachine extends AbstractMachine {
 	private final Class<? extends AbstractVertex> vertexClass;
 	private final List<AbstractVertex> vertices;
 	private final Set<Integer> vertexIds = new HashSet<>();
-	private int superstepNo;
-	private int superstepMessagesSent;
 	private final Set<Integer> channelBarrierWaitSet = new HashSet<>();
 	private final Map<Integer, List<VertexMessage>> vertexMessageBuckets = new HashMap<>();
 	private final List<VertexMessage> bufferedLoopbackMessages = new ArrayList<>();
+
+	private int superstepNo;
+	private SuperstepStats superstepStats;
+
+	private final Set<Integer> localVertices = new HashSet<>();
+	private final VertexMachineRegistry remoteVertexMachineRegistry = new VertexMachineRegistry();
 
 
 	public WorkerMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
@@ -82,6 +86,7 @@ public class WorkerMachine extends AbstractMachine {
 		}
 
 		for(final Integer vertexId : vertexIds) {
+			localVertices.add(vertexId);
 			vertexMessageBuckets.put(vertexId, new ArrayList<>());
 		}
 	}
@@ -102,6 +107,7 @@ public class WorkerMachine extends AbstractMachine {
 	@Override
 	public void run() {
 		logger.info("Starting run worker node " + ownId);
+		superstepStats = new SuperstepStats();
 
 		// Wait for master to signal that input ready
 		superstepNo = -2;
@@ -111,7 +117,8 @@ public class WorkerMachine extends AbstractMachine {
 		}
 		superstepNo++;
 		loadVertices(input);
-		sendMasterSuperstepFinished(vertices.size());
+		superstepStats.ActiveVertices = vertices.size();
+		sendMasterSuperstepFinished();
 
 		try {
 			while(!Thread.interrupted()) {
@@ -120,20 +127,19 @@ public class WorkerMachine extends AbstractMachine {
 					break;
 				}
 				superstepNo++;
-				superstepMessagesSent = 0;
+				superstepStats = new SuperstepStats();
 				logger.debug("Starting superstep " + superstepNo); // TODO trace
 
 
 				// Compute and Messaging (done by vertices)
-				int activeVertices = 0;
 				for(final AbstractVertex vertex : vertices) {
 					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(vertex.id);
 					vertex.superstep(vertMsgs, superstepNo);
 					vertMsgs.clear();
 					if(vertex.isActive())
-						activeVertices++;
+						superstepStats.ActiveVertices++;
 				}
-				logger.debug("Worker finished superstep compute " + superstepNo + " activeVertices: " + activeVertices);
+				logger.debug("Worker finished superstep compute " + superstepNo + " activeVertices: " + superstepStats.ActiveVertices);
 
 
 				// Barrier sync with other workers;
@@ -169,7 +175,7 @@ public class WorkerMachine extends AbstractMachine {
 
 
 				// Signal master that ready
-				sendMasterSuperstepFinished(activeVertices);
+				sendMasterSuperstepFinished();
 			}
 		}
 		finally {
@@ -255,23 +261,41 @@ public class WorkerMachine extends AbstractMachine {
 
 
 	private void sendWorkersSuperstepFinished() {
-		messaging.sendMessage(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Barrier(superstepNo, ownId), true);
+		superstepStats.ControlMessagesSent++;
+		messaging.sendMessageBroadcast(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Barrier(superstepNo, ownId), true);
 	}
 
-	private void sendMasterSuperstepFinished(int activeVertices) {
-		messaging.sendMessage(masterId, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
-				activeVertices, superstepMessagesSent), true);
+	private void sendMasterSuperstepFinished() {
+		superstepStats.ControlMessagesSent++;
+		messaging.sendMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
+				superstepStats), true);
 	}
 
 	private void sendMasterFinishedMessage() {
-		messaging.sendMessage(masterId, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
+		superstepStats.ControlMessagesSent++;
+		messaging.sendMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
 	}
 
-	public void sendVertexMessage(int fromVertex, int toVertex, int content) {
-		superstepMessagesSent++;
-		final MessageEnvelope message = VertexMessageBuildUtil.Build(superstepNo, ownId, fromVertex, toVertex, content);
-		messaging.sendMessage(otherWorkerIds, message, false);
-		bufferedLoopbackMessages.add(message.getVertexMessage());
+	public void sendVertexMessage(int srcVertex, int dstVertex, int content) {
+		final MessageEnvelope message = VertexMessageBuildUtil.Build(superstepNo, ownId, srcVertex, dstVertex, content);
+
+		if(localVertices.contains(dstVertex)) {
+			// Local message
+			superstepStats.VertexMessagesLocal++;
+			bufferedLoopbackMessages.add(message.getVertexMessage());
+		}
+		else {
+			// Remote message
+			final Integer remoteMachine = remoteVertexMachineRegistry.lookupEntry(dstVertex);
+			if(remoteMachine != null) {
+				superstepStats.VertexMessagesUnicast++;
+				messaging.sendMessageUnicast(remoteMachine, message, false);
+			}
+			else {
+				superstepStats.VertexMessagesBroadcast++;
+				messaging.sendMessageBroadcast(otherWorkerIds, message, false);
+			}
+		}
 	}
 
 

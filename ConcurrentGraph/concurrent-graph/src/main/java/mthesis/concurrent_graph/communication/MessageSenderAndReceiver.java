@@ -119,7 +119,7 @@ public class MessageSenderAndReceiver {
 	}
 
 
-	public void sendMessage(int dstId, MessageEnvelope message, boolean flush) {
+	public void sendMessageUnicast(int dstId, MessageEnvelope message, boolean flush) {
 		// TODO Checks
 		final Channel ch = activeChannels.get(dstId);
 		if(flush)
@@ -127,10 +127,10 @@ public class MessageSenderAndReceiver {
 		else
 			ch.write(message);
 	}
-	public void sendMessage(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
+	public void sendMessageBroadcast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
 		// TODO Checks
 		for(final Integer machineId : dstIds) {
-			sendMessage(machineId, message, flush);
+			sendMessageUnicast(machineId, message, flush);
 		}
 	}
 

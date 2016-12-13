@@ -4,6 +4,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
+import mthesis.concurrent_graph.worker.SuperstepStats;
 
 
 /**
@@ -40,10 +41,15 @@ public class ControlMessageBuildUtil {
 				.build()).build();
 	}
 
-	public static MessageEnvelope Build_Worker_Superstep_Finished(int superstepNo, int srcMachineId, int activeVertices, int superstepMessagesSent) {
+	public static MessageEnvelope Build_Worker_Superstep_Finished(int superstepNo, int srcMachineId, SuperstepStats stats) {
 		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder()
-				.setActiveVertices(activeVertices)
-				.setMessagesSent(superstepMessagesSent)
+				.setActiveVertices(stats.ActiveVertices)
+				.setControlMessagesSent(stats.ControlMessagesSent)
+				.setVertexMessagesLocal(stats.VertexMessagesLocal)
+				.setVertexMessagesUnicast(stats.VertexMessagesUnicast)
+				.setVertexMessagesBroadcast(stats.VertexMessagesBroadcast)
+				.setNewVertexMachinesDiscovered(stats.NewVertexMachinesDiscovered)
+				.setTotalVertexMachinesDiscovered(stats.TotalVertexMachinesDiscovered)
 				.build();
 		return MessageEnvelope.newBuilder().setControlMessage(
 				ControlMessage.newBuilder()

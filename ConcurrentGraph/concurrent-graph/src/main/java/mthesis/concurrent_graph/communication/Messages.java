@@ -1841,53 +1841,63 @@ public final class Messages {
        */
       int getActiveVertices();
 
-      // optional int32 MessagesSent = 2;
+      // optional int32 ControlMessagesSent = 2;
       /**
-       * <code>optional int32 MessagesSent = 2;</code>
+       * <code>optional int32 ControlMessagesSent = 2;</code>
        */
-      boolean hasMessagesSent();
+      boolean hasControlMessagesSent();
       /**
-       * <code>optional int32 MessagesSent = 2;</code>
+       * <code>optional int32 ControlMessagesSent = 2;</code>
        */
-      int getMessagesSent();
+      int getControlMessagesSent();
 
-      // optional int32 VertexMessagesUnicast = 3;
+      // optional int32 VertexMessagesLocal = 3;
       /**
-       * <code>optional int32 VertexMessagesUnicast = 3;</code>
+       * <code>optional int32 VertexMessagesLocal = 3;</code>
+       */
+      boolean hasVertexMessagesLocal();
+      /**
+       * <code>optional int32 VertexMessagesLocal = 3;</code>
+       */
+      int getVertexMessagesLocal();
+
+      // optional int32 VertexMessagesUnicast = 4;
+      /**
+       * <code>optional int32 VertexMessagesUnicast = 4;</code>
        */
       boolean hasVertexMessagesUnicast();
       /**
-       * <code>optional int32 VertexMessagesUnicast = 3;</code>
+       * <code>optional int32 VertexMessagesUnicast = 4;</code>
        */
       int getVertexMessagesUnicast();
 
-      // optional int32 VertexMessagesBroadcast = 4;
+      // optional int32 VertexMessagesBroadcast = 5;
       /**
-       * <code>optional int32 VertexMessagesBroadcast = 4;</code>
+       * <code>optional int32 VertexMessagesBroadcast = 5;</code>
        */
       boolean hasVertexMessagesBroadcast();
       /**
-       * <code>optional int32 VertexMessagesBroadcast = 4;</code>
+       * <code>optional int32 VertexMessagesBroadcast = 5;</code>
        */
       int getVertexMessagesBroadcast();
 
-      // optional int32 NewVertexMachinesDiscovered = 5;
+      // optional int32 NewVertexMachinesDiscovered = 6;
       /**
-       * <code>optional int32 NewVertexMachinesDiscovered = 5;</code>
+       * <code>optional int32 NewVertexMachinesDiscovered = 6;</code>
        */
       boolean hasNewVertexMachinesDiscovered();
       /**
-       * <code>optional int32 NewVertexMachinesDiscovered = 5;</code>
+       * <code>optional int32 NewVertexMachinesDiscovered = 6;</code>
        */
       int getNewVertexMachinesDiscovered();
 
-      // optional int32 TotalVertexMachinesDiscovered = 6;
+      // optional int32 TotalVertexMachinesDiscovered = 7;
       /**
-       * <code>optional int32 TotalVertexMachinesDiscovered = 6;</code>
+       * <code>optional int32 TotalVertexMachinesDiscovered = 7;</code>
        */
       boolean hasTotalVertexMachinesDiscovered();
       /**
-       * <code>optional int32 TotalVertexMachinesDiscovered = 6;</code>
+       * <code>optional int32 TotalVertexMachinesDiscovered = 7;</code>
        */
       int getTotalVertexMachinesDiscovered();
     }
@@ -1949,26 +1959,31 @@ public final class Messages {
               }
               case 16: {
                 bitField0_ |= 0x00000002;
-                messagesSent_ = input.readInt32();
+                controlMessagesSent_ = input.readInt32();
                 break;
               }
               case 24: {
                 bitField0_ |= 0x00000004;
-                vertexMessagesUnicast_ = input.readInt32();
+                vertexMessagesLocal_ = input.readInt32();
                 break;
               }
               case 32: {
                 bitField0_ |= 0x00000008;
-                vertexMessagesBroadcast_ = input.readInt32();
+                vertexMessagesUnicast_ = input.readInt32();
                 break;
               }
               case 40: {
                 bitField0_ |= 0x00000010;
-                newVertexMachinesDiscovered_ = input.readInt32();
+                vertexMessagesBroadcast_ = input.readInt32();
                 break;
               }
               case 48: {
                 bitField0_ |= 0x00000020;
+                newVertexMachinesDiscovered_ = input.readInt32();
+                break;
+              }
+              case 56: {
+                bitField0_ |= 0x00000040;
                 totalVertexMachinesDiscovered_ = input.readInt32();
                 break;
               }
@@ -2028,81 +2043,97 @@ public final class Messages {
         return activeVertices_;
       }
 
-      // optional int32 MessagesSent = 2;
-      public static final int MESSAGESSENT_FIELD_NUMBER = 2;
-      private int messagesSent_;
+      // optional int32 ControlMessagesSent = 2;
+      public static final int CONTROLMESSAGESSENT_FIELD_NUMBER = 2;
+      private int controlMessagesSent_;
       /**
-       * <code>optional int32 MessagesSent = 2;</code>
+       * <code>optional int32 ControlMessagesSent = 2;</code>
        */
-      public boolean hasMessagesSent() {
+      public boolean hasControlMessagesSent() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional int32 MessagesSent = 2;</code>
+       * <code>optional int32 ControlMessagesSent = 2;</code>
        */
-      public int getMessagesSent() {
-        return messagesSent_;
+      public int getControlMessagesSent() {
+        return controlMessagesSent_;
       }
 
-      // optional int32 VertexMessagesUnicast = 3;
-      public static final int VERTEXMESSAGESUNICAST_FIELD_NUMBER = 3;
-      private int vertexMessagesUnicast_;
+      // optional int32 VertexMessagesLocal = 3;
+      public static final int VERTEXMESSAGESLOCAL_FIELD_NUMBER = 3;
+      private int vertexMessagesLocal_;
       /**
-       * <code>optional int32 VertexMessagesUnicast = 3;</code>
+       * <code>optional int32 VertexMessagesLocal = 3;</code>
        */
-      public boolean hasVertexMessagesUnicast() {
+      public boolean hasVertexMessagesLocal() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional int32 VertexMessagesUnicast = 3;</code>
+       * <code>optional int32 VertexMessagesLocal = 3;</code>
+       */
+      public int getVertexMessagesLocal() {
+        return vertexMessagesLocal_;
+      }
+
+      // optional int32 VertexMessagesUnicast = 4;
+      public static final int VERTEXMESSAGESUNICAST_FIELD_NUMBER = 4;
+      private int vertexMessagesUnicast_;
+      /**
+       * <code>optional int32 VertexMessagesUnicast = 4;</code>
+       */
+      public boolean hasVertexMessagesUnicast() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional int32 VertexMessagesUnicast = 4;</code>
        */
       public int getVertexMessagesUnicast() {
         return vertexMessagesUnicast_;
       }
 
-      // optional int32 VertexMessagesBroadcast = 4;
-      public static final int VERTEXMESSAGESBROADCAST_FIELD_NUMBER = 4;
+      // optional int32 VertexMessagesBroadcast = 5;
+      public static final int VERTEXMESSAGESBROADCAST_FIELD_NUMBER = 5;
       private int vertexMessagesBroadcast_;
       /**
-       * <code>optional int32 VertexMessagesBroadcast = 4;</code>
+       * <code>optional int32 VertexMessagesBroadcast = 5;</code>
        */
       public boolean hasVertexMessagesBroadcast() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional int32 VertexMessagesBroadcast = 4;</code>
+       * <code>optional int32 VertexMessagesBroadcast = 5;</code>
        */
       public int getVertexMessagesBroadcast() {
         return vertexMessagesBroadcast_;
       }
 
-      // optional int32 NewVertexMachinesDiscovered = 5;
-      public static final int NEWVERTEXMACHINESDISCOVERED_FIELD_NUMBER = 5;
+      // optional int32 NewVertexMachinesDiscovered = 6;
+      public static final int NEWVERTEXMACHINESDISCOVERED_FIELD_NUMBER = 6;
       private int newVertexMachinesDiscovered_;
       /**
-       * <code>optional int32 NewVertexMachinesDiscovered = 5;</code>
+       * <code>optional int32 NewVertexMachinesDiscovered = 6;</code>
        */
       public boolean hasNewVertexMachinesDiscovered() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
+        return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional int32 NewVertexMachinesDiscovered = 5;</code>
+       * <code>optional int32 NewVertexMachinesDiscovered = 6;</code>
        */
       public int getNewVertexMachinesDiscovered() {
         return newVertexMachinesDiscovered_;
       }
 
-      // optional int32 TotalVertexMachinesDiscovered = 6;
-      public static final int TOTALVERTEXMACHINESDISCOVERED_FIELD_NUMBER = 6;
+      // optional int32 TotalVertexMachinesDiscovered = 7;
+      public static final int TOTALVERTEXMACHINESDISCOVERED_FIELD_NUMBER = 7;
       private int totalVertexMachinesDiscovered_;
       /**
-       * <code>optional int32 TotalVertexMachinesDiscovered = 6;</code>
+       * <code>optional int32 TotalVertexMachinesDiscovered = 7;</code>
        */
       public boolean hasTotalVertexMachinesDiscovered() {
-        return ((bitField0_ & 0x00000020) == 0x00000020);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
-       * <code>optional int32 TotalVertexMachinesDiscovered = 6;</code>
+       * <code>optional int32 TotalVertexMachinesDiscovered = 7;</code>
        */
       public int getTotalVertexMachinesDiscovered() {
         return totalVertexMachinesDiscovered_;
@@ -2110,7 +2141,8 @@ public final class Messages {
 
       private void initFields() {
         activeVertices_ = 0;
-        messagesSent_ = 0;
+        controlMessagesSent_ = 0;
+        vertexMessagesLocal_ = 0;
         vertexMessagesUnicast_ = 0;
         vertexMessagesBroadcast_ = 0;
         newVertexMachinesDiscovered_ = 0;
@@ -2132,19 +2164,22 @@ public final class Messages {
           output.writeInt32(1, activeVertices_);
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          output.writeInt32(2, messagesSent_);
+          output.writeInt32(2, controlMessagesSent_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          output.writeInt32(3, vertexMessagesUnicast_);
+          output.writeInt32(3, vertexMessagesLocal_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
-          output.writeInt32(4, vertexMessagesBroadcast_);
+          output.writeInt32(4, vertexMessagesUnicast_);
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
-          output.writeInt32(5, newVertexMachinesDiscovered_);
+          output.writeInt32(5, vertexMessagesBroadcast_);
         }
         if (((bitField0_ & 0x00000020) == 0x00000020)) {
-          output.writeInt32(6, totalVertexMachinesDiscovered_);
+          output.writeInt32(6, newVertexMachinesDiscovered_);
+        }
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          output.writeInt32(7, totalVertexMachinesDiscovered_);
         }
         getUnknownFields().writeTo(output);
       }
@@ -2161,23 +2196,27 @@ public final class Messages {
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(2, messagesSent_);
+            .computeInt32Size(2, controlMessagesSent_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(3, vertexMessagesUnicast_);
+            .computeInt32Size(3, vertexMessagesLocal_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(4, vertexMessagesBroadcast_);
+            .computeInt32Size(4, vertexMessagesUnicast_);
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(5, newVertexMachinesDiscovered_);
+            .computeInt32Size(5, vertexMessagesBroadcast_);
         }
         if (((bitField0_ & 0x00000020) == 0x00000020)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(6, totalVertexMachinesDiscovered_);
+            .computeInt32Size(6, newVertexMachinesDiscovered_);
+        }
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt32Size(7, totalVertexMachinesDiscovered_);
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -2297,16 +2336,18 @@ public final class Messages {
           super.clear();
           activeVertices_ = 0;
           bitField0_ = (bitField0_ & ~0x00000001);
-          messagesSent_ = 0;
+          controlMessagesSent_ = 0;
           bitField0_ = (bitField0_ & ~0x00000002);
-          vertexMessagesUnicast_ = 0;
+          vertexMessagesLocal_ = 0;
           bitField0_ = (bitField0_ & ~0x00000004);
-          vertexMessagesBroadcast_ = 0;
+          vertexMessagesUnicast_ = 0;
           bitField0_ = (bitField0_ & ~0x00000008);
-          newVertexMachinesDiscovered_ = 0;
+          vertexMessagesBroadcast_ = 0;
           bitField0_ = (bitField0_ & ~0x00000010);
-          totalVertexMachinesDiscovered_ = 0;
+          newVertexMachinesDiscovered_ = 0;
           bitField0_ = (bitField0_ & ~0x00000020);
+          totalVertexMachinesDiscovered_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000040);
           return this;
         }
 
@@ -2342,21 +2383,25 @@ public final class Messages {
           if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
             to_bitField0_ |= 0x00000002;
           }
-          result.messagesSent_ = messagesSent_;
+          result.controlMessagesSent_ = controlMessagesSent_;
           if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
             to_bitField0_ |= 0x00000004;
           }
-          result.vertexMessagesUnicast_ = vertexMessagesUnicast_;
+          result.vertexMessagesLocal_ = vertexMessagesLocal_;
           if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
             to_bitField0_ |= 0x00000008;
           }
-          result.vertexMessagesBroadcast_ = vertexMessagesBroadcast_;
+          result.vertexMessagesUnicast_ = vertexMessagesUnicast_;
           if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
             to_bitField0_ |= 0x00000010;
           }
-          result.newVertexMachinesDiscovered_ = newVertexMachinesDiscovered_;
+          result.vertexMessagesBroadcast_ = vertexMessagesBroadcast_;
           if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
             to_bitField0_ |= 0x00000020;
+          }
+          result.newVertexMachinesDiscovered_ = newVertexMachinesDiscovered_;
+          if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+            to_bitField0_ |= 0x00000040;
           }
           result.totalVertexMachinesDiscovered_ = totalVertexMachinesDiscovered_;
           result.bitField0_ = to_bitField0_;
@@ -2378,8 +2423,11 @@ public final class Messages {
           if (other.hasActiveVertices()) {
             setActiveVertices(other.getActiveVertices());
           }
-          if (other.hasMessagesSent()) {
-            setMessagesSent(other.getMessagesSent());
+          if (other.hasControlMessagesSent()) {
+            setControlMessagesSent(other.getControlMessagesSent());
+          }
+          if (other.hasVertexMessagesLocal()) {
+            setVertexMessagesLocal(other.getVertexMessagesLocal());
           }
           if (other.hasVertexMessagesUnicast()) {
             setVertexMessagesUnicast(other.getVertexMessagesUnicast());
@@ -2453,166 +2501,199 @@ public final class Messages {
           return this;
         }
 
-        // optional int32 MessagesSent = 2;
-        private int messagesSent_ ;
+        // optional int32 ControlMessagesSent = 2;
+        private int controlMessagesSent_ ;
         /**
-         * <code>optional int32 MessagesSent = 2;</code>
+         * <code>optional int32 ControlMessagesSent = 2;</code>
          */
-        public boolean hasMessagesSent() {
+        public boolean hasControlMessagesSent() {
           return ((bitField0_ & 0x00000002) == 0x00000002);
         }
         /**
-         * <code>optional int32 MessagesSent = 2;</code>
+         * <code>optional int32 ControlMessagesSent = 2;</code>
          */
-        public int getMessagesSent() {
-          return messagesSent_;
+        public int getControlMessagesSent() {
+          return controlMessagesSent_;
         }
         /**
-         * <code>optional int32 MessagesSent = 2;</code>
+         * <code>optional int32 ControlMessagesSent = 2;</code>
          */
-        public Builder setMessagesSent(int value) {
+        public Builder setControlMessagesSent(int value) {
           bitField0_ |= 0x00000002;
-          messagesSent_ = value;
+          controlMessagesSent_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional int32 MessagesSent = 2;</code>
+         * <code>optional int32 ControlMessagesSent = 2;</code>
          */
-        public Builder clearMessagesSent() {
+        public Builder clearControlMessagesSent() {
           bitField0_ = (bitField0_ & ~0x00000002);
-          messagesSent_ = 0;
+          controlMessagesSent_ = 0;
           onChanged();
           return this;
         }
 
-        // optional int32 VertexMessagesUnicast = 3;
-        private int vertexMessagesUnicast_ ;
+        // optional int32 VertexMessagesLocal = 3;
+        private int vertexMessagesLocal_ ;
         /**
-         * <code>optional int32 VertexMessagesUnicast = 3;</code>
+         * <code>optional int32 VertexMessagesLocal = 3;</code>
          */
-        public boolean hasVertexMessagesUnicast() {
+        public boolean hasVertexMessagesLocal() {
           return ((bitField0_ & 0x00000004) == 0x00000004);
         }
         /**
-         * <code>optional int32 VertexMessagesUnicast = 3;</code>
+         * <code>optional int32 VertexMessagesLocal = 3;</code>
+         */
+        public int getVertexMessagesLocal() {
+          return vertexMessagesLocal_;
+        }
+        /**
+         * <code>optional int32 VertexMessagesLocal = 3;</code>
+         */
+        public Builder setVertexMessagesLocal(int value) {
+          bitField0_ |= 0x00000004;
+          vertexMessagesLocal_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional int32 VertexMessagesLocal = 3;</code>
+         */
+        public Builder clearVertexMessagesLocal() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          vertexMessagesLocal_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // optional int32 VertexMessagesUnicast = 4;
+        private int vertexMessagesUnicast_ ;
+        /**
+         * <code>optional int32 VertexMessagesUnicast = 4;</code>
+         */
+        public boolean hasVertexMessagesUnicast() {
+          return ((bitField0_ & 0x00000008) == 0x00000008);
+        }
+        /**
+         * <code>optional int32 VertexMessagesUnicast = 4;</code>
          */
         public int getVertexMessagesUnicast() {
           return vertexMessagesUnicast_;
         }
         /**
-         * <code>optional int32 VertexMessagesUnicast = 3;</code>
+         * <code>optional int32 VertexMessagesUnicast = 4;</code>
          */
         public Builder setVertexMessagesUnicast(int value) {
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000008;
           vertexMessagesUnicast_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional int32 VertexMessagesUnicast = 3;</code>
+         * <code>optional int32 VertexMessagesUnicast = 4;</code>
          */
         public Builder clearVertexMessagesUnicast() {
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
           vertexMessagesUnicast_ = 0;
           onChanged();
           return this;
         }
 
-        // optional int32 VertexMessagesBroadcast = 4;
+        // optional int32 VertexMessagesBroadcast = 5;
         private int vertexMessagesBroadcast_ ;
         /**
-         * <code>optional int32 VertexMessagesBroadcast = 4;</code>
+         * <code>optional int32 VertexMessagesBroadcast = 5;</code>
          */
         public boolean hasVertexMessagesBroadcast() {
-          return ((bitField0_ & 0x00000008) == 0x00000008);
+          return ((bitField0_ & 0x00000010) == 0x00000010);
         }
         /**
-         * <code>optional int32 VertexMessagesBroadcast = 4;</code>
+         * <code>optional int32 VertexMessagesBroadcast = 5;</code>
          */
         public int getVertexMessagesBroadcast() {
           return vertexMessagesBroadcast_;
         }
         /**
-         * <code>optional int32 VertexMessagesBroadcast = 4;</code>
+         * <code>optional int32 VertexMessagesBroadcast = 5;</code>
          */
         public Builder setVertexMessagesBroadcast(int value) {
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000010;
           vertexMessagesBroadcast_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional int32 VertexMessagesBroadcast = 4;</code>
+         * <code>optional int32 VertexMessagesBroadcast = 5;</code>
          */
         public Builder clearVertexMessagesBroadcast() {
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000010);
           vertexMessagesBroadcast_ = 0;
           onChanged();
           return this;
         }
 
-        // optional int32 NewVertexMachinesDiscovered = 5;
+        // optional int32 NewVertexMachinesDiscovered = 6;
         private int newVertexMachinesDiscovered_ ;
         /**
-         * <code>optional int32 NewVertexMachinesDiscovered = 5;</code>
+         * <code>optional int32 NewVertexMachinesDiscovered = 6;</code>
          */
         public boolean hasNewVertexMachinesDiscovered() {
-          return ((bitField0_ & 0x00000010) == 0x00000010);
+          return ((bitField0_ & 0x00000020) == 0x00000020);
         }
         /**
-         * <code>optional int32 NewVertexMachinesDiscovered = 5;</code>
+         * <code>optional int32 NewVertexMachinesDiscovered = 6;</code>
          */
         public int getNewVertexMachinesDiscovered() {
           return newVertexMachinesDiscovered_;
         }
         /**
-         * <code>optional int32 NewVertexMachinesDiscovered = 5;</code>
+         * <code>optional int32 NewVertexMachinesDiscovered = 6;</code>
          */
         public Builder setNewVertexMachinesDiscovered(int value) {
-          bitField0_ |= 0x00000010;
+          bitField0_ |= 0x00000020;
           newVertexMachinesDiscovered_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional int32 NewVertexMachinesDiscovered = 5;</code>
+         * <code>optional int32 NewVertexMachinesDiscovered = 6;</code>
          */
         public Builder clearNewVertexMachinesDiscovered() {
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ = (bitField0_ & ~0x00000020);
           newVertexMachinesDiscovered_ = 0;
           onChanged();
           return this;
         }
 
-        // optional int32 TotalVertexMachinesDiscovered = 6;
+        // optional int32 TotalVertexMachinesDiscovered = 7;
         private int totalVertexMachinesDiscovered_ ;
         /**
-         * <code>optional int32 TotalVertexMachinesDiscovered = 6;</code>
+         * <code>optional int32 TotalVertexMachinesDiscovered = 7;</code>
          */
         public boolean hasTotalVertexMachinesDiscovered() {
-          return ((bitField0_ & 0x00000020) == 0x00000020);
+          return ((bitField0_ & 0x00000040) == 0x00000040);
         }
         /**
-         * <code>optional int32 TotalVertexMachinesDiscovered = 6;</code>
+         * <code>optional int32 TotalVertexMachinesDiscovered = 7;</code>
          */
         public int getTotalVertexMachinesDiscovered() {
           return totalVertexMachinesDiscovered_;
         }
         /**
-         * <code>optional int32 TotalVertexMachinesDiscovered = 6;</code>
+         * <code>optional int32 TotalVertexMachinesDiscovered = 7;</code>
          */
         public Builder setTotalVertexMachinesDiscovered(int value) {
-          bitField0_ |= 0x00000020;
+          bitField0_ |= 0x00000040;
           totalVertexMachinesDiscovered_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional int32 TotalVertexMachinesDiscovered = 6;</code>
+         * <code>optional int32 TotalVertexMachinesDiscovered = 7;</code>
          */
         public Builder clearTotalVertexMachinesDiscovered() {
-          bitField0_ = (bitField0_ & ~0x00000020);
+          bitField0_ = (bitField0_ & ~0x00000040);
           totalVertexMachinesDiscovered_ = 0;
           onChanged();
           return this;
@@ -3255,24 +3336,25 @@ public final class Messages {
       "ssages.ControlMessage\"o\n\rVertexMessage\022\023" +
       "\n\013SuperstepNo\030\001 \001(\005\022\022\n\nSrcMachine\030\002 \001(\005\022" +
       "\021\n\tSrcVertex\030\003 \001(\005\022\021\n\tDstVertex\030\004 \001(\005\022\017\n" +
-      "\007Content\030\005 \001(\005\"\306\003\n\016ControlMessage\022Q\n\004Typ",
+      "\007Content\030\005 \001(\005\"\352\003\n\016ControlMessage\022Q\n\004Typ",
       "e\030\001 \001(\0162C.mthesis.concurrent_graph.commu" +
       "nication.messages.ControlMessageType\022\023\n\013" +
       "SuperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022g\n" +
       "\013WorkerStats\030\004 \001(\0132R.mthesis.concurrent_" +
       "graph.communication.messages.ControlMess" +
-      "age.WorkerStatsMessage\032\316\001\n\022WorkerStatsMe" +
-      "ssage\022\026\n\016ActiveVertices\030\001 \001(\005\022\024\n\014Message" +
-      "sSent\030\002 \001(\005\022\035\n\025VertexMessagesUnicast\030\003 \001" +
-      "(\005\022\037\n\027VertexMessagesBroadcast\030\004 \001(\005\022#\n\033N" +
-      "ewVertexMachinesDiscovered\030\005 \001(\005\022%\n\035Tota",
-      "lVertexMachinesDiscovered\030\006 \001(\005*\253\001\n\022Cont" +
-      "rolMessageType\022\025\n\021Channel_Handshake\020\001\022\034\n" +
-      "\030Worker_Superstep_Barrier\020\002\022\035\n\031Worker_Su" +
-      "perstep_Finished\020\003\022\023\n\017Worker_Finished\020\004\022" +
-      "\031\n\025Master_Next_Superstep\020\005\022\021\n\rMaster_Fin" +
-      "ish\020\006B2\n&mthesis.concurrent_graph.commun" +
-      "icationB\010Messages"
+      "age.WorkerStatsMessage\032\362\001\n\022WorkerStatsMe" +
+      "ssage\022\026\n\016ActiveVertices\030\001 \001(\005\022\033\n\023Control" +
+      "MessagesSent\030\002 \001(\005\022\033\n\023VertexMessagesLoca" +
+      "l\030\003 \001(\005\022\035\n\025VertexMessagesUnicast\030\004 \001(\005\022\037" +
+      "\n\027VertexMessagesBroadcast\030\005 \001(\005\022#\n\033NewVe",
+      "rtexMachinesDiscovered\030\006 \001(\005\022%\n\035TotalVer" +
+      "texMachinesDiscovered\030\007 \001(\005*\253\001\n\022ControlM" +
+      "essageType\022\025\n\021Channel_Handshake\020\001\022\034\n\030Wor" +
+      "ker_Superstep_Barrier\020\002\022\035\n\031Worker_Supers" +
+      "tep_Finished\020\003\022\023\n\017Worker_Finished\020\004\022\031\n\025M" +
+      "aster_Next_Superstep\020\005\022\021\n\rMaster_Finish\020" +
+      "\006B2\n&mthesis.concurrent_graph.communicat" +
+      "ionB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3302,7 +3384,7 @@ public final class Messages {
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor,
-              new java.lang.String[] { "ActiveVertices", "MessagesSent", "VertexMessagesUnicast", "VertexMessagesBroadcast", "NewVertexMachinesDiscovered", "TotalVertexMachinesDiscovered", });
+              new java.lang.String[] { "ActiveVertices", "ControlMessagesSent", "VertexMessagesLocal", "VertexMessagesUnicast", "VertexMessagesBroadcast", "NewVertexMachinesDiscovered", "TotalVertexMachinesDiscovered", });
           return null;
         }
       };

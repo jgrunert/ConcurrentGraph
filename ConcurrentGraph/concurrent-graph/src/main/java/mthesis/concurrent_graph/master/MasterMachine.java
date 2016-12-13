@@ -48,6 +48,7 @@ public class MasterMachine extends AbstractMachine {
 	public void run() {
 		logger.info("Master started");
 		final long startTime = System.currentTimeMillis();
+		long lastSuperstepTime = startTime;
 
 		try {
 			inputReader.newInstance().readAndPartition(inputData, inputDir, workerIds.size());
@@ -63,7 +64,12 @@ public class MasterMachine extends AbstractMachine {
 				// Wait for workers to send finished control messages.
 				int activeWorkers = 0;
 				int activeVertices = 0;
-				int messagesSent = 0;
+				int controlMessages = 0;
+				int vertexLocalMsgs = 0;
+				int vertexUnicastMsgs = 0;
+				int vertexBroadcastMsgs = 0;
+				int newMachinesDiscovered = 0;
+				int totalMachinesDiscovered = 0;
 				while(!workersWaitingFor.isEmpty()) {
 					final ControlMessage msg = inControlMessages.take();
 					if(msg.getType() == ControlMessageType.Worker_Superstep_Finished) {
@@ -72,7 +78,12 @@ public class MasterMachine extends AbstractMachine {
 							if(workerStats.getActiveVertices() > 0)
 								activeWorkers++;
 							activeVertices += workerStats.getActiveVertices();
-							messagesSent += workerStats.getMessagesSent();
+							controlMessages += workerStats.getControlMessagesSent();
+							vertexLocalMsgs += workerStats.getVertexMessagesLocal();
+							vertexUnicastMsgs += workerStats.getVertexMessagesUnicast();
+							vertexBroadcastMsgs += workerStats.getVertexMessagesBroadcast();
+							newMachinesDiscovered += workerStats.getNewVertexMachinesDiscovered();
+							totalMachinesDiscovered += workerStats.getTotalVertexMachinesDiscovered();
 							workersWaitingFor.remove(msg.getSrcMachine());
 						}
 						else {
@@ -82,7 +93,7 @@ public class MasterMachine extends AbstractMachine {
 					}
 					else if(msg.getType() == ControlMessageType.Worker_Finished) {
 						// Finished
-						logger.info("Received unexpected worker finish, terminate after " + (System.currentTimeMillis() - startTime) + "ms");
+						logger.warn("Received unexpected worker finish, terminate after " + (System.currentTimeMillis() - startTime) + "ms");
 						break;
 					}
 					else {
@@ -91,12 +102,20 @@ public class MasterMachine extends AbstractMachine {
 					}
 				}
 
+				final long timeNow = System.currentTimeMillis();
+				System.out.println("----- superstep " + superstepNo + " -----");
+				logger.info(String.format("--- Master finished superstep %d after %dms (total %dms). activeWorkers: %d activeVertices: %d",
+						superstepNo, (timeNow - lastSuperstepTime), (timeNow - startTime), activeWorkers, activeVertices));
+				logger.debug(String.format("    controlMessages: %d, vertexLocalMsgs: %d, vertexUnicastMsgs: %d, vertexBroadcastMsgs: %d",
+						controlMessages, vertexLocalMsgs, vertexUnicastMsgs, vertexBroadcastMsgs));
+				logger.debug(String.format("    newMachinesDiscovered: %d, totalMachinesDiscovered: %d",
+						newMachinesDiscovered, totalMachinesDiscovered));
+				lastSuperstepTime = timeNow;
+
 				if(activeWorkers > 0) {
 					// Next superstep
-					logger.debug(String.format("Master finished superstep %d after %dms. activeWorkers: %d activeVertices: %d messages: %d",
-							superstepNo, (System.currentTimeMillis() - startTime), activeWorkers, activeVertices, messagesSent));
 					superstepNo++;
-					logger.trace("Next master superstep: " + superstepNo);
+					logger.info("Next master superstep: " + superstepNo);
 					signalWorkersStartingSuperstep();
 				}
 				else {
@@ -156,12 +175,11 @@ public class MasterMachine extends AbstractMachine {
 
 
 	private void signalWorkersStartingSuperstep() {
-		System.out.println("----- superstep " + superstepNo + " -----");
-		messaging.sendMessage(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId), true);
+		messaging.sendMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId), true);
 	}
 
 	private void signalWorkersFinish() {
-		messaging.sendMessage(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
+		messaging.sendMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
 	}
 
 

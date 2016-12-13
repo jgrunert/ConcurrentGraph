@@ -2,7 +2,9 @@ package mthesis.concurrent_graph.worker;
 
 
 public class SuperstepStats {
-	public int MessagesSent;
+	public int ActiveVertices;
+	public int ControlMessagesSent;
+	public int VertexMessagesLocal;
 	public int VertexMessagesUnicast;
 	public int VertexMessagesBroadcast;
 	public int NewVertexMachinesDiscovered;

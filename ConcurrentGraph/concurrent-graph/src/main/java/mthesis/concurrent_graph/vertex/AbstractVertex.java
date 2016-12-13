@@ -26,8 +26,10 @@ public abstract class AbstractVertex {
 	public void superstep(List<VertexMessage> messages, int superstep) {
 		if (!messages.isEmpty())
 			active = true;
-		this.superstepNo = superstep;
-		compute(messages);
+		if(active) {
+			this.superstepNo = superstep;
+			compute(messages);
+		}
 	}
 
 	protected abstract void compute(List<VertexMessage> messages);
