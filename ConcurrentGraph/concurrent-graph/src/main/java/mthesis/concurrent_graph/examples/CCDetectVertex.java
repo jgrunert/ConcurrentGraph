@@ -6,7 +6,7 @@ import java.util.Set;
 
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
-import mthesis.concurrent_graph.worker.WorkerNode;
+import mthesis.concurrent_graph.worker.WorkerMachine;
 
 /**
  * Example vertex to detect connected components in a graph
@@ -19,7 +19,7 @@ public class CCDetectVertex extends AbstractVertex {
 	private int value;
 	private final Set<Integer> allNeighbors;
 
-	public CCDetectVertex(List<Integer> neighbors, int id, WorkerNode workerManager) {
+	public CCDetectVertex(List<Integer> neighbors, int id, WorkerMachine workerManager) {
 		super(neighbors, id, workerManager);
 		allNeighbors = new HashSet<>(neighbors);
 		value = id;
@@ -37,7 +37,7 @@ public class CCDetectVertex extends AbstractVertex {
 
 		int min = value;
 		for(final VertexMessage msg : messages) {
-			allNeighbors.add(msg.getFromVertex());
+			allNeighbors.add(msg.getSrcVertex());
 			final int msgValue = msg.getContent();
 			//			System.out.println(superstepNo + " Get " + msgValue + " on " + id + " from " + msg.FromVertex);
 			min = Math.min(min, msgValue);

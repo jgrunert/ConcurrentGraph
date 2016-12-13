@@ -11,10 +11,10 @@ import mthesis.concurrent_graph.examples.CCOutputWriter;
 import mthesis.concurrent_graph.examples.EdgeListReader;
 import mthesis.concurrent_graph.master.AbstractMasterInputReader;
 import mthesis.concurrent_graph.master.AbstractMasterOutputWriter;
-import mthesis.concurrent_graph.master.MasterNode;
+import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
-import mthesis.concurrent_graph.worker.WorkerNode;
+import mthesis.concurrent_graph.worker.WorkerMachine;
 
 public class QuickTest {
 
@@ -25,9 +25,11 @@ public class QuickTest {
 		final String inputData = "../../Data/Wiki-Vote.txt";
 		final Class<? extends AbstractMasterInputReader> inputReader = EdgeListReader.class;
 
+		//Thread.sleep(10000);
+
 		final String inputDir = "input";
 		final String outputDir = "output";
-		final int numWorkers = 2;
+		final int numWorkers = 4;
 		final String host = "localhost";
 		final int basePort = 23499;
 		final Class<? extends AbstractMasterOutputWriter> outputWriter = CCOutputWriter.class;
@@ -45,7 +47,7 @@ public class QuickTest {
 		//final MasterNode master =
 		startMaster(allCfg, -1, allWorkerIds, inputData, inputDir, outputDir, inputReader, outputWriter);
 
-		final List<WorkerNode> workers = new ArrayList<>();
+		final List<WorkerMachine> workers = new ArrayList<>();
 		for(int i = 0; i < numWorkers; i++) {
 			workers.add(startWorker(allCfg, i, allWorkerIds, inputDir + File.separator + i + ".txt", outputDir, vertexClass));
 		}
@@ -64,19 +66,19 @@ public class QuickTest {
 		//		System.out.println("End");
 	}
 
-	private static WorkerNode startWorker(Map<Integer, Pair<String, Integer>> allCfg,
+	private static WorkerMachine startWorker(Map<Integer, Pair<String, Integer>> allCfg,
 			int id, List<Integer> allWorkers, String input, String output,
 			Class<? extends AbstractVertex> vertexClass) {
-		final WorkerNode node = new WorkerNode(allCfg, id, allWorkers, -1, input, output, vertexClass);
+		final WorkerMachine node = new WorkerMachine(allCfg, id, allWorkers, -1, input, output, vertexClass);
 		node.start();
 		return node;
 	}
 
-	private static MasterNode startMaster(Map<Integer, Pair<String, Integer>> allCfg,
+	private static MasterMachine startMaster(Map<Integer, Pair<String, Integer>> allCfg,
 			int id, List<Integer> allWorkers, String inputData, String inputDir, String outputDir,
 			Class<? extends AbstractMasterInputReader> inputReader,
 			Class<? extends AbstractMasterOutputWriter> outputWriter) {
-		final MasterNode node = new MasterNode(allCfg, id, allWorkers, inputData, inputDir, outputDir, inputReader, outputWriter);
+		final MasterMachine node = new MasterMachine(allCfg, id, allWorkers, inputData, inputDir, outputDir, inputReader, outputWriter);
 		node.start();
 		return node;
 	}

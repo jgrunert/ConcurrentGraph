@@ -9,13 +9,13 @@ import java.util.Set;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
-import mthesis.concurrent_graph.node.AbstractNode;
+import mthesis.concurrent_graph.node.AbstractMachine;
 import mthesis.concurrent_graph.util.Pair;
 
 /**
  * Concurrent graph processing master main
  */
-public class MasterNode extends AbstractNode {
+public class MasterMachine extends AbstractMachine {
 
 	private final List<Integer> workerIds;
 	private int superstepNo = -1;
@@ -27,7 +27,7 @@ public class MasterNode extends AbstractNode {
 	private final Class<? extends AbstractMasterOutputWriter> outputWriter;
 
 
-	public MasterNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
+	public MasterMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
 			String inputData, String inputDir, String outputDir,
 			Class<? extends AbstractMasterInputReader> inputReader,
 			Class<? extends AbstractMasterOutputWriter> outputWriter) {
@@ -72,11 +72,11 @@ public class MasterNode extends AbstractNode {
 								activeWorkers++;
 							activeVertices += msgActiveVertices;
 							messagesSent += msg.getContent2();
-							workersWaitingFor.remove(msg.getFromNode());
+							workersWaitingFor.remove(msg.getSrcMachine());
 						}
 						else {
 							logger.error("Recieved Control_Worker_Superstep_Finished for wrong superstep: " + msg.getSuperstepNo() +
-									" from " + msg.getFromNode());
+									" from " + msg.getSrcMachine());
 						}
 					}
 					else if(msg.getType() == ControlMessageType.Worker_Finished) {
@@ -86,7 +86,7 @@ public class MasterNode extends AbstractNode {
 					}
 					else {
 						logger.error("Recieved non Control_Worker_Superstep_Finished message: " + msg.getType() +
-								" from " + msg.getFromNode());
+								" from " + msg.getSrcMachine());
 					}
 				}
 
@@ -132,7 +132,7 @@ public class MasterNode extends AbstractNode {
 				ControlMessage msg;
 				msg = inControlMessages.take();
 				if(msg.getType() == ControlMessageType.Worker_Finished) {
-					workersWaitingFor.remove(msg.getFromNode());
+					workersWaitingFor.remove(msg.getSrcMachine());
 				}
 			}
 		}

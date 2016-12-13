@@ -10,9 +10,9 @@ message MessageEnvelope {
 
 message VertexMessage {
 		optional int32 SuperstepNo = 1;
-		optional int32 FromNode = 2;  // TODO ToNode?
-		optional int32 FromVertex = 3;
-		optional int32 ToVertex = 4;
+		optional int32 SrcMachine = 2;  // TODO ToNode?
+		optional int32 SrcVertex = 3;
+		optional int32 DstVertex = 4;
 		optional int32 Content = 5;  // TODO Type
 		//bytes Content = 5;
 	}
@@ -37,7 +37,7 @@ message VertexMessage {
 	message ControlMessage {
 		optional ControlMessageType Type = 1;
 		optional int32 SuperstepNo = 2;
-		optional int32 FromNode = 3;
+		optional int32 SrcMachine = 3;
 		optional int32 Content1 = 4;//TODO Type
 		optional int32 Content2 = 5;//TODO Type
 		//bytes Content = 4;

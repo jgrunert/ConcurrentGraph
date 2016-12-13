@@ -33,7 +33,7 @@ import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
-import mthesis.concurrent_graph.node.AbstractNode;
+import mthesis.concurrent_graph.node.AbstractMachine;
 import mthesis.concurrent_graph.util.Pair;
 
 
@@ -54,11 +54,11 @@ public class MessageSenderAndReceiver {
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
 
-	private final AbstractNode messageListener;
+	private final AbstractMachine messageListener;
 
 
 	public MessageSenderAndReceiver(Map<Integer, Pair<String, Integer>> machines, int ownId,
-			AbstractNode listener) {
+			AbstractMachine listener) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.ownId = ownId;
 		this.machines = machines;

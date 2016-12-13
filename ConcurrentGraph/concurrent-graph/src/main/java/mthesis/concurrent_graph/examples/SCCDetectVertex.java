@@ -4,7 +4,7 @@ import java.util.List;
 
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
-import mthesis.concurrent_graph.worker.WorkerNode;
+import mthesis.concurrent_graph.worker.WorkerMachine;
 
 /**
  * Example vertex to detect strongly connected components in a graph
@@ -16,7 +16,7 @@ public class SCCDetectVertex extends AbstractVertex {
 
 	private int value;
 
-	public SCCDetectVertex(List<Integer> neighbors, int id, WorkerNode workerManager) {
+	public SCCDetectVertex(List<Integer> neighbors, int id, WorkerMachine workerManager) {
 		super(neighbors, id, workerManager);
 		value = id;
 	}
@@ -31,7 +31,7 @@ public class SCCDetectVertex extends AbstractVertex {
 		int min = value;
 		for(final VertexMessage msg : messages) {
 			final int msgValue = msg.getContent();
-			System.out.println("Get " + msgValue + " on " + id + " from " + msg.getFromVertex());
+			System.out.println("Get " + msgValue + " on " + id + " from " + msg.getSrcVertex());
 			min = Math.min(min, msgValue);
 		}
 

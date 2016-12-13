@@ -43,7 +43,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessageEnvelope>
 			channelState = ChannelState.Handshake;
 			ctx.writeAndFlush(
 					MessageEnvelope.newBuilder().setControlMessage(
-							ControlMessage.newBuilder().setType(ControlMessageType.Channel_Handshake).setFromNode(ownId).build()).build());
+							ControlMessage.newBuilder().setType(ControlMessageType.Channel_Handshake).setSrcMachine(ownId).build()).build());
 			// TODO AndFlush
 		} else {
 			logger.warn("Channel not inactive ignoring active channel " + ctx.channel().id());
@@ -66,7 +66,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessageEnvelope>
 		else if(msg.hasControlMessage()) {
 			switch (channelState) {
 				case Handshake:
-					connectedMachine = msg.getControlMessage().getFromNode();
+					connectedMachine = msg.getControlMessage().getSrcMachine();
 					activeChannels.put(connectedMachine, ctx.channel());
 					channelState = ChannelState.Active;
 					logger.debug("Channel handshake finished. Connected " + connectedMachine + " via " + ctx.channel().id());

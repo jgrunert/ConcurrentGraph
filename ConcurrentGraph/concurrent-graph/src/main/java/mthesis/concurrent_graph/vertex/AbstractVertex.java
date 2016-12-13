@@ -4,18 +4,18 @@ import java.util.Collection;
 import java.util.List;
 
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
-import mthesis.concurrent_graph.worker.WorkerNode;
+import mthesis.concurrent_graph.worker.WorkerMachine;
 
 
 public abstract class AbstractVertex {
 	public final int id;
 	protected final List<Integer> outgoingNeighbors;
 	protected int superstepNo = 0;
-	private final WorkerNode workerManager;
+	private final WorkerMachine workerManager;
 	private boolean active = true;
 
 
-	public AbstractVertex(List<Integer> neighbors, int id, WorkerNode workerManager) {
+	public AbstractVertex(List<Integer> neighbors, int id, WorkerMachine workerManager) {
 		super();
 		this.id = id;
 		this.outgoingNeighbors = neighbors;

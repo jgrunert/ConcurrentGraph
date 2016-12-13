@@ -21,14 +21,14 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.communication.VertexMessageBuildUtil;
-import mthesis.concurrent_graph.node.AbstractNode;
+import mthesis.concurrent_graph.node.AbstractMachine;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 
 /**
  * Concurrent graph processing worker main
  */
-public class WorkerNode extends AbstractNode {
+public class WorkerMachine extends AbstractMachine {
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
 	private final String input;
@@ -44,7 +44,7 @@ public class WorkerNode extends AbstractNode {
 	private final List<VertexMessage> bufferedLoopbackMessages = new ArrayList<>();
 
 
-	public WorkerNode(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
+	public WorkerMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
 			String input, String output, Class<? extends AbstractVertex> vertexClass) {
 		super(machines, ownId);
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
@@ -88,7 +88,7 @@ public class WorkerNode extends AbstractNode {
 	private void addVertex(int vertexId, List<Integer> edges) {
 		Constructor<?> c;
 		try {
-			c = vertexClass.getDeclaredConstructor(List.class, int.class, WorkerNode.class);
+			c = vertexClass.getDeclaredConstructor(List.class, int.class, WorkerMachine.class);
 			c.setAccessible(true);
 			vertices.add((AbstractVertex)c.newInstance(new ArrayList<>(edges), vertexId, this));
 			vertexIds.add(vertexId);
@@ -149,7 +149,7 @@ public class WorkerNode extends AbstractNode {
 						logger.error("Message from wrong superstep: " + msg);
 						continue;
 					}
-					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getToVertex());
+					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getDstVertex());
 					if(vertMsgs != null)
 						vertMsgs.add(msg);
 				}
@@ -160,7 +160,7 @@ public class WorkerNode extends AbstractNode {
 						logger.error("Message from wrong superstep: " + msg);
 						continue;
 					}
-					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getToVertex());
+					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getDstVertex());
 					if(vertMsgs != null)
 						vertMsgs.add(msg);
 				}
@@ -192,8 +192,8 @@ public class WorkerNode extends AbstractNode {
 						case Worker_Superstep_Barrier:
 							if(msg.getSuperstepNo() == superstepNo) {
 								final int a = channelBarrierWaitSet.size();
-								channelBarrierWaitSet.remove(msg.getFromNode());
-								System.out.println("Remove Control_Worker_Superstep_Barrier " + msg.getFromNode() + " " + a + "->" + channelBarrierWaitSet.size());
+								channelBarrierWaitSet.remove(msg.getSrcMachine());
+								System.out.println("Remove Control_Worker_Superstep_Barrier " + msg.getSrcMachine() + " " + a + "->" + channelBarrierWaitSet.size());
 							} else {
 								logger.error("Received Control_Worker_Superstep_Channel_Barrier with wrong superstepNo: "
 										+ msg.getSuperstepNo() + " at step " + superstepNo);

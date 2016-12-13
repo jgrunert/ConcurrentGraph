@@ -11,13 +11,13 @@ import mthesis.concurrent_graph.communication.Messages.VertexMessage;
  *
  */
 public class VertexMessageBuildUtil {
-	public static MessageEnvelope Build(int superstepNo, int fromNode, int fromVertex, int toVertex, int content) {
+	public static MessageEnvelope Build(int superstepNo, int srcMachineId, int srcVertex, int dstVertex, int content) {
 		return MessageEnvelope.newBuilder().setVertexMessage(
 				VertexMessage.newBuilder()
 				.setSuperstepNo(superstepNo)
-				.setFromNode(fromNode)
-				.setFromVertex(fromVertex)
-				.setToVertex(toVertex)
+				.setSrcMachine(srcMachineId)
+				.setSrcVertex(srcVertex)
+				.setDstVertex(dstVertex)
 				.setContent(content)
 				.build()).build();
 	}

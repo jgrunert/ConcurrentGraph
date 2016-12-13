@@ -886,43 +886,43 @@ public final class Messages {
      */
     int getSuperstepNo();
 
-    // optional int32 FromNode = 2;
+    // optional int32 SrcMachine = 2;
     /**
-     * <code>optional int32 FromNode = 2;</code>
+     * <code>optional int32 SrcMachine = 2;</code>
      *
      * <pre>
      * TODO ToNode?
      * </pre>
      */
-    boolean hasFromNode();
+    boolean hasSrcMachine();
     /**
-     * <code>optional int32 FromNode = 2;</code>
+     * <code>optional int32 SrcMachine = 2;</code>
      *
      * <pre>
      * TODO ToNode?
      * </pre>
      */
-    int getFromNode();
+    int getSrcMachine();
 
-    // optional int32 FromVertex = 3;
+    // optional int32 SrcVertex = 3;
     /**
-     * <code>optional int32 FromVertex = 3;</code>
+     * <code>optional int32 SrcVertex = 3;</code>
      */
-    boolean hasFromVertex();
+    boolean hasSrcVertex();
     /**
-     * <code>optional int32 FromVertex = 3;</code>
+     * <code>optional int32 SrcVertex = 3;</code>
      */
-    int getFromVertex();
+    int getSrcVertex();
 
-    // optional int32 ToVertex = 4;
+    // optional int32 DstVertex = 4;
     /**
-     * <code>optional int32 ToVertex = 4;</code>
+     * <code>optional int32 DstVertex = 4;</code>
      */
-    boolean hasToVertex();
+    boolean hasDstVertex();
     /**
-     * <code>optional int32 ToVertex = 4;</code>
+     * <code>optional int32 DstVertex = 4;</code>
      */
-    int getToVertex();
+    int getDstVertex();
 
     // optional int32 Content = 5;
     /**
@@ -1000,17 +1000,17 @@ public final class Messages {
             }
             case 16: {
               bitField0_ |= 0x00000002;
-              fromNode_ = input.readInt32();
+              srcMachine_ = input.readInt32();
               break;
             }
             case 24: {
               bitField0_ |= 0x00000004;
-              fromVertex_ = input.readInt32();
+              srcVertex_ = input.readInt32();
               break;
             }
             case 32: {
               bitField0_ |= 0x00000008;
-              toVertex_ = input.readInt32();
+              dstVertex_ = input.readInt32();
               break;
             }
             case 40: {
@@ -1074,60 +1074,60 @@ public final class Messages {
       return superstepNo_;
     }
 
-    // optional int32 FromNode = 2;
-    public static final int FROMNODE_FIELD_NUMBER = 2;
-    private int fromNode_;
+    // optional int32 SrcMachine = 2;
+    public static final int SRCMACHINE_FIELD_NUMBER = 2;
+    private int srcMachine_;
     /**
-     * <code>optional int32 FromNode = 2;</code>
+     * <code>optional int32 SrcMachine = 2;</code>
      *
      * <pre>
      * TODO ToNode?
      * </pre>
      */
-    public boolean hasFromNode() {
+    public boolean hasSrcMachine() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional int32 FromNode = 2;</code>
+     * <code>optional int32 SrcMachine = 2;</code>
      *
      * <pre>
      * TODO ToNode?
      * </pre>
      */
-    public int getFromNode() {
-      return fromNode_;
+    public int getSrcMachine() {
+      return srcMachine_;
     }
 
-    // optional int32 FromVertex = 3;
-    public static final int FROMVERTEX_FIELD_NUMBER = 3;
-    private int fromVertex_;
+    // optional int32 SrcVertex = 3;
+    public static final int SRCVERTEX_FIELD_NUMBER = 3;
+    private int srcVertex_;
     /**
-     * <code>optional int32 FromVertex = 3;</code>
+     * <code>optional int32 SrcVertex = 3;</code>
      */
-    public boolean hasFromVertex() {
+    public boolean hasSrcVertex() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional int32 FromVertex = 3;</code>
+     * <code>optional int32 SrcVertex = 3;</code>
      */
-    public int getFromVertex() {
-      return fromVertex_;
+    public int getSrcVertex() {
+      return srcVertex_;
     }
 
-    // optional int32 ToVertex = 4;
-    public static final int TOVERTEX_FIELD_NUMBER = 4;
-    private int toVertex_;
+    // optional int32 DstVertex = 4;
+    public static final int DSTVERTEX_FIELD_NUMBER = 4;
+    private int dstVertex_;
     /**
-     * <code>optional int32 ToVertex = 4;</code>
+     * <code>optional int32 DstVertex = 4;</code>
      */
-    public boolean hasToVertex() {
+    public boolean hasDstVertex() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional int32 ToVertex = 4;</code>
+     * <code>optional int32 DstVertex = 4;</code>
      */
-    public int getToVertex() {
-      return toVertex_;
+    public int getDstVertex() {
+      return dstVertex_;
     }
 
     // optional int32 Content = 5;
@@ -1156,9 +1156,9 @@ public final class Messages {
 
     private void initFields() {
       superstepNo_ = 0;
-      fromNode_ = 0;
-      fromVertex_ = 0;
-      toVertex_ = 0;
+      srcMachine_ = 0;
+      srcVertex_ = 0;
+      dstVertex_ = 0;
       content_ = 0;
     }
     private byte memoizedIsInitialized = -1;
@@ -1177,13 +1177,13 @@ public final class Messages {
         output.writeInt32(1, superstepNo_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt32(2, fromNode_);
+        output.writeInt32(2, srcMachine_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt32(3, fromVertex_);
+        output.writeInt32(3, srcVertex_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeInt32(4, toVertex_);
+        output.writeInt32(4, dstVertex_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeInt32(5, content_);
@@ -1203,15 +1203,15 @@ public final class Messages {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, fromNode_);
+          .computeInt32Size(2, srcMachine_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, fromVertex_);
+          .computeInt32Size(3, srcVertex_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(4, toVertex_);
+          .computeInt32Size(4, dstVertex_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1335,11 +1335,11 @@ public final class Messages {
         super.clear();
         superstepNo_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        fromNode_ = 0;
+        srcMachine_ = 0;
         bitField0_ = (bitField0_ & ~0x00000002);
-        fromVertex_ = 0;
+        srcVertex_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
-        toVertex_ = 0;
+        dstVertex_ = 0;
         bitField0_ = (bitField0_ & ~0x00000008);
         content_ = 0;
         bitField0_ = (bitField0_ & ~0x00000010);
@@ -1378,15 +1378,15 @@ public final class Messages {
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.fromNode_ = fromNode_;
+        result.srcMachine_ = srcMachine_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.fromVertex_ = fromVertex_;
+        result.srcVertex_ = srcVertex_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.toVertex_ = toVertex_;
+        result.dstVertex_ = dstVertex_;
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
@@ -1410,14 +1410,14 @@ public final class Messages {
         if (other.hasSuperstepNo()) {
           setSuperstepNo(other.getSuperstepNo());
         }
-        if (other.hasFromNode()) {
-          setFromNode(other.getFromNode());
+        if (other.hasSrcMachine()) {
+          setSrcMachine(other.getSrcMachine());
         }
-        if (other.hasFromVertex()) {
-          setFromVertex(other.getFromVertex());
+        if (other.hasSrcVertex()) {
+          setSrcVertex(other.getSrcVertex());
         }
-        if (other.hasToVertex()) {
-          setToVertex(other.getToVertex());
+        if (other.hasDstVertex()) {
+          setDstVertex(other.getDstVertex());
         }
         if (other.hasContent()) {
           setContent(other.getContent());
@@ -1482,117 +1482,117 @@ public final class Messages {
         return this;
       }
 
-      // optional int32 FromNode = 2;
-      private int fromNode_ ;
+      // optional int32 SrcMachine = 2;
+      private int srcMachine_ ;
       /**
-       * <code>optional int32 FromNode = 2;</code>
+       * <code>optional int32 SrcMachine = 2;</code>
        *
        * <pre>
        * TODO ToNode?
        * </pre>
        */
-      public boolean hasFromNode() {
+      public boolean hasSrcMachine() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional int32 FromNode = 2;</code>
+       * <code>optional int32 SrcMachine = 2;</code>
        *
        * <pre>
        * TODO ToNode?
        * </pre>
        */
-      public int getFromNode() {
-        return fromNode_;
+      public int getSrcMachine() {
+        return srcMachine_;
       }
       /**
-       * <code>optional int32 FromNode = 2;</code>
+       * <code>optional int32 SrcMachine = 2;</code>
        *
        * <pre>
        * TODO ToNode?
        * </pre>
        */
-      public Builder setFromNode(int value) {
+      public Builder setSrcMachine(int value) {
         bitField0_ |= 0x00000002;
-        fromNode_ = value;
+        srcMachine_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 FromNode = 2;</code>
+       * <code>optional int32 SrcMachine = 2;</code>
        *
        * <pre>
        * TODO ToNode?
        * </pre>
        */
-      public Builder clearFromNode() {
+      public Builder clearSrcMachine() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        fromNode_ = 0;
+        srcMachine_ = 0;
         onChanged();
         return this;
       }
 
-      // optional int32 FromVertex = 3;
-      private int fromVertex_ ;
+      // optional int32 SrcVertex = 3;
+      private int srcVertex_ ;
       /**
-       * <code>optional int32 FromVertex = 3;</code>
+       * <code>optional int32 SrcVertex = 3;</code>
        */
-      public boolean hasFromVertex() {
+      public boolean hasSrcVertex() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional int32 FromVertex = 3;</code>
+       * <code>optional int32 SrcVertex = 3;</code>
        */
-      public int getFromVertex() {
-        return fromVertex_;
+      public int getSrcVertex() {
+        return srcVertex_;
       }
       /**
-       * <code>optional int32 FromVertex = 3;</code>
+       * <code>optional int32 SrcVertex = 3;</code>
        */
-      public Builder setFromVertex(int value) {
+      public Builder setSrcVertex(int value) {
         bitField0_ |= 0x00000004;
-        fromVertex_ = value;
+        srcVertex_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 FromVertex = 3;</code>
+       * <code>optional int32 SrcVertex = 3;</code>
        */
-      public Builder clearFromVertex() {
+      public Builder clearSrcVertex() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        fromVertex_ = 0;
+        srcVertex_ = 0;
         onChanged();
         return this;
       }
 
-      // optional int32 ToVertex = 4;
-      private int toVertex_ ;
+      // optional int32 DstVertex = 4;
+      private int dstVertex_ ;
       /**
-       * <code>optional int32 ToVertex = 4;</code>
+       * <code>optional int32 DstVertex = 4;</code>
        */
-      public boolean hasToVertex() {
+      public boolean hasDstVertex() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional int32 ToVertex = 4;</code>
+       * <code>optional int32 DstVertex = 4;</code>
        */
-      public int getToVertex() {
-        return toVertex_;
+      public int getDstVertex() {
+        return dstVertex_;
       }
       /**
-       * <code>optional int32 ToVertex = 4;</code>
+       * <code>optional int32 DstVertex = 4;</code>
        */
-      public Builder setToVertex(int value) {
+      public Builder setDstVertex(int value) {
         bitField0_ |= 0x00000008;
-        toVertex_ = value;
+        dstVertex_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 ToVertex = 4;</code>
+       * <code>optional int32 DstVertex = 4;</code>
        */
-      public Builder clearToVertex() {
+      public Builder clearDstVertex() {
         bitField0_ = (bitField0_ & ~0x00000008);
-        toVertex_ = 0;
+        dstVertex_ = 0;
         onChanged();
         return this;
       }
@@ -1680,15 +1680,15 @@ public final class Messages {
      */
     int getSuperstepNo();
 
-    // optional int32 FromNode = 3;
+    // optional int32 SrcMachine = 3;
     /**
-     * <code>optional int32 FromNode = 3;</code>
+     * <code>optional int32 SrcMachine = 3;</code>
      */
-    boolean hasFromNode();
+    boolean hasSrcMachine();
     /**
-     * <code>optional int32 FromNode = 3;</code>
+     * <code>optional int32 SrcMachine = 3;</code>
      */
-    int getFromNode();
+    int getSrcMachine();
 
     // optional int32 Content1 = 4;
     /**
@@ -1795,7 +1795,7 @@ public final class Messages {
             }
             case 24: {
               bitField0_ |= 0x00000004;
-              fromNode_ = input.readInt32();
+              srcMachine_ = input.readInt32();
               break;
             }
             case 32: {
@@ -1880,20 +1880,20 @@ public final class Messages {
       return superstepNo_;
     }
 
-    // optional int32 FromNode = 3;
-    public static final int FROMNODE_FIELD_NUMBER = 3;
-    private int fromNode_;
+    // optional int32 SrcMachine = 3;
+    public static final int SRCMACHINE_FIELD_NUMBER = 3;
+    private int srcMachine_;
     /**
-     * <code>optional int32 FromNode = 3;</code>
+     * <code>optional int32 SrcMachine = 3;</code>
      */
-    public boolean hasFromNode() {
+    public boolean hasSrcMachine() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional int32 FromNode = 3;</code>
+     * <code>optional int32 SrcMachine = 3;</code>
      */
-    public int getFromNode() {
-      return fromNode_;
+    public int getSrcMachine() {
+      return srcMachine_;
     }
 
     // optional int32 Content1 = 4;
@@ -1947,7 +1947,7 @@ public final class Messages {
     private void initFields() {
       type_ = mthesis.concurrent_graph.communication.Messages.ControlMessageType.Channel_Handshake;
       superstepNo_ = 0;
-      fromNode_ = 0;
+      srcMachine_ = 0;
       content1_ = 0;
       content2_ = 0;
     }
@@ -1970,7 +1970,7 @@ public final class Messages {
         output.writeInt32(2, superstepNo_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt32(3, fromNode_);
+        output.writeInt32(3, srcMachine_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeInt32(4, content1_);
@@ -1997,7 +1997,7 @@ public final class Messages {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, fromNode_);
+          .computeInt32Size(3, srcMachine_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
@@ -2127,7 +2127,7 @@ public final class Messages {
         bitField0_ = (bitField0_ & ~0x00000001);
         superstepNo_ = 0;
         bitField0_ = (bitField0_ & ~0x00000002);
-        fromNode_ = 0;
+        srcMachine_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
         content1_ = 0;
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -2172,7 +2172,7 @@ public final class Messages {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.fromNode_ = fromNode_;
+        result.srcMachine_ = srcMachine_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
@@ -2203,8 +2203,8 @@ public final class Messages {
         if (other.hasSuperstepNo()) {
           setSuperstepNo(other.getSuperstepNo());
         }
-        if (other.hasFromNode()) {
-          setFromNode(other.getFromNode());
+        if (other.hasSrcMachine()) {
+          setSrcMachine(other.getSrcMachine());
         }
         if (other.hasContent1()) {
           setContent1(other.getContent1());
@@ -2308,35 +2308,35 @@ public final class Messages {
         return this;
       }
 
-      // optional int32 FromNode = 3;
-      private int fromNode_ ;
+      // optional int32 SrcMachine = 3;
+      private int srcMachine_ ;
       /**
-       * <code>optional int32 FromNode = 3;</code>
+       * <code>optional int32 SrcMachine = 3;</code>
        */
-      public boolean hasFromNode() {
+      public boolean hasSrcMachine() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional int32 FromNode = 3;</code>
+       * <code>optional int32 SrcMachine = 3;</code>
        */
-      public int getFromNode() {
-        return fromNode_;
+      public int getSrcMachine() {
+        return srcMachine_;
       }
       /**
-       * <code>optional int32 FromNode = 3;</code>
+       * <code>optional int32 SrcMachine = 3;</code>
        */
-      public Builder setFromNode(int value) {
+      public Builder setSrcMachine(int value) {
         bitField0_ |= 0x00000004;
-        fromNode_ = value;
+        srcMachine_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 FromNode = 3;</code>
+       * <code>optional int32 SrcMachine = 3;</code>
        */
-      public Builder clearFromNode() {
+      public Builder clearSrcMachine() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        fromNode_ = 0;
+        srcMachine_ = 0;
         onChanged();
         return this;
       }
@@ -2480,20 +2480,20 @@ public final class Messages {
       "oncurrent_graph.communication.messages.V" +
       "ertexMessage\022W\n\016ControlMessage\030\002 \001(\0132?.m" +
       "thesis.concurrent_graph.communication.me" +
-      "ssages.ControlMessage\"m\n\rVertexMessage\022\023" +
-      "\n\013SuperstepNo\030\001 \001(\005\022\020\n\010FromNode\030\002 \001(\005\022\022\n" +
-      "\nFromVertex\030\003 \001(\005\022\020\n\010ToVertex\030\004 \001(\005\022\017\n\007C" +
-      "ontent\030\005 \001(\005\"\256\001\n\016ControlMessage\022Q\n\004Type\030",
-      "\001 \001(\0162C.mthesis.concurrent_graph.communi" +
-      "cation.messages.ControlMessageType\022\023\n\013Su" +
-      "perstepNo\030\002 \001(\005\022\020\n\010FromNode\030\003 \001(\005\022\020\n\010Con" +
-      "tent1\030\004 \001(\005\022\020\n\010Content2\030\005 \001(\005*\253\001\n\022Contro" +
-      "lMessageType\022\025\n\021Channel_Handshake\020\001\022\034\n\030W" +
-      "orker_Superstep_Barrier\020\002\022\035\n\031Worker_Supe" +
-      "rstep_Finished\020\003\022\023\n\017Worker_Finished\020\004\022\031\n" +
-      "\025Master_Next_Superstep\020\005\022\021\n\rMaster_Finis" +
-      "h\020\006B2\n&mthesis.concurrent_graph.communic" +
-      "ationB\010Messages"
+      "ssages.ControlMessage\"o\n\rVertexMessage\022\023" +
+      "\n\013SuperstepNo\030\001 \001(\005\022\022\n\nSrcMachine\030\002 \001(\005\022" +
+      "\021\n\tSrcVertex\030\003 \001(\005\022\021\n\tDstVertex\030\004 \001(\005\022\017\n" +
+      "\007Content\030\005 \001(\005\"\260\001\n\016ControlMessage\022Q\n\004Typ",
+      "e\030\001 \001(\0162C.mthesis.concurrent_graph.commu" +
+      "nication.messages.ControlMessageType\022\023\n\013" +
+      "SuperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022\020\n" +
+      "\010Content1\030\004 \001(\005\022\020\n\010Content2\030\005 \001(\005*\253\001\n\022Co" +
+      "ntrolMessageType\022\025\n\021Channel_Handshake\020\001\022" +
+      "\034\n\030Worker_Superstep_Barrier\020\002\022\035\n\031Worker_" +
+      "Superstep_Finished\020\003\022\023\n\017Worker_Finished\020" +
+      "\004\022\031\n\025Master_Next_Superstep\020\005\022\021\n\rMaster_F" +
+      "inish\020\006B2\n&mthesis.concurrent_graph.comm" +
+      "unicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2511,13 +2511,13 @@ public final class Messages {
           internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_descriptor,
-              new java.lang.String[] { "SuperstepNo", "FromNode", "FromVertex", "ToVertex", "Content", });
+              new java.lang.String[] { "SuperstepNo", "SrcMachine", "SrcVertex", "DstVertex", "Content", });
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor,
-              new java.lang.String[] { "Type", "SuperstepNo", "FromNode", "Content1", "Content2", });
+              new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "Content1", "Content2", });
           return null;
         }
       };

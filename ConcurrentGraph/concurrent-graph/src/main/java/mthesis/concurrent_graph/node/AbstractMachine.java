@@ -19,7 +19,7 @@ import mthesis.concurrent_graph.util.Pair;
  * 
  * @author Jonas Grunert
  */
-public abstract class AbstractNode {
+public abstract class AbstractMachine {
 	protected final Logger logger;
 	//private final Map<Integer, Pair<String, Integer>> machines;
 	protected final int ownId;
@@ -31,7 +31,7 @@ public abstract class AbstractNode {
 	private Thread runThread;
 
 
-	protected AbstractNode(Map<Integer, Pair<String, Integer>> machines, int ownId) {
+	protected AbstractMachine(Map<Integer, Pair<String, Integer>> machines, int ownId) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		//this.machines = machines;
 		this.ownId = ownId;
@@ -48,7 +48,7 @@ public abstract class AbstractNode {
 					logger.error("Connecting node failed");
 					return;
 				}
-				AbstractNode.this.run();
+				AbstractMachine.this.run();
 			}
 		});
 		runThread.setName("NodeThread[" + ownId + "]");
