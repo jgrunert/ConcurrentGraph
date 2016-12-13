@@ -12,6 +12,7 @@
 	</appender>
 	
 	<appender name="CONSOLE-stderr" class="ch.qos.logback.core.ConsoleAppender">
+  		<filter class="mthesis.concurrent_graph.logging.ErrWarnCounter" />
 		<filter class="mthesis.concurrent_graph.logging.MainLogFilter" />
 		<filter class="mthesis.concurrent_graph.logging.NettyLogFilter" />
   		<filter class="mthesis.concurrent_graph.logging.ErrOutFilter" />

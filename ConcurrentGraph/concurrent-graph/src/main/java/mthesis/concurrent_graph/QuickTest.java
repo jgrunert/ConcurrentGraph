@@ -8,7 +8,7 @@ import java.util.Map;
 
 import mthesis.concurrent_graph.examples.CCDetectVertex;
 import mthesis.concurrent_graph.examples.CCOutputWriter;
-import mthesis.concurrent_graph.examples.VertexEdgesInputReader;
+import mthesis.concurrent_graph.examples.EdgeListReader;
 import mthesis.concurrent_graph.master.AbstractMasterInputReader;
 import mthesis.concurrent_graph.master.AbstractMasterOutputWriter;
 import mthesis.concurrent_graph.master.MasterMachine;
@@ -19,11 +19,11 @@ import mthesis.concurrent_graph.worker.WorkerMachine;
 public class QuickTest {
 
 	public static void main(String[] args) throws Exception {
-		final String inputData = "../../Data/cctest.txt";
-		final Class<? extends AbstractMasterInputReader> inputReader = VertexEdgesInputReader.class;
+		//		final String inputData = "../../Data/cctest.txt";
+		//		final Class<? extends AbstractMasterInputReader> inputReader = VertexEdgesInputReader.class;
 
-		//		final String inputData = "../../Data/Wiki-Vote.txt";
-		//		final Class<? extends AbstractMasterInputReader> inputReader = EdgeListReader.class;
+		final String inputData = "../../Data/Wiki-Vote.txt";
+		final Class<? extends AbstractMasterInputReader> inputReader = EdgeListReader.class;
 
 		//Thread.sleep(10000);
 

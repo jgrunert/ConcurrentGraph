@@ -941,6 +941,24 @@ public final class Messages {
      * </pre>
      */
     int getContent();
+
+    // optional bool BroadcastFlat = 6;
+    /**
+     * <code>optional bool BroadcastFlat = 6;</code>
+     *
+     * <pre>
+     *bytes Content = 5;
+     * </pre>
+     */
+    boolean hasBroadcastFlat();
+    /**
+     * <code>optional bool BroadcastFlat = 6;</code>
+     *
+     * <pre>
+     *bytes Content = 5;
+     * </pre>
+     */
+    boolean getBroadcastFlat();
   }
   /**
    * Protobuf type {@code mthesis.concurrent_graph.communication.messages.VertexMessage}
@@ -1016,6 +1034,11 @@ public final class Messages {
             case 40: {
               bitField0_ |= 0x00000010;
               content_ = input.readInt32();
+              break;
+            }
+            case 48: {
+              bitField0_ |= 0x00000020;
+              broadcastFlat_ = input.readBool();
               break;
             }
           }
@@ -1154,12 +1177,37 @@ public final class Messages {
       return content_;
     }
 
+    // optional bool BroadcastFlat = 6;
+    public static final int BROADCASTFLAT_FIELD_NUMBER = 6;
+    private boolean broadcastFlat_;
+    /**
+     * <code>optional bool BroadcastFlat = 6;</code>
+     *
+     * <pre>
+     *bytes Content = 5;
+     * </pre>
+     */
+    public boolean hasBroadcastFlat() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional bool BroadcastFlat = 6;</code>
+     *
+     * <pre>
+     *bytes Content = 5;
+     * </pre>
+     */
+    public boolean getBroadcastFlat() {
+      return broadcastFlat_;
+    }
+
     private void initFields() {
       superstepNo_ = 0;
       srcMachine_ = 0;
       srcVertex_ = 0;
       dstVertex_ = 0;
       content_ = 0;
+      broadcastFlat_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1187,6 +1235,9 @@ public final class Messages {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeInt32(5, content_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeBool(6, broadcastFlat_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1216,6 +1267,10 @@ public final class Messages {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(5, content_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(6, broadcastFlat_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1343,6 +1398,8 @@ public final class Messages {
         bitField0_ = (bitField0_ & ~0x00000008);
         content_ = 0;
         bitField0_ = (bitField0_ & ~0x00000010);
+        broadcastFlat_ = false;
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -1391,6 +1448,10 @@ public final class Messages {
           to_bitField0_ |= 0x00000010;
         }
         result.content_ = content_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.broadcastFlat_ = broadcastFlat_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1421,6 +1482,9 @@ public final class Messages {
         }
         if (other.hasContent()) {
           setContent(other.getContent());
+        }
+        if (other.hasBroadcastFlat()) {
+          setBroadcastFlat(other.getBroadcastFlat());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1642,6 +1706,55 @@ public final class Messages {
       public Builder clearContent() {
         bitField0_ = (bitField0_ & ~0x00000010);
         content_ = 0;
+        onChanged();
+        return this;
+      }
+
+      // optional bool BroadcastFlat = 6;
+      private boolean broadcastFlat_ ;
+      /**
+       * <code>optional bool BroadcastFlat = 6;</code>
+       *
+       * <pre>
+       *bytes Content = 5;
+       * </pre>
+       */
+      public boolean hasBroadcastFlat() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional bool BroadcastFlat = 6;</code>
+       *
+       * <pre>
+       *bytes Content = 5;
+       * </pre>
+       */
+      public boolean getBroadcastFlat() {
+        return broadcastFlat_;
+      }
+      /**
+       * <code>optional bool BroadcastFlat = 6;</code>
+       *
+       * <pre>
+       *bytes Content = 5;
+       * </pre>
+       */
+      public Builder setBroadcastFlat(boolean value) {
+        bitField0_ |= 0x00000020;
+        broadcastFlat_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool BroadcastFlat = 6;</code>
+       *
+       * <pre>
+       *bytes Content = 5;
+       * </pre>
+       */
+      public Builder clearBroadcastFlat() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        broadcastFlat_ = false;
         onChanged();
         return this;
       }
@@ -3495,30 +3608,31 @@ public final class Messages {
       "oncurrent_graph.communication.messages.V" +
       "ertexMessage\022W\n\016ControlMessage\030\002 \001(\0132?.m" +
       "thesis.concurrent_graph.communication.me" +
-      "ssages.ControlMessage\"o\n\rVertexMessage\022\023" +
-      "\n\013SuperstepNo\030\001 \001(\005\022\022\n\nSrcMachine\030\002 \001(\005\022" +
-      "\021\n\tSrcVertex\030\003 \001(\005\022\021\n\tDstVertex\030\004 \001(\005\022\017\n" +
-      "\007Content\030\005 \001(\005\"\302\004\n\016ControlMessage\022Q\n\004Typ",
-      "e\030\001 \001(\0162C.mthesis.concurrent_graph.commu" +
-      "nication.messages.ControlMessageType\022\023\n\013" +
-      "SuperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022g\n" +
-      "\013WorkerStats\030\004 \001(\0132R.mthesis.concurrent_" +
-      "graph.communication.messages.ControlMess" +
-      "age.WorkerStatsMessage\032\312\002\n\022WorkerStatsMe" +
-      "ssage\022\026\n\016ActiveVertices\030\001 \001(\005\022\033\n\023SentCon" +
-      "trolMessages\030\002 \001(\005\022\037\n\027SentVertexMessages" +
-      "Local\030\003 \001(\005\022!\n\031SentVertexMessagesUnicast" +
-      "\030\004 \001(\005\022#\n\033SentVertexMessagesBroadcast\030\005 ",
-      "\001(\005\022%\n\035ReceivedCorrectVertexMessages\030\006 \001" +
-      "(\005\022#\n\033ReceivedWrongVertexMessages\030\007 \001(\005\022" +
-      "#\n\033NewVertexMachinesDiscovered\030\010 \001(\005\022%\n\035" +
-      "TotalVertexMachinesDiscovered\030\t \001(\005*\253\001\n\022" +
-      "ControlMessageType\022\025\n\021Channel_Handshake\020" +
-      "\001\022\034\n\030Worker_Superstep_Barrier\020\002\022\035\n\031Worke" +
-      "r_Superstep_Finished\020\003\022\023\n\017Worker_Finishe" +
-      "d\020\004\022\031\n\025Master_Next_Superstep\020\005\022\021\n\rMaster" +
-      "_Finish\020\006B2\n&mthesis.concurrent_graph.co" +
-      "mmunicationB\010Messages"
+      "ssages.ControlMessage\"\206\001\n\rVertexMessage\022" +
+      "\023\n\013SuperstepNo\030\001 \001(\005\022\022\n\nSrcMachine\030\002 \001(\005" +
+      "\022\021\n\tSrcVertex\030\003 \001(\005\022\021\n\tDstVertex\030\004 \001(\005\022\017" +
+      "\n\007Content\030\005 \001(\005\022\025\n\rBroadcastFlat\030\006 \001(\010\"\302",
+      "\004\n\016ControlMessage\022Q\n\004Type\030\001 \001(\0162C.mthesi" +
+      "s.concurrent_graph.communication.message" +
+      "s.ControlMessageType\022\023\n\013SuperstepNo\030\002 \001(" +
+      "\005\022\022\n\nSrcMachine\030\003 \001(\005\022g\n\013WorkerStats\030\004 \001" +
+      "(\0132R.mthesis.concurrent_graph.communicat" +
+      "ion.messages.ControlMessage.WorkerStatsM" +
+      "essage\032\312\002\n\022WorkerStatsMessage\022\026\n\016ActiveV" +
+      "ertices\030\001 \001(\005\022\033\n\023SentControlMessages\030\002 \001" +
+      "(\005\022\037\n\027SentVertexMessagesLocal\030\003 \001(\005\022!\n\031S" +
+      "entVertexMessagesUnicast\030\004 \001(\005\022#\n\033SentVe",
+      "rtexMessagesBroadcast\030\005 \001(\005\022%\n\035ReceivedC" +
+      "orrectVertexMessages\030\006 \001(\005\022#\n\033ReceivedWr" +
+      "ongVertexMessages\030\007 \001(\005\022#\n\033NewVertexMach" +
+      "inesDiscovered\030\010 \001(\005\022%\n\035TotalVertexMachi" +
+      "nesDiscovered\030\t \001(\005*\253\001\n\022ControlMessageTy" +
+      "pe\022\025\n\021Channel_Handshake\020\001\022\034\n\030Worker_Supe" +
+      "rstep_Barrier\020\002\022\035\n\031Worker_Superstep_Fini" +
+      "shed\020\003\022\023\n\017Worker_Finished\020\004\022\031\n\025Master_Ne" +
+      "xt_Superstep\020\005\022\021\n\rMaster_Finish\020\006B2\n&mth" +
+      "esis.concurrent_graph.communicationB\010Mes",
+      "sages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3536,7 +3650,7 @@ public final class Messages {
           internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mthesis_concurrent_graph_communication_messages_VertexMessage_descriptor,
-              new java.lang.String[] { "SuperstepNo", "SrcMachine", "SrcVertex", "DstVertex", "Content", });
+              new java.lang.String[] { "SuperstepNo", "SrcMachine", "SrcVertex", "DstVertex", "Content", "BroadcastFlat", });
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor =
             getDescriptor().getMessageTypes().get(2);
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new

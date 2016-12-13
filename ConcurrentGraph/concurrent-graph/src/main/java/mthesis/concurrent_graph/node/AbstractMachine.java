@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
+import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.util.Pair;
 
 
@@ -48,6 +49,14 @@ public abstract class AbstractMachine {
 					return;
 				}
 				AbstractMachine.this.run();
+
+				ErrWarnCounter.Enabled = false;
+				if(ErrWarnCounter.Warnings > 0)
+					logger.warn("Warnings: " + ErrWarnCounter.Warnings);
+				if(ErrWarnCounter.Errors > 0)
+					logger.warn("Errors: " + ErrWarnCounter.Errors);
+				if(ErrWarnCounter.Warnings == 0 && ErrWarnCounter.Errors == 0)
+					logger.info("No warnings or errors");
 			}
 		});
 		runThread.setName("NodeThread[" + ownId + "]");

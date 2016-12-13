@@ -167,8 +167,10 @@ public class WorkerMachine extends AbstractMachine {
 						}
 						else {
 							//System.out.println(ownId + " WRONG " + msg.getSrcVertex() + " " + msg.getDstVertex() + " " + msg.getContent());
-							System.out.println(ownId + " WRONG " + msg.getDstVertex() + " from " + msg.getSrcMachine());
+							//System.out.println(ownId + " WRONG " + msg.getDstVertex() + " from " + msg.getSrcMachine());
 							superstepStats.ReceivedWrongVertexMessages++;
+							if(!msg.hasBroadcastFlat())
+								logger.warn("Recieved wrong vertex unicast message: " + msg);
 						}
 					}
 					inVertexMessages.clear();
@@ -302,11 +304,11 @@ public class WorkerMachine extends AbstractMachine {
 	 * It remote vertex try to lookup machine. If machine not known broadcast message.
 	 */
 	public void sendVertexMessage(int srcVertex, int dstVertex, Integer content) {
-		final MessageEnvelope message= createVertexMessageEnvelope(srcVertex, dstVertex, content);
 
 		if(localVertices.contains(dstVertex)) {
 			// Local message
-			System.out.println(ownId + " SEND LOCAL " + srcVertex + " " + dstVertex);
+			final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content, false);
+			//System.out.println(ownId + " SEND LOCAL " + srcVertex + " " + dstVertex);
 			superstepStats.SentVertexMessagesLocal++;
 			bufferedLoopbackMessages.add(message.getVertexMessage());
 		}
@@ -314,12 +316,16 @@ public class WorkerMachine extends AbstractMachine {
 			// Remote message
 			final Integer remoteMachine = remoteVertexMachineRegistry.lookupEntry(dstVertex);
 			if(remoteMachine != null) {
-				System.out.println(ownId + " SEND UNI from " + srcVertex + " to " + dstVertex + ":" + remoteMachine);
+				// Unicast remote message
+				final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content, false);
+				//System.out.println(ownId + " SEND UNI from " + srcVertex + " to " + dstVertex + ":" + remoteMachine);
 				superstepStats.SentVertexMessagesUnicast++;
 				messaging.sendMessageUnicast(remoteMachine, message, false);
 			}
 			else {
-				System.out.println(ownId + " SEND BCAST " + srcVertex + " to " + dstVertex + " " + otherWorkerIds);
+				// Broadcast remote message
+				final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content, true);
+				//System.out.println(ownId + " SEND BCAST " + srcVertex + " to " + dstVertex + " " + otherWorkerIds);
 				superstepStats.SentVertexMessagesBroadcast += otherWorkerIds.size();
 				messaging.sendMessageBroadcast(otherWorkerIds, message, false);
 			}
@@ -330,17 +336,17 @@ public class WorkerMachine extends AbstractMachine {
 	 * Sends a vertex message directly to a remote machine, no lookup.
 	 */
 	public void sendVertexMessageToMachine(int srcVertex, int dstVertex, int dstMachine, Integer content) {
-		System.out.println(ownId + " SEND DIR " + srcVertex + " " + dstVertex + " to " + dstMachine);
+		//System.out.println(ownId + " SEND DIR " + srcVertex + " " + dstVertex + " to " + dstMachine);
 		superstepStats.SentVertexMessagesUnicast++;
-		final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content);
+		final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content, false);
 		messaging.sendMessageUnicast(dstMachine, message, false);
 	}
 
-	private MessageEnvelope createVertexMessageEnvelope(int srcVertex, int dstVertex, Integer content) {
+	private MessageEnvelope createVertexMessageEnvelope(int srcVertex, int dstVertex, Integer content, boolean broadcastFlag) {
 		if(content != null)
-			return VertexMessageBuildUtil.BuildWithContent(superstepNo, ownId, srcVertex, dstVertex, content);
+			return VertexMessageBuildUtil.BuildWithContent(superstepNo, ownId, srcVertex, dstVertex, broadcastFlag, content);
 		else
-			return VertexMessageBuildUtil.BuildWithoutContent(superstepNo, ownId, srcVertex, dstVertex);
+			return VertexMessageBuildUtil.BuildWithoutContent(superstepNo, ownId, srcVertex, dstVertex, broadcastFlag);
 	}
 
 	@Override
@@ -349,11 +355,11 @@ public class WorkerMachine extends AbstractMachine {
 		// Update vertex registry if discovery enabled
 		if(Settings.VERTEX_DISCOVERY) {
 			if(remoteVertexMachineRegistry.addEntry(message.getSrcVertex(), message.getSrcMachine())) {
-				System.out.println(ownId + " LEARNED " + message.getSrcVertex() + ":" + message.getSrcMachine());
+				//System.out.println(ownId + " LEARNED " + message.getSrcVertex() + ":" + message.getSrcMachine());
 				superstepStats.NewVertexMachinesDiscovered++;
 				if(Settings.ACTIVE_VERTEX_DISCOVERY && message.hasContent() && localVertices.contains(message.getDstVertex())) {
 					// Send "get-to-know message" without content. Dont reply on received messages without content.
-					System.out.println(ownId + " gtkm to " + message.getSrcMachine());
+					//System.out.println(ownId + " gtkm to " + message.getSrcMachine());
 					sendVertexMessageToMachine(message.getDstVertex(), -1, message.getSrcMachine(), null);
 				}
 			}
@@ -362,7 +368,7 @@ public class WorkerMachine extends AbstractMachine {
 		// Vertex messages without content are "get-to-know messages", only for vertex registry
 		if(message.hasContent()) {
 			synchronized (inVertexMessages) {
-				System.out.println(ownId + " REC " + message.getSrcVertex() + " " + message.getDstVertex() + " " + message.getContent());
+				//System.out.println(ownId + " REC " + message.getSrcVertex() + " " + message.getDstVertex() + " " + message.getContent());
 				inVertexMessages.add(message);
 			}
 		}

@@ -11,24 +11,26 @@ import mthesis.concurrent_graph.communication.Messages.VertexMessage;
  *
  */
 public class VertexMessageBuildUtil {
-	public static MessageEnvelope BuildWithoutContent(int superstepNo, int srcMachineId, int srcVertex, int dstVertex) {
-		return MessageEnvelope.newBuilder().setVertexMessage(
-				VertexMessage.newBuilder()
+	public static MessageEnvelope BuildWithoutContent(int superstepNo, int srcMachineId, int srcVertex, int dstVertex, boolean broadcastFlag) {
+		final VertexMessage.Builder vertesMsg = VertexMessage.newBuilder()
 				.setSuperstepNo(superstepNo)
 				.setSrcMachine(srcMachineId)
 				.setSrcVertex(srcVertex)
-				.setDstVertex(dstVertex)
-				.build()).build();
+				.setDstVertex(dstVertex);
+		if(broadcastFlag)
+			vertesMsg.setBroadcastFlat(true);
+		return MessageEnvelope.newBuilder().setVertexMessage(vertesMsg.build()).build();
 	}
 
-	public static MessageEnvelope BuildWithContent(int superstepNo, int srcMachineId, int srcVertex, int dstVertex, int content) {
-		return MessageEnvelope.newBuilder().setVertexMessage(
-				VertexMessage.newBuilder()
+	public static MessageEnvelope BuildWithContent(int superstepNo, int srcMachineId, int srcVertex, int dstVertex, boolean broadcastFlag, int content) {
+		final VertexMessage.Builder vertesMsg = VertexMessage.newBuilder()
 				.setSuperstepNo(superstepNo)
 				.setSrcMachine(srcMachineId)
 				.setSrcVertex(srcVertex)
 				.setDstVertex(dstVertex)
-				.setContent(content)
-				.build()).build();
+				.setContent(content);
+		if(broadcastFlag)
+			vertesMsg.setBroadcastFlat(true);
+		return MessageEnvelope.newBuilder().setVertexMessage(vertesMsg.build()).build();
 	}
 }

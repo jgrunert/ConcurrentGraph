@@ -109,20 +109,20 @@ public class MasterMachine extends AbstractMachine {
 
 				// Wrong message count should match broadcast message count.
 				// Otherwise there might be communication errors.
-				if(ReceivedWrongVertexMessages != SentVertexMessagesBroadcast * (workerIds.size() - 2) / (workerIds.size() - 1)) {
+				if(workerIds.size() > 1 && ReceivedWrongVertexMessages != SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)) {
 					logger.warn(String.format("Wrong vertex message count %d does not match broadcast message count %d. Possible communication errors.",
 							ReceivedWrongVertexMessages, SentVertexMessagesBroadcast));
 				}
 
 				final long timeNow = System.currentTimeMillis();
 				System.out.println("----- superstep " + superstepNo + " -----");
-				logger.info(String.format("--- Master finished superstep %d after %dms (total %dms). activeWorkers: %d activeVertices: %d",
+				logger.info(String.format("- Master finished superstep %d after %dms (total %dms). activeWorkers: %d activeVertices: %d",
 						superstepNo, (timeNow - lastSuperstepTime), (timeNow - startTime), activeWorkers, activeVertices));
-				logger.info(String.format("    SentControlMessages: %d, SentVertexMessagesLocal: %d, SentVertexMessagesUnicast: %d, SentVertexMessagesBroadcast: %d",
+				logger.info(String.format("  SentControlMessages: %d, SentVertexMessagesLocal: %d, SentVertexMessagesUnicast: %d, SentVertexMessagesBroadcast: %d",
 						SentControlMessages, SentVertexMessagesLocal, SentVertexMessagesUnicast, SentVertexMessagesBroadcast));
-				logger.info(String.format("    ReceivedCorrectVertexMessages: %d, ReceivedWrongVertexMessages: %d",
+				logger.info(String.format("  ReceivedCorrectVertexMessages: %d, ReceivedWrongVertexMessages: %d",
 						ReceivedCorrectVertexMessages, ReceivedWrongVertexMessages));
-				logger.info(String.format("    newVertexMachinesDiscovered: %d, totalVertexMachinesDiscovered: %d",
+				logger.info(String.format("  newVertexMachinesDiscovered: %d, totalVertexMachinesDiscovered: %d",
 						newVertexMachinesDiscovered, totalVertexMachinesDiscovered));
 				lastSuperstepTime = timeNow;
 

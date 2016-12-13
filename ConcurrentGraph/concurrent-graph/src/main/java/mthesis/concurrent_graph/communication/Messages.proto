@@ -14,6 +14,7 @@ message VertexMessage {
 		optional int32 SrcVertex = 3;
 		optional int32 DstVertex = 4;
 		optional int32 Content = 5;  // TODO Type
+		optional bool BroadcastFlat = 6;
 		//bytes Content = 5;
 	}
 	
