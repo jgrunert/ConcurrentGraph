@@ -123,9 +123,12 @@ public class WorkerMachine extends AbstractMachine {
 		try {
 			while(!Thread.interrupted()) {
 				// Wait for start superstep from master
+				channelBarrierWaitSet.addAll(otherWorkerIds);
 				if (!waitForMasterNextSuperstep()) {
 					break;
 				}
+
+				// Next superstep
 				superstepNo++;
 				superstepStats = new SuperstepStats();
 				logger.debug("Starting superstep " + superstepNo); // TODO trace
@@ -189,25 +192,18 @@ public class WorkerMachine extends AbstractMachine {
 
 	public boolean waitForWorkerSuperstepsFinished() {
 		try {
-			channelBarrierWaitSet.addAll(otherWorkerIds);
-
 			while(!Thread.interrupted() && !channelBarrierWaitSet.isEmpty()) {
 				final ControlMessage msg = inControlMessages.poll(Settings.MESSAGE_TIMEOUT, TimeUnit.MILLISECONDS);
 				if(msg != null) {
 					switch (msg.getType()) {
 						case Worker_Superstep_Barrier:
 							if(msg.getSuperstepNo() == superstepNo) {
-								final int a = channelBarrierWaitSet.size();
 								channelBarrierWaitSet.remove(msg.getSrcMachine());
-								System.out.println("Remove Control_Worker_Superstep_Barrier " + msg.getSrcMachine() + " " + a + "->" + channelBarrierWaitSet.size());
 							} else {
-								logger.error("Received Control_Worker_Superstep_Channel_Barrier with wrong superstepNo: "
+								logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: "
 										+ msg.getSuperstepNo() + " at step " + superstepNo);
 							}
 							break;
-						case Master_Finish:
-							logger.info("Unexpected finish from master, finish now");
-							return false;
 
 						default:
 							logger.error("Illegal control while waitForWorkerSuperstepsFinished: " + msg.getType());
@@ -228,33 +224,47 @@ public class WorkerMachine extends AbstractMachine {
 
 	public boolean waitForMasterNextSuperstep() {
 		try {
-			final ControlMessage msg = inControlMessages.poll(Settings.MESSAGE_TIMEOUT, TimeUnit.MILLISECONDS);
-			if(msg != null) {
-				switch (msg.getType()) {
-					case Master_Next_Superstep:
-						if(msg.getSuperstepNo() == superstepNo + 1) {
-							return true;
-						} else {
-							logger.error("Received Control_Master_Next_Superstep with wrong superstepNo: "
-									+ msg.getSuperstepNo() + " at step " + superstepNo);
-						}
-						break;
-					case Master_Finish:
-						logger.info("Received Control_Master_Finish");
-						return false;
+			while(!Thread.interrupted()) {
+				final ControlMessage msg = inControlMessages.poll(Settings.MESSAGE_TIMEOUT, TimeUnit.MILLISECONDS);
 
-					default:
-						logger.error("Illegal control while waitForMasterNextSuperstep: " + msg.getType());
-						break;
+				if(msg != null) {
+					switch (msg.getType()) {
+						case Master_Next_Superstep:
+							if(msg.getSuperstepNo() == superstepNo + 1) {
+								return true;
+							} else {
+								logger.error("Received Master_Next_Superstep with wrong superstepNo: "
+										+ msg.getSuperstepNo() + " at step " + superstepNo);
+								return false;
+							}
+						case Master_Finish:
+							logger.info("Received Master_Finish");
+							return false;
+						case Worker_Superstep_Barrier:  // Barrier from workers which are finished before we even started
+							if(msg.getSuperstepNo() == superstepNo + 1) {
+								channelBarrierWaitSet.remove(msg.getSrcMachine());
+							} else {
+								logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: "
+										+ msg.getSuperstepNo() + " at wait for " + (superstepNo + 1));
+							}
+							break;
+
+						default:
+							logger.error("Illegal control while waitForMasterNextSuperstep: " + msg.getType());
+							return false;
+					}
+				}
+				else {
+					logger.error("Timeout while waitForMasterNextSuperstep");
+					return false;
 				}
 			}
-			else {
-				logger.error("Timeout while waitForMasterNextSuperstep");
-				return false;
-			}
+			logger.error("Timeout or interrupt while waitForMasterNextSuperstep");
 			return false;
+
 		}
 		catch (final InterruptedException e) {
+			logger.error("Interrupt while waitForMasterNextSuperstep");
 			return false;
 		}
 	}
