@@ -5,6 +5,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mthesis.concurrent_graph.util.FileUtil;
+
 /**
  * Reads and converts input file.
  * 
@@ -21,6 +23,7 @@ public abstract class BaseMasterInputReader {
 		super();
 		this.partitionSize = partitionSize;
 		this.partitionOutputDir = partitionOutputDir;
+		FileUtil.makeCleanDirectory(partitionOutputDir);
 	}
 
 	/**

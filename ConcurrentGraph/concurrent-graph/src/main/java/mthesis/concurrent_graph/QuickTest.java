@@ -8,7 +8,7 @@ import java.util.Map;
 import mthesis.concurrent_graph.examples.CCDetectVertex;
 import mthesis.concurrent_graph.examples.CCOutputWriter;
 import mthesis.concurrent_graph.examples.EdgeListReader;
-import mthesis.concurrent_graph.master.AbstractMasterOutputWriter;
+import mthesis.concurrent_graph.master.BaseMasterOutputCombiner;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.input.BaseInputPartitionDistributor;
 import mthesis.concurrent_graph.master.input.BaseMasterInputReader;
@@ -19,23 +19,24 @@ import mthesis.concurrent_graph.worker.WorkerMachine;
 public class QuickTest {
 
 	public static void main(String[] args) throws Exception {
-		//		final String inputData = "../../Data/cctest.txt";
-		//		final Class<? extends AbstractMasterInputReader> inputReader = VertexEdgesInputReader.class;
-
-		final String inputData = "../../Data/Wiki-Vote.txt";
-		final Class<? extends BaseMasterInputReader> inputReader = EdgeListReader.class;
-		final BaseInputPartitionDistributor inputDistributor = new ContinousInputPartitionDistributor();
-		final int partitionLines = 4000;
-
-		//Thread.sleep(10000);
-
-		final String inputDir = "input";
-		final String outputDir = "output";
 		final int numWorkers = 4;
 		final String host = "localhost";
 		final int basePort = 23499;
-		final Class<? extends AbstractMasterOutputWriter> outputWriter = CCOutputWriter.class;
+		final String inputDir = "input";
+		final String outputDir = "output";
+
+
+		//		final String inputData = "../../Data/cctest.txt";
+		//		final Class<? extends AbstractMasterInputReader> inputReader = VertexEdgesInputReader.class;
+
+		final String inputFile = "../../Data/Wiki-Vote.txt";
+		final BaseMasterInputReader inputReader = new EdgeListReader(4000, inputDir);
+		final BaseInputPartitionDistributor inputDistributor = new ContinousInputPartitionDistributor();
+		final BaseMasterOutputCombiner outputCombiner = new CCOutputWriter();
 		final Class<? extends AbstractVertex> vertexClass = CCDetectVertex.class;
+
+		//Thread.sleep(10000);
+
 
 		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
 		final List<Integer> allWorkerIds= new ArrayList<>();
@@ -47,7 +48,7 @@ public class QuickTest {
 
 		System.out.println("Starting");
 		//final MasterNode master =
-		startMaster(allCfg, -1, allWorkerIds, inputData, inputDir, outputDir, partitionLines, inputReader, inputDistributor, outputWriter);
+		startMaster(allCfg, -1, allWorkerIds, inputReader, inputFile, inputDistributor, outputCombiner, outputDir);
 
 		final List<WorkerMachine> workers = new ArrayList<>();
 		for(int i = 0; i < numWorkers; i++) {
@@ -76,12 +77,10 @@ public class QuickTest {
 		return node;
 	}
 
-	private static MasterMachine startMaster(Map<Integer, Pair<String, Integer>> allCfg,
-			int id, List<Integer> allWorkers, String inputData, String inputDir, String outputDir, int partitionSize,
-			Class<? extends BaseMasterInputReader> inputReader,
-			BaseInputPartitionDistributor inputDistributor,
-			Class<? extends AbstractMasterOutputWriter> outputWriter) {
-		final MasterMachine node = new MasterMachine(allCfg, id, allWorkers, inputData, inputDir, outputDir, partitionSize, inputReader, inputDistributor, outputWriter);
+	private static MasterMachine startMaster(Map<Integer, Pair<String, Integer>> allMachines, int id, List<Integer> workerIds,
+			BaseMasterInputReader inputReader, String inputFile, BaseInputPartitionDistributor inputDistributor,
+			BaseMasterOutputCombiner outputCombiner, String outputDir) {
+		final MasterMachine node = new MasterMachine(allMachines, id, workerIds, inputReader, inputFile, inputDistributor, outputCombiner, outputDir);
 		node.start();
 		return node;
 	}

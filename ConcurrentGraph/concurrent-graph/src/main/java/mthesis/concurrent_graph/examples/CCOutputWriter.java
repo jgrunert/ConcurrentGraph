@@ -9,12 +9,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import mthesis.concurrent_graph.master.AbstractMasterOutputWriter;
+import mthesis.concurrent_graph.master.BaseMasterOutputCombiner;
 
-public class CCOutputWriter extends AbstractMasterOutputWriter {
+public class CCOutputWriter extends BaseMasterOutputCombiner {
+
+	public CCOutputWriter() {
+		super();
+	}
 
 	@Override
-	public void writeOutput(String outputDir) {
+	public void evaluateOutput(String outputDir) {
 		// Connectec components ID->VertexCount
 		final Map<Integer, Integer> components = new HashMap<>();
 

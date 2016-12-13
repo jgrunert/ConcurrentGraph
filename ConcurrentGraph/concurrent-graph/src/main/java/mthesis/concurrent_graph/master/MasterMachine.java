@@ -1,7 +1,5 @@
 package mthesis.concurrent_graph.master;
 
-import java.io.File;
-import java.lang.reflect.Constructor;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +11,9 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
-import mthesis.concurrent_graph.master.input.BaseMasterInputReader;
 import mthesis.concurrent_graph.master.input.BaseInputPartitionDistributor;
+import mthesis.concurrent_graph.master.input.BaseMasterInputReader;
+import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.Pair;
 
 /**
@@ -26,36 +25,26 @@ public class MasterMachine extends AbstractMachine {
 	private int superstepNo = -1;
 
 	private final String inputFile;
-	private final String inputDir;
 	private final String outputDir;
-	private final int partitionSize;
-	private final Class<? extends BaseMasterInputReader> inputReaderClass;  // TODO Instance, not class
+	private final BaseMasterInputReader inputReader;  // TODO Instance, not class
 	private final BaseInputPartitionDistributor inputDistributor;
-	private final Class<? extends AbstractMasterOutputWriter> outputWriterClass;
+	private final BaseMasterOutputCombiner outputCombiner;
 
 
 	public MasterMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
-			String inputFile, String inputDir, String outputDir, int partitionSize,
-			Class<? extends BaseMasterInputReader> inputReaderClass,
-			BaseInputPartitionDistributor inputDistributor,
-			Class<? extends AbstractMasterOutputWriter> outputWriterClass) {
+			BaseMasterInputReader inputReader, String inputFile, BaseInputPartitionDistributor inputDistributor,
+			BaseMasterOutputCombiner outputCombiner, String outputDir) {
 		super(machines, ownId);
 		this.workerIds = workerIds;
 		this.inputFile = inputFile;
-		this.inputDir = inputDir;
-		this.outputDir = outputDir;
-		this.partitionSize = partitionSize;
-		this.inputReaderClass = inputReaderClass;
+		this.inputReader = inputReader;
 		this.inputDistributor = inputDistributor;
-		this.outputWriterClass = outputWriterClass;
-		makeCleanDirectory(inputDir);
-		makeCleanDirectory(outputDir);
+		this.outputCombiner = outputCombiner;
+		this.outputDir = outputDir;
+		FileUtil.makeCleanDirectory(outputDir);
 	}
 
 	private List<String> readAndPartitionInput() throws Exception {
-		final Constructor<?> c = inputReaderClass.getDeclaredConstructor(int.class, String.class);
-		c.setAccessible(true);
-		final BaseMasterInputReader inputReader = (BaseMasterInputReader) c.newInstance(partitionSize, inputDir);
 		inputReader.readAndPartition(inputFile);
 		inputReader.close();
 		return inputReader.getPartitionFiles();
@@ -197,7 +186,7 @@ public class MasterMachine extends AbstractMachine {
 		// Aggregate output
 		try
 		{
-			outputWriterClass.newInstance().writeOutput(outputDir);
+			outputCombiner.evaluateOutput(outputDir);
 		}
 		catch(final Exception e)
 		{
@@ -222,15 +211,6 @@ public class MasterMachine extends AbstractMachine {
 		messaging.sendMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
 	}
 
-
-	private static void makeCleanDirectory(String dir) {
-		final File outFile = new File(dir);
-		if(outFile.exists())
-			for(final File f : outFile.listFiles())
-				f.delete();
-		else
-			outFile.mkdirs();
-	}
 
 
 	@Override

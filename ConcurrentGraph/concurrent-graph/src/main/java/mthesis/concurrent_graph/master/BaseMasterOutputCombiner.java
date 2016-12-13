@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory;
  * @author Jonas Grunert
  *
  */
-public abstract class AbstractMasterOutputWriter {
-	protected static final Logger logger = LoggerFactory.getLogger(AbstractMasterOutputWriter.class.getCanonicalName());
+public abstract class BaseMasterOutputCombiner {
+	protected static final Logger logger = LoggerFactory.getLogger(BaseMasterOutputCombiner.class.getCanonicalName());
 
 	/**
 	 * Reads input file
 	 */
-	public abstract void writeOutput(String outputDir);
+	public abstract void evaluateOutput(String outputDir);
 }
