@@ -8,6 +8,7 @@ import java.util.Set;
 
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.node.AbstractMachine;
 import mthesis.concurrent_graph.util.Pair;
@@ -67,11 +68,11 @@ public class MasterMachine extends AbstractMachine {
 					final ControlMessage msg = inControlMessages.take();
 					if(msg.getType() == ControlMessageType.Worker_Superstep_Finished) {
 						if(msg.getSuperstepNo() == superstepNo) {
-							final int msgActiveVertices = msg.getContent1();
-							if(msgActiveVertices > 0)
+							final WorkerStatsMessage workerStats = msg.getWorkerStats();
+							if(workerStats.getActiveVertices() > 0)
 								activeWorkers++;
-							activeVertices += msgActiveVertices;
-							messagesSent += msg.getContent2();
+							activeVertices += workerStats.getActiveVertices();
+							messagesSent += workerStats.getMessagesSent();
 							workersWaitingFor.remove(msg.getSrcMachine());
 						}
 						else {

@@ -1,6 +1,7 @@
 package mthesis.concurrent_graph.communication;
 
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 
@@ -40,13 +41,16 @@ public class ControlMessageBuildUtil {
 	}
 
 	public static MessageEnvelope Build_Worker_Superstep_Finished(int superstepNo, int srcMachineId, int activeVertices, int superstepMessagesSent) {
+		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder()
+				.setActiveVertices(activeVertices)
+				.setMessagesSent(superstepMessagesSent)
+				.build();
 		return MessageEnvelope.newBuilder().setControlMessage(
 				ControlMessage.newBuilder()
 				.setType(ControlMessageType.Worker_Superstep_Finished)
 				.setSuperstepNo(superstepNo)
 				.setSrcMachine(srcMachineId)
-				.setContent1(activeVertices)
-				.setContent2(superstepMessagesSent)
+				.setWorkerStats(workerStats)
 				.build()).build();
 	}
 
