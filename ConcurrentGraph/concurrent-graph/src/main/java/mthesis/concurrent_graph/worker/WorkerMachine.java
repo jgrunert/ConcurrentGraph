@@ -40,6 +40,7 @@ public class WorkerMachine extends AbstractMachine {
 	private final Set<Integer> channelBarrierWaitSet = new HashSet<>();
 	private final Map<Integer, List<VertexMessage>> vertexMessageBuckets = new HashMap<>();
 	private final List<VertexMessage> bufferedLoopbackMessages = new ArrayList<>();
+	protected final List<VertexMessage> inVertexMessages = new ArrayList<>();
 
 	private int superstepNo;
 	private SuperstepStats superstepStats;
@@ -153,16 +154,25 @@ public class WorkerMachine extends AbstractMachine {
 
 				// Sort messages from buffers after barrier sync
 				// Incoming messages
-				for(final VertexMessage msg : inVertexMessages) {
-					if(msg.getSuperstepNo() != superstepNo) {
-						logger.error("Message from wrong superstep: " + msg);
-						continue;
+				synchronized (inVertexMessages) {
+					for(final VertexMessage msg : inVertexMessages) {
+						if(msg.getSuperstepNo() != superstepNo) {
+							logger.error("Message from wrong superstep: " + msg);
+							continue;
+						}
+						final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getDstVertex());
+						if(vertMsgs != null) {
+							superstepStats.ReceivedCorrectVertexMessages++;
+							vertMsgs.add(msg);
+						}
+						else {
+							//System.out.println(ownId + " WRONG " + msg.getSrcVertex() + " " + msg.getDstVertex() + " " + msg.getContent());
+							System.out.println(ownId + " WRONG " + msg.getDstVertex() + " from " + msg.getSrcMachine());
+							superstepStats.ReceivedWrongVertexMessages++;
+						}
 					}
-					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getDstVertex());
-					if(vertMsgs != null)
-						vertMsgs.add(msg);
+					inVertexMessages.clear();
 				}
-				inVertexMessages.clear();
 				// Loopback messages
 				for(final VertexMessage msg : bufferedLoopbackMessages) {
 					if(msg.getSuperstepNo() != superstepNo) {
@@ -178,6 +188,7 @@ public class WorkerMachine extends AbstractMachine {
 
 
 				// Signal master that ready
+				superstepStats.TotalVertexMachinesDiscovered = remoteVertexMachineRegistry.getRegistrySize();
 				sendMasterSuperstepFinished();
 			}
 		}
@@ -271,41 +282,94 @@ public class WorkerMachine extends AbstractMachine {
 
 
 	private void sendWorkersSuperstepFinished() {
-		superstepStats.ControlMessagesSent++;
+		superstepStats.SentControlMessages++;
 		messaging.sendMessageBroadcast(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Barrier(superstepNo, ownId), true);
 	}
 
 	private void sendMasterSuperstepFinished() {
-		superstepStats.ControlMessagesSent++;
+		superstepStats.SentControlMessages++;
 		messaging.sendMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
 				superstepStats), true);
 	}
 
 	private void sendMasterFinishedMessage() {
-		superstepStats.ControlMessagesSent++;
+		superstepStats.SentControlMessages++;
 		messaging.sendMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
 	}
 
-	public void sendVertexMessage(int srcVertex, int dstVertex, int content) {
-		final MessageEnvelope message = VertexMessageBuildUtil.Build(superstepNo, ownId, srcVertex, dstVertex, content);
+	/**
+	 * Sends a vertex message. If local vertex, direct loopback.
+	 * It remote vertex try to lookup machine. If machine not known broadcast message.
+	 */
+	public void sendVertexMessage(int srcVertex, int dstVertex, Integer content) {
+		final MessageEnvelope message= createVertexMessageEnvelope(srcVertex, dstVertex, content);
 
 		if(localVertices.contains(dstVertex)) {
 			// Local message
-			superstepStats.VertexMessagesLocal++;
+			System.out.println(ownId + " SEND LOCAL " + srcVertex + " " + dstVertex);
+			superstepStats.SentVertexMessagesLocal++;
 			bufferedLoopbackMessages.add(message.getVertexMessage());
 		}
 		else {
 			// Remote message
 			final Integer remoteMachine = remoteVertexMachineRegistry.lookupEntry(dstVertex);
 			if(remoteMachine != null) {
-				superstepStats.VertexMessagesUnicast++;
+				System.out.println(ownId + " SEND UNI from " + srcVertex + " to " + dstVertex + ":" + remoteMachine);
+				superstepStats.SentVertexMessagesUnicast++;
 				messaging.sendMessageUnicast(remoteMachine, message, false);
 			}
 			else {
-				superstepStats.VertexMessagesBroadcast++;
+				System.out.println(ownId + " SEND BCAST " + srcVertex + " to " + dstVertex + " " + otherWorkerIds);
+				superstepStats.SentVertexMessagesBroadcast += otherWorkerIds.size();
 				messaging.sendMessageBroadcast(otherWorkerIds, message, false);
 			}
 		}
+	}
+
+	/**
+	 * Sends a vertex message directly to a remote machine, no lookup.
+	 */
+	public void sendVertexMessageToMachine(int srcVertex, int dstVertex, int dstMachine, Integer content) {
+		System.out.println(ownId + " SEND DIR " + srcVertex + " " + dstVertex + " to " + dstMachine);
+		superstepStats.SentVertexMessagesUnicast++;
+		final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content);
+		messaging.sendMessageUnicast(dstMachine, message, false);
+	}
+
+	private MessageEnvelope createVertexMessageEnvelope(int srcVertex, int dstVertex, Integer content) {
+		if(content != null)
+			return VertexMessageBuildUtil.BuildWithContent(superstepNo, ownId, srcVertex, dstVertex, content);
+		else
+			return VertexMessageBuildUtil.BuildWithoutContent(superstepNo, ownId, srcVertex, dstVertex);
+	}
+
+	@Override
+	public void onIncomingVertexMessage(VertexMessage message) {
+		//final boolean registered = remoteVertexMachineRegistry.lookupEntry(message.getSrcVertex()) != null;
+		// Update vertex registry if discovery enabled
+		if(Settings.VERTEX_DISCOVERY) {
+			if(remoteVertexMachineRegistry.addEntry(message.getSrcVertex(), message.getSrcMachine())) {
+				System.out.println(ownId + " LEARNED " + message.getSrcVertex() + ":" + message.getSrcMachine());
+				superstepStats.NewVertexMachinesDiscovered++;
+				if(Settings.ACTIVE_VERTEX_DISCOVERY && message.hasContent() && localVertices.contains(message.getDstVertex())) {
+					// Send "get-to-know message" without content. Dont reply on received messages without content.
+					System.out.println(ownId + " gtkm to " + message.getSrcMachine());
+					sendVertexMessageToMachine(message.getDstVertex(), -1, message.getSrcMachine(), null);
+				}
+			}
+		}
+
+		// Vertex messages without content are "get-to-know messages", only for vertex registry
+		if(message.hasContent()) {
+			synchronized (inVertexMessages) {
+				System.out.println(ownId + " REC " + message.getSrcVertex() + " " + message.getDstVertex() + " " + message.getContent());
+				inVertexMessages.add(message);
+			}
+		}
+		//		else {
+		//			final boolean registered2 = remoteVertexMachineRegistry.lookupEntry(message.getSrcVertex()) != null;
+		//			System.out.println("GetToKnow " + registered + " " + registered2);
+		//		}
 	}
 
 

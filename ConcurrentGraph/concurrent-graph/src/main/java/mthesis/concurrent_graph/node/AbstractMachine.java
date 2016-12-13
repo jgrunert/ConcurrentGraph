@@ -25,7 +25,6 @@ public abstract class AbstractMachine {
 	protected final int ownId;
 
 	protected final MessageSenderAndReceiver messaging;
-	protected final BlockingQueue<VertexMessage> inVertexMessages = new LinkedBlockingQueue<>();
 	protected final BlockingQueue<ControlMessage> inControlMessages = new LinkedBlockingQueue<>();
 
 	private Thread runThread;
@@ -69,7 +68,5 @@ public abstract class AbstractMachine {
 		inControlMessages.add(message);
 	}
 
-	public void onIncomingVertexMessage(VertexMessage message) {
-		inVertexMessages.add(message);
-	}
+	public abstract void onIncomingVertexMessage(VertexMessage message);
 }

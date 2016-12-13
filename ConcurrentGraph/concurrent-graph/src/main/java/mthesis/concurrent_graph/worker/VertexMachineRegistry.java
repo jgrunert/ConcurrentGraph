@@ -14,14 +14,23 @@ public class VertexMachineRegistry {
 	//		// TODO Free unused entries?
 	//	}
 
-	public void addEntry(int vertexId, int machineId) {
-		vertexMachineRegistry.put(vertexId, machineId);
+	/**
+	 * Adds a vertex->machine mapping
+	 * @return True if mapping is new, false if a mapping for this vertex was already known
+	 */
+	public synchronized boolean addEntry(int vertexId, int machineId) {
+		return vertexMachineRegistry.put(vertexId, machineId) == null;
 	}
 
 	/**
 	 * Looks up a verte/machine entry. Returns it or NULL if no entry for this vertex.
 	 */
-	public Integer lookupEntry(int vertexId) {
+	public synchronized Integer lookupEntry(int vertexId) {
 		return vertexMachineRegistry.get(vertexId);
+	}
+
+
+	public synchronized int getRegistrySize() {
+		return vertexMachineRegistry.size();
 	}
 }

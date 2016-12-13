@@ -62,6 +62,7 @@ public class MessageHandler extends SimpleChannelInboundHandler<MessageEnvelope>
 	protected void channelRead0(ChannelHandlerContext ctx, MessageEnvelope msg) throws Exception {
 		if(msg.hasVertexMessage()) {
 			messageListner.onIncomingVertexMessage(msg.getVertexMessage());
+			//System.out.println(msg);
 		}
 		else if(msg.hasControlMessage()) {
 			switch (channelState) {

@@ -10,6 +10,7 @@ import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
+import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.node.AbstractMachine;
 import mthesis.concurrent_graph.util.Pair;
 
@@ -64,12 +65,14 @@ public class MasterMachine extends AbstractMachine {
 				// Wait for workers to send finished control messages.
 				int activeWorkers = 0;
 				int activeVertices = 0;
-				int controlMessages = 0;
-				int vertexLocalMsgs = 0;
-				int vertexUnicastMsgs = 0;
-				int vertexBroadcastMsgs = 0;
-				int newMachinesDiscovered = 0;
-				int totalMachinesDiscovered = 0;
+				int SentControlMessages = 0;
+				int SentVertexMessagesLocal = 0;
+				int SentVertexMessagesUnicast = 0;
+				int SentVertexMessagesBroadcast = 0;
+				int ReceivedCorrectVertexMessages = 0;
+				int ReceivedWrongVertexMessages = 0;
+				int newVertexMachinesDiscovered = 0;
+				int totalVertexMachinesDiscovered = 0;
 				while(!workersWaitingFor.isEmpty()) {
 					final ControlMessage msg = inControlMessages.take();
 					if(msg.getType() == ControlMessageType.Worker_Superstep_Finished) {
@@ -78,12 +81,14 @@ public class MasterMachine extends AbstractMachine {
 							if(workerStats.getActiveVertices() > 0)
 								activeWorkers++;
 							activeVertices += workerStats.getActiveVertices();
-							controlMessages += workerStats.getControlMessagesSent();
-							vertexLocalMsgs += workerStats.getVertexMessagesLocal();
-							vertexUnicastMsgs += workerStats.getVertexMessagesUnicast();
-							vertexBroadcastMsgs += workerStats.getVertexMessagesBroadcast();
-							newMachinesDiscovered += workerStats.getNewVertexMachinesDiscovered();
-							totalMachinesDiscovered += workerStats.getTotalVertexMachinesDiscovered();
+							SentControlMessages += workerStats.getSentControlMessages();
+							SentVertexMessagesLocal += workerStats.getSentVertexMessagesLocal();
+							SentVertexMessagesUnicast += workerStats.getSentVertexMessagesUnicast();
+							SentVertexMessagesBroadcast += workerStats.getSentVertexMessagesBroadcast();
+							ReceivedCorrectVertexMessages += workerStats.getReceivedCorrectVertexMessages();
+							ReceivedWrongVertexMessages += workerStats.getReceivedWrongVertexMessages();
+							newVertexMachinesDiscovered += workerStats.getNewVertexMachinesDiscovered();
+							totalVertexMachinesDiscovered += workerStats.getTotalVertexMachinesDiscovered();
 							workersWaitingFor.remove(msg.getSrcMachine());
 						}
 						else {
@@ -102,14 +107,23 @@ public class MasterMachine extends AbstractMachine {
 					}
 				}
 
+				// Wrong message count should match broadcast message count.
+				// Otherwise there might be communication errors.
+				if(ReceivedWrongVertexMessages != SentVertexMessagesBroadcast * (workerIds.size() - 2) / (workerIds.size() - 1)) {
+					logger.warn(String.format("Wrong vertex message count %d does not match broadcast message count %d. Possible communication errors.",
+							ReceivedWrongVertexMessages, SentVertexMessagesBroadcast));
+				}
+
 				final long timeNow = System.currentTimeMillis();
 				System.out.println("----- superstep " + superstepNo + " -----");
 				logger.info(String.format("--- Master finished superstep %d after %dms (total %dms). activeWorkers: %d activeVertices: %d",
 						superstepNo, (timeNow - lastSuperstepTime), (timeNow - startTime), activeWorkers, activeVertices));
-				logger.debug(String.format("    controlMessages: %d, vertexLocalMsgs: %d, vertexUnicastMsgs: %d, vertexBroadcastMsgs: %d",
-						controlMessages, vertexLocalMsgs, vertexUnicastMsgs, vertexBroadcastMsgs));
-				logger.debug(String.format("    newMachinesDiscovered: %d, totalMachinesDiscovered: %d",
-						newMachinesDiscovered, totalMachinesDiscovered));
+				logger.info(String.format("    SentControlMessages: %d, SentVertexMessagesLocal: %d, SentVertexMessagesUnicast: %d, SentVertexMessagesBroadcast: %d",
+						SentControlMessages, SentVertexMessagesLocal, SentVertexMessagesUnicast, SentVertexMessagesBroadcast));
+				logger.info(String.format("    ReceivedCorrectVertexMessages: %d, ReceivedWrongVertexMessages: %d",
+						ReceivedCorrectVertexMessages, ReceivedWrongVertexMessages));
+				logger.info(String.format("    newVertexMachinesDiscovered: %d, totalVertexMachinesDiscovered: %d",
+						newVertexMachinesDiscovered, totalVertexMachinesDiscovered));
 				lastSuperstepTime = timeNow;
 
 				if(activeWorkers > 0) {
@@ -190,5 +204,11 @@ public class MasterMachine extends AbstractMachine {
 				f.delete();
 		else
 			outFile.mkdirs();
+	}
+
+
+	@Override
+	public void onIncomingVertexMessage(VertexMessage message) {
+		throw new RuntimeException("Master cannot handle vertex messages");
 	}
 }

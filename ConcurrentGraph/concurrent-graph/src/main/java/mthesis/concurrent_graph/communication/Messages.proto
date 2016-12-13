@@ -42,11 +42,13 @@ message VertexMessage {
 		
 		message WorkerStatsMessage {	
 			optional int32 ActiveVertices = 1;	
-			optional int32 ControlMessagesSent = 2;
-			optional int32 VertexMessagesLocal = 3;
-			optional int32 VertexMessagesUnicast = 4;
-			optional int32 VertexMessagesBroadcast = 5;
-			optional int32 NewVertexMachinesDiscovered = 6;
-			optional int32 TotalVertexMachinesDiscovered = 7;
+			optional int32 SentControlMessages = 2;
+			optional int32 SentVertexMessagesLocal = 3;
+			optional int32 SentVertexMessagesUnicast = 4;
+			optional int32 SentVertexMessagesBroadcast = 5;
+			optional int32 ReceivedCorrectVertexMessages = 6;
+			optional int32 ReceivedWrongVertexMessages = 7;
+			optional int32 NewVertexMachinesDiscovered = 8;
+			optional int32 TotalVertexMachinesDiscovered = 9;
 		}
 	}

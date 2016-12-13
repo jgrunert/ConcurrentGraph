@@ -11,7 +11,17 @@ import mthesis.concurrent_graph.communication.Messages.VertexMessage;
  *
  */
 public class VertexMessageBuildUtil {
-	public static MessageEnvelope Build(int superstepNo, int srcMachineId, int srcVertex, int dstVertex, int content) {
+	public static MessageEnvelope BuildWithoutContent(int superstepNo, int srcMachineId, int srcVertex, int dstVertex) {
+		return MessageEnvelope.newBuilder().setVertexMessage(
+				VertexMessage.newBuilder()
+				.setSuperstepNo(superstepNo)
+				.setSrcMachine(srcMachineId)
+				.setSrcVertex(srcVertex)
+				.setDstVertex(dstVertex)
+				.build()).build();
+	}
+
+	public static MessageEnvelope BuildWithContent(int superstepNo, int srcMachineId, int srcVertex, int dstVertex, int content) {
 		return MessageEnvelope.newBuilder().setVertexMessage(
 				VertexMessage.newBuilder()
 				.setSuperstepNo(superstepNo)

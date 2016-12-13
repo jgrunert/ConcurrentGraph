@@ -44,10 +44,12 @@ public class ControlMessageBuildUtil {
 	public static MessageEnvelope Build_Worker_Superstep_Finished(int superstepNo, int srcMachineId, SuperstepStats stats) {
 		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder()
 				.setActiveVertices(stats.ActiveVertices)
-				.setControlMessagesSent(stats.ControlMessagesSent)
-				.setVertexMessagesLocal(stats.VertexMessagesLocal)
-				.setVertexMessagesUnicast(stats.VertexMessagesUnicast)
-				.setVertexMessagesBroadcast(stats.VertexMessagesBroadcast)
+				.setSentControlMessages(stats.SentControlMessages)
+				.setSentVertexMessagesLocal(stats.SentVertexMessagesLocal)
+				.setSentVertexMessagesUnicast(stats.SentVertexMessagesUnicast)
+				.setSentVertexMessagesBroadcast(stats.SentVertexMessagesBroadcast)
+				.setReceivedCorrectVertexMessages(stats.ReceivedCorrectVertexMessages)
+				.setReceivedWrongVertexMessages(stats.ReceivedWrongVertexMessages)
 				.setNewVertexMachinesDiscovered(stats.NewVertexMachinesDiscovered)
 				.setTotalVertexMachinesDiscovered(stats.TotalVertexMachinesDiscovered)
 				.build();
