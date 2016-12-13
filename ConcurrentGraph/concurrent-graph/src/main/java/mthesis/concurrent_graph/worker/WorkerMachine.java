@@ -15,15 +15,16 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import mthesis.concurrent_graph.AbstractMachine;
+import mthesis.concurrent_graph.AbstractVertex;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.communication.VertexMessageBuildUtil;
-import mthesis.concurrent_graph.node.AbstractMachine;
 import mthesis.concurrent_graph.util.Pair;
-import mthesis.concurrent_graph.vertex.AbstractVertex;
 
 /**
  * Concurrent graph processing worker main
@@ -31,7 +32,6 @@ import mthesis.concurrent_graph.vertex.AbstractVertex;
 public class WorkerMachine extends AbstractMachine {
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
-	private final String input;
 	private final String output;
 
 	private final Class<? extends AbstractVertex> vertexClass;
@@ -50,13 +50,12 @@ public class WorkerMachine extends AbstractMachine {
 
 
 	public WorkerMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
-			String input, String output, Class<? extends AbstractVertex> vertexClass) {
+			String output, Class<? extends AbstractVertex> vertexClass) {
 		super(machines, ownId);
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
 		this.masterId = masterId;
 
 		this.vertices = new ArrayList<>();
-		this.input = input;
 		this.output = output;
 		this.vertexClass = vertexClass;
 	}
@@ -112,12 +111,17 @@ public class WorkerMachine extends AbstractMachine {
 
 		// Wait for master to signal that input ready
 		superstepNo = -2;
-		if (!waitForMasterNextSuperstep()) {
+		final List<String> assignedPartitions = waitForStartup();
+		if (assignedPartitions == null) {
 			logger.error("Wait for input ready failed");
 			return;
 		}
 		superstepNo++;
-		loadVertices(input);
+
+		// Load assigned partitions
+		for(final String partition : assignedPartitions) {
+			loadVertices(partition);
+		}
 		superstepStats.ActiveVertices = vertices.size();
 		sendMasterSuperstepFinished();
 
@@ -232,6 +236,30 @@ public class WorkerMachine extends AbstractMachine {
 		}
 		catch (final InterruptedException e) {
 			return false;
+		}
+	}
+
+	// Waits for startup, returns assigned partitions
+	public List<String> waitForStartup() {
+		try {
+			final ControlMessage msg = inControlMessages.poll(Settings.MESSAGE_TIMEOUT, TimeUnit.MILLISECONDS);
+
+			if(msg != null) {
+				if(msg.getType() == ControlMessageType.Master_Next_Superstep) {
+					return msg.getAssignPartitions().getPartitionFilesList();
+				} else {
+					logger.error("Illegal control while waitForStartup: " + msg.getType());
+					return null;
+				}
+			}
+			else {
+				logger.error("Timeout while waitForStartup");
+				return null;
+			}
+		}
+		catch (final InterruptedException e) {
+			logger.error("Interrupt while waitForStartup");
+			return null;
 		}
 	}
 

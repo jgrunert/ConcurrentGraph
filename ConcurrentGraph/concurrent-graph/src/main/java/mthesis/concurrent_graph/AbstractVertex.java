@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.vertex;
+package mthesis.concurrent_graph;
 
 import java.util.Collection;
 import java.util.List;

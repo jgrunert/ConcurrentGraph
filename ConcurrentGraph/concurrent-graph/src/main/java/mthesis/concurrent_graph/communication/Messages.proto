@@ -40,6 +40,11 @@ message VertexMessage {
 		optional int32 SuperstepNo = 2;
 		optional int32 SrcMachine = 3;
 		optional WorkerStatsMessage WorkerStats = 4;
+		optional AssignPartitionsMessage AssignPartitions = 5;
+		
+		message AssignPartitionsMessage {	
+			repeated string PartitionFiles = 1;
+		}
 		
 		message WorkerStatsMessage {	
 			optional int32 ActiveVertices = 1;	

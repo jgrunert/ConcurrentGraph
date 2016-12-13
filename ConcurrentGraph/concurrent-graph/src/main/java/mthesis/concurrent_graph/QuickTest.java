@@ -1,6 +1,5 @@
 package mthesis.concurrent_graph;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,11 +8,12 @@ import java.util.Map;
 import mthesis.concurrent_graph.examples.CCDetectVertex;
 import mthesis.concurrent_graph.examples.CCOutputWriter;
 import mthesis.concurrent_graph.examples.EdgeListReader;
-import mthesis.concurrent_graph.master.AbstractMasterInputReader;
 import mthesis.concurrent_graph.master.AbstractMasterOutputWriter;
 import mthesis.concurrent_graph.master.MasterMachine;
+import mthesis.concurrent_graph.master.input.BaseInputPartitionDistributor;
+import mthesis.concurrent_graph.master.input.BaseMasterInputReader;
+import mthesis.concurrent_graph.master.input.ContinousInputPartitionDistributor;
 import mthesis.concurrent_graph.util.Pair;
-import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 
 public class QuickTest {
@@ -23,7 +23,9 @@ public class QuickTest {
 		//		final Class<? extends AbstractMasterInputReader> inputReader = VertexEdgesInputReader.class;
 
 		final String inputData = "../../Data/Wiki-Vote.txt";
-		final Class<? extends AbstractMasterInputReader> inputReader = EdgeListReader.class;
+		final Class<? extends BaseMasterInputReader> inputReader = EdgeListReader.class;
+		final BaseInputPartitionDistributor inputDistributor = new ContinousInputPartitionDistributor();
+		final int partitionLines = 4000;
 
 		//Thread.sleep(10000);
 
@@ -45,11 +47,11 @@ public class QuickTest {
 
 		System.out.println("Starting");
 		//final MasterNode master =
-		startMaster(allCfg, -1, allWorkerIds, inputData, inputDir, outputDir, inputReader, outputWriter);
+		startMaster(allCfg, -1, allWorkerIds, inputData, inputDir, outputDir, partitionLines, inputReader, inputDistributor, outputWriter);
 
 		final List<WorkerMachine> workers = new ArrayList<>();
 		for(int i = 0; i < numWorkers; i++) {
-			workers.add(startWorker(allCfg, i, allWorkerIds, inputDir + File.separator + i + ".txt", outputDir, vertexClass));
+			workers.add(startWorker(allCfg, i, allWorkerIds, outputDir, vertexClass));
 		}
 
 
@@ -67,18 +69,19 @@ public class QuickTest {
 	}
 
 	private static WorkerMachine startWorker(Map<Integer, Pair<String, Integer>> allCfg,
-			int id, List<Integer> allWorkers, String input, String output,
+			int id, List<Integer> allWorkers, String output,
 			Class<? extends AbstractVertex> vertexClass) {
-		final WorkerMachine node = new WorkerMachine(allCfg, id, allWorkers, -1, input, output, vertexClass);
+		final WorkerMachine node = new WorkerMachine(allCfg, id, allWorkers, -1, output, vertexClass);
 		node.start();
 		return node;
 	}
 
 	private static MasterMachine startMaster(Map<Integer, Pair<String, Integer>> allCfg,
-			int id, List<Integer> allWorkers, String inputData, String inputDir, String outputDir,
-			Class<? extends AbstractMasterInputReader> inputReader,
+			int id, List<Integer> allWorkers, String inputData, String inputDir, String outputDir, int partitionSize,
+			Class<? extends BaseMasterInputReader> inputReader,
+			BaseInputPartitionDistributor inputDistributor,
 			Class<? extends AbstractMasterOutputWriter> outputWriter) {
-		final MasterMachine node = new MasterMachine(allCfg, id, allWorkers, inputData, inputDir, outputDir, inputReader, outputWriter);
+		final MasterMachine node = new MasterMachine(allCfg, id, allWorkers, inputData, inputDir, outputDir, partitionSize, inputReader, inputDistributor, outputWriter);
 		node.start();
 		return node;
 	}

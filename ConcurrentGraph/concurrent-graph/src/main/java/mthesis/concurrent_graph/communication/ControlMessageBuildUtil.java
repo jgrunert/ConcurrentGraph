@@ -1,6 +1,9 @@
 package mthesis.concurrent_graph.communication;
 
+import java.util.List;
+
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
@@ -14,6 +17,18 @@ import mthesis.concurrent_graph.worker.SuperstepStats;
  *
  */
 public class ControlMessageBuildUtil {
+	public static MessageEnvelope Build_Master_Startup(int superstepNo, int srcMachineId, List<String> partitions) {
+		final AssignPartitionsMessage assignPartitionsMsg = AssignPartitionsMessage.newBuilder()
+				.addAllPartitionFiles(partitions).build();
+		return MessageEnvelope.newBuilder().setControlMessage(
+				ControlMessage.newBuilder()
+				.setType(ControlMessageType.Master_Next_Superstep)
+				.setSuperstepNo(superstepNo)
+				.setSrcMachine(srcMachineId)
+				.setAssignPartitions(assignPartitionsMsg)
+				.build()).build();
+	}
+
 	public static MessageEnvelope Build_Master_Next_Superstep(int superstepNo, int srcMachineId) {
 		return MessageEnvelope.newBuilder().setControlMessage(
 				ControlMessage.newBuilder()

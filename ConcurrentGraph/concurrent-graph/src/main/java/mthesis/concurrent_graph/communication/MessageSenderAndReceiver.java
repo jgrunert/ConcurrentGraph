@@ -29,11 +29,11 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
-import mthesis.concurrent_graph.node.AbstractMachine;
 import mthesis.concurrent_graph.util.Pair;
 
 

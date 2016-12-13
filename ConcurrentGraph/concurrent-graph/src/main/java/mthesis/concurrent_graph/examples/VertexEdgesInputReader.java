@@ -1,19 +1,14 @@
 package mthesis.concurrent_graph.examples;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import mthesis.concurrent_graph.master.AbstractMasterInputReader;
+import mthesis.concurrent_graph.master.input.VertexPartitionMasterInputReader;
 
 /**
- * Reads a file with format
+ * Reads and partitions a file with format
  * [vertex]
  * \t[edge]
  * \t[edge]
@@ -23,71 +18,37 @@ import mthesis.concurrent_graph.master.AbstractMasterInputReader;
  * @author Jonas Grunert
  *
  */
-public class VertexEdgesInputReader extends AbstractMasterInputReader {
+public class VertexEdgesInputReader extends VertexPartitionMasterInputReader {
+	private final List<Integer> edges = new ArrayList<>();
+	private Integer currentVertex;
 
-	private final Random random = new Random(0);
-	private final List<String> edges = new ArrayList<>();
-	private String currentVertex;
-	private int vertexCount = 0;
-	private int edgeCount = 0;
+
+	protected VertexEdgesInputReader(int partitionSize, String partitionOutputDir) {
+		super(partitionSize, partitionOutputDir);
+	}
 
 
 	@Override
-	public List<String> readAndPartition(String inputData, String inputDir, int numPartitions) {
-
-		final List<String> partitions = new ArrayList<>(numPartitions);
-		final List<PrintWriter> partitionWriters = new ArrayList<>(numPartitions);
-
-		try (BufferedReader br = new BufferedReader(new FileReader(inputData))) {
-			// Open partition writers
-			for(int i = 0; i < numPartitions; i++) {
-				final String fileName = inputDir + File.separator + i + ".txt";
-				partitions.add(fileName);
-				try {
-					partitionWriters.add(new PrintWriter(new FileWriter(fileName)));
-				}
-				catch (final IOException e) {
-					logger.error("Opening files failed", e);
-					return partitions;
-				}
-			}
-
+	public void readAndPartition(String inputFile) {
+		try (BufferedReader br = new BufferedReader(new FileReader(inputFile))) {
 			// Read and partition input
 			String line;
 			if((line = br.readLine()) != null)
-				currentVertex = line;
+				currentVertex = Integer.parseInt(line);
 
 			while ((line = br.readLine()) != null) {
 				if (line.startsWith("\t")) {
-					edges.add(line);
+					edges.add(Integer.parseInt(line));
 				} else {
-					writeVertex(partitionWriters);
+					writeVertex(currentVertex, edges);
 					edges.clear();
-					currentVertex = line;
+					currentVertex = Integer.parseInt(line);
 				}
 			}
-			writeVertex(partitionWriters);
+			writeVertex(currentVertex, edges);
 		}
 		catch (final Exception e) {
 			logger.error("loadVertices failed", e);
 		}
-		finally {
-			for(final PrintWriter writer : partitionWriters) {
-				writer.close();
-			}
-			logger.info("Loaded " + vertexCount + " vertices " + edgeCount + " edges");
-		}
-
-		return partitions;
-	}
-
-	private void writeVertex(List<PrintWriter> partitionWriters) {
-		final PrintWriter writer = partitionWriters.get(random.nextInt(partitionWriters.size()));
-		writer.println(currentVertex);
-		for(final String edge : edges) {
-			writer.println(edge);
-		}
-		vertexCount++;
-		edgeCount += edges.size();
 	}
 }

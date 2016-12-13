@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.node;
+package mthesis.concurrent_graph;
 
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;

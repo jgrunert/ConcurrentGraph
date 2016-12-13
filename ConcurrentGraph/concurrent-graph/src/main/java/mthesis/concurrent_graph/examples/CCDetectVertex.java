@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import mthesis.concurrent_graph.AbstractVertex;
 import mthesis.concurrent_graph.communication.Messages.VertexMessage;
-import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 
 /**
