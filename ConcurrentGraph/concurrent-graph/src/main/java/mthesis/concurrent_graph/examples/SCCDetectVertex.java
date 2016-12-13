@@ -12,7 +12,7 @@ import mthesis.concurrent_graph.worker.WorkerMachine;
  * @author Jonas Grunert
  *
  */
-public class SCCDetectVertex extends AbstractVertex {
+public class SCCDetectVertex extends AbstractVertex<CCDetectVertexValue, CCDetectVertexMessage> {
 
 	private int value;
 

@@ -7,7 +7,7 @@ import mthesis.concurrent_graph.communication.Messages.VertexMessage;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 
 
-public abstract class AbstractVertex {
+public abstract class AbstractVertex<V, M> {
 	public final int id;
 	protected final List<Integer> outgoingNeighbors;
 	protected int superstepNo = 0;

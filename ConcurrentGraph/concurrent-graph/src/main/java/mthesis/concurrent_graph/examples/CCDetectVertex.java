@@ -14,7 +14,7 @@ import mthesis.concurrent_graph.worker.WorkerMachine;
  * @author Jonas Grunert
  *
  */
-public class CCDetectVertex extends AbstractVertex {
+public class CCDetectVertex extends AbstractVertex<CCDetectVertexValue, CCDetectVertexMessage> {
 
 	private int value;
 	private final Set<Integer> allNeighbors;

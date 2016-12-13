@@ -1,11 +1,14 @@
 package mthesis.concurrent_graph;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.Map;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Output;
+
 import mthesis.concurrent_graph.examples.CCDetectVertex;
+import mthesis.concurrent_graph.examples.CCDetectVertexValue;
 import mthesis.concurrent_graph.examples.CCOutputWriter;
 import mthesis.concurrent_graph.examples.EdgeListReader;
 import mthesis.concurrent_graph.master.BaseMasterOutputCombiner;
@@ -13,6 +16,7 @@ import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.input.BaseInputPartitionDistributor;
 import mthesis.concurrent_graph.master.input.BaseMasterInputReader;
 import mthesis.concurrent_graph.master.input.ContinousInputPartitionDistributor;
+import mthesis.concurrent_graph.playground.KryoTest;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 
@@ -38,25 +42,44 @@ public class QuickTest {
 
 		final Class<? extends AbstractVertex> vertexClass = CCDetectVertex.class;
 
-		//Thread.sleep(10000);
+		final ByteArrayOutputStream stream1 = new ByteArrayOutputStream();
+		final Output output1 = new Output(stream1);
+		final Kryo kryo = new Kryo();
+		kryo.register(CCDetectVertexValue.class);
+
+		final CCDetectVertexValue value1 = new CCDetectVertexValue();
+		value1.Value1 = 1024;
+		value1.Value2 = 100000;
+
+		kryo.writeObject(output1, value1);
+		output1.flush();
+		final byte[] buffer = stream1.toByteArray(); // Serialization done, get bytes
 
 
-		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
-		final List<Integer> allWorkerIds= new ArrayList<>();
-		allCfg.put(-1, new Pair<String, Integer>(host, basePort));
-		for(int i = 0; i < numWorkers; i++) {
-			allWorkerIds.add(i);
-			allCfg.put(i, new Pair<String, Integer>(host, basePort + 1 + i));
-		}
+		KryoTest.testSerialize();
+		KryoTest.testSerializeDeserialize();
 
-		System.out.println("Starting");
-		//final MasterNode master =
-		startMaster(allCfg, -1, allWorkerIds, inputReader, inputFile, inputDistributor, outputCombiner, outputDir);
-
-		final List<WorkerMachine> workers = new ArrayList<>();
-		for(int i = 0; i < numWorkers; i++) {
-			workers.add(startWorker(allCfg, i, allWorkerIds, outputDir, vertexClass));
-		}
+		//
+		//
+		//		//Thread.sleep(10000);
+		//
+		//
+		//		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
+		//		final List<Integer> allWorkerIds= new ArrayList<>();
+		//		allCfg.put(-1, new Pair<String, Integer>(host, basePort));
+		//		for(int i = 0; i < numWorkers; i++) {
+		//			allWorkerIds.add(i);
+		//			allCfg.put(i, new Pair<String, Integer>(host, basePort + 1 + i));
+		//		}
+		//
+		//		System.out.println("Starting");
+		//		//final MasterNode master =
+		//		startMaster(allCfg, -1, allWorkerIds, inputReader, inputFile, inputDistributor, outputCombiner, outputDir);
+		//
+		//		final List<WorkerMachine> workers = new ArrayList<>();
+		//		for(int i = 0; i < numWorkers; i++) {
+		//			workers.add(startWorker(allCfg, i, allWorkerIds, outputDir, vertexClass));
+		//		}
 
 
 		//		master.waitUntilStarted();
