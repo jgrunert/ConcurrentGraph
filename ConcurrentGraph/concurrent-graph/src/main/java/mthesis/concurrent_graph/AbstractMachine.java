@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
-import mthesis.concurrent_graph.communication.Messages.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.util.Pair;
 
@@ -77,5 +77,5 @@ public abstract class AbstractMachine {
 		inControlMessages.add(message);
 	}
 
-	public abstract void onIncomingVertexMessage(VertexMessage message);
+	public abstract void onIncomingVertexMessage(VertexMessageTransport message);
 }

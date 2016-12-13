@@ -16,31 +16,35 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import mthesis.concurrent_graph.AbstractMachine;
-import mthesis.concurrent_graph.AbstractVertex;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
-import mthesis.concurrent_graph.communication.Messages.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
 import mthesis.concurrent_graph.communication.VertexMessageBuildUtil;
 import mthesis.concurrent_graph.util.Pair;
+import mthesis.concurrent_graph.vertex.AbstractVertex;
+import mthesis.concurrent_graph.vertex.VertexMessage;
+import mthesis.concurrent_graph.writable.BaseWritable;
+import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
 /**
  * Concurrent graph processing worker main
  */
-public class WorkerMachine extends AbstractMachine {
+public class WorkerMachine<V extends BaseWritable, M extends BaseWritable> extends AbstractMachine {
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
 	private final String output;
 
-	private final Class<? extends AbstractVertex> vertexClass;
-	private final List<AbstractVertex> vertices;
+	private final Class<? extends AbstractVertex<V, M>> vertexClass;
+	private final BaseWritableFactory<M> vertexMessageFactory;
+	private final List<AbstractVertex<V, M>> vertices;
 	private final Set<Integer> vertexIds = new HashSet<>();
 	private final Set<Integer> channelBarrierWaitSet = new HashSet<>();
-	private final Map<Integer, List<VertexMessage>> vertexMessageBuckets = new HashMap<>();
-	private final List<VertexMessage> bufferedLoopbackMessages = new ArrayList<>();
-	protected final List<VertexMessage> inVertexMessages = new ArrayList<>();
+	private final Map<Integer, List<VertexMessage<M>>> vertexMessageBuckets = new HashMap<>();
+	private final List<VertexMessage<M>> bufferedLoopbackMessages = new ArrayList<>();
+	protected final List<VertexMessage<M>> inVertexMessages = new ArrayList<>();
 
 	private int superstepNo;
 	private SuperstepStats superstepStats;
@@ -50,14 +54,17 @@ public class WorkerMachine extends AbstractMachine {
 
 
 	public WorkerMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
-			String output, Class<? extends AbstractVertex> vertexClass) {
+			String output, Class<? extends AbstractVertex<V, M>> vertexClass,
+					BaseWritableFactory<M> vertexMessageFactory) {
 		super(machines, ownId);
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
 		this.masterId = masterId;
 
 		this.vertices = new ArrayList<>();
 		this.output = output;
+
 		this.vertexClass = vertexClass;
+		this.vertexMessageFactory = vertexMessageFactory;
 	}
 
 	private void loadVertices(String input) {
@@ -90,12 +97,13 @@ public class WorkerMachine extends AbstractMachine {
 			vertexMessageBuckets.put(vertexId, new ArrayList<>());
 		}
 	}
+	@SuppressWarnings("unchecked")
 	private void addVertex(int vertexId, List<Integer> edges) {
 		Constructor<?> c;
 		try {
 			c = vertexClass.getDeclaredConstructor(List.class, int.class, WorkerMachine.class);
 			c.setAccessible(true);
-			vertices.add((AbstractVertex)c.newInstance(new ArrayList<>(edges), vertexId, this));
+			vertices.add((AbstractVertex<V, M>)c.newInstance(new ArrayList<>(edges), vertexId, this));
 			vertexIds.add(vertexId);
 		}
 		catch (final Exception e) {
@@ -140,8 +148,8 @@ public class WorkerMachine extends AbstractMachine {
 
 
 				// Compute and Messaging (done by vertices)
-				for(final AbstractVertex vertex : vertices) {
-					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(vertex.id);
+				for(final AbstractVertex<V, M> vertex : vertices) {
+					final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.id);
 					vertex.superstep(vertMsgs, superstepNo);
 					vertMsgs.clear();
 					if(vertex.isActive())
@@ -159,12 +167,12 @@ public class WorkerMachine extends AbstractMachine {
 				// Sort messages from buffers after barrier sync
 				// Incoming messages
 				synchronized (inVertexMessages) {
-					for(final VertexMessage msg : inVertexMessages) {
-						if(msg.getSuperstepNo() != superstepNo) {
-							logger.error("Message from wrong superstep: " + msg);
-							continue;
-						}
-						final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getDstVertex());
+					for(final VertexMessage<M> msg : inVertexMessages) {
+						//						if(msg.getSuperstepNo() != superstepNo) {
+						//							logger.error("Message from wrong superstep: " + msg);
+						//							continue;
+						//						}
+						final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(msg.DstVertex);
 						if(vertMsgs != null) {
 							superstepStats.ReceivedCorrectVertexMessages++;
 							vertMsgs.add(msg);
@@ -173,21 +181,21 @@ public class WorkerMachine extends AbstractMachine {
 							//System.out.println(ownId + " WRONG " + msg.getSrcVertex() + " " + msg.getDstVertex() + " " + msg.getContent());
 							//System.out.println(ownId + " WRONG " + msg.getDstVertex() + " from " + msg.getSrcMachine());
 							superstepStats.ReceivedWrongVertexMessages++;
-							if(!msg.hasBroadcastFlat())
-								logger.warn("Recieved wrong vertex unicast message: " + msg);
 						}
 					}
 					inVertexMessages.clear();
 				}
 				// Loopback messages
-				for(final VertexMessage msg : bufferedLoopbackMessages) {
-					if(msg.getSuperstepNo() != superstepNo) {
-						logger.error("Message from wrong superstep: " + msg);
-						continue;
-					}
-					final List<VertexMessage> vertMsgs = vertexMessageBuckets.get(msg.getDstVertex());
+				for(final VertexMessage<M> msg : bufferedLoopbackMessages) {
+					//					if(msg.getSuperstepNo() != superstepNo) {
+					//						logger.error("Message from wrong superstep: " + msg);
+					//						continue;
+					//					}
+					final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(msg.DstVertex);
 					if(vertMsgs != null)
 						vertMsgs.add(msg);
+					else
+						logger.warn("Local vertex message for unknown vertex");
 				}
 				bufferedLoopbackMessages.clear();
 				logger.debug("Worker finished superstep message sort " + superstepNo);
@@ -331,28 +339,27 @@ public class WorkerMachine extends AbstractMachine {
 	 * Sends a vertex message. If local vertex, direct loopback.
 	 * It remote vertex try to lookup machine. If machine not known broadcast message.
 	 */
-	public void sendVertexMessage(int srcVertex, int dstVertex, Integer content) {
+	public void sendVertexMessage(int srcVertex, int dstVertex, M content) {
 
 		if(localVertices.contains(dstVertex)) {
 			// Local message
-			final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content, false);
 			//System.out.println(ownId + " SEND LOCAL " + srcVertex + " " + dstVertex);
 			superstepStats.SentVertexMessagesLocal++;
-			bufferedLoopbackMessages.add(message.getVertexMessage());
+			bufferedLoopbackMessages.add(new VertexMessage<M>(srcVertex, dstVertex, content));
 		}
 		else {
 			// Remote message
 			final Integer remoteMachine = remoteVertexMachineRegistry.lookupEntry(dstVertex);
 			if(remoteMachine != null) {
 				// Unicast remote message
-				final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content, false);
+				final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content);
 				//System.out.println(ownId + " SEND UNI from " + srcVertex + " to " + dstVertex + ":" + remoteMachine);
 				superstepStats.SentVertexMessagesUnicast++;
 				messaging.sendMessageUnicast(remoteMachine, message, false);
 			}
 			else {
 				// Broadcast remote message
-				final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content, true);
+				final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content);
 				//System.out.println(ownId + " SEND BCAST " + srcVertex + " to " + dstVertex + " " + otherWorkerIds);
 				superstepStats.SentVertexMessagesBroadcast += otherWorkerIds.size();
 				messaging.sendMessageBroadcast(otherWorkerIds, message, false);
@@ -363,22 +370,28 @@ public class WorkerMachine extends AbstractMachine {
 	/**
 	 * Sends a vertex message directly to a remote machine, no lookup.
 	 */
-	public void sendVertexMessageToMachine(int srcVertex, int dstVertex, int dstMachine, Integer content) {
+	public void sendVertexMessageToMachine(int srcVertex, int dstVertex, int dstMachine, M content) {
 		//System.out.println(ownId + " SEND DIR " + srcVertex + " " + dstVertex + " to " + dstMachine);
 		superstepStats.SentVertexMessagesUnicast++;
-		final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content, false);
+		final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content);
 		messaging.sendMessageUnicast(dstMachine, message, false);
 	}
 
-	private MessageEnvelope createVertexMessageEnvelope(int srcVertex, int dstVertex, Integer content, boolean broadcastFlag) {
+	private MessageEnvelope createVertexMessageEnvelope(int srcVertex, int dstVertex, M content) {
 		if(content != null)
-			return VertexMessageBuildUtil.BuildWithContent(superstepNo, ownId, srcVertex, dstVertex, broadcastFlag, content);
+			return VertexMessageBuildUtil.BuildWithContent(superstepNo, ownId, srcVertex, dstVertex, content);
 		else
-			return VertexMessageBuildUtil.BuildWithoutContent(superstepNo, ownId, srcVertex, dstVertex, broadcastFlag);
+			return VertexMessageBuildUtil.BuildWithoutContent(superstepNo, ownId, srcVertex, dstVertex);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public void onIncomingVertexMessage(VertexMessage message) {
+	public void onIncomingVertexMessage(VertexMessageTransport message) {
+		if(message.getSuperstepNo() != superstepNo) {
+			logger.error("Message from wrong superstep: " + message);
+			return;
+		}
+
 		//final boolean registered = remoteVertexMachineRegistry.lookupEntry(message.getSrcVertex()) != null;
 		// Update vertex registry if discovery enabled
 		if(Settings.VERTEX_DISCOVERY) {
@@ -397,7 +410,8 @@ public class WorkerMachine extends AbstractMachine {
 		if(message.hasContent()) {
 			synchronized (inVertexMessages) {
 				//System.out.println(ownId + " REC " + message.getSrcVertex() + " " + message.getDstVertex() + " " + message.getContent());
-				inVertexMessages.add(message);
+				inVertexMessages.add(new VertexMessage(message.getSrcVertex(), message.getDstVertex(),
+						vertexMessageFactory.CreateFromBytes(message.getContent().asReadOnlyByteBuffer())));
 			}
 		}
 		//		else {
@@ -410,7 +424,7 @@ public class WorkerMachine extends AbstractMachine {
 	private void writeOutput() {
 		try(PrintWriter writer = new PrintWriter(new FileWriter(output + File.separator + ownId + ".txt")))
 		{
-			for(final AbstractVertex vertex : vertices) {
+			for(final AbstractVertex<V, M> vertex : vertices) {
 				writer.println(vertex.id + "\t" + vertex.getOutput());
 			}
 		}

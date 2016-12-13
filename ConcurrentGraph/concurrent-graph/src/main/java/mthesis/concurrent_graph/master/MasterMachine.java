@@ -10,7 +10,7 @@ import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
-import mthesis.concurrent_graph.communication.Messages.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
 import mthesis.concurrent_graph.master.input.BaseInputPartitionDistributor;
 import mthesis.concurrent_graph.master.input.BaseMasterInputReader;
 import mthesis.concurrent_graph.util.FileUtil;
@@ -214,7 +214,7 @@ public class MasterMachine extends AbstractMachine {
 
 
 	@Override
-	public void onIncomingVertexMessage(VertexMessage message) {
+	public void onIncomingVertexMessage(VertexMessageTransport message) {
 		throw new RuntimeException("Master cannot handle vertex messages");
 	}
 }

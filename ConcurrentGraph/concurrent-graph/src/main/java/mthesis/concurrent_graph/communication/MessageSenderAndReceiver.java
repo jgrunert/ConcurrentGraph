@@ -33,7 +33,7 @@ import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
-import mthesis.concurrent_graph.communication.Messages.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
 import mthesis.concurrent_graph.util.Pair;
 
 
@@ -139,7 +139,7 @@ public class MessageSenderAndReceiver {
 		messageListener.onIncomingControlMessage(message);
 	}
 
-	public void onIncomingVertexMessage(VertexMessage message) {
+	public void onIncomingVertexMessage(VertexMessageTransport message) {
 		messageListener.onIncomingVertexMessage(message);
 	}
 

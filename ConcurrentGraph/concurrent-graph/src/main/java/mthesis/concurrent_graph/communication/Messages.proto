@@ -4,18 +4,16 @@ option java_package = "mthesis.concurrent_graph.communication";
 option java_outer_classname = "Messages";
 
 message MessageEnvelope {
-	optional VertexMessage VertexMessage = 1;
+	optional VertexMessageTransport VertexMessage = 1;
 	optional ControlMessage ControlMessage = 2;
 }
 
-message VertexMessage {
+message VertexMessageTransport {
 		optional int32 SuperstepNo = 1;
-		optional int32 SrcMachine = 2;  // TODO ToNode?
+		optional int32 SrcMachine = 2;
 		optional int32 SrcVertex = 3;
 		optional int32 DstVertex = 4;
-		optional int32 Content = 5;  // TODO Type
-		optional bool BroadcastFlat = 6;
-		//bytes Content = 5;
+		optional bytes Content = 5;
 	}
 	
 	enum ControlMessageType {

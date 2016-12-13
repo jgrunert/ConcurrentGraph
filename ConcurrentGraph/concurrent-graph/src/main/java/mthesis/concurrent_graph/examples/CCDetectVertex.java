@@ -4,9 +4,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mthesis.concurrent_graph.AbstractVertex;
-import mthesis.concurrent_graph.communication.Messages.VertexMessage;
+import mthesis.concurrent_graph.vertex.AbstractVertex;
+import mthesis.concurrent_graph.vertex.VertexMessage;
 import mthesis.concurrent_graph.worker.WorkerMachine;
+import mthesis.concurrent_graph.writable.IntWritable;
 
 /**
  * Example vertex to detect connected components in a graph
@@ -14,31 +15,31 @@ import mthesis.concurrent_graph.worker.WorkerMachine;
  * @author Jonas Grunert
  *
  */
-public class CCDetectVertex extends AbstractVertex<CCDetectVertexValue, CCDetectVertexMessage> {
+public class CCDetectVertex extends AbstractVertex<IntWritable, IntWritable> {
 
 	private int value;
 	private final Set<Integer> allNeighbors;
 
-	public CCDetectVertex(List<Integer> neighbors, int id, WorkerMachine workerManager) {
+	public CCDetectVertex(List<Integer> neighbors, int id, WorkerMachine<IntWritable, IntWritable> workerManager) {
 		super(neighbors, id, workerManager);
 		allNeighbors = new HashSet<>(neighbors);
 		value = id;
 	}
 
 	@Override
-	protected void compute(List<VertexMessage> messages) {
+	protected void compute(List<VertexMessage<IntWritable>> messages) {
 		if(superstepNo == 0) {
 			//			for(final Integer nb : outgoingNeighbors) {
 			//				System.out.println(superstepNo + " Send0 " + value + " to " + nb + " from " + id);
 			//			}
-			sendMessageToAllOutgoing(id);
+			sendMessageToAllOutgoing(new IntWritable(id));
 			return;
 		}
 
 		int min = value;
-		for(final VertexMessage msg : messages) {
-			allNeighbors.add(msg.getSrcVertex());
-			final int msgValue = msg.getContent();
+		for(final VertexMessage<IntWritable> msg : messages) {
+			allNeighbors.add(msg.SrcVertex);
+			final int msgValue = msg.Content.Value;
 			//			System.out.println(superstepNo + " Get " + msgValue + " on " + id + " from " + msg.FromVertex);
 			min = Math.min(min, msgValue);
 		}
@@ -54,7 +55,7 @@ public class CCDetectVertex extends AbstractVertex<CCDetectVertexValue, CCDetect
 		//		for(final Integer nb : allNeighbors) {
 		//			System.out.println(superstepNo + " Send " + value + " to " + nb + " from " + id);
 		//		}
-		sendMessageToVertices(value, allNeighbors);
+		sendMessageToVertices(new IntWritable(value), allNeighbors);
 	}
 
 
