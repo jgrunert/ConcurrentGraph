@@ -25,7 +25,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	@Override
 	protected void compute(List<VertexMessage<IntWritable>> messages) {
 		if(superstepNo == 0) {
-			sendMessageToAllOutgoing(getValue());
+			sendMessageToAllOutgoingEdges(getValue());
 			voteHalt();
 			return;
 		}
@@ -39,7 +39,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 
 		if(min < getValue().Value) {
 			getValue().Value = min;
-			sendMessageToAllOutgoing(getValue());
+			sendMessageToAllOutgoingEdges(getValue());
 		} else {
 			//System.out.println("Vote halt on " + ID + " with " + value);
 			voteHalt();

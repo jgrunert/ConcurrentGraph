@@ -38,7 +38,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	protected abstract void compute(List<VertexMessage<M>> messages);
 
 
-	protected void sendMessageToAllOutgoing(M message) {
+	protected void sendMessageToAllOutgoingEdges(M message) {
 		for (final Edge<E> edge : edges) {
 			messageSender.sendVertexMessage(ID, edge.TargetVertexId, message);
 		}

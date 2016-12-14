@@ -30,7 +30,7 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 			//			for(final Integer nb : outgoingNeighbors) {
 			//				System.out.println(superstepNo + " Send0 " + value + " to " + nb + " from " + id);
 			//			}
-			sendMessageToAllOutgoing(new DoubleWritable(ID));
+			sendMessageToAllOutgoingEdges(new DoubleWritable(ID));
 			return;
 		}
 

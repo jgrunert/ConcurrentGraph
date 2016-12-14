@@ -1,9 +1,11 @@
 package mthesis.concurrent_graph.examples.cc;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import mthesis.concurrent_graph.vertex.AbstractVertex;
+import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.vertex.VertexMessage;
 import mthesis.concurrent_graph.vertex.VertexMessageSender;
@@ -17,53 +19,46 @@ import mthesis.concurrent_graph.writable.NullWritable;
  *
  */
 public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, IntWritable> {
-	private int value;
-	private final Set<Integer> allNeighbors;
 
+	// TODO Have this in state?
+	private final Set<Integer> allNeighbors = new HashSet<>();
 
 	public CCDetectVertex(int id, VertexMessageSender<IntWritable> messageSender) {
 		super(id, messageSender);
 		setValue(new IntWritable(id));
 	}
 
-
 	@Override
 	protected void compute(List<VertexMessage<IntWritable>> messages) {
 		if(superstepNo == 0) {
-			//			for(final Integer nb : outgoingNeighbors) {
-			//				System.out.println(superstepNo + " Send0 " + value + " to " + nb + " from " + id);
-			//			}
-			sendMessageToAllOutgoing(new IntWritable(ID));
+			final List<Edge<NullWritable>> edges = getEdges();
+			for(final Edge<NullWritable> edge : edges) {
+				allNeighbors.add(edge.TargetVertexId);
+			}
+
+			sendMessageToAllOutgoingEdges(getValue());
 			voteHalt();
 			return;
 		}
 
-		int min = value;
+		int min = getValue().Value;
+		final int knownNeighborsBefore = allNeighbors.size();
 		for(final VertexMessage<IntWritable> msg : messages) {
 			allNeighbors.add(msg.SrcVertex);
 			final int msgValue = msg.Content.Value;
-			//			System.out.println(superstepNo + " Get " + msgValue + " on " + id + " from " + msg.FromVertex);
+			//System.out.println("Get " + msgValue + " on " + ID + " from " + msg.SrcVertex);
 			min = Math.min(min, msgValue);
 		}
 
-		if(min < value) {
-			//			System.out.println(superstepNo + " Update on " + id + " to " + min);
-			value = min;
+		if(min < getValue().Value) {
+			getValue().Value = min;
+			sendMessageToVertices(getValue(), allNeighbors);
 		} else {
-			//			System.out.println(superstepNo + " Vote halt on " + id + " with " + value);
+			if(knownNeighborsBefore < allNeighbors.size())
+				sendMessageToVertices(getValue(), allNeighbors);
+			//System.out.println("Vote halt on " + ID + " with " + value);
 			voteHalt();
 		}
-
-		//		for(final Integer nb : allNeighbors) {
-		//			System.out.println(superstepNo + " Send " + value + " to " + nb + " from " + id);
-		//		}
-		sendMessageToVertices(new IntWritable(value), allNeighbors);
-	}
-
-
-	@Override
-	public String getOutput() {
-		return Integer.toString(value);
 	}
 
 
