@@ -28,11 +28,6 @@
 			<artifactId>protobuf-java</artifactId>
 			<version>3.1.0</version>
 		</dependency>
-		<dependency>
-			<groupId>com.esotericsoftware</groupId>
-			<artifactId>kryo</artifactId>
-			<version>4.0.0</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
