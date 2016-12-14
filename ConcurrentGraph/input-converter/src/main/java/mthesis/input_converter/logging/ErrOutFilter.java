@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.logging;
+package mthesis.input_converter.logging;
 
 import java.util.Arrays;
 import java.util.List;

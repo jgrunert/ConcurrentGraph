@@ -57,12 +57,6 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 	}
 
 
-	@Override
-	public String getOutput() {
-		return Double.toString(value);
-	}
-
-
 	public static class Factory extends VertexFactory<DoubleWritable, NullWritable, DoubleWritable> {
 
 		@Override

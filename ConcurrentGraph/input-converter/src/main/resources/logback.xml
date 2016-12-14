@@ -1,7 +1,5 @@
 <configuration>
 	<appender name="CONSOLE-stdout" class="ch.qos.logback.core.ConsoleAppender">
-		<filter class="mthesis.input_converter.logging.MainLogFilter" />
-		<filter class="mthesis.input_converter.logging.NettyLogFilter" />
   		<filter class="mthesis.input_converter.logging.StdOutFilter" />
   		<target>System.out</target>
 		<encoder>
@@ -26,7 +24,6 @@
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>DEBUG</level>
 		</filter>
-		<filter class="mthesis.input_converter.logging.MainLogFilter" />
 		<encoder>
 			<pattern>
 				%d %-5level [%thread] %logger{80} %F:%L - %msg%n

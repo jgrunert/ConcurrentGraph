@@ -1,13 +1,12 @@
 package mthesis.concurrent_graph.examples.cc;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.vertex.VertexMessage;
-import mthesis.concurrent_graph.worker.WorkerMachine;
+import mthesis.concurrent_graph.vertex.VertexMessageSender;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
@@ -19,14 +18,14 @@ import mthesis.concurrent_graph.writable.NullWritable;
  */
 public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, IntWritable> {
 
+
 	private int value;
 	private final Set<Integer> allNeighbors;
 
-	public CCDetectVertex(List<Integer> neighbors, int id, WorkerMachine<IntWritable, NullWritable, IntWritable> workerManager) {
-		super(neighbors, id, workerManager);
-		allNeighbors = new HashSet<>(neighbors);
-		value = id;
+	public CCDetectVertex(int id, VertexMessageSender<IntWritable> messageSender) {
+		super(id, messageSender);
 	}
+
 
 	@Override
 	protected void compute(List<VertexMessage<IntWritable>> messages) {
@@ -67,11 +66,12 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, In
 	}
 
 
-	public static class CCDetectVertexFactory extends VertexFactory<IntWritable, NullWritable, IntWritable>{
-		@Override
-		public AbstractVertex<IntWritable, NullWritable, IntWritable> newInstance(String vertexLine) {
-			return null;
-		}
+	public static class Factory extends VertexFactory<IntWritable, NullWritable, IntWritable> {
 
+		@Override
+		public AbstractVertex<IntWritable, NullWritable, IntWritable> newInstance(int id,
+				VertexMessageSender<IntWritable> messageSender) {
+			return new CCDetectVertex(id, messageSender);
+		}
 	}
 }

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  * @author Jonas Grunert
  *
  */
-public abstract class BaseMasterOutputEvaluator {
+public abstract class MasterOutputEvaluator {
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/**

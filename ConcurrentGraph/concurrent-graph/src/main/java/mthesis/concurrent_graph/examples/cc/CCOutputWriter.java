@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import mthesis.concurrent_graph.master.BaseMasterOutputEvaluator;
+import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 
-public class CCOutputWriter extends BaseMasterOutputEvaluator {
+public class CCOutputWriter extends MasterOutputEvaluator {
 
 	public CCOutputWriter() {
 		super();

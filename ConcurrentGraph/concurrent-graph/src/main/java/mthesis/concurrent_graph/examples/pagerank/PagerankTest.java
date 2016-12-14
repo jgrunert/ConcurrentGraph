@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.Map;
 
 import mthesis.concurrent_graph.examples.cc.CCOutputWriter;
-import mthesis.concurrent_graph.master.BaseMasterOutputEvaluator;
+import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.MasterMachine;
-import mthesis.concurrent_graph.master.input.BaseInputPartitionDistributor;
-import mthesis.concurrent_graph.master.input.BaseMasterInputReader;
-import mthesis.concurrent_graph.master.input.ContinousInputPartitionDistributor;
-import mthesis.concurrent_graph.master.input.EdgeListReader;
+import mthesis.concurrent_graph.master.input.old.BaseInputPartitionDistributor;
+import mthesis.concurrent_graph.master.input.old.BaseMasterInputReader;
+import mthesis.concurrent_graph.master.input.old.ContinousInputPartitionDistributor;
+import mthesis.concurrent_graph.master.input.old.EdgeListReader;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.worker.WorkerMachine;
@@ -38,7 +38,7 @@ public class PagerankTest {
 		final String inputFile = "../../Data/Wiki-Vote.txt";
 		final BaseMasterInputReader inputReader = new EdgeListReader(4000, inputDir);
 		final BaseInputPartitionDistributor inputDistributor = new ContinousInputPartitionDistributor();
-		final BaseMasterOutputEvaluator outputCombiner = new CCOutputWriter();
+		final MasterOutputEvaluator outputCombiner = new CCOutputWriter();
 
 		final Class<? extends AbstractVertex<DoubleWritable, NullWritable, DoubleWritable>> vertexClass = PagerankVertex.class;
 
@@ -88,7 +88,7 @@ public class PagerankTest {
 
 	private static MasterMachine startMaster(Map<Integer, Pair<String, Integer>> allMachines, int id, List<Integer> workerIds,
 			BaseMasterInputReader inputReader, String inputFile, BaseInputPartitionDistributor inputDistributor,
-			BaseMasterOutputEvaluator outputCombiner, String outputDir) {
+			MasterOutputEvaluator outputCombiner, String outputDir) {
 		final MasterMachine node = new MasterMachine(allMachines, id, workerIds, inputReader, inputFile, inputDistributor, outputCombiner, outputDir);
 		node.start();
 		return node;

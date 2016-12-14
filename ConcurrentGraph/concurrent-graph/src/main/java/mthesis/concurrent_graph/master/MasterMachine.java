@@ -11,8 +11,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
-import mthesis.concurrent_graph.master.input.BaseInputPartitionDistributor;
-import mthesis.concurrent_graph.master.input.BaseMasterInputReader;
+import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.Pair;
 
@@ -25,30 +24,24 @@ public class MasterMachine extends AbstractMachine {
 	private int superstepNo = -1;
 
 	private final String inputFile;
+	private final String inputPartitionDir;
 	private final String outputDir;
-	private final BaseMasterInputReader inputReader;  // TODO Instance, not class
-	private final BaseInputPartitionDistributor inputDistributor;
-	private final BaseMasterOutputEvaluator outputCombiner;
+	private final MasterInputPartitioner inputPartitioner;
+	private final MasterOutputEvaluator outputCombiner;
 
 
 	public MasterMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
-			BaseMasterInputReader inputReader, String inputFile, BaseInputPartitionDistributor inputDistributor,
-			BaseMasterOutputEvaluator outputCombiner, String outputDir) {
+			String inputFile, String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir) {
 		super(machines, ownId);
 		this.workerIds = workerIds;
 		this.inputFile = inputFile;
-		this.inputReader = inputReader;
-		this.inputDistributor = inputDistributor;
+		this.inputPartitionDir = inputPartitionDir;
+		this.inputPartitioner = inputPartitioner;
 		this.outputCombiner = outputCombiner;
 		this.outputDir = outputDir;
 		FileUtil.makeCleanDirectory(outputDir);
 	}
 
-	private List<String> readAndPartitionInput() throws Exception {
-		inputReader.readAndPartition(inputFile);
-		inputReader.close();
-		return inputReader.getPartitionFiles();
-	}
 
 	@Override
 	public void run() {
@@ -57,12 +50,10 @@ public class MasterMachine extends AbstractMachine {
 		long lastSuperstepTime = startTime;
 
 		try {
-			final List<String> inPartitionFiles = readAndPartitionInput();
-
 			//readAndPartition(inputData, inputDir, workerIds.size());
 			logger.info("Master input read and partitioned after " + (System.currentTimeMillis() - startTime) + "ms");
 			superstepNo = -1;
-			startWorkersAssignPartitions(inPartitionFiles);  // Signal that input ready
+			startWorkersAssignPartitions();  // Signal that input ready
 
 			final Set<Integer> workersWaitingFor = new HashSet<>(workerIds.size());
 			while(!Thread.interrupted()) {
@@ -195,8 +186,8 @@ public class MasterMachine extends AbstractMachine {
 	}
 
 
-	private void startWorkersAssignPartitions(List<String> partitions) {
-		final Map<Integer, List<String>> assignedPartitions = inputDistributor.distribute(partitions, workerIds);
+	private void startWorkersAssignPartitions() {
+		final Map<Integer, List<String>> assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir, workerIds);
 		for(final Integer workerId : workerIds) {
 			messaging.sendMessageUnicast(workerId,
 					ControlMessageBuildUtil.Build_Master_Startup(superstepNo, ownId, assignedPartitions.get(workerId)), true);

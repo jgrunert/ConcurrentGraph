@@ -40,7 +40,7 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 				String line;
 
 				while ((line = br.readLine()) != null) {
-					final String[] split0 = line.split("|");
+					final String[] split0 = line.split("\\|");
 
 					// Vertex ID
 					final String[] splitVertex = split0[0].split(",");

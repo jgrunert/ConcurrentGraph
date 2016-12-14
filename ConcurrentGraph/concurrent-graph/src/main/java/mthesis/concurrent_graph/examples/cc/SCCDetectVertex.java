@@ -3,6 +3,7 @@ package mthesis.concurrent_graph.examples.cc;
 import java.util.List;
 
 import mthesis.concurrent_graph.vertex.AbstractVertex;
+import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.vertex.VertexMessage;
 import mthesis.concurrent_graph.vertex.VertexMessageSender;
 import mthesis.concurrent_graph.writable.IntWritable;
@@ -41,6 +42,16 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 		} else {
 			//System.out.println("Vote halt on " + ID + " with " + value);
 			voteHalt();
+		}
+	}
+
+
+	public static class Factory extends VertexFactory<IntWritable, NullWritable, IntWritable> {
+
+		@Override
+		public AbstractVertex<IntWritable, NullWritable, IntWritable> newInstance(int id,
+				VertexMessageSender<IntWritable> messageSender) {
+			return new SCCDetectVertex(id, messageSender);
 		}
 	}
 }
