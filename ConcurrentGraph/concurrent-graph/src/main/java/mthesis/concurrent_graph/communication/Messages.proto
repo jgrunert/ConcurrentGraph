@@ -39,12 +39,14 @@ message VertexMessageTransport {
 		optional int32 SrcMachine = 3;
 		optional WorkerStatsMessage WorkerStats = 4;
 		optional AssignPartitionsMessage AssignPartitions = 5;
+		optional GlobalStatsMessage GlobalStats = 6;
 		
 		message AssignPartitionsMessage {	
 			repeated string PartitionFiles = 1;
 		}
 		
 		message WorkerStatsMessage {	
+			optional int32 VertexCount = 10;
 			optional int32 ActiveVertices = 1;	
 			optional int32 SentControlMessages = 2;
 			optional int32 SentVertexMessagesLocal = 3;
@@ -54,5 +56,10 @@ message VertexMessageTransport {
 			optional int32 ReceivedWrongVertexMessages = 7;
 			optional int32 NewVertexMachinesDiscovered = 8;
 			optional int32 TotalVertexMachinesDiscovered = 9;
+		}
+		
+		message GlobalStatsMessage {	
+			optional int32 VertexCount = 1;
+			optional int32 ActiveVertices = 2;
 		}
 	}

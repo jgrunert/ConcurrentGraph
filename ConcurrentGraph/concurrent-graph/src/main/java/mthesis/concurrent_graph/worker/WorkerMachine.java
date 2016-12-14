@@ -15,6 +15,7 @@ import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
@@ -22,13 +23,12 @@ import mthesis.concurrent_graph.communication.VertexMessageBuildUtil;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexMessage;
-import mthesis.concurrent_graph.vertex.VertexMessageSender;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 /**
  * Concurrent graph processing worker main
  */
-public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable> extends AbstractMachine implements VertexMessageSender<M>{
+public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable> extends AbstractMachine implements VertexWorkerInterface<M>{
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
 	private final String outputDir;
@@ -38,6 +38,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private List<AbstractVertex<V, E, M>> localVerticesList;
 	private final Map<Integer, AbstractVertex<V, E, M>> localVerticesIdMap = new HashMap<>();
+	private final GlobalObjects globalObjects = new GlobalObjects();
 
 	private final Set<Integer> channelBarrierWaitSet = new HashSet<>();
 	private final List<VertexMessage<M>> bufferedLoopbackMessages = new ArrayList<>();
@@ -241,6 +242,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					switch (msg.getType()) {
 						case Master_Next_Superstep:
 							if(msg.getSuperstepNo() == superstepNo + 1) {
+								final GlobalStatsMessage globalStatsMsg = msg.getGlobalStats();
+								globalObjects.setVertexCount(globalStatsMsg.getVertexCount());
+								globalObjects.setActiveVertices(globalStatsMsg.getActiveVertices());
 								return true;
 							} else {
 								logger.error("Received Master_Next_Superstep with wrong superstepNo: "
@@ -288,7 +292,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void sendMasterSuperstepFinished() {
 		superstepStats.SentControlMessages++;
 		messaging.sendMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
-				superstepStats), true);
+				superstepStats, localVerticesList.size()), true);
 	}
 
 	private void sendMasterFinishedMessage() {
@@ -374,5 +378,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 			}
 		}
+	}
+
+	@Override
+	public GlobalObjects getGlobalObjects() {
+		return globalObjects;
 	}
 }

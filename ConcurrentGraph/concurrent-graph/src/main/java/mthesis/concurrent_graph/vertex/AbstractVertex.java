@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -15,11 +16,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	private List<Edge<E>> edges;
 
 	protected int superstepNo = 0;
-	private final VertexMessageSender<M> messageSender;
+	private final VertexWorkerInterface<M> messageSender;
 	private boolean votedHalt = false;
 
 
-	public AbstractVertex(int id, VertexMessageSender<M> messageSender) {
+	public AbstractVertex(int id, VertexWorkerInterface<M> messageSender) {
 		super();
 		this.ID = id;
 		this.setEdges(edges);

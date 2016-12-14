@@ -1,22 +1,16 @@
 package mthesis.concurrent_graph.examples.pagerank;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mthesis.concurrent_graph.examples.cc.CCOutputWriter;
-import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.MasterMachine;
-import mthesis.concurrent_graph.master.input.old.BaseInputPartitionDistributor;
-import mthesis.concurrent_graph.master.input.old.BaseMasterInputReader;
-import mthesis.concurrent_graph.master.input.old.ContinousInputPartitionDistributor;
-import mthesis.concurrent_graph.master.input.old.EdgeListReader;
+import mthesis.concurrent_graph.master.MasterOutputEvaluator;
+import mthesis.concurrent_graph.master.input.ContinousBlockInputPartitioner;
+import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.Pair;
-import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.worker.WorkerMachine;
-import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
@@ -26,22 +20,15 @@ public class PagerankTest {
 		final int numWorkers = 4;
 		final String host = "localhost";
 		final int basePort = 23499;
-		final String inputDir = "input";
+		final String inputPartitionDir = "input";
 		final String outputDir = "output";
+		//final String inputFile = "../../Data_converted/cctest.txt";
+		final String inputFile = "../../Data_converted/Wiki-Vote.txt";
 
-
-		//		final String inputFile = "../../Data/cctest.txt";
-		//		final BaseMasterInputReader inputReader = new VertexEdgesInputReader(1, inputDir);
-		//		final BaseInputPartitionDistributor inputDistributor = new ContinousInputPartitionDistributor();
-		//		final BaseMasterOutputCombiner outputCombiner = new CCOutputWriter();
-
-		final String inputFile = "../../Data/Wiki-Vote.txt";
-		final BaseMasterInputReader inputReader = new EdgeListReader(4000, inputDir);
-		final BaseInputPartitionDistributor inputDistributor = new ContinousInputPartitionDistributor();
-		final MasterOutputEvaluator outputCombiner = new CCOutputWriter();
-
-		final Class<? extends AbstractVertex<DoubleWritable, NullWritable, DoubleWritable>> vertexClass = PagerankVertex.class;
-
+		final PagerankJobConfiguration jobConfig = new PagerankJobConfiguration();
+		final MasterInputPartitioner inputPartitioner = new ContinousBlockInputPartitioner(500);
+		//final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(1);
+		final MasterOutputEvaluator outputCombiner = new PagerankOutputEvaluator();
 
 		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
 		final List<Integer> allWorkerIds= new ArrayList<>();
@@ -52,44 +39,27 @@ public class PagerankTest {
 		}
 
 		System.out.println("Starting");
-		//final MasterNode master =
-		startMaster(allCfg, -1, allWorkerIds, inputReader, inputFile, inputDistributor, outputCombiner, outputDir);
+		startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir);
 
 		final List<WorkerMachine<DoubleWritable, NullWritable, DoubleWritable>> workers = new ArrayList<>();
 		for(int i = 0; i < numWorkers; i++) {
-			workers.add(startWorker(allCfg, i, allWorkerIds, outputDir, vertexClass, new DoubleWritable.Factory()));
+			workers.add(startWorker(allCfg, i, allWorkerIds, outputDir, jobConfig));
 		}
-
-		final String test = "a,";
-		System.out.println(Arrays.toString(test.split(",")));
-
-		//		master.waitUntilStarted();
-		//		worker0.waitUntilStarted();
-		//		worker1.waitUntilStarted();
-		//		System.out.println("All started");
-		//		Thread.sleep(240000);
-
-		//		System.out.println("Shutting down");
-		//		master.stop();
-		//		worker0.stop();
-		//		worker1.stop();
-		//		System.out.println("End");
 	}
 
 	private static WorkerMachine<DoubleWritable, NullWritable, DoubleWritable> startWorker(Map<Integer, Pair<String, Integer>> allCfg,
 			int id, List<Integer> allWorkers, String output,
-			Class<? extends AbstractVertex<DoubleWritable, NullWritable, DoubleWritable>> vertexClass,
-					BaseWritableFactory<DoubleWritable> vertexMessageFactory) {
+			PagerankJobConfiguration jobConfig) {
 		final WorkerMachine<DoubleWritable, NullWritable, DoubleWritable> node = new WorkerMachine<DoubleWritable, NullWritable, DoubleWritable>(
-				allCfg, id, allWorkers, -1, output, vertexClass, vertexMessageFactory);
+				allCfg, id, allWorkers, -1, output, jobConfig);
 		node.start();
 		return node;
 	}
 
-	private static MasterMachine startMaster(Map<Integer, Pair<String, Integer>> allMachines, int id, List<Integer> workerIds,
-			BaseMasterInputReader inputReader, String inputFile, BaseInputPartitionDistributor inputDistributor,
+	private static MasterMachine startMaster(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
+			String inputFile, String inputPartitionDir, MasterInputPartitioner inputPartitioner,
 			MasterOutputEvaluator outputCombiner, String outputDir) {
-		final MasterMachine node = new MasterMachine(allMachines, id, workerIds, inputReader, inputFile, inputDistributor, outputCombiner, outputDir);
+		final MasterMachine node = new MasterMachine(machines, ownId, workerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir);
 		node.start();
 		return node;
 	}

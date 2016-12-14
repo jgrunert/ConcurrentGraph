@@ -8,7 +8,7 @@ import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.vertex.VertexMessage;
-import mthesis.concurrent_graph.vertex.VertexMessageSender;
+import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
@@ -23,7 +23,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, In
 	// TODO Have this in state?
 	private final Set<Integer> allNeighbors = new HashSet<>();
 
-	public CCDetectVertex(int id, VertexMessageSender<IntWritable> messageSender) {
+	public CCDetectVertex(int id, VertexWorkerInterface<IntWritable> messageSender) {
 		super(id, messageSender);
 		setValue(new IntWritable(id));
 	}
@@ -66,7 +66,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, In
 
 		@Override
 		public AbstractVertex<IntWritable, NullWritable, IntWritable> newInstance(int id,
-				VertexMessageSender<IntWritable> messageSender) {
+				VertexWorkerInterface<IntWritable> messageSender) {
 			return new CCDetectVertex(id, messageSender);
 		}
 	}

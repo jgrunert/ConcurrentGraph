@@ -63,6 +63,7 @@ public class MasterMachine extends AbstractMachine {
 				// Wait for workers to send finished control messages.
 				int activeWorkers = 0;
 				int activeVertices = 0;
+				int vertexCount = 0;
 				int SentControlMessages = 0;
 				int SentVertexMessagesLocal = 0;
 				int SentVertexMessagesUnicast = 0;
@@ -78,6 +79,7 @@ public class MasterMachine extends AbstractMachine {
 							final WorkerStatsMessage workerStats = msg.getWorkerStats();
 							if(workerStats.getActiveVertices() > 0)
 								activeWorkers++;
+							vertexCount += workerStats.getVertexCount();
 							activeVertices += workerStats.getActiveVertices();
 							SentControlMessages += workerStats.getSentControlMessages();
 							SentVertexMessagesLocal += workerStats.getSentVertexMessagesLocal();
@@ -128,7 +130,7 @@ public class MasterMachine extends AbstractMachine {
 					// Next superstep
 					superstepNo++;
 					logger.info("Next master superstep: " + superstepNo);
-					signalWorkersStartingSuperstep();
+					signalWorkersStartingSuperstep(vertexCount, activeVertices);
 				}
 				else {
 					// Finished
@@ -194,8 +196,8 @@ public class MasterMachine extends AbstractMachine {
 		}
 	}
 
-	private void signalWorkersStartingSuperstep() {
-		messaging.sendMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId), true);
+	private void signalWorkersStartingSuperstep(int vertexCount, int activeVertices) {
+		messaging.sendMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId, vertexCount, activeVertices), true);
 	}
 
 	private void signalWorkersFinish() {

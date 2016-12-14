@@ -5,7 +5,7 @@ import java.util.List;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.vertex.VertexMessage;
-import mthesis.concurrent_graph.vertex.VertexMessageSender;
+import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
@@ -17,7 +17,7 @@ import mthesis.concurrent_graph.writable.NullWritable;
  */
 public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, IntWritable> {
 
-	public SCCDetectVertex(int id, VertexMessageSender<IntWritable> messageSender) {
+	public SCCDetectVertex(int id, VertexWorkerInterface<IntWritable> messageSender) {
 		super(id, messageSender);
 		setValue(new IntWritable(id));
 	}
@@ -51,7 +51,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 
 		@Override
 		public AbstractVertex<IntWritable, NullWritable, IntWritable> newInstance(int id,
-				VertexMessageSender<IntWritable> messageSender) {
+				VertexWorkerInterface<IntWritable> messageSender) {
 			return new SCCDetectVertex(id, messageSender);
 		}
 	}

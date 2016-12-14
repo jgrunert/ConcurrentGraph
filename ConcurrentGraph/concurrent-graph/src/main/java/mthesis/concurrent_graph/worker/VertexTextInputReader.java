@@ -12,7 +12,6 @@ import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
-import mthesis.concurrent_graph.vertex.VertexMessageSender;
 import mthesis.concurrent_graph.writable.BaseWritable;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
@@ -27,7 +26,7 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 	private  final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public List<AbstractVertex<V, E, M>> getVertices(List<String> partitions, JobConfiguration<V, E, M> jobConfig,
-			VertexMessageSender<M> vertexMessageSender) {
+			VertexWorkerInterface<M> vertexMessageSender) {
 
 		final VertexFactory<V, E, M> vertexFactory = jobConfig.getVertexFactory();
 		final BaseWritableFactory<V> vertexValueFactory = jobConfig.getVertexValueFactory();

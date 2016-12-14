@@ -24,7 +24,9 @@ public class VertexTextOutputWriter<V extends BaseWritable, E extends BaseWritab
 		try(PrintWriter writer = new PrintWriter(new FileWriter(file)))
 		{
 			for(final AbstractVertex<V, E, M> vertex : vertices) {
-				writer.println(vertex.ID + "\t" + vertex.getValue().GetString());
+				final V value = vertex.getValue();
+				final String vertexValue = value != null ? value.GetString() : "";
+				writer.println(vertex.ID + "\t" + vertexValue);
 			}
 		}
 		catch(final Exception e)
