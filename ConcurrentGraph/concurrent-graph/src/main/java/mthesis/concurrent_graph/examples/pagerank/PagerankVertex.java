@@ -23,7 +23,22 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 
 	@Override
 	protected void compute(List<VertexMessage<DoubleWritable>> messages) {
+		if(superstepNo == 0) {
+			setValue(new DoubleWritable(1.0 / getGlobalObjects().getVertexCount().Value));
+		} else {
+			double sum = 0;
+			for(final VertexMessage<DoubleWritable> msg : messages) {
+				sum += msg.Content.Value;
+			}
+			getValue().Value = 0.15 / getGlobalObjects().getVertexCount().Value + 0.85 * sum;
+		}
 
+		if(superstepNo < 30) {
+			final double n = getValue().Value / getEdges().size();
+			sendMessageToAllOutgoingEdges(new DoubleWritable(n));
+		} else {
+			voteHalt();
+		}
 	}
 
 

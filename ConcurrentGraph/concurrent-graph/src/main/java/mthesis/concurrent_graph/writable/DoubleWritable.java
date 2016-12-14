@@ -14,7 +14,7 @@ public class DoubleWritable extends BaseWritable {
 
 	@Override
 	public ByteBuffer GetBytes() {
-		final ByteBuffer bytes = ByteBuffer.allocate(4);
+		final ByteBuffer bytes = ByteBuffer.allocate(8);
 		bytes.putDouble(Value);
 		return bytes;
 	}

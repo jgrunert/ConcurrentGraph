@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import mthesis.concurrent_graph.worker.GlobalObjects;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
@@ -16,15 +17,15 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	private List<Edge<E>> edges;
 
 	protected int superstepNo = 0;
-	private final VertexWorkerInterface<M> messageSender;
+	private final VertexWorkerInterface<M> worker;
 	private boolean votedHalt = false;
 
 
-	public AbstractVertex(int id, VertexWorkerInterface<M> messageSender) {
+	public AbstractVertex(int id, VertexWorkerInterface<M> worker) {
 		super();
 		this.ID = id;
 		this.setEdges(edges);
-		this.messageSender = messageSender;
+		this.worker = worker;
 	}
 
 
@@ -41,17 +42,17 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	protected void sendMessageToAllOutgoingEdges(M message) {
 		for (final Edge<E> edge : edges) {
-			messageSender.sendVertexMessage(ID, edge.TargetVertexId, message);
+			worker.sendVertexMessage(ID, edge.TargetVertexId, message);
 		}
 	}
 
 	protected void sendMessageToVertex(M message, int sendTo) {
-		messageSender.sendVertexMessage(ID, sendTo, message);
+		worker.sendVertexMessage(ID, sendTo, message);
 	}
 
 	protected void sendMessageToVertices(M message, Collection<Integer> sendTo) {
 		for (final Integer st : sendTo) {
-			messageSender.sendVertexMessage(ID, st, message);
+			worker.sendVertexMessage(ID, st, message);
 		}
 	}
 
@@ -81,6 +82,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	public void setEdges(List<Edge<E>> edges) {
 		this.edges = edges;
+	}
+
+
+	public GlobalObjects getGlobalObjects() {
+		return worker.getGlobalObjects();
 	}
 
 
