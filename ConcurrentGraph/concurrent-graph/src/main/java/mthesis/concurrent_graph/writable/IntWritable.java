@@ -19,8 +19,18 @@ public class IntWritable extends BaseWritable {
 		return bytes;
 	}
 
+	@Override
+	public String GetString() {
+		return Integer.toString(Value);
+	}
+
 
 	public static class Factory extends BaseWritableFactory<IntWritable> {
+		@Override
+		public IntWritable CreateFromString(String str) {
+			return new IntWritable(Integer.parseInt(str));
+		}
+
 		@Override
 		public IntWritable CreateFromBytes(ByteBuffer bytes) {
 			return new IntWritable(bytes.getInt());

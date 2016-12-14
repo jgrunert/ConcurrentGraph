@@ -28,12 +28,12 @@ public class MasterMachine extends AbstractMachine {
 	private final String outputDir;
 	private final BaseMasterInputReader inputReader;  // TODO Instance, not class
 	private final BaseInputPartitionDistributor inputDistributor;
-	private final BaseMasterOutputCombiner outputCombiner;
+	private final BaseMasterOutputEvaluator outputCombiner;
 
 
 	public MasterMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
 			BaseMasterInputReader inputReader, String inputFile, BaseInputPartitionDistributor inputDistributor,
-			BaseMasterOutputCombiner outputCombiner, String outputDir) {
+			BaseMasterOutputEvaluator outputCombiner, String outputDir) {
 		super(machines, ownId);
 		this.workerIds = workerIds;
 		this.inputFile = inputFile;

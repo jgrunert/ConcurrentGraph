@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples;
+package mthesis.concurrent_graph.examples.cc;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import mthesis.concurrent_graph.master.BaseMasterOutputCombiner;
+import mthesis.concurrent_graph.master.BaseMasterOutputEvaluator;
 
-public class CCOutputWriter extends BaseMasterOutputCombiner {
+public class CCOutputWriter extends BaseMasterOutputEvaluator {
 
 	public CCOutputWriter() {
 		super();

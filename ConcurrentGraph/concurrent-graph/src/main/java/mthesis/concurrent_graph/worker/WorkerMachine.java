@@ -1,11 +1,6 @@
 package mthesis.concurrent_graph.worker;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import mthesis.concurrent_graph.AbstractMachine;
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
@@ -26,20 +22,21 @@ import mthesis.concurrent_graph.communication.VertexMessageBuildUtil;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexMessage;
+import mthesis.concurrent_graph.vertex.VertexMessageSender;
 import mthesis.concurrent_graph.writable.BaseWritable;
-import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
 /**
  * Concurrent graph processing worker main
  */
-public class WorkerMachine<V extends BaseWritable, M extends BaseWritable> extends AbstractMachine {
+public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable> extends AbstractMachine implements VertexMessageSender<M>{
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
-	private final String output;
+	private final String outputDir;
 
-	private final Class<? extends AbstractVertex<V, M>> vertexClass;
-	private final BaseWritableFactory<M> vertexMessageFactory;
-	private final List<AbstractVertex<V, M>> vertices;
+	private final JobConfiguration<V, E, M> jobConfig;
+	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
+
+	private List<AbstractVertex<V, E, M>> vertices;
 	private final Set<Integer> vertexIds = new HashSet<>();
 	private final Set<Integer> channelBarrierWaitSet = new HashSet<>();
 	private final Map<Integer, List<VertexMessage<M>>> vertexMessageBuckets = new HashMap<>();
@@ -54,62 +51,27 @@ public class WorkerMachine<V extends BaseWritable, M extends BaseWritable> exten
 
 
 	public WorkerMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
-			String output, Class<? extends AbstractVertex<V, M>> vertexClass,
-					BaseWritableFactory<M> vertexMessageFactory) {
+			String outputDir, JobConfiguration<V, E, M> jobConfig) {
 		super(machines, ownId);
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
 		this.masterId = masterId;
 
 		this.vertices = new ArrayList<>();
-		this.output = output;
-
-		this.vertexClass = vertexClass;
-		this.vertexMessageFactory = vertexMessageFactory;
+		this.outputDir = outputDir;
+		this.jobConfig = jobConfig;
+		this.vertexMessageFactory = jobConfig.getMessageValueFactory();
 	}
 
-	private void loadVertices(String input) {
-		try (BufferedReader br = new BufferedReader(new FileReader(input))) {
-			String line;
-			final List<Integer> edges = new ArrayList<>();
+	private void loadVertices(List<String> partitions) {
+		vertices = new VertexTextInputReader<V, E, M>().getVertices(partitions, jobConfig, this);
 
-			int currentVertex;
-			if((line = br.readLine()) != null)
-				currentVertex = Integer.parseInt(line);
-			else
-				return;
-
-			while ((line = br.readLine()) != null) {
-				if (line.startsWith("\t")) {
-					edges.add(Integer.parseInt(line.substring(1)));
-				} else {
-					addVertex(currentVertex, edges);
-					edges.clear();
-					currentVertex = Integer.parseInt(line);
-				}
-			}
-			addVertex(currentVertex, edges);
-		} catch (final Exception e) {
-			logger.error("loadVertices failed", e);
-		}
-
-		for(final Integer vertexId : vertexIds) {
-			localVertices.add(vertexId);
-			vertexMessageBuckets.put(vertexId, new ArrayList<>());
+		for(final AbstractVertex<V, E, M> vertex : vertices) {
+			vertexIds.add(vertex.ID);
+			localVertices.add(vertex.ID);
+			vertexMessageBuckets.put(vertex.ID, new ArrayList<>());
 		}
 	}
-	@SuppressWarnings("unchecked")
-	private void addVertex(int vertexId, List<Integer> edges) {
-		Constructor<?> c;
-		try {
-			c = vertexClass.getDeclaredConstructor(List.class, int.class, WorkerMachine.class);
-			c.setAccessible(true);
-			vertices.add((AbstractVertex<V, M>)c.newInstance(new ArrayList<>(edges), vertexId, this));
-			vertexIds.add(vertexId);
-		}
-		catch (final Exception e) {
-			logger.error("Creating vertex " + vertexId + " failed", e);
-		}
-	}
+
 
 
 	@Override
@@ -127,9 +89,7 @@ public class WorkerMachine<V extends BaseWritable, M extends BaseWritable> exten
 		superstepNo++;
 
 		// Load assigned partitions
-		for(final String partition : assignedPartitions) {
-			loadVertices(partition);
-		}
+		loadVertices(assignedPartitions);
 		superstepStats.ActiveVertices = vertices.size();
 		sendMasterSuperstepFinished();
 
@@ -148,8 +108,8 @@ public class WorkerMachine<V extends BaseWritable, M extends BaseWritable> exten
 
 
 				// Compute and Messaging (done by vertices)
-				for(final AbstractVertex<V, M> vertex : vertices) {
-					final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.id);
+				for(final AbstractVertex<V, E, M> vertex : vertices) {
+					final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
 					vertex.superstep(vertMsgs, superstepNo);
 					vertMsgs.clear();
 					if(vertex.isActive())
@@ -208,7 +168,7 @@ public class WorkerMachine<V extends BaseWritable, M extends BaseWritable> exten
 		}
 		finally {
 			logger.info("Worker finishing");
-			writeOutput();
+			new VertexTextOutputWriter<V, E, M>().writeOutput(outputDir + File.separator + ownId + ".txt", vertices);
 			sendMasterFinishedMessage();
 			stop();
 		}
@@ -339,6 +299,7 @@ public class WorkerMachine<V extends BaseWritable, M extends BaseWritable> exten
 	 * Sends a vertex message. If local vertex, direct loopback.
 	 * It remote vertex try to lookup machine. If machine not known broadcast message.
 	 */
+	@Override
 	public void sendVertexMessage(int srcVertex, int dstVertex, M content) {
 
 		if(localVertices.contains(dstVertex)) {
@@ -418,19 +379,5 @@ public class WorkerMachine<V extends BaseWritable, M extends BaseWritable> exten
 		//			final boolean registered2 = remoteVertexMachineRegistry.lookupEntry(message.getSrcVertex()) != null;
 		//			System.out.println("GetToKnow " + registered + " " + registered2);
 		//		}
-	}
-
-
-	private void writeOutput() {
-		try(PrintWriter writer = new PrintWriter(new FileWriter(output + File.separator + ownId + ".txt")))
-		{
-			for(final AbstractVertex<V, M> vertex : vertices) {
-				writer.println(vertex.id + "\t" + vertex.getOutput());
-			}
-		}
-		catch(final Exception e)
-		{
-			logger.error("writeOutput failed", e);
-		}
 	}
 }
