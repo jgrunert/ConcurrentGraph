@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.vertex;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -10,11 +11,12 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public final int ID;
 	private V value;
 
+	public List<VertexMessage<M>> messagesNextSuperstep = new ArrayList<>();
 	private List<Edge<E>> edges;
 
 	protected int superstepNo = 0;
 	private final VertexMessageSender<M> messageSender;
-	private boolean active = true;
+	private boolean votedHalt = false;
 
 
 	public AbstractVertex(int id, VertexMessageSender<M> messageSender) {
@@ -25,12 +27,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	public void superstep(List<VertexMessage<M>> messages, int superstep) {
-		if (!messages.isEmpty())
-			active = true;
-		if(active) {
+	public void superstep(int superstep) {
+		if(isActive()) {
 			this.superstepNo = superstep;
-			compute(messages);
+			compute(messagesNextSuperstep);
+			messagesNextSuperstep.clear();
 		}
 	}
 
@@ -39,7 +40,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	protected void sendMessageToAllOutgoing(M message) {
 		for (final Edge<E> edge : edges) {
-			messageSender.sendVertexMessage(ID, edge.NeighborId, message);
+			messageSender.sendVertexMessage(ID, edge.TargetVertexId, message);
 		}
 	}
 
@@ -55,11 +56,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 
 	protected void voteHalt() {
-		active = false;
+		votedHalt = true;
 	}
 
 	public boolean isActive() {
-		return active;
+		return !(votedHalt && messagesNextSuperstep.isEmpty());
 	}
 
 
@@ -79,5 +80,17 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	public void setEdges(List<Edge<E>> edges) {
 		this.edges = edges;
+	}
+
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + "_" + ID + "(" + valueToString() + ")," + edges;
+	}
+
+	private String valueToString() {
+		if(value == null)
+			return "";
+		return value.GetString();
 	}
 }

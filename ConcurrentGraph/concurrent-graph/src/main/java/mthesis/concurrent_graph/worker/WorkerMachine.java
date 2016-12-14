@@ -36,18 +36,17 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private final JobConfiguration<V, E, M> jobConfig;
 	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 
-	private List<AbstractVertex<V, E, M>> vertices;
-	private final Set<Integer> vertexIds = new HashSet<>();
+	private List<AbstractVertex<V, E, M>> localVerticesList;
+	private final Map<Integer, AbstractVertex<V, E, M>> localVerticesIdMap = new HashMap<>();
+
 	private final Set<Integer> channelBarrierWaitSet = new HashSet<>();
-	private final Map<Integer, List<VertexMessage<M>>> vertexMessageBuckets = new HashMap<>();
 	private final List<VertexMessage<M>> bufferedLoopbackMessages = new ArrayList<>();
 	protected final List<VertexMessage<M>> inVertexMessages = new ArrayList<>();
+	private final VertexMachineRegistry remoteVertexMachineRegistry = new VertexMachineRegistry();
 
-	private int superstepNo;
+	private volatile int superstepNo;
 	private SuperstepStats superstepStats;
 
-	private final Set<Integer> localVertices = new HashSet<>();
-	private final VertexMachineRegistry remoteVertexMachineRegistry = new VertexMachineRegistry();
 
 
 	public WorkerMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
@@ -56,19 +55,18 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
 		this.masterId = masterId;
 
-		this.vertices = new ArrayList<>();
 		this.outputDir = outputDir;
 		this.jobConfig = jobConfig;
 		this.vertexMessageFactory = jobConfig.getMessageValueFactory();
 	}
 
 	private void loadVertices(List<String> partitions) {
-		vertices = new VertexTextInputReader<V, E, M>().getVertices(partitions, jobConfig, this);
+		localVerticesList = new VertexTextInputReader<V, E, M>().getVertices(partitions, jobConfig, this);
 
-		for(final AbstractVertex<V, E, M> vertex : vertices) {
-			vertexIds.add(vertex.ID);
-			localVertices.add(vertex.ID);
-			vertexMessageBuckets.put(vertex.ID, new ArrayList<>());
+		for(final AbstractVertex<V, E, M> vertex : localVerticesList) {
+			if(vertex == null)
+				throw new RuntimeException("aaaaaa");
+			localVerticesIdMap.put(vertex.ID, vertex);
 		}
 	}
 
@@ -90,7 +88,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		// Load assigned partitions
 		loadVertices(assignedPartitions);
-		superstepStats.ActiveVertices = vertices.size();
+		superstepStats.ActiveVertices = localVerticesList.size();
 		sendMasterSuperstepFinished();
 
 		try {
@@ -104,18 +102,17 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				// Next superstep
 				superstepNo++;
 				superstepStats = new SuperstepStats();
-				logger.debug("Starting superstep " + superstepNo); // TODO trace
+				logger.debug("Starting superstep " + superstepNo);
 
 
 				// Compute and Messaging (done by vertices)
-				for(final AbstractVertex<V, E, M> vertex : vertices) {
-					final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
-					vertex.superstep(vertMsgs, superstepNo);
-					vertMsgs.clear();
-					if(vertex.isActive())
-						superstepStats.ActiveVertices++;
+				logger.info("Worker starting superstep compute " + superstepNo);
+				for(final AbstractVertex<V, E, M> vertex : localVerticesList) {
+					//final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
+					vertex.superstep(superstepNo);
+					//vertMsgs.clear();
 				}
-				logger.debug("Worker finished superstep compute " + superstepNo + " activeVertices: " + superstepStats.ActiveVertices);
+				logger.debug("Worker finished superstep compute " + superstepNo);
 
 
 				// Barrier sync with other workers;
@@ -128,18 +125,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				// Incoming messages
 				synchronized (inVertexMessages) {
 					for(final VertexMessage<M> msg : inVertexMessages) {
-						//						if(msg.getSuperstepNo() != superstepNo) {
-						//							logger.error("Message from wrong superstep: " + msg);
-						//							continue;
-						//						}
-						final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(msg.DstVertex);
-						if(vertMsgs != null) {
+						if(msg.SuperstepNo != superstepNo){
+							logger.error("Remote vertex message from wrong superstep: " + msg.SuperstepNo);
+							continue;
+						}
+						final AbstractVertex<V, E, M> vertex = localVerticesIdMap.get(msg.DstVertex);
+						if(vertex != null) {
 							superstepStats.ReceivedCorrectVertexMessages++;
-							vertMsgs.add(msg);
+							vertex.messagesNextSuperstep.add(msg);
 						}
 						else {
-							//System.out.println(ownId + " WRONG " + msg.getSrcVertex() + " " + msg.getDstVertex() + " " + msg.getContent());
-							//System.out.println(ownId + " WRONG " + msg.getDstVertex() + " from " + msg.getSrcMachine());
 							superstepStats.ReceivedWrongVertexMessages++;
 						}
 					}
@@ -147,19 +142,25 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 				// Loopback messages
 				for(final VertexMessage<M> msg : bufferedLoopbackMessages) {
-					//					if(msg.getSuperstepNo() != superstepNo) {
-					//						logger.error("Message from wrong superstep: " + msg);
-					//						continue;
-					//					}
-					final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(msg.DstVertex);
-					if(vertMsgs != null)
-						vertMsgs.add(msg);
+					if(msg.SuperstepNo != superstepNo){
+						logger.error("Local vertex message from wrong superstep: " + msg.SuperstepNo);
+						continue;
+					}
+					final AbstractVertex<V, E, M> vertex = localVerticesIdMap.get(msg.DstVertex);
+					if(vertex != null)
+						vertex.messagesNextSuperstep.add(msg);
 					else
 						logger.warn("Local vertex message for unknown vertex");
+
 				}
 				bufferedLoopbackMessages.clear();
-				logger.debug("Worker finished superstep message sort " + superstepNo);
 
+				// Count active vertices
+				for(final AbstractVertex<V, E, M> vertex : localVerticesList) {
+					if(vertex.isActive())
+						superstepStats.ActiveVertices++;
+				}
+				logger.debug("Worker finished superstep message sort " + superstepNo + " activeVertices: " + superstepStats.ActiveVertices);
 
 				// Signal master that ready
 				superstepStats.TotalVertexMachinesDiscovered = remoteVertexMachineRegistry.getRegistrySize();
@@ -168,7 +169,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 		finally {
 			logger.info("Worker finishing");
-			new VertexTextOutputWriter<V, E, M>().writeOutput(outputDir + File.separator + ownId + ".txt", vertices);
+			new VertexTextOutputWriter<V, E, M>().writeOutput(outputDir + File.separator + ownId + ".txt", localVerticesList);
 			sendMasterFinishedMessage();
 			stop();
 		}
@@ -302,11 +303,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	@Override
 	public void sendVertexMessage(int srcVertex, int dstVertex, M content) {
 
-		if(localVertices.contains(dstVertex)) {
+		if(localVerticesIdMap.containsKey(dstVertex)) {
 			// Local message
 			//System.out.println(ownId + " SEND LOCAL " + srcVertex + " " + dstVertex);
 			superstepStats.SentVertexMessagesLocal++;
-			bufferedLoopbackMessages.add(new VertexMessage<M>(srcVertex, dstVertex, content));
+			bufferedLoopbackMessages.add(new VertexMessage<M>(superstepNo, srcVertex, dstVertex, content));
 		}
 		else {
 			// Remote message
@@ -348,36 +349,30 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void onIncomingVertexMessage(VertexMessageTransport message) {
-		if(message.getSuperstepNo() != superstepNo) {
-			logger.error("Message from wrong superstep: " + message);
-			return;
-		}
-
-		//final boolean registered = remoteVertexMachineRegistry.lookupEntry(message.getSrcVertex()) != null;
+		// final boolean registered = remoteVertexMachineRegistry.lookupEntry(message.getSrcVertex()) != null;
 		// Update vertex registry if discovery enabled
 		if(Settings.VERTEX_DISCOVERY) {
 			if(remoteVertexMachineRegistry.addEntry(message.getSrcVertex(), message.getSrcMachine())) {
-				//System.out.println(ownId + " LEARNED " + message.getSrcVertex() + ":" + message.getSrcMachine());
 				superstepStats.NewVertexMachinesDiscovered++;
-				if(Settings.ACTIVE_VERTEX_DISCOVERY && message.hasContent() && localVertices.contains(message.getDstVertex())) {
-					// Send "get-to-know message" without content. Dont reply on received messages without content.
-					//System.out.println(ownId + " gtkm to " + message.getSrcMachine());
+				if(Settings.ACTIVE_VERTEX_DISCOVERY && message.hasContent() && localVerticesIdMap.containsKey(message.getDstVertex())) {
 					sendVertexMessageToMachine(message.getDstVertex(), -1, message.getSrcMachine(), null);
 				}
 			}
 		}
 
+		// Normal messages have content.
 		// Vertex messages without content are "get-to-know messages", only for vertex registry
 		if(message.hasContent()) {
-			synchronized (inVertexMessages) {
-				//System.out.println(ownId + " REC " + message.getSrcVertex() + " " + message.getDstVertex() + " " + message.getContent());
-				inVertexMessages.add(new VertexMessage(message.getSrcVertex(), message.getDstVertex(),
-						vertexMessageFactory.CreateFromBytes(message.getContent().asReadOnlyByteBuffer())));
+			if(message.getSuperstepNo() < superstepNo) {
+				logger.error("Message from part superstep in superstep " + superstepNo + "\n" + message);
+			}
+			else {
+				final VertexMessage vMsg = new VertexMessage(message.getSuperstepNo(), message.getSrcVertex(), message.getDstVertex(),
+						vertexMessageFactory.CreateFromBytes(message.getContent().asReadOnlyByteBuffer()));
+				synchronized (inVertexMessages) {
+					inVertexMessages.add(vMsg);
+				}
 			}
 		}
-		//		else {
-		//			final boolean registered2 = remoteVertexMachineRegistry.lookupEntry(message.getSrcVertex()) != null;
-		//			System.out.println("GetToKnow " + registered + " " + registered2);
-		//		}
 	}
 }

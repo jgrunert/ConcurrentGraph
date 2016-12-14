@@ -108,8 +108,8 @@ public class MasterMachine extends AbstractMachine {
 				// Wrong message count should match broadcast message count.
 				// Otherwise there might be communication errors.
 				if(workerIds.size() > 1 && ReceivedWrongVertexMessages != SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)) {
-					logger.warn(String.format("Wrong vertex message count %d does not match broadcast message count %d. Possible communication errors.",
-							ReceivedWrongVertexMessages, SentVertexMessagesBroadcast));
+					logger.warn(String.format("Wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
+							ReceivedWrongVertexMessages, SentVertexMessagesBroadcast, SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)));
 				}
 
 				final long timeNow = System.currentTimeMillis();

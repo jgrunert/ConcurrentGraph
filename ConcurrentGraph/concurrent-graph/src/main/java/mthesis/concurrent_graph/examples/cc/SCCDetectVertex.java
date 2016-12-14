@@ -26,6 +26,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	protected void compute(List<VertexMessage<IntWritable>> messages) {
 		if(superstepNo == 0) {
 			sendMessageToAllOutgoing(getValue());
+			voteHalt();
 			return;
 		}
 

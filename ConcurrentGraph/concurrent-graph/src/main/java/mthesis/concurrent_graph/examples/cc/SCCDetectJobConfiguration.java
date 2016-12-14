@@ -6,7 +6,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
-public class SccDetectJobConfiguration extends JobConfiguration<IntWritable, NullWritable, IntWritable> {
+public class SCCDetectJobConfiguration extends JobConfiguration<IntWritable, NullWritable, IntWritable> {
 
 	@Override
 	public VertexFactory<IntWritable, NullWritable, IntWritable> getVertexFactory() {

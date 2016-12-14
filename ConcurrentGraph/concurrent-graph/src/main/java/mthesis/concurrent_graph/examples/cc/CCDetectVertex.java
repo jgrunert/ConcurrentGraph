@@ -17,13 +17,13 @@ import mthesis.concurrent_graph.writable.NullWritable;
  *
  */
 public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, IntWritable> {
-
-
 	private int value;
 	private final Set<Integer> allNeighbors;
 
+
 	public CCDetectVertex(int id, VertexMessageSender<IntWritable> messageSender) {
 		super(id, messageSender);
+		setValue(new IntWritable(id));
 	}
 
 
@@ -34,6 +34,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, In
 			//				System.out.println(superstepNo + " Send0 " + value + " to " + nb + " from " + id);
 			//			}
 			sendMessageToAllOutgoing(new IntWritable(ID));
+			voteHalt();
 			return;
 		}
 

@@ -22,10 +22,12 @@ public class SCCTest {
 		final int basePort = 23499;
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
-		final String inputFile = "../../Data_converted/cctest.txt";
+		//final String inputFile = "../../Data_converted/cctest.txt";
+		final String inputFile = "../../Data_converted/Wiki-Vote.txt";
 
-		final SccDetectJobConfiguration jobConfig = new SccDetectJobConfiguration();
-		final MasterInputPartitioner inputPartitioner = new ContinousBlockInputPartitioner(1);
+		final SCCDetectJobConfiguration jobConfig = new SCCDetectJobConfiguration();
+		final MasterInputPartitioner inputPartitioner = new ContinousBlockInputPartitioner(500);
+		//final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(1);
 		final MasterOutputEvaluator outputCombiner = new CCOutputWriter();
 
 		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
@@ -61,7 +63,7 @@ public class SCCTest {
 
 	private static WorkerMachine<IntWritable, NullWritable, IntWritable> startWorker(Map<Integer, Pair<String, Integer>> allCfg,
 			int id, List<Integer> allWorkers, String output,
-			SccDetectJobConfiguration jobConfig) {
+			SCCDetectJobConfiguration jobConfig) {
 		final WorkerMachine<IntWritable, NullWritable, IntWritable> node = new WorkerMachine<IntWritable, NullWritable, IntWritable>(
 				allCfg, id, allWorkers, -1, output, jobConfig);
 		node.start();
