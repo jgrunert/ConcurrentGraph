@@ -1,0 +1,1 @@
+2016-12-14 08:39:42,064 INFO  [main] mthesis.input_converter.EdgeListConverter EdgeListConverter.java:83 - Converted and written to ../../Data_converted/Wiki-Vote.txt
