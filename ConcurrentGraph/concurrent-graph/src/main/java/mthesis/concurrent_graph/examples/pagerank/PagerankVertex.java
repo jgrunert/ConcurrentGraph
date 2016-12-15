@@ -26,11 +26,15 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 		if(superstepNo == 0) {
 			setValue(new DoubleWritable(1.0 / getGlobalObjects().getVertexCount().Value));
 		} else {
+
 			double sum = 0;
 			for(final VertexMessage<DoubleWritable> msg : messages) {
 				sum += msg.Content.Value;
 			}
-			getValue().Value = 0.15 / getGlobalObjects().getVertexCount().Value + 0.85 * sum;
+			final double value = 0.15 / getGlobalObjects().getVertexCount().Value + 0.85 * sum;
+			if(Math.abs(value - getValue().Value) < 0.000001)
+				voteHalt();
+			getValue().Value = value;
 		}
 
 		if(superstepNo < 30) {

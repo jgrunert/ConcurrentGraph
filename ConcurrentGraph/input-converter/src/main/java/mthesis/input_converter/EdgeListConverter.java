@@ -25,8 +25,8 @@ public class EdgeListConverter {
 
 	protected static final Logger logger = LoggerFactory.getLogger(EdgeListConverter.class);
 
-	private static final String inputFile = "../../Data_original/Wiki-Vote.txt";
-	private static final String outputFile = "../../Data_converted/Wiki-Vote.txt";
+	private static final String inputFile = "../../../ConcurrentGraph_Data/original/web-Stanford.txt";
+	private static final String outputFile = "../../../ConcurrentGraph_Data/converted/web-Stanford.txt";
 
 
 	public static void main(String[] args) throws Exception {

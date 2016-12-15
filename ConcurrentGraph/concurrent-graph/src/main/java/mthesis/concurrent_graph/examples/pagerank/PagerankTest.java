@@ -7,8 +7,8 @@ import java.util.Map;
 
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
-import mthesis.concurrent_graph.master.input.ContinousBlockInputPartitioner;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
+import mthesis.concurrent_graph.master.input.RoundRobinBlockInputPartitioner;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.DoubleWritable;
@@ -23,11 +23,10 @@ public class PagerankTest {
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
 		//final String inputFile = "../../Data_converted/cctest.txt";
-		final String inputFile = "../../Data_converted/Wiki-Vote.txt";
+		final String inputFile = "../../../ConcurrentGraph_Data/converted/web-Stanford.txt";
 
 		final PagerankJobConfiguration jobConfig = new PagerankJobConfiguration();
-		final MasterInputPartitioner inputPartitioner = new ContinousBlockInputPartitioner(500);
-		//final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(1);
+		final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(10000);
 		final MasterOutputEvaluator outputCombiner = new PagerankOutputEvaluator();
 
 		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();
