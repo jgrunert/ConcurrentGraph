@@ -1,1 +1,0 @@
-2016-12-16 05:02:06,140 INFO  [main] mthesis.input_converter.EdgeListConverter EdgeListConverter.java:79 - Converted and written to ../../../ConcurrentGraph_Data/converted/web-Stanford.txt
