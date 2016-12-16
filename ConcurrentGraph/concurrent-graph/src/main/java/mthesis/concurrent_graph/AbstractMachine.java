@@ -39,13 +39,14 @@ public abstract class AbstractMachine {
 	}
 
 	public void start() {
-		messaging.start();
+		messaging.startServer();
 		runThread = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				if(!messaging.waitUntilConnected()) {
+				if(!messaging.startChannels() || !messaging.waitUntilConnected()) {
 					logger.error("Connecting node failed");
+					stop();
 					return;
 				}
 				AbstractMachine.this.run();

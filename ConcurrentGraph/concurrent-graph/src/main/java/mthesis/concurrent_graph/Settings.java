@@ -3,6 +3,8 @@ package mthesis.concurrent_graph;
 import ch.qos.logback.classic.Level;
 
 public class Settings {
+	public static final int MAX_MESSAGE_SIZE = 8192;
+
 	public static final boolean KEEPALIVE = true;
 	public static final boolean TCP_NODELAY = false;
 	public static final boolean SSL = System.getProperty("ssl") != null;

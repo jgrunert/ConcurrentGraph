@@ -10,24 +10,23 @@ public class NullWritable extends BaseWritable {
 
 
 	@Override
-	public ByteBuffer GetBytes() {
-		return ByteBuffer.allocate(0);
+	public void writeToBuffer(ByteBuffer buffer) {
 	}
 
 	@Override
-	public String GetString() {
+	public String getString() {
 		return "";
 	}
 
 
 	public static class Factory extends BaseWritableFactory<NullWritable> {
 		@Override
-		public NullWritable CreateFromString(String str) {
+		public NullWritable createFromString(String str) {
 			return new NullWritable();
 		}
 
 		@Override
-		public NullWritable CreateFromBytes(ByteBuffer bytes) {
+		public NullWritable createFromBytes(ByteBuffer bytes) {
 			return new NullWritable();
 		}
 	}

@@ -1,0 +1,971 @@
+2016-12-16 03:14:31,736 DEBUG [main] io.netty.util.internal.logging.InternalLoggerFactory Slf4JLogger.java:71 - Using SLF4J as the default logging framework
+2016-12-16 03:14:31,742 DEBUG [main] io.netty.channel.MultithreadEventLoopGroup Slf4JLogger.java:76 - -Dio.netty.eventLoopThreads: 8
+2016-12-16 03:14:31,757 DEBUG [main] io.netty.util.internal.PlatformDependent0 Slf4JLogger.java:71 - java.nio.Buffer.address: available
+2016-12-16 03:14:31,759 DEBUG [main] io.netty.util.internal.PlatformDependent0 Slf4JLogger.java:71 - sun.misc.Unsafe.theUnsafe: available
+2016-12-16 03:14:31,760 DEBUG [main] io.netty.util.internal.PlatformDependent0 Slf4JLogger.java:71 - sun.misc.Unsafe.copyMemory: available
+2016-12-16 03:14:31,761 DEBUG [main] io.netty.util.internal.PlatformDependent0 Slf4JLogger.java:71 - direct buffer constructor: available
+2016-12-16 03:14:31,761 DEBUG [main] io.netty.util.internal.PlatformDependent0 Slf4JLogger.java:76 - java.nio.Bits.unaligned: available, true
+2016-12-16 03:14:31,762 DEBUG [main] io.netty.util.internal.PlatformDependent0 Slf4JLogger.java:76 - java.nio.DirectByteBuffer.<init>(long, int): available
+2016-12-16 03:14:31,762 DEBUG [main] io.netty.util.internal.Cleaner0 Slf4JLogger.java:76 - java.nio.ByteBuffer.cleaner(): available
+2016-12-16 03:14:31,763 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:76 - Java version: 8
+2016-12-16 03:14:31,763 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:76 - -Dio.netty.noUnsafe: false
+2016-12-16 03:14:31,763 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:76 - sun.misc.Unsafe: available
+2016-12-16 03:14:31,763 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:76 - -Dio.netty.noJavassist: false
+2016-12-16 03:14:31,766 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:71 - Javassist: unavailable
+2016-12-16 03:14:31,766 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:71 - You don't have Javassist in your class path or you don't have enough permission to load dynamically generated classes.  Please check the configuration for better performance.
+2016-12-16 03:14:31,766 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:76 - -Dio.netty.tmpdir: /tmp (java.io.tmpdir)
+2016-12-16 03:14:31,767 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:76 - -Dio.netty.bitMode: 64 (sun.arch.data.model)
+2016-12-16 03:14:31,767 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:76 - -Dio.netty.noPreferDirect: false
+2016-12-16 03:14:31,767 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:76 - io.netty.maxDirectMemory: 1860698112 bytes
+2016-12-16 03:14:31,783 DEBUG [main] io.netty.channel.nio.NioEventLoop Slf4JLogger.java:76 - -Dio.netty.noKeySetOptimization: false
+2016-12-16 03:14:31,783 DEBUG [main] io.netty.channel.nio.NioEventLoop Slf4JLogger.java:76 - -Dio.netty.selectorAutoRebuildThreshold: 512
+2016-12-16 03:14:31,784 DEBUG [main] io.netty.util.internal.PlatformDependent Slf4JLogger.java:71 - org.jctools-core.MpscChunkedArrayQueue: available
+2016-12-16 03:14:31,810 DEBUG [main] io.netty.channel.DefaultChannelId Slf4JLogger.java:76 - -Dio.netty.processId: 35105 (auto-detected)
+2016-12-16 03:14:31,813 DEBUG [main] io.netty.util.NetUtil Slf4JLogger.java:76 - -Djava.net.preferIPv4Stack: false
+2016-12-16 03:14:31,813 DEBUG [main] io.netty.util.NetUtil Slf4JLogger.java:76 - -Djava.net.preferIPv6Addresses: false
+2016-12-16 03:14:31,814 DEBUG [main] io.netty.util.NetUtil Slf4JLogger.java:86 - Loopback interface: lo (lo, 0:0:0:0:0:0:0:1%lo)
+2016-12-16 03:14:31,814 DEBUG [main] io.netty.util.NetUtil Slf4JLogger.java:81 - /proc/sys/net/core/somaxconn: 128
+2016-12-16 03:14:31,816 DEBUG [main] io.netty.channel.DefaultChannelId Slf4JLogger.java:76 - -Dio.netty.machineId: 00:0c:29:ff:fe:c2:c8:0d (auto-detected)
+2016-12-16 03:14:31,817 DEBUG [main] io.netty.util.internal.ThreadLocalRandom Slf4JLogger.java:71 - -Dio.netty.initialSeedUniquifier: 0x66730dfc4c01115b
+2016-12-16 03:14:31,828 DEBUG [main] io.netty.util.ResourceLeakDetector Slf4JLogger.java:81 - -Dio.netty.leakDetection.level: simple
+2016-12-16 03:14:31,828 DEBUG [main] io.netty.util.ResourceLeakDetector Slf4JLogger.java:81 - -Dio.netty.leakDetection.maxRecords: 4
+2016-12-16 03:14:31,856 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.numHeapArenas: 8
+2016-12-16 03:14:31,857 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.numDirectArenas: 8
+2016-12-16 03:14:31,857 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.pageSize: 8192
+2016-12-16 03:14:31,857 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.maxOrder: 11
+2016-12-16 03:14:31,857 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.chunkSize: 16777216
+2016-12-16 03:14:31,857 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.tinyCacheSize: 512
+2016-12-16 03:14:31,857 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.smallCacheSize: 256
+2016-12-16 03:14:31,857 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.normalCacheSize: 64
+2016-12-16 03:14:31,858 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+2016-12-16 03:14:31,858 DEBUG [main] io.netty.buffer.PooledByteBufAllocator Slf4JLogger.java:76 - -Dio.netty.allocator.cacheTrimInterval: 8192
+2016-12-16 03:14:31,866 DEBUG [main] io.netty.buffer.ByteBufUtil Slf4JLogger.java:76 - -Dio.netty.allocator.type: pooled
+2016-12-16 03:14:31,867 DEBUG [main] io.netty.buffer.ByteBufUtil Slf4JLogger.java:76 - -Dio.netty.threadLocalDirectBufferSize: 65536
+2016-12-16 03:14:31,867 DEBUG [main] io.netty.buffer.ByteBufUtil Slf4JLogger.java:76 - -Dio.netty.maxThreadLocalCharBufferSize: 16384
+2016-12-16 03:14:31,895 INFO  [nioEventLoopGroup-2-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x75130363] REGISTERED
+2016-12-16 03:14:31,896 INFO  [nioEventLoopGroup-2-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x75130363] BIND: 0.0.0.0/0.0.0.0:23499
+2016-12-16 03:14:31,897 INFO  [main] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[-1] MessageSenderAndReceiver.java:223 - Started connection server
+2016-12-16 03:14:31,898 INFO  [nioEventLoopGroup-2-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x75130363, L:/0:0:0:0:0:0:0:0:23499] ACTIVE
+2016-12-16 03:14:31,979 INFO  [nioEventLoopGroup-4-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x808c9ae9] REGISTERED
+2016-12-16 03:14:31,980 INFO  [nioEventLoopGroup-4-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x808c9ae9] BIND: 0.0.0.0/0.0.0.0:23500
+2016-12-16 03:14:31,980 INFO  [main] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[0] MessageSenderAndReceiver.java:223 - Started connection server
+2016-12-16 03:14:31,982 INFO  [nioEventLoopGroup-4-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x808c9ae9, L:/0:0:0:0:0:0:0:0:23500] ACTIVE
+2016-12-16 03:14:32,029 INFO  [nioEventLoopGroup-6-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x60e2dc34] REGISTERED
+2016-12-16 03:14:32,029 INFO  [nioEventLoopGroup-6-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x60e2dc34] BIND: 0.0.0.0/0.0.0.0:23501
+2016-12-16 03:14:32,030 INFO  [nioEventLoopGroup-6-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x60e2dc34, L:/0:0:0:0:0:0:0:0:23501] ACTIVE
+2016-12-16 03:14:32,030 INFO  [main] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[1] MessageSenderAndReceiver.java:223 - Started connection server
+2016-12-16 03:14:32,046 INFO  [nioEventLoopGroup-2-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x75130363, L:/0:0:0:0:0:0:0:0:23499] RECEIVED: [id: 0x890efb9d, L:/127.0.0.1:23499 - R:/127.0.0.1:40436]
+2016-12-16 03:14:32,047 DEBUG [nioEventLoopGroup-7-1] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:41 - Channel active: e61829cf
+2016-12-16 03:14:32,047 DEBUG [nioEventLoopGroup-5-1] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:41 - Channel active: 0b701718
+2016-12-16 03:14:32,063 DEBUG [nioEventLoopGroup-7-2] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:41 - Channel active: d27abc40
+2016-12-16 03:14:32,064 INFO  [nioEventLoopGroup-2-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x75130363, L:/0:0:0:0:0:0:0:0:23499] RECEIVED: [id: 0x06619421, L:/127.0.0.1:23499 - R:/127.0.0.1:40437]
+2016-12-16 03:14:32,065 DEBUG [nioEventLoopGroup-3-1] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:41 - Channel active: 890efb9d
+2016-12-16 03:14:32,063 INFO  [nioEventLoopGroup-4-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x808c9ae9, L:/0:0:0:0:0:0:0:0:23500] RECEIVED: [id: 0x58352b16, L:/127.0.0.1:23500 - R:/127.0.0.1:39732]
+2016-12-16 03:14:32,068 DEBUG [nioEventLoopGroup-7-1] io.netty.util.Recycler Slf4JLogger.java:76 - -Dio.netty.recycler.maxCapacityPerThread: 32768
+2016-12-16 03:14:32,069 DEBUG [nioEventLoopGroup-7-1] io.netty.util.Recycler Slf4JLogger.java:76 - -Dio.netty.recycler.maxSharedCapacityFactor: 2
+2016-12-16 03:14:32,069 DEBUG [nioEventLoopGroup-7-1] io.netty.util.Recycler Slf4JLogger.java:76 - -Dio.netty.recycler.linkCapacity: 16
+2016-12-16 03:14:32,069 DEBUG [nioEventLoopGroup-7-1] io.netty.util.Recycler Slf4JLogger.java:76 - -Dio.netty.recycler.ratio: 8
+2016-12-16 03:14:32,070 INFO  [nioEventLoopGroup-8-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x766c8d16] REGISTERED
+2016-12-16 03:14:32,070 INFO  [nioEventLoopGroup-8-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x766c8d16] BIND: 0.0.0.0/0.0.0.0:23502
+2016-12-16 03:14:32,070 INFO  [nioEventLoopGroup-8-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x766c8d16, L:/0:0:0:0:0:0:0:0:23502] ACTIVE
+2016-12-16 03:14:32,070 INFO  [main] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[2] MessageSenderAndReceiver.java:223 - Started connection server
+2016-12-16 03:14:32,081 DEBUG [nioEventLoopGroup-9-1] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:41 - Channel active: 3311f390
+2016-12-16 03:14:32,083 DEBUG [nioEventLoopGroup-9-2] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:41 - Channel active: d1feb0c2
+2016-12-16 03:14:32,087 INFO  [nioEventLoopGroup-4-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x808c9ae9, L:/0:0:0:0:0:0:0:0:23500] RECEIVED: [id: 0x8a66dd68, L:/127.0.0.1:23500 - R:/127.0.0.1:39734]
+2016-12-16 03:14:32,090 DEBUG [nioEventLoopGroup-5-2] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:41 - Channel active: 58352b16
+2016-12-16 03:14:32,096 INFO  [nioEventLoopGroup-2-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x75130363, L:/0:0:0:0:0:0:0:0:23499] RECEIVED: [id: 0x3784a1f9, L:/127.0.0.1:23499 - R:/127.0.0.1:40439]
+2016-12-16 03:14:32,099 DEBUG [nioEventLoopGroup-3-2] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:41 - Channel active: 06619421
+2016-12-16 03:14:32,134 INFO  [nioEventLoopGroup-6-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x60e2dc34, L:/0:0:0:0:0:0:0:0:23501] RECEIVED: [id: 0x6801ee52, L:/127.0.0.1:23501 - R:/127.0.0.1:35114]
+2016-12-16 03:14:32,134 DEBUG [nioEventLoopGroup-9-3] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:41 - Channel active: db28ffaf
+2016-12-16 03:14:32,137 DEBUG [nioEventLoopGroup-5-3] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:41 - Channel active: 8a66dd68
+2016-12-16 03:14:32,138 DEBUG [nioEventLoopGroup-3-3] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:41 - Channel active: 3784a1f9
+2016-12-16 03:14:32,140 DEBUG [nioEventLoopGroup-7-2] io.netty.buffer.AbstractByteBuf Slf4JLogger.java:81 - -Dio.netty.buffer.bytebuf.checkAccessible: true
+2016-12-16 03:14:32,140 DEBUG [nioEventLoopGroup-7-3] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:41 - Channel active: 6801ee52
+2016-12-16 03:14:32,142 DEBUG [nioEventLoopGroup-7-2] io.netty.util.ResourceLeakDetectorFactory Slf4JLogger.java:76 - Loaded default ResourceLeakDetector: io.netty.util.ResourceLeakDetector@70165832
+2016-12-16 03:14:32,143 INFO  [nioEventLoopGroup-10-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0xfa30b4a4] REGISTERED
+2016-12-16 03:14:32,144 INFO  [nioEventLoopGroup-10-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0xfa30b4a4] BIND: 0.0.0.0/0.0.0.0:23503
+2016-12-16 03:14:32,144 INFO  [main] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[3] MessageSenderAndReceiver.java:223 - Started connection server
+2016-12-16 03:14:32,144 INFO  [nioEventLoopGroup-10-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0xfa30b4a4, L:/0:0:0:0:0:0:0:0:23503] ACTIVE
+2016-12-16 03:14:32,145 INFO  [nioEventLoopGroup-2-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x75130363, L:/0:0:0:0:0:0:0:0:23499] RECEIVED: [id: 0xdee78ba1, L:/127.0.0.1:23499 - R:/127.0.0.1:40442]
+2016-12-16 03:14:32,146 DEBUG [nioEventLoopGroup-11-1] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:41 - Channel active: f58cf4d6
+2016-12-16 03:14:32,147 DEBUG [nioEventLoopGroup-11-2] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:41 - Channel active: 26fe39dc
+2016-12-16 03:14:32,148 INFO  [nioEventLoopGroup-4-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x808c9ae9, L:/0:0:0:0:0:0:0:0:23500] RECEIVED: [id: 0xa61ab6a3, L:/127.0.0.1:23500 - R:/127.0.0.1:39737]
+2016-12-16 03:14:32,159 INFO  [nioEventLoopGroup-6-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x60e2dc34, L:/0:0:0:0:0:0:0:0:23501] RECEIVED: [id: 0x8be5e90a, L:/127.0.0.1:23501 - R:/127.0.0.1:35117]
+2016-12-16 03:14:32,160 DEBUG [nioEventLoopGroup-11-3] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:41 - Channel active: 1e9b0d23
+2016-12-16 03:14:32,161 DEBUG [nioEventLoopGroup-3-4] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:41 - Channel active: dee78ba1
+2016-12-16 03:14:32,162 DEBUG [nioEventLoopGroup-7-4] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:41 - Channel active: 8be5e90a
+2016-12-16 03:14:32,177 INFO  [nioEventLoopGroup-8-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x766c8d16, L:/0:0:0:0:0:0:0:0:23502] RECEIVED: [id: 0x87a4ea64, L:/127.0.0.1:23502 - R:/127.0.0.1:57933]
+2016-12-16 03:14:32,177 DEBUG [nioEventLoopGroup-11-1] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:73 - Channel handshake finished. Connected -1 via f58cf4d6
+2016-12-16 03:14:32,178 DEBUG [nioEventLoopGroup-11-4] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:41 - Channel active: 0023973d
+2016-12-16 03:14:32,181 DEBUG [nioEventLoopGroup-9-1] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:73 - Channel handshake finished. Connected -1 via 3311f390
+2016-12-16 03:14:32,175 DEBUG [nioEventLoopGroup-11-3] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:73 - Channel handshake finished. Connected 1 via 1e9b0d23
+2016-12-16 03:14:32,184 DEBUG [nioEventLoopGroup-9-3] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:73 - Channel handshake finished. Connected 1 via db28ffaf
+2016-12-16 03:14:32,185 DEBUG [nioEventLoopGroup-3-2] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:73 - Channel handshake finished. Connected 1 via 06619421
+2016-12-16 03:14:32,191 DEBUG [nioEventLoopGroup-9-2] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:73 - Channel handshake finished. Connected 0 via d1feb0c2
+2016-12-16 03:14:32,191 INFO  [NodeThread[1]] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[1] MessageSenderAndReceiver.java:107 - Established all connections
+2016-12-16 03:14:32,192 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:78 - Starting run worker node 1
+2016-12-16 03:14:32,190 DEBUG [nioEventLoopGroup-7-2] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:73 - Channel handshake finished. Connected 0 via d27abc40
+2016-12-16 03:14:32,190 DEBUG [nioEventLoopGroup-5-2] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:73 - Channel handshake finished. Connected 1 via 58352b16
+2016-12-16 03:14:32,193 INFO  [NodeThread[-1]] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[-1] MessageSenderAndReceiver.java:107 - Established all connections
+2016-12-16 03:14:32,190 DEBUG [nioEventLoopGroup-7-1] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:73 - Channel handshake finished. Connected -1 via e61829cf
+2016-12-16 03:14:32,190 DEBUG [nioEventLoopGroup-7-4] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:73 - Channel handshake finished. Connected 3 via 8be5e90a
+2016-12-16 03:14:32,189 DEBUG [nioEventLoopGroup-5-3] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:73 - Channel handshake finished. Connected 2 via 8a66dd68
+2016-12-16 03:14:32,189 DEBUG [nioEventLoopGroup-5-1] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:73 - Channel handshake finished. Connected -1 via 0b701718
+2016-12-16 03:14:32,188 DEBUG [nioEventLoopGroup-3-1] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:73 - Channel handshake finished. Connected 0 via 890efb9d
+2016-12-16 03:14:32,188 DEBUG [nioEventLoopGroup-7-3] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:73 - Channel handshake finished. Connected 2 via 6801ee52
+2016-12-16 03:14:32,186 DEBUG [nioEventLoopGroup-3-4] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:73 - Channel handshake finished. Connected 3 via dee78ba1
+2016-12-16 03:14:32,193 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:48 - Master started
+2016-12-16 03:14:32,191 DEBUG [nioEventLoopGroup-3-3] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:73 - Channel handshake finished. Connected 2 via 3784a1f9
+2016-12-16 03:14:32,194 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:54 - Master input read and partitioned after 0ms
+2016-12-16 03:14:32,204 DEBUG [nioEventLoopGroup-5-4] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:41 - Channel active: a61ab6a3
+2016-12-16 03:14:32,205 DEBUG [nioEventLoopGroup-11-2] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:73 - Channel handshake finished. Connected 0 via 26fe39dc
+2016-12-16 03:14:32,207 DEBUG [nioEventLoopGroup-5-4] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:73 - Channel handshake finished. Connected 3 via a61ab6a3
+2016-12-16 03:14:32,208 INFO  [NodeThread[0]] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[0] MessageSenderAndReceiver.java:107 - Established all connections
+2016-12-16 03:14:32,207 DEBUG [nioEventLoopGroup-9-4] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:41 - Channel active: 87a4ea64
+2016-12-16 03:14:32,212 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:78 - Starting run worker node 0
+2016-12-16 03:14:32,213 DEBUG [nioEventLoopGroup-11-4] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:73 - Channel handshake finished. Connected 2 via 0023973d
+2016-12-16 03:14:32,213 DEBUG [nioEventLoopGroup-9-4] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:73 - Channel handshake finished. Connected 3 via 87a4ea64
+2016-12-16 03:14:32,214 INFO  [NodeThread[2]] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[2] MessageSenderAndReceiver.java:107 - Established all connections
+2016-12-16 03:14:32,214 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:78 - Starting run worker node 2
+2016-12-16 03:14:32,214 INFO  [NodeThread[3]] mthesis.concurrent_graph.communication.MessageSenderAndReceiver[3] MessageSenderAndReceiver.java:107 - Established all connections
+2016-12-16 03:14:32,214 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:78 - Starting run worker node 3
+2016-12-16 03:14:33,466 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep -1 after 1271ms (total 1271ms). activeWorkers: 4 activeVertices: 281903
+2016-12-16 03:14:33,467 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 4, SentVertexMessagesLocal: 0, SentVertexMessagesUnicast: 0, SentVertexMessagesBroadcast: 0
+2016-12-16 03:14:33,467 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 0, ReceivedWrongVertexMessages: 0
+2016-12-16 03:14:33,467 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 0
+2016-12-16 03:14:33,467 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 0
+2016-12-16 03:14:33,468 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 0
+2016-12-16 03:14:33,469 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 0
+2016-12-16 03:14:33,469 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 0
+2016-12-16 03:14:33,468 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 0
+2016-12-16 03:14:33,469 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 0
+2016-12-16 03:14:33,469 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 0
+2016-12-16 03:14:33,469 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 0
+2016-12-16 03:14:33,469 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 0
+2016-12-16 03:14:37,195 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 0
+2016-12-16 03:14:39,193 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 0
+2016-12-16 03:14:39,823 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 0
+2016-12-16 03:14:39,839 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 0
+2016-12-16 03:14:50,332 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 0
+2016-12-16 03:14:50,483 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 0
+2016-12-16 03:14:50,550 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 0
+2016-12-16 03:14:50,626 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 0
+2016-12-16 03:14:50,651 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 0 activeVertices: 70000
+2016-12-16 03:14:50,658 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 0 activeVertices: 71903
+2016-12-16 03:14:50,696 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 0 activeVertices: 70000
+2016-12-16 03:14:50,717 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 0 activeVertices: 70000
+2016-12-16 03:14:50,718 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 0 after 17253ms (total 18524ms). activeWorkers: 4 activeVertices: 281903
+2016-12-16 03:14:50,719 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1110715, SentVertexMessagesUnicast: 200404, SentVertexMessagesBroadcast: 3605343
+2016-12-16 03:14:50,719 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1201781, ReceivedWrongVertexMessages: 2403562
+2016-12-16 03:14:50,719 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 607783, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:14:50,719 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 1
+2016-12-16 03:14:50,720 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 1
+2016-12-16 03:14:50,720 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 1
+2016-12-16 03:14:50,725 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 1
+2016-12-16 03:14:50,726 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 1
+2016-12-16 03:14:50,849 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 1
+2016-12-16 03:14:50,849 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 1
+2016-12-16 03:14:50,848 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 1
+2016-12-16 03:14:50,855 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 1
+2016-12-16 03:14:51,331 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 1
+2016-12-16 03:14:52,859 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 1
+2016-12-16 03:14:53,080 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 1
+2016-12-16 03:14:53,421 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 1
+2016-12-16 03:14:55,306 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 1
+2016-12-16 03:14:55,341 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 1
+2016-12-16 03:14:55,489 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 1
+2016-12-16 03:14:55,494 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 1
+2016-12-16 03:14:55,665 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 1 activeVertices: 70000
+2016-12-16 03:14:55,675 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 1 activeVertices: 70000
+2016-12-16 03:14:55,675 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 1 activeVertices: 70000
+2016-12-16 03:14:55,706 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 1 activeVertices: 71903
+2016-12-16 03:14:55,707 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 1 after 4989ms (total 23513ms). activeWorkers: 4 activeVertices: 281903
+2016-12-16 03:14:55,707 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1110715, SentVertexMessagesUnicast: 793239, SentVertexMessagesBroadcast: 1225626
+2016-12-16 03:14:55,707 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1201781, ReceivedWrongVertexMessages: 817084
+2016-12-16 03:14:55,707 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:14:55,707 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 2
+2016-12-16 03:14:55,708 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 2
+2016-12-16 03:14:55,708 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 2
+2016-12-16 03:14:55,708 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 2
+2016-12-16 03:14:55,708 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 2
+2016-12-16 03:14:55,708 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 2
+2016-12-16 03:14:55,708 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 2
+2016-12-16 03:14:55,708 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 2
+2016-12-16 03:14:55,724 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 2
+2016-12-16 03:14:55,941 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 2
+2016-12-16 03:14:56,481 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 2
+2016-12-16 03:14:56,502 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 2
+2016-12-16 03:14:56,555 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 2
+2016-12-16 03:14:59,040 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 2
+2016-12-16 03:14:59,236 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 2
+2016-12-16 03:14:59,241 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 2
+2016-12-16 03:14:59,246 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 2 activeVertices: 66438
+2016-12-16 03:14:59,258 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 2
+2016-12-16 03:14:59,289 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 2 activeVertices: 63125
+2016-12-16 03:14:59,334 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 2 activeVertices: 65165
+2016-12-16 03:14:59,360 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 2 activeVertices: 66860
+2016-12-16 03:14:59,361 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 2 after 3653ms (total 27166ms). activeWorkers: 4 activeVertices: 261588
+2016-12-16 03:14:59,361 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1110715, SentVertexMessagesUnicast: 793239, SentVertexMessagesBroadcast: 1225626
+2016-12-16 03:14:59,361 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1201781, ReceivedWrongVertexMessages: 817084
+2016-12-16 03:14:59,361 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:14:59,361 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 3
+2016-12-16 03:14:59,362 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 3
+2016-12-16 03:14:59,362 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 3
+2016-12-16 03:14:59,367 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 3
+2016-12-16 03:14:59,368 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 3
+2016-12-16 03:14:59,374 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 3
+2016-12-16 03:14:59,374 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 3
+2016-12-16 03:14:59,380 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 3
+2016-12-16 03:14:59,380 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 3
+2016-12-16 03:14:59,600 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 3
+2016-12-16 03:14:59,802 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 3
+2016-12-16 03:14:59,816 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 3
+2016-12-16 03:15:01,188 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 3
+2016-12-16 03:15:01,935 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 3
+2016-12-16 03:15:02,141 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 3
+2016-12-16 03:15:02,159 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 3
+2016-12-16 03:15:02,171 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 3
+2016-12-16 03:15:02,179 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 3 activeVertices: 64508
+2016-12-16 03:15:02,273 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 3 activeVertices: 62199
+2016-12-16 03:15:02,294 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 3 activeVertices: 65371
+2016-12-16 03:15:02,308 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 3 activeVertices: 66172
+2016-12-16 03:15:02,309 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 3 after 2949ms (total 30115ms). activeWorkers: 4 activeVertices: 258250
+2016-12-16 03:15:02,309 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1067057, SentVertexMessagesUnicast: 726970, SentVertexMessagesBroadcast: 1033395
+2016-12-16 03:15:02,310 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1071435, ReceivedWrongVertexMessages: 688930
+2016-12-16 03:15:02,310 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:02,310 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 4
+2016-12-16 03:15:02,310 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 4
+2016-12-16 03:15:02,310 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 4
+2016-12-16 03:15:02,310 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 4
+2016-12-16 03:15:02,310 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 4
+2016-12-16 03:15:02,310 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 4
+2016-12-16 03:15:02,310 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 4
+2016-12-16 03:15:02,311 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 4
+2016-12-16 03:15:02,311 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 4
+2016-12-16 03:15:02,664 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 4
+2016-12-16 03:15:02,696 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 4
+2016-12-16 03:15:02,721 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 4
+2016-12-16 03:15:02,726 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 4
+2016-12-16 03:15:04,991 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 4
+2016-12-16 03:15:05,135 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 4
+2016-12-16 03:15:05,134 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 4 activeVertices: 62182
+2016-12-16 03:15:05,151 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 4
+2016-12-16 03:15:05,152 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 4
+2016-12-16 03:15:05,211 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 4 activeVertices: 64486
+2016-12-16 03:15:05,211 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 4 activeVertices: 65355
+2016-12-16 03:15:05,223 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 4 activeVertices: 66154
+2016-12-16 03:15:05,224 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 4 after 2915ms (total 33030ms). activeWorkers: 4 activeVertices: 258177
+2016-12-16 03:15:05,224 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064956, SentVertexMessagesUnicast: 723131, SentVertexMessagesBroadcast: 1026225
+2016-12-16 03:15:05,224 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1065206, ReceivedWrongVertexMessages: 684150
+2016-12-16 03:15:05,225 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:05,225 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 5
+2016-12-16 03:15:05,225 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 5
+2016-12-16 03:15:05,225 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 5
+2016-12-16 03:15:05,225 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 5
+2016-12-16 03:15:05,225 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 5
+2016-12-16 03:15:05,225 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 5
+2016-12-16 03:15:05,225 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 5
+2016-12-16 03:15:05,226 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 5
+2016-12-16 03:15:05,247 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 5
+2016-12-16 03:15:05,441 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 5
+2016-12-16 03:15:05,690 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 5
+2016-12-16 03:15:06,852 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 5
+2016-12-16 03:15:06,984 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 5
+2016-12-16 03:15:07,841 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 5
+2016-12-16 03:15:07,845 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 5
+2016-12-16 03:15:07,848 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 5
+2016-12-16 03:15:07,962 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 5
+2016-12-16 03:15:07,990 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 5 activeVertices: 64479
+2016-12-16 03:15:07,992 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 5 activeVertices: 62180
+2016-12-16 03:15:08,001 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 5 activeVertices: 65352
+2016-12-16 03:15:08,044 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 5 activeVertices: 66152
+2016-12-16 03:15:08,045 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 5 after 2821ms (total 35851ms). activeWorkers: 4 activeVertices: 258163
+2016-12-16 03:15:08,046 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064683, SentVertexMessagesUnicast: 722888, SentVertexMessagesBroadcast: 1025406
+2016-12-16 03:15:08,046 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064690, ReceivedWrongVertexMessages: 683604
+2016-12-16 03:15:08,046 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:08,046 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 6
+2016-12-16 03:15:08,046 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 6
+2016-12-16 03:15:08,046 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 6
+2016-12-16 03:15:08,046 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 6
+2016-12-16 03:15:08,047 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 6
+2016-12-16 03:15:08,048 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 6
+2016-12-16 03:15:08,046 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 6
+2016-12-16 03:15:08,046 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 6
+2016-12-16 03:15:08,056 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 6
+2016-12-16 03:15:08,341 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 6
+2016-12-16 03:15:08,371 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 6
+2016-12-16 03:15:08,420 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 6
+2016-12-16 03:15:09,880 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 6
+2016-12-16 03:15:10,625 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 6
+2016-12-16 03:15:10,806 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 6 activeVertices: 62180
+2016-12-16 03:15:10,830 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 6
+2016-12-16 03:15:10,835 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 6
+2016-12-16 03:15:10,884 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 6 activeVertices: 65352
+2016-12-16 03:15:10,890 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 6 activeVertices: 64474
+2016-12-16 03:15:10,941 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 6
+2016-12-16 03:15:11,011 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 6 activeVertices: 66152
+2016-12-16 03:15:11,012 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 6 after 2967ms (total 38818ms). activeWorkers: 4 activeVertices: 258158
+2016-12-16 03:15:11,012 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064629, SentVertexMessagesUnicast: 722852, SentVertexMessagesBroadcast: 1025358
+2016-12-16 03:15:11,012 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064638, ReceivedWrongVertexMessages: 683572
+2016-12-16 03:15:11,012 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:11,012 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 7
+2016-12-16 03:15:11,013 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 7
+2016-12-16 03:15:11,013 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 7
+2016-12-16 03:15:11,013 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 7
+2016-12-16 03:15:11,013 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 7
+2016-12-16 03:15:11,013 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 7
+2016-12-16 03:15:11,013 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 7
+2016-12-16 03:15:11,013 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 7
+2016-12-16 03:15:11,013 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 7
+2016-12-16 03:15:11,591 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 7
+2016-12-16 03:15:11,596 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 7
+2016-12-16 03:15:11,627 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 7
+2016-12-16 03:15:11,670 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 7
+2016-12-16 03:15:13,586 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 7
+2016-12-16 03:15:13,588 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 7
+2016-12-16 03:15:13,614 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 7
+2016-12-16 03:15:13,630 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 7
+2016-12-16 03:15:13,640 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 7 activeVertices: 64470
+2016-12-16 03:15:13,643 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 7 activeVertices: 62180
+2016-12-16 03:15:13,665 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 7 activeVertices: 65351
+2016-12-16 03:15:13,711 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 7 activeVertices: 66152
+2016-12-16 03:15:13,712 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 7 after 2700ms (total 41518ms). activeWorkers: 4 activeVertices: 258153
+2016-12-16 03:15:13,712 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064625, SentVertexMessagesUnicast: 722847, SentVertexMessagesBroadcast: 1025334
+2016-12-16 03:15:13,713 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064625, ReceivedWrongVertexMessages: 683556
+2016-12-16 03:15:13,713 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:13,713 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 8
+2016-12-16 03:15:13,713 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 8
+2016-12-16 03:15:13,713 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 8
+2016-12-16 03:15:13,713 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 8
+2016-12-16 03:15:13,715 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 8
+2016-12-16 03:15:13,713 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 8
+2016-12-16 03:15:13,713 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 8
+2016-12-16 03:15:13,713 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 8
+2016-12-16 03:15:13,721 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 8
+2016-12-16 03:15:14,030 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 8
+2016-12-16 03:15:14,070 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 8
+2016-12-16 03:15:14,131 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 8
+2016-12-16 03:15:15,403 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 8
+2016-12-16 03:15:16,182 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 8
+2016-12-16 03:15:16,208 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 8
+2016-12-16 03:15:16,255 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 8 activeVertices: 62178
+2016-12-16 03:15:16,387 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 8
+2016-12-16 03:15:16,403 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 8 activeVertices: 64468
+2016-12-16 03:15:16,413 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 8
+2016-12-16 03:15:16,463 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 8 activeVertices: 65351
+2016-12-16 03:15:16,471 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 8 activeVertices: 66151
+2016-12-16 03:15:16,472 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 8 after 2760ms (total 44278ms). activeWorkers: 4 activeVertices: 258148
+2016-12-16 03:15:16,472 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064620, SentVertexMessagesUnicast: 722841, SentVertexMessagesBroadcast: 1025316
+2016-12-16 03:15:16,472 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064613, ReceivedWrongVertexMessages: 683544
+2016-12-16 03:15:16,473 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:16,473 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 9
+2016-12-16 03:15:16,473 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 9
+2016-12-16 03:15:16,473 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 9
+2016-12-16 03:15:16,473 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 9
+2016-12-16 03:15:16,473 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 9
+2016-12-16 03:15:16,474 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 9
+2016-12-16 03:15:16,475 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 9
+2016-12-16 03:15:16,482 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 9
+2016-12-16 03:15:16,483 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 9
+2016-12-16 03:15:16,863 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 9
+2016-12-16 03:15:16,912 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 9
+2016-12-16 03:15:16,975 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 9
+2016-12-16 03:15:18,201 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 9
+2016-12-16 03:15:19,419 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 9
+2016-12-16 03:15:19,470 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 9
+2016-12-16 03:15:19,598 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 9
+2016-12-16 03:15:19,619 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 9 activeVertices: 64466
+2016-12-16 03:15:19,627 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 9
+2016-12-16 03:15:19,643 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 9 activeVertices: 62176
+2016-12-16 03:15:19,643 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 9 activeVertices: 65351
+2016-12-16 03:15:19,707 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 9 activeVertices: 66150
+2016-12-16 03:15:19,708 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 9 after 3236ms (total 47514ms). activeWorkers: 4 activeVertices: 258143
+2016-12-16 03:15:19,708 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064615, SentVertexMessagesUnicast: 722837, SentVertexMessagesBroadcast: 1025292
+2016-12-16 03:15:19,709 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064601, ReceivedWrongVertexMessages: 683528
+2016-12-16 03:15:19,709 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:19,709 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 10
+2016-12-16 03:15:19,709 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 10
+2016-12-16 03:15:19,709 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 10
+2016-12-16 03:15:19,710 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 10
+2016-12-16 03:15:19,710 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 10
+2016-12-16 03:15:19,710 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 10
+2016-12-16 03:15:19,710 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 10
+2016-12-16 03:15:19,735 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 10
+2016-12-16 03:15:19,735 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 10
+2016-12-16 03:15:19,961 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 10
+2016-12-16 03:15:19,964 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 10
+2016-12-16 03:15:20,201 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 10
+2016-12-16 03:15:20,236 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 10
+2016-12-16 03:15:22,240 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 10
+2016-12-16 03:15:22,369 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 10
+2016-12-16 03:15:22,421 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 10 activeVertices: 64465
+2016-12-16 03:15:22,430 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 10
+2016-12-16 03:15:22,448 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 10 activeVertices: 65348
+2016-12-16 03:15:22,481 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 10 activeVertices: 62176
+2016-12-16 03:15:22,484 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 10
+2016-12-16 03:15:22,567 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 10 activeVertices: 66149
+2016-12-16 03:15:22,567 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 10 after 2859ms (total 50373ms). activeWorkers: 4 activeVertices: 258138
+2016-12-16 03:15:22,568 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064613, SentVertexMessagesUnicast: 722831, SentVertexMessagesBroadcast: 1025265
+2016-12-16 03:15:22,568 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064586, ReceivedWrongVertexMessages: 683510
+2016-12-16 03:15:22,568 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:22,568 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 11
+2016-12-16 03:15:22,568 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 11
+2016-12-16 03:15:22,568 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 11
+2016-12-16 03:15:22,568 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 11
+2016-12-16 03:15:22,568 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 11
+2016-12-16 03:15:22,569 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 11
+2016-12-16 03:15:22,569 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 11
+2016-12-16 03:15:22,568 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 11
+2016-12-16 03:15:22,568 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 11
+2016-12-16 03:15:22,872 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 11
+2016-12-16 03:15:22,926 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 11
+2016-12-16 03:15:22,931 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 11
+2016-12-16 03:15:24,335 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 11
+2016-12-16 03:15:25,177 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 11
+2016-12-16 03:15:25,188 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 11
+2016-12-16 03:15:25,373 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 11 activeVertices: 64464
+2016-12-16 03:15:25,427 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 11
+2016-12-16 03:15:25,457 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 11 activeVertices: 65347
+2016-12-16 03:15:25,486 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 11 activeVertices: 62176
+2016-12-16 03:15:25,511 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 11
+2016-12-16 03:15:25,623 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 11 activeVertices: 66146
+2016-12-16 03:15:25,624 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 11 after 3056ms (total 53429ms). activeWorkers: 4 activeVertices: 258133
+2016-12-16 03:15:25,624 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064604, SentVertexMessagesUnicast: 722827, SentVertexMessagesBroadcast: 1025253
+2016-12-16 03:15:25,624 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064578, ReceivedWrongVertexMessages: 683502
+2016-12-16 03:15:25,624 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:25,624 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 12
+2016-12-16 03:15:25,625 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 12
+2016-12-16 03:15:25,625 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 12
+2016-12-16 03:15:25,626 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 12
+2016-12-16 03:15:25,626 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 12
+2016-12-16 03:15:25,626 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 12
+2016-12-16 03:15:25,627 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 12
+2016-12-16 03:15:25,625 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 12
+2016-12-16 03:15:25,629 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 12
+2016-12-16 03:15:25,949 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 12
+2016-12-16 03:15:25,968 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 12
+2016-12-16 03:15:25,974 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 12
+2016-12-16 03:15:27,426 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 12
+2016-12-16 03:15:28,368 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 12
+2016-12-16 03:15:28,373 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 12
+2016-12-16 03:15:28,381 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 12
+2016-12-16 03:15:28,395 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 12
+2016-12-16 03:15:28,428 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 12 activeVertices: 65345
+2016-12-16 03:15:28,429 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 12 activeVertices: 64463
+2016-12-16 03:15:28,465 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 12 activeVertices: 62176
+2016-12-16 03:15:28,498 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 12 activeVertices: 66144
+2016-12-16 03:15:28,499 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 12 after 2876ms (total 56305ms). activeWorkers: 4 activeVertices: 258128
+2016-12-16 03:15:28,499 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064598, SentVertexMessagesUnicast: 722822, SentVertexMessagesBroadcast: 1025235
+2016-12-16 03:15:28,499 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064567, ReceivedWrongVertexMessages: 683490
+2016-12-16 03:15:28,499 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:28,499 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 13
+2016-12-16 03:15:28,500 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 13
+2016-12-16 03:15:28,500 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 13
+2016-12-16 03:15:28,500 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 13
+2016-12-16 03:15:28,500 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 13
+2016-12-16 03:15:28,501 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 13
+2016-12-16 03:15:28,501 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 13
+2016-12-16 03:15:28,502 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 13
+2016-12-16 03:15:28,502 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 13
+2016-12-16 03:15:28,979 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 13
+2016-12-16 03:15:29,007 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 13
+2016-12-16 03:15:30,369 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 13
+2016-12-16 03:15:30,563 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 13
+2016-12-16 03:15:31,820 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 13
+2016-12-16 03:15:31,820 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 13
+2016-12-16 03:15:31,825 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 13
+2016-12-16 03:15:31,821 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 13
+2016-12-16 03:15:31,870 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 13 activeVertices: 62175
+2016-12-16 03:15:31,882 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 13 activeVertices: 65343
+2016-12-16 03:15:31,886 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 13 activeVertices: 64463
+2016-12-16 03:15:31,915 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 13 activeVertices: 66142
+2016-12-16 03:15:31,916 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 13 after 3416ms (total 59721ms). activeWorkers: 4 activeVertices: 258123
+2016-12-16 03:15:31,916 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064589, SentVertexMessagesUnicast: 722819, SentVertexMessagesBroadcast: 1025220
+2016-12-16 03:15:31,916 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064559, ReceivedWrongVertexMessages: 683480
+2016-12-16 03:15:31,916 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:31,916 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 14
+2016-12-16 03:15:31,916 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 14
+2016-12-16 03:15:31,916 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 14
+2016-12-16 03:15:31,917 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 14
+2016-12-16 03:15:31,917 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 14
+2016-12-16 03:15:31,917 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 14
+2016-12-16 03:15:31,917 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 14
+2016-12-16 03:15:31,918 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 14
+2016-12-16 03:15:31,918 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 14
+2016-12-16 03:15:32,330 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 14
+2016-12-16 03:15:32,377 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 14
+2016-12-16 03:15:33,569 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 14
+2016-12-16 03:15:33,750 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 14
+2016-12-16 03:15:34,782 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 14
+2016-12-16 03:15:34,792 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 14
+2016-12-16 03:15:34,796 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 14
+2016-12-16 03:15:34,822 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 14
+2016-12-16 03:15:34,827 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 14 activeVertices: 62175
+2016-12-16 03:15:34,849 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 14 activeVertices: 64461
+2016-12-16 03:15:34,875 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 14 activeVertices: 65341
+2016-12-16 03:15:34,882 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 14 activeVertices: 66141
+2016-12-16 03:15:34,883 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 14 after 2968ms (total 62689ms). activeWorkers: 4 activeVertices: 258118
+2016-12-16 03:15:34,883 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064580, SentVertexMessagesUnicast: 722815, SentVertexMessagesBroadcast: 1025208
+2016-12-16 03:15:34,883 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064551, ReceivedWrongVertexMessages: 683472
+2016-12-16 03:15:34,883 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:34,883 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 15
+2016-12-16 03:15:34,884 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 15
+2016-12-16 03:15:34,884 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 15
+2016-12-16 03:15:34,884 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 15
+2016-12-16 03:15:34,884 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 15
+2016-12-16 03:15:34,884 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 15
+2016-12-16 03:15:34,884 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 15
+2016-12-16 03:15:34,884 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 15
+2016-12-16 03:15:34,884 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 15
+2016-12-16 03:15:35,238 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 15
+2016-12-16 03:15:35,296 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 15
+2016-12-16 03:15:35,347 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 15
+2016-12-16 03:15:36,670 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 15
+2016-12-16 03:15:37,496 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 15
+2016-12-16 03:15:37,669 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 15
+2016-12-16 03:15:37,695 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 15
+2016-12-16 03:15:37,713 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 15
+2016-12-16 03:15:37,727 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 15 activeVertices: 65340
+2016-12-16 03:15:37,739 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 15 activeVertices: 62173
+2016-12-16 03:15:37,758 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 15 activeVertices: 64460
+2016-12-16 03:15:37,797 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 15 activeVertices: 66140
+2016-12-16 03:15:37,798 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 15 after 2915ms (total 65604ms). activeWorkers: 4 activeVertices: 258113
+2016-12-16 03:15:37,798 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064572, SentVertexMessagesUnicast: 722810, SentVertexMessagesBroadcast: 1025196
+2016-12-16 03:15:37,798 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064542, ReceivedWrongVertexMessages: 683464
+2016-12-16 03:15:37,798 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:37,799 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 16
+2016-12-16 03:15:37,800 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 16
+2016-12-16 03:15:37,800 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 16
+2016-12-16 03:15:37,800 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 16
+2016-12-16 03:15:37,800 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 16
+2016-12-16 03:15:37,800 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 16
+2016-12-16 03:15:37,800 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 16
+2016-12-16 03:15:37,800 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 16
+2016-12-16 03:15:37,800 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 16
+2016-12-16 03:15:38,233 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 16
+2016-12-16 03:15:38,255 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 16
+2016-12-16 03:15:38,298 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 16
+2016-12-16 03:15:39,977 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 16
+2016-12-16 03:15:40,763 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 16
+2016-12-16 03:15:40,960 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 16
+2016-12-16 03:15:40,979 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 16 activeVertices: 65337
+2016-12-16 03:15:41,097 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 16 activeVertices: 62172
+2016-12-16 03:15:41,097 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 16
+2016-12-16 03:15:41,124 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 16
+2016-12-16 03:15:41,152 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 16 activeVertices: 64459
+2016-12-16 03:15:41,201 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 16 activeVertices: 66140
+2016-12-16 03:15:41,201 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 16 after 3403ms (total 69007ms). activeWorkers: 4 activeVertices: 258108
+2016-12-16 03:15:41,201 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064566, SentVertexMessagesUnicast: 722806, SentVertexMessagesBroadcast: 1025175
+2016-12-16 03:15:41,201 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064531, ReceivedWrongVertexMessages: 683450
+2016-12-16 03:15:41,202 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:41,202 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 17
+2016-12-16 03:15:41,202 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 17
+2016-12-16 03:15:41,202 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 17
+2016-12-16 03:15:41,202 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 17
+2016-12-16 03:15:41,202 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 17
+2016-12-16 03:15:41,202 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 17
+2016-12-16 03:15:41,216 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 17
+2016-12-16 03:15:41,248 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 17
+2016-12-16 03:15:41,248 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 17
+2016-12-16 03:15:41,631 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 17
+2016-12-16 03:15:41,641 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 17
+2016-12-16 03:15:41,661 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 17
+2016-12-16 03:15:42,952 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 17
+2016-12-16 03:15:43,896 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 17
+2016-12-16 03:15:43,937 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 17
+2016-12-16 03:15:43,949 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 17
+2016-12-16 03:15:44,061 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 17 activeVertices: 62171
+2016-12-16 03:15:44,078 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 17
+2016-12-16 03:15:44,095 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 17 activeVertices: 65334
+2016-12-16 03:15:44,111 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 17 activeVertices: 64459
+2016-12-16 03:15:44,159 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 17 activeVertices: 66139
+2016-12-16 03:15:44,159 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 17 after 2958ms (total 71965ms). activeWorkers: 4 activeVertices: 258103
+2016-12-16 03:15:44,160 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064553, SentVertexMessagesUnicast: 722804, SentVertexMessagesBroadcast: 1025169
+2016-12-16 03:15:44,160 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064527, ReceivedWrongVertexMessages: 683446
+2016-12-16 03:15:44,160 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:44,160 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 18
+2016-12-16 03:15:44,161 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 18
+2016-12-16 03:15:44,161 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 18
+2016-12-16 03:15:44,161 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 18
+2016-12-16 03:15:44,161 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 18
+2016-12-16 03:15:44,161 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 18
+2016-12-16 03:15:44,161 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 18
+2016-12-16 03:15:44,165 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 18
+2016-12-16 03:15:44,166 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 18
+2016-12-16 03:15:44,590 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 18
+2016-12-16 03:15:44,600 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 18
+2016-12-16 03:15:45,906 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 18
+2016-12-16 03:15:46,139 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 18
+2016-12-16 03:15:46,920 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 18
+2016-12-16 03:15:47,048 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 18
+2016-12-16 03:15:47,056 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 18
+2016-12-16 03:15:47,069 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 18 activeVertices: 62170
+2016-12-16 03:15:47,085 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 18
+2016-12-16 03:15:47,108 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 18 activeVertices: 65332
+2016-12-16 03:15:47,122 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 18 activeVertices: 64458
+2016-12-16 03:15:47,173 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 18 activeVertices: 66138
+2016-12-16 03:15:47,176 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 18 after 3017ms (total 74982ms). activeWorkers: 4 activeVertices: 258098
+2016-12-16 03:15:47,177 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064541, SentVertexMessagesUnicast: 722801, SentVertexMessagesBroadcast: 1025163
+2016-12-16 03:15:47,177 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064522, ReceivedWrongVertexMessages: 683442
+2016-12-16 03:15:47,177 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:47,177 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 19
+2016-12-16 03:15:47,178 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 19
+2016-12-16 03:15:47,178 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 19
+2016-12-16 03:15:47,178 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 19
+2016-12-16 03:15:47,178 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 19
+2016-12-16 03:15:47,179 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 19
+2016-12-16 03:15:47,178 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 19
+2016-12-16 03:15:47,178 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 19
+2016-12-16 03:15:47,184 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 19
+2016-12-16 03:15:47,413 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 19
+2016-12-16 03:15:47,613 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 19
+2016-12-16 03:15:47,628 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 19
+2016-12-16 03:15:48,925 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 19
+2016-12-16 03:15:49,713 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 19
+2016-12-16 03:15:49,728 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 19
+2016-12-16 03:15:49,765 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 19 activeVertices: 62168
+2016-12-16 03:15:49,885 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 19 activeVertices: 64457
+2016-12-16 03:15:49,891 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 19
+2016-12-16 03:15:49,939 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 19
+2016-12-16 03:15:49,946 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 19 activeVertices: 65330
+2016-12-16 03:15:50,017 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 19 activeVertices: 66138
+2016-12-16 03:15:50,017 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 19 after 2841ms (total 77823ms). activeWorkers: 4 activeVertices: 258093
+2016-12-16 03:15:50,018 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064532, SentVertexMessagesUnicast: 722797, SentVertexMessagesBroadcast: 1025151
+2016-12-16 03:15:50,018 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064514, ReceivedWrongVertexMessages: 683434
+2016-12-16 03:15:50,018 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:50,018 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 20
+2016-12-16 03:15:50,018 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 20
+2016-12-16 03:15:50,018 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 20
+2016-12-16 03:15:50,018 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 20
+2016-12-16 03:15:50,018 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 20
+2016-12-16 03:15:50,018 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 20
+2016-12-16 03:15:50,018 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 20
+2016-12-16 03:15:50,018 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 20
+2016-12-16 03:15:50,018 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 20
+2016-12-16 03:15:50,478 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 20
+2016-12-16 03:15:50,496 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 20
+2016-12-16 03:15:50,519 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 20
+2016-12-16 03:15:51,679 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 20
+2016-12-16 03:15:53,213 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 20
+2016-12-16 03:15:53,301 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 20
+2016-12-16 03:15:53,345 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 20 activeVertices: 64456
+2016-12-16 03:15:53,355 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 20
+2016-12-16 03:15:53,560 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 20 activeVertices: 65330
+2016-12-16 03:15:53,568 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 20 activeVertices: 62164
+2016-12-16 03:15:53,574 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 20
+2016-12-16 03:15:53,668 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 20 activeVertices: 66138
+2016-12-16 03:15:53,669 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 20 after 3652ms (total 81475ms). activeWorkers: 4 activeVertices: 258088
+2016-12-16 03:15:53,669 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064524, SentVertexMessagesUnicast: 722792, SentVertexMessagesBroadcast: 1025139
+2016-12-16 03:15:53,669 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064505, ReceivedWrongVertexMessages: 683426
+2016-12-16 03:15:53,669 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:53,669 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 21
+2016-12-16 03:15:53,669 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 21
+2016-12-16 03:15:53,670 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 21
+2016-12-16 03:15:53,670 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 21
+2016-12-16 03:15:53,670 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 21
+2016-12-16 03:15:53,674 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 21
+2016-12-16 03:15:53,678 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 21
+2016-12-16 03:15:53,678 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 21
+2016-12-16 03:15:53,670 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 21
+2016-12-16 03:15:54,475 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 21
+2016-12-16 03:15:54,498 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 21
+2016-12-16 03:15:54,550 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 21
+2016-12-16 03:15:55,863 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 21
+2016-12-16 03:15:56,972 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 21
+2016-12-16 03:15:57,021 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 21
+2016-12-16 03:15:57,022 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 21 activeVertices: 62163
+2016-12-16 03:15:57,027 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 21
+2016-12-16 03:15:57,259 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 21
+2016-12-16 03:15:57,278 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 21 activeVertices: 64455
+2016-12-16 03:15:57,289 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 21 activeVertices: 65327
+2016-12-16 03:15:57,346 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 21 activeVertices: 66138
+2016-12-16 03:15:57,347 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 21 after 3678ms (total 85153ms). activeWorkers: 4 activeVertices: 258083
+2016-12-16 03:15:57,347 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064523, SentVertexMessagesUnicast: 722786, SentVertexMessagesBroadcast: 1025109
+2016-12-16 03:15:57,348 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064489, ReceivedWrongVertexMessages: 683406
+2016-12-16 03:15:57,348 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:15:57,348 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 22
+2016-12-16 03:15:57,348 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 22
+2016-12-16 03:15:57,348 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 22
+2016-12-16 03:15:57,349 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 22
+2016-12-16 03:15:57,349 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 22
+2016-12-16 03:15:57,348 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 22
+2016-12-16 03:15:57,349 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 22
+2016-12-16 03:15:57,349 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 22
+2016-12-16 03:15:57,385 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 22
+2016-12-16 03:15:57,675 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 22
+2016-12-16 03:15:59,901 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 22
+2016-12-16 03:15:59,953 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 22
+2016-12-16 03:16:00,023 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 22
+2016-12-16 03:16:01,274 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 22
+2016-12-16 03:16:01,417 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 22 activeVertices: 65325
+2016-12-16 03:16:01,489 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 22
+2016-12-16 03:16:01,532 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 22
+2016-12-16 03:16:01,555 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 22 activeVertices: 64454
+2016-12-16 03:16:01,565 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 22
+2016-12-16 03:16:01,573 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 22 activeVertices: 62162
+2016-12-16 03:16:01,660 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 22 activeVertices: 66137
+2016-12-16 03:16:01,660 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 22 after 4313ms (total 89466ms). activeWorkers: 4 activeVertices: 258078
+2016-12-16 03:16:01,661 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064510, SentVertexMessagesUnicast: 722784, SentVertexMessagesBroadcast: 1025103
+2016-12-16 03:16:01,661 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064485, ReceivedWrongVertexMessages: 683402
+2016-12-16 03:16:01,661 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:16:01,661 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 23
+2016-12-16 03:16:01,661 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 23
+2016-12-16 03:16:01,661 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 23
+2016-12-16 03:16:01,661 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 23
+2016-12-16 03:16:01,661 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 23
+2016-12-16 03:16:01,670 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 23
+2016-12-16 03:16:01,661 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 23
+2016-12-16 03:16:01,671 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 23
+2016-12-16 03:16:01,661 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 23
+2016-12-16 03:16:01,986 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 23
+2016-12-16 03:16:02,300 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 23
+2016-12-16 03:16:02,307 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 23
+2016-12-16 03:16:03,501 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 23
+2016-12-16 03:16:04,538 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 23
+2016-12-16 03:16:04,822 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 23
+2016-12-16 03:16:04,841 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 23 activeVertices: 65323
+2016-12-16 03:16:04,879 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 23
+2016-12-16 03:16:04,885 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 23
+2016-12-16 03:16:04,885 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 23 activeVertices: 62162
+2016-12-16 03:16:05,002 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 23 activeVertices: 64454
+2016-12-16 03:16:05,047 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 23 activeVertices: 66134
+2016-12-16 03:16:05,051 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 23 after 3390ms (total 92856ms). activeWorkers: 4 activeVertices: 258073
+2016-12-16 03:16:05,051 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064503, SentVertexMessagesUnicast: 722778, SentVertexMessagesBroadcast: 1025091
+2016-12-16 03:16:05,051 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064475, ReceivedWrongVertexMessages: 683394
+2016-12-16 03:16:05,051 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:16:05,051 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 24
+2016-12-16 03:16:05,052 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 24
+2016-12-16 03:16:05,052 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 24
+2016-12-16 03:16:05,052 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 24
+2016-12-16 03:16:05,052 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 24
+2016-12-16 03:16:05,052 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 24
+2016-12-16 03:16:05,054 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 24
+2016-12-16 03:16:05,052 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 24
+2016-12-16 03:16:05,069 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 24
+2016-12-16 03:16:05,756 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 24
+2016-12-16 03:16:06,228 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 24
+2016-12-16 03:16:06,305 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 24
+2016-12-16 03:16:06,377 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 24
+2016-12-16 03:16:08,537 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 24
+2016-12-16 03:16:08,558 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 24
+2016-12-16 03:16:08,680 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 24
+2016-12-16 03:16:08,699 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 24 activeVertices: 62161
+2016-12-16 03:16:08,712 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 24 activeVertices: 65322
+2016-12-16 03:16:08,714 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 24
+2016-12-16 03:16:08,764 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 24 activeVertices: 66131
+2016-12-16 03:16:08,774 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 24 activeVertices: 64454
+2016-12-16 03:16:08,775 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 24 after 3724ms (total 96580ms). activeWorkers: 4 activeVertices: 258068
+2016-12-16 03:16:08,775 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064497, SentVertexMessagesUnicast: 722773, SentVertexMessagesBroadcast: 1025073
+2016-12-16 03:16:08,775 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064464, ReceivedWrongVertexMessages: 683382
+2016-12-16 03:16:08,775 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:16:08,775 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 25
+2016-12-16 03:16:08,776 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 25
+2016-12-16 03:16:08,776 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 25
+2016-12-16 03:16:08,776 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 25
+2016-12-16 03:16:08,776 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 25
+2016-12-16 03:16:08,776 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 25
+2016-12-16 03:16:08,776 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 25
+2016-12-16 03:16:08,776 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 25
+2016-12-16 03:16:08,776 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 25
+2016-12-16 03:16:09,011 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 25
+2016-12-16 03:16:09,261 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 25
+2016-12-16 03:16:10,439 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 25
+2016-12-16 03:16:10,616 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 25
+2016-12-16 03:16:11,326 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 25
+2016-12-16 03:16:11,350 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 25
+2016-12-16 03:16:11,413 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 25 activeVertices: 65322
+2016-12-16 03:16:11,418 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 25
+2016-12-16 03:16:11,423 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 25
+2016-12-16 03:16:11,423 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 25 activeVertices: 62159
+2016-12-16 03:16:11,496 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 25 activeVertices: 64454
+2016-12-16 03:16:11,546 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 25 activeVertices: 66128
+2016-12-16 03:16:11,547 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 25 after 2773ms (total 99353ms). activeWorkers: 4 activeVertices: 258063
+2016-12-16 03:16:11,547 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064493, SentVertexMessagesUnicast: 722768, SentVertexMessagesBroadcast: 1025049
+2016-12-16 03:16:11,547 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064451, ReceivedWrongVertexMessages: 683366
+2016-12-16 03:16:11,547 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:16:11,547 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 26
+2016-12-16 03:16:11,548 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 26
+2016-12-16 03:16:11,548 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 26
+2016-12-16 03:16:11,548 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 26
+2016-12-16 03:16:11,548 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 26
+2016-12-16 03:16:11,561 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 26
+2016-12-16 03:16:11,562 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 26
+2016-12-16 03:16:11,566 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 26
+2016-12-16 03:16:11,567 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 26
+2016-12-16 03:16:11,972 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 26
+2016-12-16 03:16:12,001 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 26
+2016-12-16 03:16:12,337 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 26
+2016-12-16 03:16:13,547 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 26
+2016-12-16 03:16:14,573 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 26
+2016-12-16 03:16:14,613 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 26
+2016-12-16 03:16:14,620 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 26
+2016-12-16 03:16:14,621 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 26
+2016-12-16 03:16:14,623 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 26 activeVertices: 62158
+2016-12-16 03:16:14,671 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 26 activeVertices: 65322
+2016-12-16 03:16:14,680 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 26 activeVertices: 64451
+2016-12-16 03:16:14,707 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 26 activeVertices: 66127
+2016-12-16 03:16:14,708 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 26 after 3161ms (total 102514ms). activeWorkers: 4 activeVertices: 258058
+2016-12-16 03:16:14,708 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064491, SentVertexMessagesUnicast: 722761, SentVertexMessagesBroadcast: 1025025
+2016-12-16 03:16:14,708 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064436, ReceivedWrongVertexMessages: 683350
+2016-12-16 03:16:14,709 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:16:14,709 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 27
+2016-12-16 03:16:14,709 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 27
+2016-12-16 03:16:14,709 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 27
+2016-12-16 03:16:14,709 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 27
+2016-12-16 03:16:14,709 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 27
+2016-12-16 03:16:14,709 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 27
+2016-12-16 03:16:14,709 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 27
+2016-12-16 03:16:14,709 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 27
+2016-12-16 03:16:14,709 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 27
+2016-12-16 03:16:15,029 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 27
+2016-12-16 03:16:16,266 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 27
+2016-12-16 03:16:16,292 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 27
+2016-12-16 03:16:16,322 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 27
+2016-12-16 03:16:17,433 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 27
+2016-12-16 03:16:17,479 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 27
+2016-12-16 03:16:17,492 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 27
+2016-12-16 03:16:17,495 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 27 activeVertices: 62157
+2016-12-16 03:16:17,524 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 27
+2016-12-16 03:16:17,539 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 27 activeVertices: 64448
+2016-12-16 03:16:17,587 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 27 activeVertices: 66126
+2016-12-16 03:16:17,588 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 27 activeVertices: 65322
+2016-12-16 03:16:17,589 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 27 after 2881ms (total 105395ms). activeWorkers: 4 activeVertices: 258053
+2016-12-16 03:16:17,589 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064486, SentVertexMessagesUnicast: 722757, SentVertexMessagesBroadcast: 1025001
+2016-12-16 03:16:17,589 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064424, ReceivedWrongVertexMessages: 683334
+2016-12-16 03:16:17,589 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:16:17,589 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 28
+2016-12-16 03:16:17,590 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 28
+2016-12-16 03:16:17,590 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 28
+2016-12-16 03:16:17,591 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 28
+2016-12-16 03:16:17,591 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 28
+2016-12-16 03:16:17,591 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 28
+2016-12-16 03:16:17,591 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 28
+2016-12-16 03:16:17,591 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 28
+2016-12-16 03:16:17,591 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 28
+2016-12-16 03:16:17,885 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 28
+2016-12-16 03:16:17,914 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 28
+2016-12-16 03:16:19,180 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 28
+2016-12-16 03:16:19,291 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 28
+2016-12-16 03:16:20,066 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 28
+2016-12-16 03:16:20,254 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 28 activeVertices: 64446
+2016-12-16 03:16:20,283 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 28
+2016-12-16 03:16:20,309 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 28
+2016-12-16 03:16:20,314 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 28
+2016-12-16 03:16:20,355 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 28 activeVertices: 65321
+2016-12-16 03:16:20,370 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 28 activeVertices: 62156
+2016-12-16 03:16:20,405 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 28 activeVertices: 66125
+2016-12-16 03:16:20,406 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 28 after 2817ms (total 108212ms). activeWorkers: 4 activeVertices: 258048
+2016-12-16 03:16:20,406 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064482, SentVertexMessagesUnicast: 722752, SentVertexMessagesBroadcast: 1024977
+2016-12-16 03:16:20,406 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064411, ReceivedWrongVertexMessages: 683318
+2016-12-16 03:16:20,406 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:16:20,407 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 29
+2016-12-16 03:16:20,407 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 29
+2016-12-16 03:16:20,407 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 29
+2016-12-16 03:16:20,407 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 29
+2016-12-16 03:16:20,408 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 29
+2016-12-16 03:16:20,408 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 29
+2016-12-16 03:16:20,412 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 29
+2016-12-16 03:16:20,427 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 29
+2016-12-16 03:16:20,427 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 29
+2016-12-16 03:16:20,718 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 29
+2016-12-16 03:16:20,807 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 29
+2016-12-16 03:16:21,968 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 29
+2016-12-16 03:16:22,126 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 29
+2016-12-16 03:16:22,932 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 29
+2016-12-16 03:16:23,116 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 29 activeVertices: 62154
+2016-12-16 03:16:23,155 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 29
+2016-12-16 03:16:23,166 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 29
+2016-12-16 03:16:23,172 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 29
+2016-12-16 03:16:23,213 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 29 activeVertices: 64444
+2016-12-16 03:16:23,231 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 29 activeVertices: 65320
+2016-12-16 03:16:23,264 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 29 activeVertices: 66125
+2016-12-16 03:16:23,275 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 29 after 2869ms (total 111081ms). activeWorkers: 4 activeVertices: 258043
+2016-12-16 03:16:23,275 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 1064476, SentVertexMessagesUnicast: 722747, SentVertexMessagesBroadcast: 1024959
+2016-12-16 03:16:23,275 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 1064400, ReceivedWrongVertexMessages: 683306
+2016-12-16 03:16:23,275 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:16:23,275 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:132 - Next master superstep: 30
+2016-12-16 03:16:23,276 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:106 - Starting superstep 30
+2016-12-16 03:16:23,276 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:110 - Worker starting superstep compute 30
+2016-12-16 03:16:23,276 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:106 - Starting superstep 30
+2016-12-16 03:16:23,276 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:110 - Worker starting superstep compute 30
+2016-12-16 03:16:23,276 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:106 - Starting superstep 30
+2016-12-16 03:16:23,276 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:110 - Worker starting superstep compute 30
+2016-12-16 03:16:23,292 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:106 - Starting superstep 30
+2016-12-16 03:16:23,292 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:110 - Worker starting superstep compute 30
+2016-12-16 03:16:23,302 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:116 - Worker finished superstep compute 30
+2016-12-16 03:16:23,306 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:116 - Worker finished superstep compute 30
+2016-12-16 03:16:23,319 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:116 - Worker finished superstep compute 30
+2016-12-16 03:16:23,325 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:116 - Worker finished superstep compute 30
+2016-12-16 03:16:23,325 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:122 - Worker finished superstep barrier 30
+2016-12-16 03:16:23,325 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:122 - Worker finished superstep barrier 30
+2016-12-16 03:16:23,325 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:122 - Worker finished superstep barrier 30
+2016-12-16 03:16:23,327 DEBUG [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:164 - Worker finished superstep message sort 30 activeVertices: 0
+2016-12-16 03:16:23,327 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:122 - Worker finished superstep barrier 30
+2016-12-16 03:16:23,329 DEBUG [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:164 - Worker finished superstep message sort 30 activeVertices: 0
+2016-12-16 03:16:23,327 DEBUG [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:164 - Worker finished superstep message sort 30 activeVertices: 0
+2016-12-16 03:16:23,327 DEBUG [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:164 - Worker finished superstep message sort 30 activeVertices: 0
+2016-12-16 03:16:23,330 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:119 - - Master finished superstep 30 after 55ms (total 111136ms). activeWorkers: 0 activeVertices: 0
+2016-12-16 03:16:23,330 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:121 -   SentControlMessages: 8, SentVertexMessagesLocal: 0, SentVertexMessagesUnicast: 0, SentVertexMessagesBroadcast: 0
+2016-12-16 03:16:23,330 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:123 -   ReceivedCorrectVertexMessages: 0, ReceivedWrongVertexMessages: 0
+2016-12-16 03:16:23,330 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:125 -   newVertexMachinesDiscovered: 0, totalVertexMachinesDiscovered: 607787
+2016-12-16 03:16:23,330 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:137 - All workers finished after 111136ms
+2016-12-16 03:16:23,331 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:150 - Master finishing after 111137ms
+2016-12-16 03:16:23,331 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:255 - Received Master_Finish
+2016-12-16 03:16:23,331 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] WorkerMachine.java:172 - Worker finishing
+2016-12-16 03:16:23,331 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:255 - Received Master_Finish
+2016-12-16 03:16:23,331 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] WorkerMachine.java:172 - Worker finishing
+2016-12-16 03:16:23,332 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:255 - Received Master_Finish
+2016-12-16 03:16:23,332 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] WorkerMachine.java:172 - Worker finishing
+2016-12-16 03:16:23,332 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:255 - Received Master_Finish
+2016-12-16 03:16:23,332 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] WorkerMachine.java:172 - Worker finishing
+2016-12-16 03:16:23,571 INFO  [nioEventLoopGroup-4-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x808c9ae9, L:/0:0:0:0:0:0:0:0:23500] UNREGISTERED
+2016-12-16 03:16:23,571 DEBUG [nioEventLoopGroup-7-1] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:57 - Channel inactive: e61829cf
+2016-12-16 03:16:23,572 INFO  [nioEventLoopGroup-6-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x60e2dc34, L:/0:0:0:0:0:0:0:0:23501] UNREGISTERED
+2016-12-16 03:16:23,572 DEBUG [nioEventLoopGroup-3-2] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:57 - Channel inactive: 06619421
+2016-12-16 03:16:23,572 DEBUG [nioEventLoopGroup-5-1] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:57 - Channel inactive: 0b701718
+2016-12-16 03:16:23,572 DEBUG [nioEventLoopGroup-3-1] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:57 - Channel inactive: 890efb9d
+2016-12-16 03:16:23,572 DEBUG [nioEventLoopGroup-7-3] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:57 - Channel inactive: 6801ee52
+2016-12-16 03:16:23,572 DEBUG [nioEventLoopGroup-7-4] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:57 - Channel inactive: 8be5e90a
+2016-12-16 03:16:23,573 DEBUG [nioEventLoopGroup-9-3] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:57 - Channel inactive: db28ffaf
+2016-12-16 03:16:23,573 DEBUG [nioEventLoopGroup-5-4] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:57 - Channel inactive: a61ab6a3
+2016-12-16 03:16:23,573 DEBUG [nioEventLoopGroup-5-3] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:57 - Channel inactive: 8a66dd68
+2016-12-16 03:16:23,573 DEBUG [nioEventLoopGroup-11-2] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:57 - Channel inactive: 26fe39dc
+2016-12-16 03:16:23,572 DEBUG [nioEventLoopGroup-7-2] mthesis.concurrent_graph.communication.MessageHandler[1] MessageHandler.java:57 - Channel inactive: d27abc40
+2016-12-16 03:16:23,573 DEBUG [nioEventLoopGroup-11-3] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:57 - Channel inactive: 1e9b0d23
+2016-12-16 03:16:23,573 DEBUG [nioEventLoopGroup-5-2] mthesis.concurrent_graph.communication.MessageHandler[0] MessageHandler.java:57 - Channel inactive: 58352b16
+2016-12-16 03:16:23,573 DEBUG [nioEventLoopGroup-9-2] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:57 - Channel inactive: d1feb0c2
+2016-12-16 03:16:23,574 INFO  [NodeThread[1]] mthesis.concurrent_graph.worker.WorkerMachine[1] AbstractMachine.java:59 - No warnings or errors
+2016-12-16 03:16:23,575 INFO  [NodeThread[0]] mthesis.concurrent_graph.worker.WorkerMachine[0] AbstractMachine.java:59 - No warnings or errors
+2016-12-16 03:16:23,607 INFO  [nioEventLoopGroup-8-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x766c8d16, L:/0:0:0:0:0:0:0:0:23502] UNREGISTERED
+2016-12-16 03:16:23,607 DEBUG [nioEventLoopGroup-9-1] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:57 - Channel inactive: 3311f390
+2016-12-16 03:16:23,608 DEBUG [nioEventLoopGroup-9-4] mthesis.concurrent_graph.communication.MessageHandler[2] MessageHandler.java:57 - Channel inactive: 87a4ea64
+2016-12-16 03:16:23,608 DEBUG [nioEventLoopGroup-11-4] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:57 - Channel inactive: 0023973d
+2016-12-16 03:16:23,608 DEBUG [nioEventLoopGroup-3-3] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:57 - Channel inactive: 3784a1f9
+2016-12-16 03:16:23,609 INFO  [NodeThread[2]] mthesis.concurrent_graph.worker.WorkerMachine[2] AbstractMachine.java:59 - No warnings or errors
+2016-12-16 03:16:23,613 INFO  [nioEventLoopGroup-10-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0xfa30b4a4, L:/0:0:0:0:0:0:0:0:23503] UNREGISTERED
+2016-12-16 03:16:23,613 DEBUG [nioEventLoopGroup-11-1] mthesis.concurrent_graph.communication.MessageHandler[3] MessageHandler.java:57 - Channel inactive: f58cf4d6
+2016-12-16 03:16:23,613 DEBUG [nioEventLoopGroup-3-4] mthesis.concurrent_graph.communication.MessageHandler[-1] MessageHandler.java:57 - Channel inactive: dee78ba1
+2016-12-16 03:16:23,614 INFO  [NodeThread[3]] mthesis.concurrent_graph.worker.WorkerMachine[3] AbstractMachine.java:59 - No warnings or errors
+2016-12-16 03:16:23,689 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] MasterMachine.java:153 - Master terminating after 111495ms
+2016-12-16 03:16:23,690 INFO  [nioEventLoopGroup-2-1] io.netty.handler.logging.LoggingHandler Slf4JLogger.java:101 - [id: 0x75130363, L:/0:0:0:0:0:0:0:0:23499] UNREGISTERED
+2016-12-16 03:16:23,691 INFO  [NodeThread[-1]] mthesis.concurrent_graph.master.MasterMachine[-1] AbstractMachine.java:59 - No warnings or errors
+2016-12-16 03:16:25,686 DEBUG [nioEventLoopGroup-7-1] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 18 thread-local buffer(s) from thread: nioEventLoopGroup-7-1
+2016-12-16 03:16:25,687 DEBUG [nioEventLoopGroup-7-2] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 512 thread-local buffer(s) from thread: nioEventLoopGroup-7-2
+2016-12-16 03:16:25,690 DEBUG [nioEventLoopGroup-7-3] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 514 thread-local buffer(s) from thread: nioEventLoopGroup-7-3
+2016-12-16 03:16:25,699 DEBUG [nioEventLoopGroup-5-3] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 512 thread-local buffer(s) from thread: nioEventLoopGroup-5-3
+2016-12-16 03:16:25,699 DEBUG [nioEventLoopGroup-5-1] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 18 thread-local buffer(s) from thread: nioEventLoopGroup-5-1
+2016-12-16 03:16:25,699 DEBUG [nioEventLoopGroup-5-4] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 512 thread-local buffer(s) from thread: nioEventLoopGroup-5-4
+2016-12-16 03:16:25,699 DEBUG [nioEventLoopGroup-7-4] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 512 thread-local buffer(s) from thread: nioEventLoopGroup-7-4
+2016-12-16 03:16:25,711 DEBUG [nioEventLoopGroup-9-1] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 18 thread-local buffer(s) from thread: nioEventLoopGroup-9-1
+2016-12-16 03:16:25,711 DEBUG [nioEventLoopGroup-9-4] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 512 thread-local buffer(s) from thread: nioEventLoopGroup-9-4
+2016-12-16 03:16:25,717 DEBUG [nioEventLoopGroup-11-1] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 18 thread-local buffer(s) from thread: nioEventLoopGroup-11-1
+2016-12-16 03:16:25,777 DEBUG [nioEventLoopGroup-5-2] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 514 thread-local buffer(s) from thread: nioEventLoopGroup-5-2
+2016-12-16 03:16:25,813 DEBUG [nioEventLoopGroup-9-2] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 512 thread-local buffer(s) from thread: nioEventLoopGroup-9-2
+2016-12-16 03:16:25,813 DEBUG [nioEventLoopGroup-9-3] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 513 thread-local buffer(s) from thread: nioEventLoopGroup-9-3
+2016-12-16 03:16:25,816 DEBUG [nioEventLoopGroup-11-2] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 512 thread-local buffer(s) from thread: nioEventLoopGroup-11-2
+2016-12-16 03:16:25,817 DEBUG [nioEventLoopGroup-11-3] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 512 thread-local buffer(s) from thread: nioEventLoopGroup-11-3
+2016-12-16 03:16:25,817 DEBUG [nioEventLoopGroup-11-4] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 512 thread-local buffer(s) from thread: nioEventLoopGroup-11-4
+2016-12-16 03:16:25,894 DEBUG [nioEventLoopGroup-3-1] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 18 thread-local buffer(s) from thread: nioEventLoopGroup-3-1
+2016-12-16 03:16:25,895 DEBUG [nioEventLoopGroup-3-4] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 18 thread-local buffer(s) from thread: nioEventLoopGroup-3-4
+2016-12-16 03:16:25,896 DEBUG [nioEventLoopGroup-3-3] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 18 thread-local buffer(s) from thread: nioEventLoopGroup-3-3
+2016-12-16 03:16:25,896 DEBUG [nioEventLoopGroup-3-2] io.netty.buffer.PoolThreadCache Slf4JLogger.java:81 - Freed 18 thread-local buffer(s) from thread: nioEventLoopGroup-3-2

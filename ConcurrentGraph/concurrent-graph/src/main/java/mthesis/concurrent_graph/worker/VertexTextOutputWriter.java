@@ -25,7 +25,7 @@ public class VertexTextOutputWriter<V extends BaseWritable, E extends BaseWritab
 		{
 			for(final AbstractVertex<V, E, M> vertex : vertices) {
 				final V value = vertex.getValue();
-				final String vertexValue = value != null ? value.GetString() : "";
+				final String vertexValue = value != null ? value.getString() : "";
 				writer.println(vertex.ID + "\t" + vertexValue);
 			}
 		}

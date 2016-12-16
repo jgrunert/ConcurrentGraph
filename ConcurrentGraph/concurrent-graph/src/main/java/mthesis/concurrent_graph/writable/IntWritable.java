@@ -13,26 +13,24 @@ public class IntWritable extends BaseWritable {
 
 
 	@Override
-	public ByteBuffer GetBytes() {
-		final ByteBuffer bytes = ByteBuffer.allocate(4);
-		bytes.putInt(Value);
-		return bytes;
+	public void writeToBuffer(ByteBuffer buffer) {
+		buffer.putInt(Value);
 	}
 
 	@Override
-	public String GetString() {
+	public String getString() {
 		return Integer.toString(Value);
 	}
 
 
 	public static class Factory extends BaseWritableFactory<IntWritable> {
 		@Override
-		public IntWritable CreateFromString(String str) {
+		public IntWritable createFromString(String str) {
 			return new IntWritable(Integer.parseInt(str));
 		}
 
 		@Override
-		public IntWritable CreateFromBytes(ByteBuffer bytes) {
+		public IntWritable createFromBytes(ByteBuffer bytes) {
 			return new IntWritable(bytes.getInt());
 		}
 

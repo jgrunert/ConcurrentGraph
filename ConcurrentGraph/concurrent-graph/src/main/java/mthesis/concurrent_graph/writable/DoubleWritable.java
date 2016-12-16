@@ -13,26 +13,24 @@ public class DoubleWritable extends BaseWritable {
 
 
 	@Override
-	public ByteBuffer GetBytes() {
-		final ByteBuffer bytes = ByteBuffer.allocate(8);
-		bytes.putDouble(Value);
-		return bytes;
+	public void writeToBuffer(ByteBuffer buffer) {
+		buffer.putDouble(Value);
 	}
 
 	@Override
-	public String GetString() {
+	public String getString() {
 		return Double.toString(Value);
 	}
 
 
 	public static class Factory extends BaseWritableFactory<DoubleWritable> {
 		@Override
-		public DoubleWritable CreateFromString(String str) {
+		public DoubleWritable createFromString(String str) {
 			return new DoubleWritable(Double.parseDouble(str));
 		}
 
 		@Override
-		public DoubleWritable CreateFromBytes(ByteBuffer bytes) {
+		public DoubleWritable createFromBytes(ByteBuffer bytes) {
 			return new DoubleWritable(bytes.getDouble());
 		}
 

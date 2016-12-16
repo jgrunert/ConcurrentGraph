@@ -22,11 +22,12 @@ public class PagerankTest {
 		final int basePort = 23499;
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
-		//final String inputFile = "../../Data_converted/cctest.txt";
-		final String inputFile = "../../../ConcurrentGraph_Data/converted/web-Stanford.txt";
+		final String inputFile = "../../Data_converted/cctest.txt";
+		//final String inputFile = "../../../ConcurrentGraph_Data/converted/web-Stanford.txt";
 
 		final PagerankJobConfiguration jobConfig = new PagerankJobConfiguration();
-		final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(10000);
+		final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(1);
+		//final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(10000);
 		final MasterOutputEvaluator outputCombiner = new PagerankOutputEvaluator();
 
 		final Map<Integer, Pair<String, Integer>> allCfg = new HashMap<>();

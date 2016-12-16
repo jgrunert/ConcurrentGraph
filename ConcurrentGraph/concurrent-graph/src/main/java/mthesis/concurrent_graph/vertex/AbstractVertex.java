@@ -98,6 +98,6 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	private String valueToString() {
 		if(value == null)
 			return "";
-		return value.GetString();
+		return value.getString();
 	}
 }

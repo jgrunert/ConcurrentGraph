@@ -20,6 +20,6 @@ public class Edge<E extends BaseWritable> {
 	private String valueToString() {
 		if(Value == null)
 			return "";
-		return Value.GetString();
+		return Value.getString();
 	}
 }

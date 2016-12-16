@@ -48,7 +48,7 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 
 					// Optional vertex value
 					if(splitVertex.length > 1 && vertexValueFactory != null) {
-						vertex.setValue(vertexValueFactory.CreateFromString(splitVertex[1]));
+						vertex.setValue(vertexValueFactory.createFromString(splitVertex[1]));
 					}
 
 					// Vertex edges
@@ -60,7 +60,7 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 							// Optional edge value
 							E edgeValue;
 							if(splitEdgeStr.length > 1 && edgeValueFacgory != null) {
-								edgeValue = edgeValueFacgory.CreateFromString(splitEdgeStr[1]);
+								edgeValue = edgeValueFacgory.createFromString(splitEdgeStr[1]);
 							} else {
 								edgeValue = null;
 							}

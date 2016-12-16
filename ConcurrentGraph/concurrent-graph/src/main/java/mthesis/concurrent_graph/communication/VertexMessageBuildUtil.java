@@ -26,7 +26,10 @@ public class VertexMessageBuildUtil {
 	}
 
 	public static MessageEnvelope BuildWithContent(int superstepNo, int srcMachineId, int srcVertex, int dstVertex, BaseWritable content) {
-		final ByteBuffer contentBytes = content.GetBytes();
+		// TODO Only for testing
+		final ByteBuffer contentBytes = ByteBuffer.allocate(8);
+		content.writeToBuffer(contentBytes);
+
 		contentBytes.position(0);
 		final VertexMessageTransport.Builder vertesMsg = VertexMessageTransport.newBuilder()
 				.setSuperstepNo(superstepNo)

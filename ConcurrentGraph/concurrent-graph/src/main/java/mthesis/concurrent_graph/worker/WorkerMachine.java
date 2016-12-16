@@ -372,7 +372,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 			else {
 				final VertexMessage vMsg = new VertexMessage(message.getSuperstepNo(), message.getSrcVertex(), message.getDstVertex(),
-						vertexMessageFactory.CreateFromBytes(message.getContent().asReadOnlyByteBuffer()));
+						vertexMessageFactory.createFromBytes(message.getContent().asReadOnlyByteBuffer()));
 				synchronized (inVertexMessages) {
 					inVertexMessages.add(vMsg);
 				}

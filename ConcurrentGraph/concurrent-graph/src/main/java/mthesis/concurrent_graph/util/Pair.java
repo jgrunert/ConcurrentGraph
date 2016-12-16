@@ -2,17 +2,17 @@ package mthesis.concurrent_graph.util;
 
 public class Pair<A, B> {
 
-	public A fst;
-	public B snd;
+	public A first;
+	public B second;
 
 	public Pair(A fst, B snd) {
-		this.fst = fst;
-		this.snd = snd;
+		this.first = fst;
+		this.second = snd;
 	}
 
 	@Override
 	public String toString() {
-		return "Pair[" + fst + "," + snd + "]";
+		return "Pair[" + first + "," + second + "]";
 	}
 
 	protected static boolean equals(Object x, Object y) {
@@ -22,18 +22,18 @@ public class Pair<A, B> {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof Pair && equals(fst, ((Pair) other).fst)
-				&& equals(snd, ((Pair) other).snd);
+		return other instanceof Pair && equals(first, ((Pair) other).first)
+				&& equals(second, ((Pair) other).second);
 	}
 
 	@Override
 	public int hashCode() {
-		if (fst == null)
-			return (snd == null) ? 0 : snd.hashCode() + 1;
-		else if (snd == null)
-			return fst.hashCode() + 2;
+		if (first == null)
+			return (second == null) ? 0 : second.hashCode() + 1;
+		else if (second == null)
+			return first.hashCode() + 2;
 		else
-			return fst.hashCode() * 17 + snd.hashCode();
+			return first.hashCode() * 17 + second.hashCode();
 	}
 
 	public static <A, B> Pair<A, B> of(A a, B b) {

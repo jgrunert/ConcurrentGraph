@@ -1,5 +1,11 @@
 package mthesis.concurrent_graph.communication;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,27 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
@@ -49,12 +34,11 @@ public class MessageSenderAndReceiver {
 
 	private final int ownId;
 	private final Map<Integer, Pair<String, Integer>> machines;
-	private final ConcurrentHashMap<Integer, Channel> activeChannels = new ConcurrentHashMap<Integer, Channel>();
-
-	private EventLoopGroup bossGroup;
-	private EventLoopGroup workerGroup;
-
+	private final ConcurrentHashMap<Integer, ChannelMessageSender> channelSenders = new ConcurrentHashMap<>();
+	private final List<ChannelMessageReceiver> channelReceivers = new LinkedList<ChannelMessageReceiver>();
 	private final AbstractMachine messageListener;
+	private Thread serverThread;
+	private ServerSocket serverSocket;
 
 
 	public MessageSenderAndReceiver(Map<Integer, Pair<String, Integer>> machines, int ownId,
@@ -70,32 +54,48 @@ public class MessageSenderAndReceiver {
 	//	}
 
 
-	public void start() {
-		bossGroup = new NioEventLoopGroup(1);
-		workerGroup = new NioEventLoopGroup();
-
+	public void startServer() {
 		try {
-			startServer();
+			serverThread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						runServer();
+					}
+					catch (final Exception e) {
+						if(!serverSocket.isClosed())
+							logger.error("runServer", e);
+					}
+				}
+			});
+			serverThread.setName("MessageServerThread_" + ownId);
+			serverThread.start();
 		}
 		catch (final Exception e2) {
 			logger.error("Starting server failed", e2);
 		}
+	}
 
+
+	public boolean startChannels() {
 		// Connect to all other machines with smaller IDs
 		for(final Entry<Integer, Pair<String, Integer>> machine : machines.entrySet()) {
 			if(machine.getKey() < ownId) {
 				try {
-					connectToMachine(machine.getValue().fst, machine.getValue().snd);
+					connectToMachine(machine.getValue().first, machine.getValue().second, machine.getKey());
 				} catch (final Exception e) {
 					logger.error("Exception at connectToMachine " + machine.getKey(), e);
+					return false;
 				}
 			}
 		}
+		return true;
 	}
 
 	public boolean waitUntilConnected() {
 		final long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
-		while(System.currentTimeMillis() <= timeoutTime && activeChannels.size() < (machines.size() - 1)) {
+		while(System.currentTimeMillis() <= timeoutTime &&
+				!(channelReceivers.size() == (machines.size() - 1) && channelSenders.size() == (machines.size() - 1))) {
 			try {
 				Thread.sleep(1);
 			}
@@ -103,7 +103,7 @@ public class MessageSenderAndReceiver {
 				break;
 			}
 		}
-		if(activeChannels.size() == (machines.size() - 1)) {
+		if(channelReceivers.size() == (machines.size() - 1) && channelSenders.size() == (machines.size() - 1)) {
 			logger.info("Established all connections");
 			return true;
 		}
@@ -114,21 +114,24 @@ public class MessageSenderAndReceiver {
 	}
 
 	public void stop() {
-		bossGroup.shutdownGracefully();
-		workerGroup.shutdownGracefully();
+		for(final ChannelMessageReceiver channel : channelReceivers) {
+			channel.close();
+		}
+		try {
+			serverSocket.close();
+		}
+		catch (final IOException e) {
+			logger.error("closing server failed", e);
+		}
+		serverThread.interrupt();
 	}
 
 
 	public void sendMessageUnicast(int dstId, MessageEnvelope message, boolean flush) {
-		// TODO Checks
-		final Channel ch = activeChannels.get(dstId);
-		if(flush)
-			ch.writeAndFlush(message);
-		else
-			ch.write(message);
+		final ChannelMessageSender ch = channelSenders.get(dstId);
+		ch.sendMessage(message, flush);
 	}
 	public void sendMessageBroadcast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
-		// TODO Checks
 		for(final Integer machineId : dstIds) {
 			sendMessageUnicast(machineId, message, flush);
 		}
@@ -144,82 +147,45 @@ public class MessageSenderAndReceiver {
 	}
 
 
-	private void connectToMachine(String host, int port) throws Exception {
-		// Configure SSL.git
-		final SslContext sslCtx;
-		if (Settings.SSL) {
-			sslCtx = SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build();
-		} else {
-			sslCtx = null;
-		}
+	private void connectToMachine(String host, int port, int machineId) throws Exception {
+		final Socket socket = new Socket(host, port);
+		logger.debug("Connected to: " + host + ":" + port + " for machine channel " + machineId);
 
-		// Configure the client.
-		final Bootstrap b = new Bootstrap();
-		b.group(workerGroup)
-		.channel(NioSocketChannel.class)
-		.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
-		.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY)
-		//.option(ChannelOption.SO_RCVBUF, 2048)
-		.handler(new LoggingHandler(LogLevel.INFO))
-		.handler(new ChannelInitializer<SocketChannel>() {
-			@Override
-			public void initChannel(SocketChannel ch) throws Exception {
-				final ChannelPipeline p = ch.pipeline();
-				if (sslCtx != null) {
-					p.addLast(sslCtx.newHandler(ch.alloc(), host, port));
-				}
-				// p.addLast(new LoggingHandler(LogLevel.INFO));;
-				p.addLast(new ProtobufVarint32FrameDecoder());
-				p.addLast(new ProtobufDecoder(Messages.MessageEnvelope.getDefaultInstance()));
-				p.addLast(new ProtobufVarint32LengthFieldPrepender());
-				p.addLast(new ProtobufEncoder());
-				p.addLast(new MessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
-			}
-		});
-
-		// Start the client.
-		b.connect(host, port).channel();
+		final DataOutputStream writer = new DataOutputStream(socket.getOutputStream());
+		final DataInputStream reader = new DataInputStream(socket.getInputStream());
+		writer.writeInt(ownId);
+		final ChannelMessageReceiver receiver = new ChannelMessageReceiver(socket, reader, ownId);
+		receiver.startReceiver(machineId, this);
+		channelReceivers.add(receiver);
+		channelSenders.put(machineId, new ChannelMessageSender(writer, ownId));
+		logger.debug("Handshaked and established connection channel: " + machineId);
 	}
 
 
-	private void startServer() throws Exception {
-		final int port = machines.get(ownId).snd;
-
-		// Configure SSL.
-		final SslContext sslCtx;
-		if (Settings.SSL) {
-			final SelfSignedCertificate ssc = new SelfSignedCertificate();
-			sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
-		} else {
-			sslCtx = null;
-		}
-
-		final ServerBootstrap b = new ServerBootstrap();
-		b.group(bossGroup, workerGroup)
-		.channel(NioServerSocketChannel.class)
-		.option(ChannelOption.SO_BACKLOG, 100)
-		.option(ChannelOption.SO_KEEPALIVE, Settings.KEEPALIVE)
-		.option(ChannelOption.TCP_NODELAY, Settings.TCP_NODELAY)
-		//.option(ChannelOption.SO_RCVBUF, 2048)
-		.handler(new LoggingHandler(LogLevel.INFO))
-		.childHandler(new ChannelInitializer<SocketChannel>() {
-			@Override
-			public void initChannel(SocketChannel ch) throws Exception {
-				final ChannelPipeline p = ch.pipeline();
-				if (sslCtx != null) {
-					p.addLast(sslCtx.newHandler(ch.alloc()));
-				}
-				// p.addLast(new LoggingHandler(LogLevel.INFO));;
-				p.addLast(new ProtobufVarint32FrameDecoder());
-				p.addLast(new ProtobufDecoder(Messages.MessageEnvelope.getDefaultInstance()));
-				p.addLast(new ProtobufVarint32LengthFieldPrepender());
-				p.addLast(new ProtobufEncoder());
-				p.addLast(new MessageHandler(activeChannels, ownId, MessageSenderAndReceiver.this));
-			}
-		});
-
-		// Start the server.
-		b.bind(port).sync();
+	private void runServer() throws Exception {
+		final int port = machines.get(ownId).second;
+		serverSocket = new ServerSocket(port);
 		logger.info("Started connection server");
+
+		try{
+			while(!Thread.interrupted() && !serverSocket.isClosed()) {
+				final Socket clientSocket = serverSocket.accept();
+
+				logger.debug("Accepted connection: " + clientSocket);
+				final DataInputStream reader = new DataInputStream(clientSocket.getInputStream());
+				final DataOutputStream writer = new DataOutputStream(clientSocket.getOutputStream());
+
+				final int connectedMachineId = reader.readInt();
+				final ChannelMessageReceiver receiver = new ChannelMessageReceiver(clientSocket, reader, ownId);
+				receiver.startReceiver(connectedMachineId, this);
+				channelReceivers.add(receiver);
+				channelSenders.put(connectedMachineId, new ChannelMessageSender(writer, ownId));
+				logger.debug("Handshaked and established connection channel: " + connectedMachineId + " " + clientSocket);
+			}
+		}
+		finally{
+			serverSocket.close();
+			logger.info("Closed connection server");
+		}
 	}
 }
