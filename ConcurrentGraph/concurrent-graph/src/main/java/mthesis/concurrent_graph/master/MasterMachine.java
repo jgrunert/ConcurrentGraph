@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import mthesis.concurrent_graph.AbstractMachine;
+import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
@@ -13,7 +14,6 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
-import mthesis.concurrent_graph.util.Pair;
 
 /**
  * Concurrent graph processing master main
@@ -30,7 +30,7 @@ public class MasterMachine extends AbstractMachine {
 	private final MasterOutputEvaluator outputCombiner;
 
 
-	public MasterMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds,
+	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds,
 			String inputFile, String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir) {
 		super(machines, ownId);
 		this.workerIds = workerIds;
@@ -191,17 +191,17 @@ public class MasterMachine extends AbstractMachine {
 	private void startWorkersAssignPartitions() {
 		final Map<Integer, List<String>> assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir, workerIds);
 		for(final Integer workerId : workerIds) {
-			messaging.sendMessageUnicast(workerId,
+			messaging.sendControlMessageUnicast(workerId,
 					ControlMessageBuildUtil.Build_Master_Startup(superstepNo, ownId, assignedPartitions.get(workerId)), true);
 		}
 	}
 
 	private void signalWorkersStartingSuperstep(int vertexCount, int activeVertices) {
-		messaging.sendMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId, vertexCount, activeVertices), true);
+		messaging.sendControlMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId, vertexCount, activeVertices), true);
 	}
 
 	private void signalWorkersFinish() {
-		messaging.sendMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
+		messaging.sendControlMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
 	}
 
 

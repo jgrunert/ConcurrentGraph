@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.JobConfiguration;
+import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
@@ -20,7 +21,6 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
 import mthesis.concurrent_graph.communication.VertexMessageBuildUtil;
-import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexMessage;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -50,7 +50,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 
-	public WorkerMachine(Map<Integer, Pair<String, Integer>> machines, int ownId, List<Integer> workerIds, int masterId,
+	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId,
 			String outputDir, JobConfiguration<V, E, M> jobConfig) {
 		super(machines, ownId);
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
@@ -286,18 +286,18 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private void sendWorkersSuperstepFinished() {
 		superstepStats.SentControlMessages++;
-		messaging.sendMessageBroadcast(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Barrier(superstepNo, ownId), true);
+		messaging.sendControlMessageBroadcast(otherWorkerIds, ControlMessageBuildUtil.Build_Worker_Superstep_Barrier(superstepNo, ownId), true);
 	}
 
 	private void sendMasterSuperstepFinished() {
 		superstepStats.SentControlMessages++;
-		messaging.sendMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
+		messaging.sendControlMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId,
 				superstepStats, localVerticesList.size()), true);
 	}
 
 	private void sendMasterFinishedMessage() {
 		superstepStats.SentControlMessages++;
-		messaging.sendMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
+		messaging.sendControlMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Finished(superstepNo, ownId), true);
 	}
 
 	/**
@@ -321,14 +321,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content);
 				//System.out.println(ownId + " SEND UNI from " + srcVertex + " to " + dstVertex + ":" + remoteMachine);
 				superstepStats.SentVertexMessagesUnicast++;
-				messaging.sendMessageUnicast(remoteMachine, message, false);
+				messaging.sendVertexMessageUnicast(remoteMachine, message, false);
 			}
 			else {
 				// Broadcast remote message
 				final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content);
 				//System.out.println(ownId + " SEND BCAST " + srcVertex + " to " + dstVertex + " " + otherWorkerIds);
 				superstepStats.SentVertexMessagesBroadcast += otherWorkerIds.size();
-				messaging.sendMessageBroadcast(otherWorkerIds, message, false);
+				messaging.sendVertexMessageBroadcast(otherWorkerIds, message, false);
 			}
 		}
 	}
@@ -340,7 +340,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		//System.out.println(ownId + " SEND DIR " + srcVertex + " " + dstVertex + " to " + dstMachine);
 		superstepStats.SentVertexMessagesUnicast++;
 		final MessageEnvelope message = createVertexMessageEnvelope(srcVertex, dstVertex, content);
-		messaging.sendMessageUnicast(dstMachine, message, false);
+		messaging.sendVertexMessageUnicast(dstMachine, message, false);
 	}
 
 	private MessageEnvelope createVertexMessageEnvelope(int srcVertex, int dstVertex, M content) {

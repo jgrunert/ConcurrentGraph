@@ -11,7 +11,6 @@ import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
-import mthesis.concurrent_graph.util.Pair;
 
 
 // TODO Robustness, timeouts, superstep counters etc.
@@ -31,7 +30,7 @@ public abstract class AbstractMachine {
 	private Thread runThread;
 
 
-	protected AbstractMachine(Map<Integer, Pair<String, Integer>> machines, int ownId) {
+	protected AbstractMachine(Map<Integer, MachineConfig> machines, int ownId) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		//this.machines = machines;
 		this.ownId = ownId;

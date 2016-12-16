@@ -16,11 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.AbstractMachine;
+import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
-import mthesis.concurrent_graph.util.Pair;
 
 
 /**
@@ -34,7 +34,7 @@ public class MessageSenderAndReceiver {
 	private final Logger logger;
 
 	private final int ownId;
-	private final Map<Integer, Pair<String, Integer>> machines;
+	private final Map<Integer, MachineConfig> machines;
 	private final ConcurrentHashMap<Integer, ChannelMessageSender> channelSenders = new ConcurrentHashMap<>();
 	private final List<ChannelMessageReceiver> channelReceivers = new LinkedList<ChannelMessageReceiver>();
 	private final AbstractMachine messageListener;
@@ -42,7 +42,7 @@ public class MessageSenderAndReceiver {
 	private ServerSocket serverSocket;
 
 
-	public MessageSenderAndReceiver(Map<Integer, Pair<String, Integer>> machines, int ownId,
+	public MessageSenderAndReceiver(Map<Integer, MachineConfig> machines, int ownId,
 			AbstractMachine listener) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.ownId = ownId;
@@ -80,10 +80,10 @@ public class MessageSenderAndReceiver {
 
 	public boolean startChannels() {
 		// Connect to all other machines with smaller IDs
-		for(final Entry<Integer, Pair<String, Integer>> machine : machines.entrySet()) {
+		for(final Entry<Integer, MachineConfig> machine : machines.entrySet()) {
 			if(machine.getKey() < ownId) {
 				try {
-					connectToMachine(machine.getValue().first, machine.getValue().second, machine.getKey());
+					connectToMachine(machine.getValue().HostName, machine.getValue().MessagePort, machine.getKey());
 				} catch (final Exception e) {
 					logger.error("Exception at connectToMachine " + machine.getKey(), e);
 					return false;
@@ -131,13 +131,23 @@ public class MessageSenderAndReceiver {
 	}
 
 
-	public void sendMessageUnicast(int dstId, MessageEnvelope message, boolean flush) {
+	public void sendControlMessageUnicast(int dstId, MessageEnvelope message, boolean flush) {
 		final ChannelMessageSender ch = channelSenders.get(dstId);
 		ch.sendMessage(message, flush);
 	}
-	public void sendMessageBroadcast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
+	public void sendControlMessageBroadcast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
 		for(final Integer machineId : dstIds) {
-			sendMessageUnicast(machineId, message, flush);
+			sendControlMessageUnicast(machineId, message, flush);
+		}
+	}
+
+	public void sendVertexMessageUnicast(int dstId, MessageEnvelope message, boolean flush) {
+		final ChannelMessageSender ch = channelSenders.get(dstId);
+		ch.sendMessage(message, flush);
+	}
+	public void sendVertexMessageBroadcast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
+		for(final Integer machineId : dstIds) {
+			sendVertexMessageUnicast(machineId, message, flush);
 		}
 	}
 
@@ -163,7 +173,7 @@ public class MessageSenderAndReceiver {
 	}
 
 	private void runServer() throws Exception {
-		final int port = machines.get(ownId).second;
+		final int port = machines.get(ownId).MessagePort;
 		serverSocket = new ServerSocket(port);
 		logger.info("Started connection server");
 
