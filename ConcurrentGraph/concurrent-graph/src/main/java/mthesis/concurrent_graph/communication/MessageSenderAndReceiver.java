@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.communication;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -152,13 +153,13 @@ public class MessageSenderAndReceiver {
 		logger.debug("Connected to: " + host + ":" + port + " for machine channel " + machineId);
 
 		final DataOutputStream writer = new DataOutputStream(socket.getOutputStream());
-		final DataInputStream reader = new DataInputStream(socket.getInputStream());
+		final DataInputStream reader = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 		writer.writeInt(ownId);
 		final ChannelMessageReceiver receiver = new ChannelMessageReceiver(socket, reader, ownId);
 		receiver.startReceiver(machineId, this);
 		channelReceivers.add(receiver);
 		channelSenders.put(machineId, new ChannelMessageSender(writer, ownId));
-		logger.debug("Handshaked and established connection channel: " + machineId);
+		logger.debug("Handshaked and established connection channel: " + machineId + " <- " + ownId);
 	}
 
 
@@ -172,7 +173,7 @@ public class MessageSenderAndReceiver {
 				final Socket clientSocket = serverSocket.accept();
 
 				logger.debug("Accepted connection: " + clientSocket);
-				final DataInputStream reader = new DataInputStream(clientSocket.getInputStream());
+				final DataInputStream reader = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
 				final DataOutputStream writer = new DataOutputStream(clientSocket.getOutputStream());
 
 				final int connectedMachineId = reader.readInt();
@@ -180,7 +181,7 @@ public class MessageSenderAndReceiver {
 				receiver.startReceiver(connectedMachineId, this);
 				channelReceivers.add(receiver);
 				channelSenders.put(connectedMachineId, new ChannelMessageSender(writer, ownId));
-				logger.debug("Handshaked and established connection channel: " + connectedMachineId + " " + clientSocket);
+				logger.debug("Handshaked and established connection channel: " + connectedMachineId + " -> " + ownId + " " + clientSocket);
 			}
 		}
 		finally{

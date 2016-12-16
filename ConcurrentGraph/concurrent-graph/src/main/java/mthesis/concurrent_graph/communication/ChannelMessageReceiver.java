@@ -35,27 +35,31 @@ public class ChannelMessageReceiver {
 		this.reader = reader;
 	}
 
+	int correctRecM = 0;
+	int correctRecBts = 0;
 	public void startReceiver(int connectedMachineId, MessageSenderAndReceiver inMsgHandler) {
 		thread = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				try {
-					int msgLength;
+					int msgLength, readIndex;
 					while(!Thread.interrupted() && !socket.isClosed()) {
-						msgLength = reader.readInt();
-						if(msgLength > Settings.MAX_MESSAGE_SIZE)
-							throw new IOException("Message is to long: " + msgLength);
+						msgLength = reader.readShort();
 
-						int toRead = msgLength;
-						toRead -= reader.read(buffer, 0, msgLength);
-						if(toRead != 0)
-							System.err.println("read not " + msgLength + " still " + toRead);
+						readIndex = 0;
+						while(readIndex < msgLength) {
+							readIndex += reader.read(buffer, readIndex, msgLength - readIndex);
+						}
+
 						final MessageEnvelope message = MessageEnvelope.parseFrom(ByteString.copyFrom(buffer, 0, msgLength));
 						if(message.hasVertexMessage())
 							inMsgHandler.onIncomingVertexMessage(message.getVertexMessage());
 						else if(message.hasControlMessage())
 							inMsgHandler.onIncomingControlMessage(message.getControlMessage());
+
+						correctRecM++;
+						correctRecBts += msgLength;
 					}
 				}
 				catch(final EOFException e2) {

@@ -1,6 +1,8 @@
 package mthesis.concurrent_graph.communication;
 
 import java.io.DataOutputStream;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 public class ChannelMessageSender {
 	private final Logger logger;
 	private final DataOutputStream writer;
+	private final BlockingQueue<MessageEnvelope> outMessages = new LinkedBlockingQueue<>();
 
 
 	public ChannelMessageSender(DataOutputStream writer, int ownId) {
@@ -24,14 +27,14 @@ public class ChannelMessageSender {
 		this.writer = writer;
 	}
 
-	public void sendMessage(MessageEnvelope message, boolean flush) {
+	public synchronized void sendMessage(MessageEnvelope message, boolean flush) {  // TODO Not synchronized, use buckets, async etc.
 		// TODO Buckets etc
+		outMessages.add(message);
+
 		final byte[] msgBytes = message.toByteArray();
-		if(msgBytes.length > 1000)
-			System.err.println(msgBytes.length);
 		try {
-			writer.writeInt(msgBytes.length);
-			writer.write(msgBytes);
+			writer.writeShort((short)msgBytes.length);
+			writer.write(msgBytes, 0, msgBytes.length);
 			if(flush)
 				writer.flush();
 		}
