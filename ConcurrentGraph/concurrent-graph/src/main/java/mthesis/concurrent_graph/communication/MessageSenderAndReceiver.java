@@ -115,6 +115,9 @@ public class MessageSenderAndReceiver {
 	}
 
 	public void stop() {
+		for(final ChannelMessageSender channel : channelSenders.values()) {
+			channel.close();
+		}
 		for(final ChannelMessageReceiver channel : channelReceivers) {
 			channel.close();
 		}
@@ -155,13 +158,9 @@ public class MessageSenderAndReceiver {
 		final DataOutputStream writer = new DataOutputStream(socket.getOutputStream());
 		final DataInputStream reader = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 		writer.writeInt(ownId);
-		final ChannelMessageReceiver receiver = new ChannelMessageReceiver(socket, reader, ownId);
-		receiver.startReceiver(machineId, this);
-		channelReceivers.add(receiver);
-		channelSenders.put(machineId, new ChannelMessageSender(writer, ownId));
+		startConnection(machineId, socket, writer, reader);
 		logger.debug("Handshaked and established connection channel: " + machineId + " <- " + ownId);
 	}
-
 
 	private void runServer() throws Exception {
 		final int port = machines.get(ownId).second;
@@ -177,10 +176,7 @@ public class MessageSenderAndReceiver {
 				final DataOutputStream writer = new DataOutputStream(clientSocket.getOutputStream());
 
 				final int connectedMachineId = reader.readInt();
-				final ChannelMessageReceiver receiver = new ChannelMessageReceiver(clientSocket, reader, ownId);
-				receiver.startReceiver(connectedMachineId, this);
-				channelReceivers.add(receiver);
-				channelSenders.put(connectedMachineId, new ChannelMessageSender(writer, ownId));
+				startConnection(connectedMachineId, clientSocket, writer, reader);
 				logger.debug("Handshaked and established connection channel: " + connectedMachineId + " -> " + ownId + " " + clientSocket);
 			}
 		}
@@ -188,5 +184,16 @@ public class MessageSenderAndReceiver {
 			serverSocket.close();
 			logger.info("Closed connection server");
 		}
+	}
+
+
+	private void startConnection(int machineId, final Socket socket, final DataOutputStream writer,
+			final DataInputStream reader) {
+		final ChannelMessageReceiver receiver = new ChannelMessageReceiver(socket, reader, ownId);
+		receiver.startReceiver(machineId, this);
+		channelReceivers.add(receiver);
+		final ChannelMessageSender sender = new ChannelMessageSender(socket, writer, ownId);
+		sender.startSender(ownId, machineId);
+		channelSenders.put(machineId, sender);
 	}
 }

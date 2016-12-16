@@ -87,7 +87,8 @@ public class ChannelMessageReceiver {
 
 	public void close() {
 		try {
-			socket.close();
+			if(!socket.isClosed())
+				socket.close();
 		}
 		catch (final IOException e) {
 			logger.error("close socket failed", e);

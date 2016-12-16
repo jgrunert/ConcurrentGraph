@@ -1,6 +1,8 @@
 package mthesis.concurrent_graph.communication;
 
 import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -18,28 +20,56 @@ import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
  */
 public class ChannelMessageSender {
 	private final Logger logger;
+	private final Socket socket;
 	private final DataOutputStream writer;
 	private final BlockingQueue<MessageEnvelope> outMessages = new LinkedBlockingQueue<>();
 
+	private Thread senderThread;
 
-	public ChannelMessageSender(DataOutputStream writer, int ownId) {
+
+	public ChannelMessageSender(Socket socket, DataOutputStream writer, int ownId) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
+		this.socket = socket;
 		this.writer = writer;
 	}
 
-	public synchronized void sendMessage(MessageEnvelope message, boolean flush) {  // TODO Not synchronized, use buckets, async etc.
-		// TODO Buckets etc
-		outMessages.add(message);
+	public void startSender(int ownId, int otherId) {
+		senderThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try{
+					while(!Thread.interrupted() && !socket.isClosed()) {
+						final MessageEnvelope message = outMessages.take();
+						final byte[] msgBytes = message.toByteArray();
+						writer.writeShort((short)msgBytes.length);
+						writer.write(msgBytes, 0, msgBytes.length);
+					}
+				}
+				catch(final Exception e) {
+					logger.error("sending failed", e);
+				}
+			}
+		});
+		senderThread.setName("SenderThread_" + ownId + "_" + otherId);
+		senderThread.setDaemon(true);
+		senderThread.start();
+	}
 
-		final byte[] msgBytes = message.toByteArray();
+	public void close() {
 		try {
-			writer.writeShort((short)msgBytes.length);
-			writer.write(msgBytes, 0, msgBytes.length);
-			if(flush)
-				writer.flush();
+			if(!socket.isClosed())
+				socket.close();
 		}
-		catch (final Exception e) {
-			logger.error("send failed", e);
+		catch (final IOException e) {
+			logger.error("close socket failed", e);
 		}
+		senderThread.interrupt();
+		// TODO Flush messages? join?
+	}
+
+	public void sendMessage(MessageEnvelope message, boolean flush) {  // TODO Not synchronized, use buckets, async etc.
+		// TODO Buckets etc
+		// TODO Handle flush or remove it
+		outMessages.add(message);
 	}
 }

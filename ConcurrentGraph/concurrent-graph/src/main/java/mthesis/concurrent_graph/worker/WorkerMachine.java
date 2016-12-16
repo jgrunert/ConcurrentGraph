@@ -359,7 +359,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			if(remoteVertexMachineRegistry.addEntry(message.getSrcVertex(), message.getSrcMachine())) {
 				superstepStats.NewVertexMachinesDiscovered++;
 				if(Settings.ACTIVE_VERTEX_DISCOVERY && message.hasContent() && localVerticesIdMap.containsKey(message.getDstVertex())) {
-					//sendVertexMessageToMachine(message.getDstVertex(), -1, message.getSrcMachine(), null);
+					sendVertexMessageToMachine(message.getDstVertex(), -1, message.getSrcMachine(), null);
 				}
 			}
 		}
