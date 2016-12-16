@@ -45,8 +45,15 @@ public class ChannelMessageSender {
 						writer.write(msgBytes, 0, msgBytes.length);
 					}
 				}
+				catch(final InterruptedException e2) {
+					return;
+				}
 				catch(final Exception e) {
-					logger.error("sending failed", e);
+					if(!socket.isClosed())
+						logger.error("sending failed", e);
+				}
+				finally {
+					logger.debug("sender finished");
 				}
 			}
 		});
