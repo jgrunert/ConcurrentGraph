@@ -4,7 +4,6 @@ import java.util.List;
 
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
-import mthesis.concurrent_graph.vertex.VertexMessage;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
@@ -23,7 +22,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	}
 
 	@Override
-	protected void compute(List<VertexMessage<IntWritable>> messages) {
+	protected void compute(List<IntWritable> messages) {
 		if(superstepNo == 0) {
 			sendMessageToAllOutgoingEdges(getValue());
 			voteHalt();
@@ -31,8 +30,8 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 		}
 
 		int min = getValue().Value;
-		for(final VertexMessage<IntWritable> msg : messages) {
-			final int msgValue = msg.Content.Value;
+		for(final IntWritable msg : messages) {
+			final int msgValue = msg.Value;
 			//System.out.println("Get " + msgValue + " on " + ID + " from " + msg.SrcVertex);
 			min = Math.min(min, msgValue);
 		}

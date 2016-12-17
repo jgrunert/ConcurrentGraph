@@ -39,10 +39,10 @@ public class CCTest {
 		}
 
 		System.out.println("Starting");
-		final ExampleTestUtils<IntWritable, NullWritable, IntWritable> testUtils = new ExampleTestUtils<>();
+		final ExampleTestUtils<IntWritable, NullWritable, CCMessageWritable> testUtils = new ExampleTestUtils<>();
 		testUtils.startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir);
 
-		final List<WorkerMachine<IntWritable, NullWritable, IntWritable>> workers = new ArrayList<>();
+		final List<WorkerMachine<IntWritable, NullWritable, CCMessageWritable>> workers = new ArrayList<>();
 		for(int i = 0; i < numWorkers; i++) {
 			workers.add(testUtils.startWorker(allCfg, i, allWorkerIds, outputDir, jobConfig));
 		}

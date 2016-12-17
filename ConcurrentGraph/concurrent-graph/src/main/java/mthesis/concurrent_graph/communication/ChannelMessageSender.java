@@ -3,13 +3,16 @@ package mthesis.concurrent_graph.communication;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
+import mthesis.concurrent_graph.writable.BaseWritable;
 
 
 /**
@@ -22,8 +25,9 @@ public class ChannelMessageSender {
 	private final Logger logger;
 	private final Socket socket;
 	private final DataOutputStream writer;
-	private final BlockingQueue<MessageEnvelope> outMessages = new LinkedBlockingQueue<>();
-
+	private final byte[] outBytes = new byte[Settings.MAX_MESSAGE_SIZE];
+	private final ByteBuffer outBuffer = ByteBuffer.wrap(outBytes);
+	private final BlockingQueue<MessageToSend> outMessages = new LinkedBlockingQueue<>();  // TODO Pool MessageToSend objects?
 	private Thread senderThread;
 
 
@@ -39,10 +43,15 @@ public class ChannelMessageSender {
 			public void run() {
 				try{
 					while(!Thread.interrupted() && !socket.isClosed()) {
-						final MessageEnvelope message = outMessages.take();
-						final byte[] msgBytes = message.toByteArray();
-						writer.writeShort((short)msgBytes.length);
-						writer.write(msgBytes, 0, msgBytes.length);
+						final MessageToSend message = outMessages.take();
+						outBuffer.clear();
+
+						// Format: short MsgLength, byte MsgType, byte[] MsgContent
+						outBuffer.put(message.getTypeCode());
+						message.writeMessageToBuffer(outBuffer);
+						final int msgLength = outBuffer.position();
+						writer.writeShort((short)msgLength);
+						writer.write(outBytes, 0, msgLength);
 					}
 				}
 				catch(final InterruptedException e2) {
@@ -74,9 +83,76 @@ public class ChannelMessageSender {
 		// TODO Flush messages? join?
 	}
 
-	public void sendMessage(MessageEnvelope message, boolean flush) {  // TODO Not synchronized, use buckets, async etc.
+
+	// TODO Handle flush etc
+	public void sendMessageEnvelope(MessageEnvelope message, boolean flush) {
+		outMessages.add(new MessageEnvelopeToSend(message));
+	}
+
+	// TODO Handle flush etc
+	// TODO Remove srcVertex? Use it for discovery?
+	public void sendVertexMessage(BaseWritable message, int superstepNo, int srcMachine, int srcVertex, int dstVertex,  boolean flush) {
 		// TODO Buckets etc
-		// TODO Handle flush or remove it
-		outMessages.add(message);
+		outMessages.add(new VertexMessageToSend(message, superstepNo, srcMachine, srcVertex, dstVertex));
+	}
+
+
+	private interface MessageToSend {
+		byte getTypeCode();
+		void writeMessageToBuffer(ByteBuffer buffer);
+	}
+
+	private class VertexMessageToSend implements MessageToSend {
+		private final BaseWritable message;
+		private final int superstepNo;
+		private final int srcMachine;
+		private final int srcVertex;
+		private final int dstVertex;
+
+		public VertexMessageToSend(BaseWritable message, int superstepNo, int srcMachine, int srcVertex, int dstVertex) {
+			this.message = message;
+			this.srcMachine = srcMachine;
+			this.superstepNo = superstepNo;
+			this.srcVertex = srcVertex;
+			this.dstVertex = dstVertex;
+		}
+
+		@Override
+		public byte getTypeCode() {
+			return 0;
+		}
+
+		@Override
+		public void writeMessageToBuffer(ByteBuffer buffer) {
+			buffer.putInt(superstepNo);
+			buffer.putInt(srcMachine);
+			buffer.putInt(srcVertex);
+			buffer.putInt(dstVertex);
+			if(message != null) {
+				buffer.put((byte)0); // TODO Remove this option for null?
+				message.writeToBuffer(buffer);
+			}
+			else {
+				buffer.put((byte)1);
+			}
+		}
+	}
+
+	private class MessageEnvelopeToSend implements MessageToSend {
+		private final MessageEnvelope message;
+
+		public MessageEnvelopeToSend(MessageEnvelope message) {
+			this.message = message;
+		}
+
+		@Override
+		public byte getTypeCode() {
+			return 1;
+		}
+
+		@Override
+		public void writeMessageToBuffer(ByteBuffer buffer) {
+			buffer.put(message.toByteArray());
+		}
 	}
 }

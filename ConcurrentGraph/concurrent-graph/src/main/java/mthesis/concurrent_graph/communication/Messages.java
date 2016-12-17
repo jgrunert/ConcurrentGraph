@@ -177,31 +177,17 @@ public final class Messages {
   public interface MessageEnvelopeOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;
+    // optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-     */
-    boolean hasVertexMessage();
-    /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-     */
-    mthesis.concurrent_graph.communication.Messages.VertexMessageTransport getVertexMessage();
-    /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-     */
-    mthesis.concurrent_graph.communication.Messages.VertexMessageTransportOrBuilder getVertexMessageOrBuilder();
-
-    // optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;
-    /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
      */
     boolean hasControlMessage();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
      */
     mthesis.concurrent_graph.communication.Messages.ControlMessage getControlMessage();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
      */
     mthesis.concurrent_graph.communication.Messages.ControlMessageOrBuilder getControlMessageOrBuilder();
   }
@@ -257,21 +243,8 @@ public final class Messages {
               break;
             }
             case 10: {
-              mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                subBuilder = vertexMessage_.toBuilder();
-              }
-              vertexMessage_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.PARSER, extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(vertexMessage_);
-                vertexMessage_ = subBuilder.buildPartial();
-              }
-              bitField0_ |= 0x00000001;
-              break;
-            }
-            case 18: {
               mthesis.concurrent_graph.communication.Messages.ControlMessage.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
                 subBuilder = controlMessage_.toBuilder();
               }
               controlMessage_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.PARSER, extensionRegistry);
@@ -279,7 +252,7 @@ public final class Messages {
                 subBuilder.mergeFrom(controlMessage_);
                 controlMessage_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000002;
+              bitField0_ |= 0x00000001;
               break;
             }
           }
@@ -322,52 +295,29 @@ public final class Messages {
     }
 
     private int bitField0_;
-    // optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;
-    public static final int VERTEXMESSAGE_FIELD_NUMBER = 1;
-    private mthesis.concurrent_graph.communication.Messages.VertexMessageTransport vertexMessage_;
+    // optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;
+    public static final int CONTROLMESSAGE_FIELD_NUMBER = 1;
+    private mthesis.concurrent_graph.communication.Messages.ControlMessage controlMessage_;
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
      */
-    public boolean hasVertexMessage() {
+    public boolean hasControlMessage() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-     */
-    public mthesis.concurrent_graph.communication.Messages.VertexMessageTransport getVertexMessage() {
-      return vertexMessage_;
-    }
-    /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-     */
-    public mthesis.concurrent_graph.communication.Messages.VertexMessageTransportOrBuilder getVertexMessageOrBuilder() {
-      return vertexMessage_;
-    }
-
-    // optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;
-    public static final int CONTROLMESSAGE_FIELD_NUMBER = 2;
-    private mthesis.concurrent_graph.communication.Messages.ControlMessage controlMessage_;
-    /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
-     */
-    public boolean hasControlMessage() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
      */
     public mthesis.concurrent_graph.communication.Messages.ControlMessage getControlMessage() {
       return controlMessage_;
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
      */
     public mthesis.concurrent_graph.communication.Messages.ControlMessageOrBuilder getControlMessageOrBuilder() {
       return controlMessage_;
     }
 
     private void initFields() {
-      vertexMessage_ = mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.getDefaultInstance();
       controlMessage_ = mthesis.concurrent_graph.communication.Messages.ControlMessage.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
@@ -383,10 +333,7 @@ public final class Messages {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, vertexMessage_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, controlMessage_);
+        output.writeMessage(1, controlMessage_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -399,11 +346,7 @@ public final class Messages {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, vertexMessage_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, controlMessage_);
+          .computeMessageSize(1, controlMessage_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -513,7 +456,6 @@ public final class Messages {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getVertexMessageFieldBuilder();
           getControlMessageFieldBuilder();
         }
       }
@@ -523,18 +465,12 @@ public final class Messages {
 
       public Builder clear() {
         super.clear();
-        if (vertexMessageBuilder_ == null) {
-          vertexMessage_ = mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.getDefaultInstance();
-        } else {
-          vertexMessageBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000001);
         if (controlMessageBuilder_ == null) {
           controlMessage_ = mthesis.concurrent_graph.communication.Messages.ControlMessage.getDefaultInstance();
         } else {
           controlMessageBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -566,14 +502,6 @@ public final class Messages {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        if (vertexMessageBuilder_ == null) {
-          result.vertexMessage_ = vertexMessage_;
-        } else {
-          result.vertexMessage_ = vertexMessageBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
         if (controlMessageBuilder_ == null) {
           result.controlMessage_ = controlMessage_;
         } else {
@@ -595,9 +523,6 @@ public final class Messages {
 
       public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.MessageEnvelope other) {
         if (other == mthesis.concurrent_graph.communication.Messages.MessageEnvelope.getDefaultInstance()) return this;
-        if (other.hasVertexMessage()) {
-          mergeVertexMessage(other.getVertexMessage());
-        }
         if (other.hasControlMessage()) {
           mergeControlMessage(other.getControlMessage());
         }
@@ -628,135 +553,18 @@ public final class Messages {
       }
       private int bitField0_;
 
-      // optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;
-      private mthesis.concurrent_graph.communication.Messages.VertexMessageTransport vertexMessage_ = mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
-          mthesis.concurrent_graph.communication.Messages.VertexMessageTransport, mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.Builder, mthesis.concurrent_graph.communication.Messages.VertexMessageTransportOrBuilder> vertexMessageBuilder_;
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-       */
-      public boolean hasVertexMessage() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.VertexMessageTransport getVertexMessage() {
-        if (vertexMessageBuilder_ == null) {
-          return vertexMessage_;
-        } else {
-          return vertexMessageBuilder_.getMessage();
-        }
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-       */
-      public Builder setVertexMessage(mthesis.concurrent_graph.communication.Messages.VertexMessageTransport value) {
-        if (vertexMessageBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          vertexMessage_ = value;
-          onChanged();
-        } else {
-          vertexMessageBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-       */
-      public Builder setVertexMessage(
-          mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.Builder builderForValue) {
-        if (vertexMessageBuilder_ == null) {
-          vertexMessage_ = builderForValue.build();
-          onChanged();
-        } else {
-          vertexMessageBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-       */
-      public Builder mergeVertexMessage(mthesis.concurrent_graph.communication.Messages.VertexMessageTransport value) {
-        if (vertexMessageBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001) &&
-              vertexMessage_ != mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.getDefaultInstance()) {
-            vertexMessage_ =
-              mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.newBuilder(vertexMessage_).mergeFrom(value).buildPartial();
-          } else {
-            vertexMessage_ = value;
-          }
-          onChanged();
-        } else {
-          vertexMessageBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-       */
-      public Builder clearVertexMessage() {
-        if (vertexMessageBuilder_ == null) {
-          vertexMessage_ = mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.getDefaultInstance();
-          onChanged();
-        } else {
-          vertexMessageBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000001);
-        return this;
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.Builder getVertexMessageBuilder() {
-        bitField0_ |= 0x00000001;
-        onChanged();
-        return getVertexMessageFieldBuilder().getBuilder();
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.VertexMessageTransportOrBuilder getVertexMessageOrBuilder() {
-        if (vertexMessageBuilder_ != null) {
-          return vertexMessageBuilder_.getMessageOrBuilder();
-        } else {
-          return vertexMessage_;
-        }
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.VertexMessageTransport VertexMessage = 1;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilder<
-          mthesis.concurrent_graph.communication.Messages.VertexMessageTransport, mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.Builder, mthesis.concurrent_graph.communication.Messages.VertexMessageTransportOrBuilder> 
-          getVertexMessageFieldBuilder() {
-        if (vertexMessageBuilder_ == null) {
-          vertexMessageBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              mthesis.concurrent_graph.communication.Messages.VertexMessageTransport, mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.Builder, mthesis.concurrent_graph.communication.Messages.VertexMessageTransportOrBuilder>(
-                  vertexMessage_,
-                  getParentForChildren(),
-                  isClean());
-          vertexMessage_ = null;
-        }
-        return vertexMessageBuilder_;
-      }
-
-      // optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;
+      // optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;
       private mthesis.concurrent_graph.communication.Messages.ControlMessage controlMessage_ = mthesis.concurrent_graph.communication.Messages.ControlMessage.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           mthesis.concurrent_graph.communication.Messages.ControlMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessageOrBuilder> controlMessageBuilder_;
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
        */
       public boolean hasControlMessage() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
        */
       public mthesis.concurrent_graph.communication.Messages.ControlMessage getControlMessage() {
         if (controlMessageBuilder_ == null) {
@@ -766,7 +574,7 @@ public final class Messages {
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
        */
       public Builder setControlMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage value) {
         if (controlMessageBuilder_ == null) {
@@ -778,11 +586,11 @@ public final class Messages {
         } else {
           controlMessageBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
        */
       public Builder setControlMessage(
           mthesis.concurrent_graph.communication.Messages.ControlMessage.Builder builderForValue) {
@@ -792,15 +600,15 @@ public final class Messages {
         } else {
           controlMessageBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
        */
       public Builder mergeControlMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage value) {
         if (controlMessageBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
               controlMessage_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.getDefaultInstance()) {
             controlMessage_ =
               mthesis.concurrent_graph.communication.Messages.ControlMessage.newBuilder(controlMessage_).mergeFrom(value).buildPartial();
@@ -811,11 +619,11 @@ public final class Messages {
         } else {
           controlMessageBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
        */
       public Builder clearControlMessage() {
         if (controlMessageBuilder_ == null) {
@@ -824,19 +632,19 @@ public final class Messages {
         } else {
           controlMessageBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
        */
       public mthesis.concurrent_graph.communication.Messages.ControlMessage.Builder getControlMessageBuilder() {
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         onChanged();
         return getControlMessageFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
        */
       public mthesis.concurrent_graph.communication.Messages.ControlMessageOrBuilder getControlMessageOrBuilder() {
         if (controlMessageBuilder_ != null) {
@@ -846,7 +654,7 @@ public final class Messages {
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 2;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage ControlMessage = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
           mthesis.concurrent_graph.communication.Messages.ControlMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessageOrBuilder> 
@@ -871,729 +679,6 @@ public final class Messages {
     }
 
     // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.MessageEnvelope)
-  }
-
-  public interface VertexMessageTransportOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
-
-    // optional int32 SuperstepNo = 1;
-    /**
-     * <code>optional int32 SuperstepNo = 1;</code>
-     */
-    boolean hasSuperstepNo();
-    /**
-     * <code>optional int32 SuperstepNo = 1;</code>
-     */
-    int getSuperstepNo();
-
-    // optional int32 SrcMachine = 2;
-    /**
-     * <code>optional int32 SrcMachine = 2;</code>
-     */
-    boolean hasSrcMachine();
-    /**
-     * <code>optional int32 SrcMachine = 2;</code>
-     */
-    int getSrcMachine();
-
-    // optional int32 SrcVertex = 3;
-    /**
-     * <code>optional int32 SrcVertex = 3;</code>
-     */
-    boolean hasSrcVertex();
-    /**
-     * <code>optional int32 SrcVertex = 3;</code>
-     */
-    int getSrcVertex();
-
-    // optional int32 DstVertex = 4;
-    /**
-     * <code>optional int32 DstVertex = 4;</code>
-     */
-    boolean hasDstVertex();
-    /**
-     * <code>optional int32 DstVertex = 4;</code>
-     */
-    int getDstVertex();
-
-    // optional bytes Content = 5;
-    /**
-     * <code>optional bytes Content = 5;</code>
-     */
-    boolean hasContent();
-    /**
-     * <code>optional bytes Content = 5;</code>
-     */
-    com.google.protobuf.ByteString getContent();
-  }
-  /**
-   * Protobuf type {@code mthesis.concurrent_graph.communication.messages.VertexMessageTransport}
-   */
-  public static final class VertexMessageTransport extends
-      com.google.protobuf.GeneratedMessage
-      implements VertexMessageTransportOrBuilder {
-    // Use VertexMessageTransport.newBuilder() to construct.
-    private VertexMessageTransport(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-      super(builder);
-      this.unknownFields = builder.getUnknownFields();
-    }
-    private VertexMessageTransport(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final VertexMessageTransport defaultInstance;
-    public static VertexMessageTransport getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public VertexMessageTransport getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-      return this.unknownFields;
-    }
-    private VertexMessageTransport(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-            case 8: {
-              bitField0_ |= 0x00000001;
-              superstepNo_ = input.readInt32();
-              break;
-            }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              srcMachine_ = input.readInt32();
-              break;
-            }
-            case 24: {
-              bitField0_ |= 0x00000004;
-              srcVertex_ = input.readInt32();
-              break;
-            }
-            case 32: {
-              bitField0_ |= 0x00000008;
-              dstVertex_ = input.readInt32();
-              break;
-            }
-            case 42: {
-              bitField0_ |= 0x00000010;
-              content_ = input.readBytes();
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
-      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_descriptor;
-    }
-
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-        internalGetFieldAccessorTable() {
-      return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.class, mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<VertexMessageTransport> PARSER =
-        new com.google.protobuf.AbstractParser<VertexMessageTransport>() {
-      public VertexMessageTransport parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new VertexMessageTransport(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<VertexMessageTransport> getParserForType() {
-      return PARSER;
-    }
-
-    private int bitField0_;
-    // optional int32 SuperstepNo = 1;
-    public static final int SUPERSTEPNO_FIELD_NUMBER = 1;
-    private int superstepNo_;
-    /**
-     * <code>optional int32 SuperstepNo = 1;</code>
-     */
-    public boolean hasSuperstepNo() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>optional int32 SuperstepNo = 1;</code>
-     */
-    public int getSuperstepNo() {
-      return superstepNo_;
-    }
-
-    // optional int32 SrcMachine = 2;
-    public static final int SRCMACHINE_FIELD_NUMBER = 2;
-    private int srcMachine_;
-    /**
-     * <code>optional int32 SrcMachine = 2;</code>
-     */
-    public boolean hasSrcMachine() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional int32 SrcMachine = 2;</code>
-     */
-    public int getSrcMachine() {
-      return srcMachine_;
-    }
-
-    // optional int32 SrcVertex = 3;
-    public static final int SRCVERTEX_FIELD_NUMBER = 3;
-    private int srcVertex_;
-    /**
-     * <code>optional int32 SrcVertex = 3;</code>
-     */
-    public boolean hasSrcVertex() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
-    }
-    /**
-     * <code>optional int32 SrcVertex = 3;</code>
-     */
-    public int getSrcVertex() {
-      return srcVertex_;
-    }
-
-    // optional int32 DstVertex = 4;
-    public static final int DSTVERTEX_FIELD_NUMBER = 4;
-    private int dstVertex_;
-    /**
-     * <code>optional int32 DstVertex = 4;</code>
-     */
-    public boolean hasDstVertex() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>optional int32 DstVertex = 4;</code>
-     */
-    public int getDstVertex() {
-      return dstVertex_;
-    }
-
-    // optional bytes Content = 5;
-    public static final int CONTENT_FIELD_NUMBER = 5;
-    private com.google.protobuf.ByteString content_;
-    /**
-     * <code>optional bytes Content = 5;</code>
-     */
-    public boolean hasContent() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
-    }
-    /**
-     * <code>optional bytes Content = 5;</code>
-     */
-    public com.google.protobuf.ByteString getContent() {
-      return content_;
-    }
-
-    private void initFields() {
-      superstepNo_ = 0;
-      srcMachine_ = 0;
-      srcVertex_ = 0;
-      dstVertex_ = 0;
-      content_ = com.google.protobuf.ByteString.EMPTY;
-    }
-    private byte memoizedIsInitialized = -1;
-    public final boolean isInitialized() {
-      byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
-
-      memoizedIsInitialized = 1;
-      return true;
-    }
-
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
-      getSerializedSize();
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeInt32(1, superstepNo_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt32(2, srcMachine_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt32(3, srcVertex_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeInt32(4, dstVertex_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeBytes(5, content_);
-      }
-      getUnknownFields().writeTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public int getSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, superstepNo_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, srcMachine_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, srcVertex_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(4, dstVertex_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(5, content_);
-      }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
-      return size;
-    }
-
-    private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
-    }
-
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseFrom(
-        com.google.protobuf.ByteString data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseFrom(
-        com.google.protobuf.ByteString data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseFrom(byte[] data)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data);
-    }
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      return PARSER.parseFrom(data, extensionRegistry);
-    }
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseDelimitedFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
-    }
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
-    }
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseFrom(
-        com.google.protobuf.CodedInputStream input)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input);
-    }
-    public static mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parseFrom(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
-    }
-
-    public static Builder newBuilder() { return Builder.create(); }
-    public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.VertexMessageTransport prototype) {
-      return newBuilder().mergeFrom(prototype);
-    }
-    public Builder toBuilder() { return newBuilder(this); }
-
-    @java.lang.Override
-    protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-      Builder builder = new Builder(parent);
-      return builder;
-    }
-    /**
-     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.VertexMessageTransport}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements mthesis.concurrent_graph.communication.Messages.VertexMessageTransportOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.class, mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.Builder.class);
-      }
-
-      // Construct using mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
-
-      private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-        }
-      }
-      private static Builder create() {
-        return new Builder();
-      }
-
-      public Builder clear() {
-        super.clear();
-        superstepNo_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000001);
-        srcMachine_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000002);
-        srcVertex_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000004);
-        dstVertex_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000008);
-        content_ = com.google.protobuf.ByteString.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000010);
-        return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
-      }
-
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_descriptor;
-      }
-
-      public mthesis.concurrent_graph.communication.Messages.VertexMessageTransport getDefaultInstanceForType() {
-        return mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.getDefaultInstance();
-      }
-
-      public mthesis.concurrent_graph.communication.Messages.VertexMessageTransport build() {
-        mthesis.concurrent_graph.communication.Messages.VertexMessageTransport result = buildPartial();
-        if (!result.isInitialized()) {
-          throw newUninitializedMessageException(result);
-        }
-        return result;
-      }
-
-      public mthesis.concurrent_graph.communication.Messages.VertexMessageTransport buildPartial() {
-        mthesis.concurrent_graph.communication.Messages.VertexMessageTransport result = new mthesis.concurrent_graph.communication.Messages.VertexMessageTransport(this);
-        int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-          to_bitField0_ |= 0x00000001;
-        }
-        result.superstepNo_ = superstepNo_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.srcMachine_ = srcMachine_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
-        }
-        result.srcVertex_ = srcVertex_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.dstVertex_ = dstVertex_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
-        }
-        result.content_ = content_;
-        result.bitField0_ = to_bitField0_;
-        onBuilt();
-        return result;
-      }
-
-      public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof mthesis.concurrent_graph.communication.Messages.VertexMessageTransport) {
-          return mergeFrom((mthesis.concurrent_graph.communication.Messages.VertexMessageTransport)other);
-        } else {
-          super.mergeFrom(other);
-          return this;
-        }
-      }
-
-      public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.VertexMessageTransport other) {
-        if (other == mthesis.concurrent_graph.communication.Messages.VertexMessageTransport.getDefaultInstance()) return this;
-        if (other.hasSuperstepNo()) {
-          setSuperstepNo(other.getSuperstepNo());
-        }
-        if (other.hasSrcMachine()) {
-          setSrcMachine(other.getSrcMachine());
-        }
-        if (other.hasSrcVertex()) {
-          setSrcVertex(other.getSrcVertex());
-        }
-        if (other.hasDstVertex()) {
-          setDstVertex(other.getDstVertex());
-        }
-        if (other.hasContent()) {
-          setContent(other.getContent());
-        }
-        this.mergeUnknownFields(other.getUnknownFields());
-        return this;
-      }
-
-      public final boolean isInitialized() {
-        return true;
-      }
-
-      public Builder mergeFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        mthesis.concurrent_graph.communication.Messages.VertexMessageTransport parsedMessage = null;
-        try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (mthesis.concurrent_graph.communication.Messages.VertexMessageTransport) e.getUnfinishedMessage();
-          throw e;
-        } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
-        return this;
-      }
-      private int bitField0_;
-
-      // optional int32 SuperstepNo = 1;
-      private int superstepNo_ ;
-      /**
-       * <code>optional int32 SuperstepNo = 1;</code>
-       */
-      public boolean hasSuperstepNo() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional int32 SuperstepNo = 1;</code>
-       */
-      public int getSuperstepNo() {
-        return superstepNo_;
-      }
-      /**
-       * <code>optional int32 SuperstepNo = 1;</code>
-       */
-      public Builder setSuperstepNo(int value) {
-        bitField0_ |= 0x00000001;
-        superstepNo_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 SuperstepNo = 1;</code>
-       */
-      public Builder clearSuperstepNo() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        superstepNo_ = 0;
-        onChanged();
-        return this;
-      }
-
-      // optional int32 SrcMachine = 2;
-      private int srcMachine_ ;
-      /**
-       * <code>optional int32 SrcMachine = 2;</code>
-       */
-      public boolean hasSrcMachine() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional int32 SrcMachine = 2;</code>
-       */
-      public int getSrcMachine() {
-        return srcMachine_;
-      }
-      /**
-       * <code>optional int32 SrcMachine = 2;</code>
-       */
-      public Builder setSrcMachine(int value) {
-        bitField0_ |= 0x00000002;
-        srcMachine_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 SrcMachine = 2;</code>
-       */
-      public Builder clearSrcMachine() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        srcMachine_ = 0;
-        onChanged();
-        return this;
-      }
-
-      // optional int32 SrcVertex = 3;
-      private int srcVertex_ ;
-      /**
-       * <code>optional int32 SrcVertex = 3;</code>
-       */
-      public boolean hasSrcVertex() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>optional int32 SrcVertex = 3;</code>
-       */
-      public int getSrcVertex() {
-        return srcVertex_;
-      }
-      /**
-       * <code>optional int32 SrcVertex = 3;</code>
-       */
-      public Builder setSrcVertex(int value) {
-        bitField0_ |= 0x00000004;
-        srcVertex_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 SrcVertex = 3;</code>
-       */
-      public Builder clearSrcVertex() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        srcVertex_ = 0;
-        onChanged();
-        return this;
-      }
-
-      // optional int32 DstVertex = 4;
-      private int dstVertex_ ;
-      /**
-       * <code>optional int32 DstVertex = 4;</code>
-       */
-      public boolean hasDstVertex() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>optional int32 DstVertex = 4;</code>
-       */
-      public int getDstVertex() {
-        return dstVertex_;
-      }
-      /**
-       * <code>optional int32 DstVertex = 4;</code>
-       */
-      public Builder setDstVertex(int value) {
-        bitField0_ |= 0x00000008;
-        dstVertex_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 DstVertex = 4;</code>
-       */
-      public Builder clearDstVertex() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        dstVertex_ = 0;
-        onChanged();
-        return this;
-      }
-
-      // optional bytes Content = 5;
-      private com.google.protobuf.ByteString content_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>optional bytes Content = 5;</code>
-       */
-      public boolean hasContent() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
-      }
-      /**
-       * <code>optional bytes Content = 5;</code>
-       */
-      public com.google.protobuf.ByteString getContent() {
-        return content_;
-      }
-      /**
-       * <code>optional bytes Content = 5;</code>
-       */
-      public Builder setContent(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000010;
-        content_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bytes Content = 5;</code>
-       */
-      public Builder clearContent() {
-        bitField0_ = (bitField0_ & ~0x00000010);
-        content_ = getDefaultInstance().getContent();
-        onChanged();
-        return this;
-      }
-
-      // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.VertexMessageTransport)
-    }
-
-    static {
-      defaultInstance = new VertexMessageTransport(true);
-      defaultInstance.initFields();
-    }
-
-    // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.VertexMessageTransport)
   }
 
   public interface ControlMessageOrBuilder
@@ -4844,11 +3929,6 @@ public final class Messages {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mthesis_concurrent_graph_communication_messages_MessageEnvelope_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -4878,44 +3958,39 @@ public final class Messages {
   static {
     java.lang.String[] descriptorData = {
       "\n\016Messages.proto\022/mthesis.concurrent_gra" +
-      "ph.communication.messages\"\312\001\n\017MessageEnv" +
-      "elope\022^\n\rVertexMessage\030\001 \001(\0132G.mthesis.c" +
-      "oncurrent_graph.communication.messages.V" +
-      "ertexMessageTransport\022W\n\016ControlMessage\030" +
-      "\002 \001(\0132?.mthesis.concurrent_graph.communi" +
-      "cation.messages.ControlMessage\"x\n\026Vertex" +
-      "MessageTransport\022\023\n\013SuperstepNo\030\001 \001(\005\022\022\n" +
-      "\nSrcMachine\030\002 \001(\005\022\021\n\tSrcVertex\030\003 \001(\005\022\021\n\t" +
-      "DstVertex\030\004 \001(\005\022\017\n\007Content\030\005 \001(\014\"\251\007\n\016Con",
-      "trolMessage\022Q\n\004Type\030\001 \001(\0162C.mthesis.conc" +
-      "urrent_graph.communication.messages.Cont" +
-      "rolMessageType\022\023\n\013SuperstepNo\030\002 \001(\005\022\022\n\nS" +
-      "rcMachine\030\003 \001(\005\022g\n\013WorkerStats\030\004 \001(\0132R.m" +
-      "thesis.concurrent_graph.communication.me" +
-      "ssages.ControlMessage.WorkerStatsMessage" +
-      "\022q\n\020AssignPartitions\030\005 \001(\0132W.mthesis.con" +
-      "current_graph.communication.messages.Con" +
-      "trolMessage.AssignPartitionsMessage\022g\n\013G" +
-      "lobalStats\030\006 \001(\0132R.mthesis.concurrent_gr",
-      "aph.communication.messages.ControlMessag" +
-      "e.GlobalStatsMessage\0321\n\027AssignPartitions" +
-      "Message\022\026\n\016PartitionFiles\030\001 \003(\t\032\337\002\n\022Work" +
-      "erStatsMessage\022\023\n\013VertexCount\030\n \001(\005\022\026\n\016A" +
-      "ctiveVertices\030\001 \001(\005\022\033\n\023SentControlMessag" +
-      "es\030\002 \001(\005\022\037\n\027SentVertexMessagesLocal\030\003 \001(" +
-      "\005\022!\n\031SentVertexMessagesUnicast\030\004 \001(\005\022#\n\033" +
-      "SentVertexMessagesBroadcast\030\005 \001(\005\022%\n\035Rec" +
-      "eivedCorrectVertexMessages\030\006 \001(\005\022#\n\033Rece" +
-      "ivedWrongVertexMessages\030\007 \001(\005\022#\n\033NewVert",
-      "exMachinesDiscovered\030\010 \001(\005\022%\n\035TotalVerte" +
-      "xMachinesDiscovered\030\t \001(\005\032A\n\022GlobalStats" +
-      "Message\022\023\n\013VertexCount\030\001 \001(\005\022\026\n\016ActiveVe" +
-      "rtices\030\002 \001(\005*\253\001\n\022ControlMessageType\022\025\n\021C" +
-      "hannel_Handshake\020\001\022\034\n\030Worker_Superstep_B" +
-      "arrier\020\002\022\035\n\031Worker_Superstep_Finished\020\003\022" +
-      "\023\n\017Worker_Finished\020\004\022\031\n\025Master_Next_Supe" +
-      "rstep\020\005\022\021\n\rMaster_Finish\020\006B2\n&mthesis.co" +
-      "ncurrent_graph.communicationB\010Messages"
+      "ph.communication.messages\"j\n\017MessageEnve" +
+      "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
+      "oncurrent_graph.communication.messages.C" +
+      "ontrolMessage\"\251\007\n\016ControlMessage\022Q\n\004Type" +
+      "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
+      "ication.messages.ControlMessageType\022\023\n\013S" +
+      "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022g\n\013" +
+      "WorkerStats\030\004 \001(\0132R.mthesis.concurrent_g" +
+      "raph.communication.messages.ControlMessa",
+      "ge.WorkerStatsMessage\022q\n\020AssignPartition" +
+      "s\030\005 \001(\0132W.mthesis.concurrent_graph.commu" +
+      "nication.messages.ControlMessage.AssignP" +
+      "artitionsMessage\022g\n\013GlobalStats\030\006 \001(\0132R." +
+      "mthesis.concurrent_graph.communication.m" +
+      "essages.ControlMessage.GlobalStatsMessag" +
+      "e\0321\n\027AssignPartitionsMessage\022\026\n\016Partitio" +
+      "nFiles\030\001 \003(\t\032\337\002\n\022WorkerStatsMessage\022\023\n\013V" +
+      "ertexCount\030\n \001(\005\022\026\n\016ActiveVertices\030\001 \001(\005" +
+      "\022\033\n\023SentControlMessages\030\002 \001(\005\022\037\n\027SentVer",
+      "texMessagesLocal\030\003 \001(\005\022!\n\031SentVertexMess" +
+      "agesUnicast\030\004 \001(\005\022#\n\033SentVertexMessagesB" +
+      "roadcast\030\005 \001(\005\022%\n\035ReceivedCorrectVertexM" +
+      "essages\030\006 \001(\005\022#\n\033ReceivedWrongVertexMess" +
+      "ages\030\007 \001(\005\022#\n\033NewVertexMachinesDiscovere" +
+      "d\030\010 \001(\005\022%\n\035TotalVertexMachinesDiscovered" +
+      "\030\t \001(\005\032A\n\022GlobalStatsMessage\022\023\n\013VertexCo" +
+      "unt\030\001 \001(\005\022\026\n\016ActiveVertices\030\002 \001(\005*\253\001\n\022Co" +
+      "ntrolMessageType\022\025\n\021Channel_Handshake\020\001\022" +
+      "\034\n\030Worker_Superstep_Barrier\020\002\022\035\n\031Worker_",
+      "Superstep_Finished\020\003\022\023\n\017Worker_Finished\020" +
+      "\004\022\031\n\025Master_Next_Superstep\020\005\022\021\n\rMaster_F" +
+      "inish\020\006B2\n&mthesis.concurrent_graph.comm" +
+      "unicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -4927,15 +4002,9 @@ public final class Messages {
           internal_static_mthesis_concurrent_graph_communication_messages_MessageEnvelope_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mthesis_concurrent_graph_communication_messages_MessageEnvelope_descriptor,
-              new java.lang.String[] { "VertexMessage", "ControlMessage", });
-          internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mthesis_concurrent_graph_communication_messages_VertexMessageTransport_descriptor,
-              new java.lang.String[] { "SuperstepNo", "SrcMachine", "SrcVertex", "DstVertex", "Content", });
+              new java.lang.String[] { "ControlMessage", });
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor =
-            getDescriptor().getMessageTypes().get(2);
+            getDescriptor().getMessageTypes().get(1);
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor,

@@ -11,14 +11,14 @@ import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
-import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
+import mthesis.concurrent_graph.writable.NullWritable;
 
 /**
  * Concurrent graph processing master main
  */
-public class MasterMachine extends AbstractMachine {
+public class MasterMachine extends AbstractMachine<NullWritable> {
 
 	private final List<Integer> workerIds;
 	private int superstepNo = -1;
@@ -32,7 +32,7 @@ public class MasterMachine extends AbstractMachine {
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds,
 			String inputFile, String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir) {
-		super(machines, ownId);
+		super(machines, ownId, null);
 		this.workerIds = workerIds;
 		this.inputFile = inputFile;
 		this.inputPartitionDir = inputPartitionDir;
@@ -110,7 +110,7 @@ public class MasterMachine extends AbstractMachine {
 				// Wrong message count should match broadcast message count.
 				// Otherwise there might be communication errors.
 				if(workerIds.size() > 1 && ReceivedWrongVertexMessages != SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)) {
-					logger.warn(String.format("Wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
+					logger.warn(String.format("Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
 							ReceivedWrongVertexMessages, SentVertexMessagesBroadcast, SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)));
 				}
 
@@ -197,17 +197,17 @@ public class MasterMachine extends AbstractMachine {
 	}
 
 	private void signalWorkersStartingSuperstep(int vertexCount, int activeVertices) {
-		messaging.sendControlMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId, vertexCount, activeVertices), true);
+		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId, vertexCount, activeVertices), true);
 	}
 
 	private void signalWorkersFinish() {
-		messaging.sendControlMessageBroadcast(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
+		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_Finish(superstepNo, ownId), true);
 	}
 
 
 
 	@Override
-	public void onIncomingVertexMessage(VertexMessageTransport message) {
+	public void onIncomingVertexMessage(int msgSuperstepNo, int srcMachine, int srcVertex, int dstVertex, NullWritable messageContent) {
 		throw new RuntimeException("Master cannot handle vertex messages");
 	}
 }

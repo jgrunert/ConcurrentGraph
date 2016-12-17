@@ -13,7 +13,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public final int ID;
 	private V value;
 
-	public List<VertexMessage<M>> messagesNextSuperstep = new ArrayList<>();
+	public List<M> messagesNextSuperstep = new ArrayList<>();
 	private List<Edge<E>> edges;
 
 	protected int superstepNo = 0;
@@ -37,7 +37,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		}
 	}
 
-	protected abstract void compute(List<VertexMessage<M>> messages);
+	protected abstract void compute(List<M> messages);
 
 
 	protected void sendMessageToAllOutgoingEdges(M message) {

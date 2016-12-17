@@ -20,7 +20,6 @@ public class PagerankTest {
 		final int numWorkers = 4;
 		final String host = "localhost";
 		final int baseControlMsgPort = 23499;
-		final int baseVertexMsgPort = 24499;
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
 		//final String inputFile = "../../Data_converted/cctest.txt";

@@ -6,10 +6,10 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
-public class CCDetectJobConfiguration extends JobConfiguration<IntWritable, NullWritable, IntWritable> {
+public class CCDetectJobConfiguration extends JobConfiguration<IntWritable, NullWritable, CCMessageWritable> {
 
 	@Override
-	public VertexFactory<IntWritable, NullWritable, IntWritable> getVertexFactory() {
+	public VertexFactory<IntWritable, NullWritable, CCMessageWritable> getVertexFactory() {
 		return new CCDetectVertex.Factory();
 	}
 
@@ -24,8 +24,8 @@ public class CCDetectJobConfiguration extends JobConfiguration<IntWritable, Null
 	}
 
 	@Override
-	public BaseWritableFactory<IntWritable> getMessageValueFactory() {
-		return new IntWritable.Factory();
+	public BaseWritableFactory<CCMessageWritable> getMessageValueFactory() {
+		return new CCMessageWritable.Factory();
 	}
 
 }

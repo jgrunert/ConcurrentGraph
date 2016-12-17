@@ -20,7 +20,7 @@ import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
-import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
+import mthesis.concurrent_graph.writable.BaseWritable;
 
 
 /**
@@ -30,24 +30,26 @@ import mthesis.concurrent_graph.communication.Messages.VertexMessageTransport;
  * @author jonas
  *
  */
-public class MessageSenderAndReceiver {
+public class MessageSenderAndReceiver<M extends BaseWritable> {
 	private final Logger logger;
 
 	private final int ownId;
 	private final Map<Integer, MachineConfig> machines;
 	private final ConcurrentHashMap<Integer, ChannelMessageSender> channelSenders = new ConcurrentHashMap<>();
-	private final List<ChannelMessageReceiver> channelReceivers = new LinkedList<ChannelMessageReceiver>();
-	private final AbstractMachine messageListener;
+	private final List<ChannelMessageReceiver<M>> channelReceivers = new LinkedList<>();
+	private final AbstractMachine<M> messageListener;
+	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 	private Thread serverThread;
 	private ServerSocket serverSocket;
 
 
 	public MessageSenderAndReceiver(Map<Integer, MachineConfig> machines, int ownId,
-			AbstractMachine listener) {
+			AbstractMachine<M> listener, BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.ownId = ownId;
 		this.machines = machines;
 		this.messageListener = listener;
+		this.vertexMessageFactory = vertexMessageFactory;
 	}
 
 	//	public void setMessageListner(AbstractNode listener) {
@@ -118,7 +120,7 @@ public class MessageSenderAndReceiver {
 		for(final ChannelMessageSender channel : channelSenders.values()) {
 			channel.close();
 		}
-		for(final ChannelMessageReceiver channel : channelReceivers) {
+		for(final ChannelMessageReceiver<M> channel : channelReceivers) {
 			channel.close();
 		}
 		try {
@@ -133,21 +135,21 @@ public class MessageSenderAndReceiver {
 
 	public void sendControlMessageUnicast(int dstId, MessageEnvelope message, boolean flush) {
 		final ChannelMessageSender ch = channelSenders.get(dstId);
-		ch.sendMessage(message, flush);
+		ch.sendMessageEnvelope(message, flush);
 	}
-	public void sendControlMessageBroadcast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
+	public void sendControlMessageMulticast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
 		for(final Integer machineId : dstIds) {
 			sendControlMessageUnicast(machineId, message, flush);
 		}
 	}
 
-	public void sendVertexMessageUnicast(int dstId, MessageEnvelope message, boolean flush) {
-		final ChannelMessageSender ch = channelSenders.get(dstId);
-		ch.sendMessage(message, flush);
+	public void sendVertexMessageUnicast(int dstMachine, BaseWritable message, int superstepNo, int srcVertex, int dstVertex, boolean flush) {
+		final ChannelMessageSender ch = channelSenders.get(dstMachine);
+		ch.sendVertexMessage(message, superstepNo, ownId, srcVertex, dstVertex, flush);
 	}
-	public void sendVertexMessageBroadcast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
+	public void sendVertexMessageMulticast(List<Integer> dstIds, BaseWritable message, int superstepNo, int srcVertex, int dstVertex, boolean flush) {
 		for(final Integer machineId : dstIds) {
-			sendVertexMessageUnicast(machineId, message, flush);
+			sendVertexMessageUnicast(machineId, message, superstepNo, srcVertex, dstVertex, flush);
 		}
 	}
 
@@ -156,8 +158,8 @@ public class MessageSenderAndReceiver {
 		messageListener.onIncomingControlMessage(message);
 	}
 
-	public void onIncomingVertexMessage(VertexMessageTransport message) {
-		messageListener.onIncomingVertexMessage(message);
+	public void onIncomingVertexMessage(int msgSuperstepNo, int srcMachine, int srcVertex, int dstVertex, M messageContent) {
+		messageListener.onIncomingVertexMessage(msgSuperstepNo, srcMachine, srcVertex, dstVertex, messageContent);
 	}
 
 
@@ -199,8 +201,8 @@ public class MessageSenderAndReceiver {
 
 	private void startConnection(int machineId, final Socket socket, final DataOutputStream writer,
 			final DataInputStream reader) {
-		final ChannelMessageReceiver receiver = new ChannelMessageReceiver(socket, reader, ownId);
-		receiver.startReceiver(machineId, this);
+		final ChannelMessageReceiver<M> receiver = new ChannelMessageReceiver<>(socket, reader, ownId, this, vertexMessageFactory);
+		receiver.startReceiver(machineId);
 		channelReceivers.add(receiver);
 		final ChannelMessageSender sender = new ChannelMessageSender(socket, writer, ownId);
 		sender.startSender(ownId, machineId);
