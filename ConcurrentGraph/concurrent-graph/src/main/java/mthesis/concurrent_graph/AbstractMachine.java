@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
+import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -30,7 +32,8 @@ public abstract class AbstractMachine<M extends BaseWritable> {
 	private Thread runThread;
 
 
-	protected AbstractMachine(Map<Integer, MachineConfig> machines, int ownId, BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
+	protected AbstractMachine(Map<Integer, MachineConfig> machines, int ownId,
+			BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		//this.machines = machines;
 		this.ownId = ownId;
@@ -77,5 +80,5 @@ public abstract class AbstractMachine<M extends BaseWritable> {
 		inControlMessages.add(message);
 	}
 
-	public abstract void onIncomingVertexMessage(int msgSuperstepNo, int srcMachine, int srcVertex, int dstVertex, M messageContent);
+	public abstract void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, M>> vertexMessages);
 }

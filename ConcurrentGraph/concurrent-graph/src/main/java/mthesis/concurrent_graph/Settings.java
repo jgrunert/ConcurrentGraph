@@ -5,23 +5,21 @@ import ch.qos.logback.classic.Level;
 public class Settings {
 	public static final int MAX_MESSAGE_SIZE = 8192;
 
-	public static final boolean KEEPALIVE = true;
-	public static final boolean TCP_NODELAY = false;
-	public static final boolean SSL = System.getProperty("ssl") != null;
+	/** Maximum number of messages per vertex message. Must ensure that messages not >MAX_MESSAGE_SIZE. */
+	public static final int VERTEX_MESSAGE_BUCKET_MAX_MESSAGES = 128;  // TODO Could be not constant, depending on message content size
+
+	//	public static final boolean KEEPALIVE = true;
+	//	public static final boolean TCP_NODELAY = false;
+	//	public static final boolean SSL = System.getProperty("ssl") != null;
 	public static final int CONNECT_TIMEOUT = 10000;
 	public static final int MESSAGE_TIMEOUT = 60000;
 
 	/**
-	 * When vertex discovery is enabled, machines will store mappings for VertexId->Machine.
-	 * If ACTIVE_VERTEX_DISCOVERY not enabled, only passive discovery is active.
-	 * Passive discovery will register mappings for received vertex messages.
+	 * When enabled, machines will discover and store mappings VertexId->Machine.
+	 * This is done by sending "get-to-know-messages":
+	 * A receiver of a broadcast message replies with all dstVertex IDs on its machine.
 	 */
-	public static final boolean VERTEX_DISCOVERY = true;
-	/**
-	 * If VERTEX_DISCOVERY && ACTIVE_VERTEX_DISCOVERY active discovery is enabled.
-	 * Active discovery will send a "get-to-know message" back to newly discovered mappings.
-	 */
-	public static final boolean ACTIVE_VERTEX_DISCOVERY = true;
+	public static final boolean VERTEX_MACHINE_DISCOVERY = true;
 
 	public static final int LOG_LEVEL_Main = Level.DEBUG_INT;
 	public static final int LOG_LEVEL_NETTY = Level.WARN_INT;

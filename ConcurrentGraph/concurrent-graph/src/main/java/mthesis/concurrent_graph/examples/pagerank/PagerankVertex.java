@@ -25,7 +25,6 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 		if(superstepNo == 0) {
 			setValue(new DoubleWritable(1.0 / getGlobalObjects().getVertexCount().Value));
 		} else {
-
 			double sum = 0;
 			for(final DoubleWritable msg : messages) {
 				sum += msg.Value;

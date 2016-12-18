@@ -13,6 +13,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStat
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
+import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.writable.NullWritable;
 
 /**
@@ -207,7 +208,7 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 
 
 	@Override
-	public void onIncomingVertexMessage(int msgSuperstepNo, int srcMachine, int srcVertex, int dstVertex, NullWritable messageContent) {
+	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, NullWritable>> vertexMessages) {
 		throw new RuntimeException("Master cannot handle vertex messages");
 	}
 }

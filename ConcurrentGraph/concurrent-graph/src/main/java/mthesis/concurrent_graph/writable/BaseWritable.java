@@ -17,4 +17,9 @@ public abstract class BaseWritable {
 		public abstract T createFromString(String str);
 		public abstract T createFromBytes(ByteBuffer bytes);
 	}
+
+	@Override
+	public String toString() {
+		return getString();
+	}
 }

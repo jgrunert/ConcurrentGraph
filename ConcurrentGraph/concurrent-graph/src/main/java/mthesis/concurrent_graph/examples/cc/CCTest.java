@@ -23,11 +23,11 @@ public class CCTest {
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
 		//final String inputFile = "../../Data_converted/cctest.txt";
-		final String inputFile = "../../Data_converted/Wiki-Vote.txt";
+		//final String inputFile = "../../Data_converted/Wiki-Vote.txt";
+		final String inputFile = args[0];
 
 		final CCDetectJobConfiguration jobConfig = new CCDetectJobConfiguration();
-		final MasterInputPartitioner inputPartitioner = new ContinousBlockInputPartitioner(500);
-		//final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(1);
+		final MasterInputPartitioner inputPartitioner = new ContinousBlockInputPartitioner(Integer.parseInt(args[1]));
 		final MasterOutputEvaluator outputCombiner = new CCOutputWriter();
 
 		final Map<Integer, MachineConfig> allCfg = new HashMap<>();

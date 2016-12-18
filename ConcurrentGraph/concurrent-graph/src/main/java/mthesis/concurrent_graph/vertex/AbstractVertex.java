@@ -42,17 +42,17 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	protected void sendMessageToAllOutgoingEdges(M message) {
 		for (final Edge<E> edge : edges) {
-			worker.sendVertexMessage(ID, edge.TargetVertexId, message);
+			worker.sendVertexMessage(edge.TargetVertexId, message);
 		}
 	}
 
 	protected void sendMessageToVertex(M message, int sendTo) {
-		worker.sendVertexMessage(ID, sendTo, message);
+		worker.sendVertexMessage(sendTo, message);
 	}
 
 	protected void sendMessageToVertices(M message, Collection<Integer> sendTo) {
 		for (final Integer st : sendTo) {
-			worker.sendVertexMessage(ID, st, message);
+			worker.sendVertexMessage(st, message);
 		}
 	}
 

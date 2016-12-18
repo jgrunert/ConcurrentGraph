@@ -20,34 +20,37 @@ import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
+import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
 /**
  * Class to handle messaging between nodes.
- * Based on Netty channels.
+ * Based on java sockets.
  * 
- * @author jonas
+ * @author Jonas Grunert
  *
  */
 public class MessageSenderAndReceiver<M extends BaseWritable> {
 	private final Logger logger;
 
 	private final int ownId;
-	private final Map<Integer, MachineConfig> machines;
-	private final ConcurrentHashMap<Integer, ChannelMessageSender> channelSenders = new ConcurrentHashMap<>();
+	private final Map<Integer, MachineConfig> machineConfigs;
+	private final ConcurrentHashMap<Integer, ChannelMessageSender<M>> channelSenders = new ConcurrentHashMap<>();
 	private final List<ChannelMessageReceiver<M>> channelReceivers = new LinkedList<>();
 	private final AbstractMachine<M> messageListener;
 	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 	private Thread serverThread;
 	private ServerSocket serverSocket;
+	private boolean closingServer;
+
 
 
 	public MessageSenderAndReceiver(Map<Integer, MachineConfig> machines, int ownId,
 			AbstractMachine<M> listener, BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.ownId = ownId;
-		this.machines = machines;
+		this.machineConfigs = machines;
 		this.messageListener = listener;
 		this.vertexMessageFactory = vertexMessageFactory;
 	}
@@ -59,6 +62,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 
 	public void startServer() {
 		try {
+			closingServer = false;
 			serverThread = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -66,7 +70,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 						runServer();
 					}
 					catch (final Exception e) {
-						if(!serverSocket.isClosed())
+						if(!closingServer)
 							logger.error("runServer", e);
 					}
 				}
@@ -82,7 +86,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 
 	public boolean startChannels() {
 		// Connect to all other machines with smaller IDs
-		for(final Entry<Integer, MachineConfig> machine : machines.entrySet()) {
+		for(final Entry<Integer, MachineConfig> machine : machineConfigs.entrySet()) {
 			if(machine.getKey() < ownId) {
 				try {
 					connectToMachine(machine.getValue().HostName, machine.getValue().MessagePort, machine.getKey());
@@ -98,7 +102,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 	public boolean waitUntilConnected() {
 		final long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
 		while(System.currentTimeMillis() <= timeoutTime &&
-				!(channelReceivers.size() == (machines.size() - 1) && channelSenders.size() == (machines.size() - 1))) {
+				!(channelReceivers.size() == (machineConfigs.size() - 1) && channelSenders.size() == (machineConfigs.size() - 1))) {
 			try {
 				Thread.sleep(1);
 			}
@@ -106,7 +110,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 				break;
 			}
 		}
-		if(channelReceivers.size() == (machines.size() - 1) && channelSenders.size() == (machines.size() - 1)) {
+		if(channelReceivers.size() == (machineConfigs.size() - 1) && channelSenders.size() == (machineConfigs.size() - 1)) {
 			logger.info("Established all connections");
 			return true;
 		}
@@ -117,7 +121,8 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 	}
 
 	public void stop() {
-		for(final ChannelMessageSender channel : channelSenders.values()) {
+		closingServer = true;
+		for(final ChannelMessageSender<M> channel : channelSenders.values()) {
 			channel.close();
 		}
 		for(final ChannelMessageReceiver<M> channel : channelReceivers) {
@@ -134,7 +139,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 
 
 	public void sendControlMessageUnicast(int dstId, MessageEnvelope message, boolean flush) {
-		final ChannelMessageSender ch = channelSenders.get(dstId);
+		final ChannelMessageSender<M> ch = channelSenders.get(dstId);
 		ch.sendMessageEnvelope(message, flush);
 	}
 	public void sendControlMessageMulticast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
@@ -143,25 +148,30 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		}
 	}
 
-	public void sendVertexMessageUnicast(int dstMachine, BaseWritable message, int superstepNo, int srcVertex, int dstVertex, boolean flush) {
-		final ChannelMessageSender ch = channelSenders.get(dstMachine);
-		ch.sendVertexMessage(message, superstepNo, ownId, srcVertex, dstVertex, flush);
+	public void sendVertexMessageUnicast(int dstMachine, int superstepNo, int srcMachine, List<Pair<Integer, M>> vertexMessages) {
+		final ChannelMessageSender<M> ch = channelSenders.get(dstMachine);
+		ch.sendVertexMessage(superstepNo, srcMachine, false, vertexMessages);
 	}
-	public void sendVertexMessageMulticast(List<Integer> dstIds, BaseWritable message, int superstepNo, int srcVertex, int dstVertex, boolean flush) {
-		for(final Integer machineId : dstIds) {
-			sendVertexMessageUnicast(machineId, message, superstepNo, srcVertex, dstVertex, flush);
+	public void sendVertexMessageBroadcast(List<Integer> otherWorkerIds, int superstepNo, int srcMachine, List<Pair<Integer, M>> vertexMessages) {
+		for(final Integer machineId : otherWorkerIds) {
+			final ChannelMessageSender<M> ch = channelSenders.get(machineId);
+			ch.sendVertexMessage(superstepNo, srcMachine, true, vertexMessages);
 		}
 	}
+
+	public void flushChannel(int machineId) {
+		channelSenders.get(machineId).flush();
+	}
+
 
 
 	public void onIncomingControlMessage(ControlMessage message) {
 		messageListener.onIncomingControlMessage(message);
 	}
 
-	public void onIncomingVertexMessage(int msgSuperstepNo, int srcMachine, int srcVertex, int dstVertex, M messageContent) {
-		messageListener.onIncomingVertexMessage(msgSuperstepNo, srcMachine, srcVertex, dstVertex, messageContent);
+	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, M>> vertexMessages) {
+		messageListener.onIncomingVertexMessage(superstepNo, srcMachine, broadcastFlag, vertexMessages);
 	}
-
 
 	private void connectToMachine(String host, int port, int machineId) throws Exception {
 		final Socket socket = new Socket(host, port);
@@ -175,7 +185,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 	}
 
 	private void runServer() throws Exception {
-		final int port = machines.get(ownId).MessagePort;
+		final int port = machineConfigs.get(ownId).MessagePort;
 		serverSocket = new ServerSocket(port);
 		logger.info("Started connection server");
 
@@ -204,7 +214,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		final ChannelMessageReceiver<M> receiver = new ChannelMessageReceiver<>(socket, reader, ownId, this, vertexMessageFactory);
 		receiver.startReceiver(machineId);
 		channelReceivers.add(receiver);
-		final ChannelMessageSender sender = new ChannelMessageSender(socket, writer, ownId);
+		final ChannelMessageSender<M> sender = new ChannelMessageSender<>(socket, writer, ownId);
 		sender.startSender(ownId, machineId);
 		channelSenders.put(machineId, sender);
 	}

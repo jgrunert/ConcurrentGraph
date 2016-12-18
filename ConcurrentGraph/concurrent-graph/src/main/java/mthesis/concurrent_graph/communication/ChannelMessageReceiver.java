@@ -5,6 +5,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
+import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -105,16 +108,13 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 	private void onIncomingVertexMessage() {
 		final int msgSuperstepNo = inBuffer.getInt();
 		final int srcMachine = inBuffer.getInt();
-		final int srcVertex = inBuffer.getInt();
-		final int dstVertex = inBuffer.getInt();
-		final boolean isNotNull = inBuffer.get() == 0;
-		if(isNotNull) {
-			final M messageContent = vertexMessageFactory.createFromBytes(inBuffer);
-			inMsgHandler.onIncomingVertexMessage(msgSuperstepNo, srcMachine, srcVertex, dstVertex, messageContent);
+		final boolean broadcastFlag = inBuffer.get() == 0;
+		final int vertexMessagesCount = inBuffer.getInt();
+		final List<Pair<Integer, M>> vertexMessages = new ArrayList<>(vertexMessagesCount);  // TODO Pool instances?
+		for(int i = 0; i < vertexMessagesCount; i++) {
+			vertexMessages.add(new Pair<Integer, M>(inBuffer.getInt(), vertexMessageFactory.createFromBytes(inBuffer)));
 		}
-		else {
-			inMsgHandler.onIncomingVertexMessage(msgSuperstepNo, srcMachine, srcVertex, dstVertex, null);
-		}
+		inMsgHandler.onIncomingVertexMessage(msgSuperstepNo, srcMachine, broadcastFlag, vertexMessages);
 	}
 
 	private void onIncomingControlMessage(int offset, int size) throws InvalidProtocolBufferException {
