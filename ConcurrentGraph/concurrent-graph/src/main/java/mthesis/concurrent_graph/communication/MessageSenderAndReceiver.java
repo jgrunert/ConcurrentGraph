@@ -4,9 +4,12 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -121,6 +124,12 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		}
 	}
 
+	public void getReadyForClose() {
+		for(final ChannelMessageReceiver<M> channel : channelReceivers) {
+			channel.getReadyForClose();
+		}
+	}
+
 	public void stop() {
 		closingServer = true;
 		for(final ChannelMessageSender<M> channel : channelSenders.values()) {
@@ -160,6 +169,11 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		}
 	}
 
+	public void sendGetToKnownMessage(int dstMachine, Collection<Integer> vertices) {
+		final ChannelMessageSender<M> ch = channelSenders.get(dstMachine);
+		ch.sendGetToKnownMessage(ownId, vertices);
+	}
+
 	public void flushChannel(int machineId) {
 		channelSenders.get(machineId).flush();
 	}
@@ -174,13 +188,17 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		messageListener.onIncomingVertexMessage(superstepNo, srcMachine, broadcastFlag, vertexMessages);
 	}
 
+	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices) {
+		messageListener.onIncomingGetToKnowMessage(srcMachine, srcVertices);
+	}
+
 	private void connectToMachine(String host, int port, int machineId) throws Exception {
 		final Socket socket = new Socket(host, port);
 		logger.debug("Connected to: " + host + ":" + port + " for machine channel " + machineId);
 
-		final DataOutputStream writer = new DataOutputStream(socket.getOutputStream());
-		final DataInputStream reader = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-		writer.writeInt(ownId);
+		final OutputStream writer = socket.getOutputStream();
+		final InputStream reader = new BufferedInputStream(socket.getInputStream());
+		new DataOutputStream(writer).writeInt(ownId);
 		startConnection(machineId, socket, writer, reader);
 		logger.debug("Handshaked and established connection channel: " + machineId + " <- " + ownId);
 	}
@@ -195,10 +213,10 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 				final Socket clientSocket = serverSocket.accept();
 
 				logger.debug("Accepted connection: " + clientSocket);
-				final DataInputStream reader = new DataInputStream(new BufferedInputStream(clientSocket.getInputStream()));
-				final DataOutputStream writer = new DataOutputStream(clientSocket.getOutputStream());
+				final InputStream reader = new BufferedInputStream(clientSocket.getInputStream());
+				final OutputStream writer = clientSocket.getOutputStream();
 
-				final int connectedMachineId = reader.readInt();
+				final int connectedMachineId = new DataInputStream(reader).readInt();
 				startConnection(connectedMachineId, clientSocket, writer, reader);
 				logger.debug("Handshaked and established connection channel: " + connectedMachineId + " -> " + ownId + " " + clientSocket);
 			}
@@ -210,8 +228,8 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 	}
 
 
-	private void startConnection(int machineId, final Socket socket, final DataOutputStream writer,
-			final DataInputStream reader) {
+	private void startConnection(int machineId, final Socket socket, final OutputStream writer,
+			final InputStream reader) {
 		try {
 			socket.setTcpNoDelay(Settings.TCP_NODELAY);
 		}

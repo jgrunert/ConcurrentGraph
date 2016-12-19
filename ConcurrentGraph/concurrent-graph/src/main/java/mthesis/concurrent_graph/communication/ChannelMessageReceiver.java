@@ -1,8 +1,7 @@
 package mthesis.concurrent_graph.communication;
 
-import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -30,14 +29,15 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 	private final Logger logger;
 	private final int ownId;
 	private final Socket socket;
-	private final DataInputStream reader;
+	private final InputStream reader;
 	private final byte[] inBytes = new byte[Settings.MAX_MESSAGE_SIZE];
 	private final ByteBuffer inBuffer = ByteBuffer.wrap(inBytes);
 	private final MessageSenderAndReceiver<M> inMsgHandler;
 	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 	private Thread thread;
+	private volatile boolean readyForClose;
 
-	public ChannelMessageReceiver(Socket socket, DataInputStream reader, int ownId,
+	public ChannelMessageReceiver(Socket socket, InputStream reader, int ownId,
 			MessageSenderAndReceiver<M> inMsgHandler, BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
 		this.ownId = ownId;
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
@@ -47,47 +47,55 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 		this.vertexMessageFactory = vertexMessageFactory;
 	}
 
-	int correctRecM = 0;
-	int correctRecBts = 0;
 	public void startReceiver(int connectedMachineId) {
+		readyForClose = false;
 		thread = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				try {
-					int msgLength, readIndex;
+					int msgContentLength;
+					int readIndex;
 					while(!Thread.interrupted() && !socket.isClosed()) {
-						msgLength = reader.readShort();
-
-						readIndex = 0;
-						while(readIndex < msgLength) {
-							readIndex += reader.read(inBytes, readIndex, msgLength - readIndex);
-						}
+						reader.read(inBytes, 0, 2);
+						msgContentLength = inBuffer.getShort();
 
 						inBuffer.clear();
+						readIndex = 0;
+						while(readIndex < msgContentLength) {
+							readIndex += reader.read(inBytes, readIndex, msgContentLength - readIndex);
+							if(readIndex == -1) {
+								logger.debug("Reader returned -1, exiting reader");
+								break;
+							}
+						}
+
 						final byte msgType = inBuffer.get();
 						switch (msgType) {
 							case 0:
 								onIncomingVertexMessage();
 								break;
 							case 1:
-								onIncomingControlMessage(1, msgLength - 1);
+								onIncomingControlMessage(1, msgContentLength - 1);
+								break;
+							case 2:
+								onIncomingGetToKnowMessage();
 								break;
 
 							default:
+								logger.warn("Unknown incoming message id: " + msgType);
 								break;
 						}
-
-						correctRecM++;
-						correctRecBts += msgLength;
+						inBuffer.clear();
 					}
 				}
-				catch(final EOFException e2) {
-					// TODO Check if shutdown
-				}
 				catch (final Exception e) {
-					if(!Thread.interrupted() && !socket.isClosed())
-						logger.error("receive error", e);
+					if(!readyForClose) {
+						if(socket.isClosed())
+							logger.debug("Socket closed");
+						else
+							logger.error("receive error", e);
+					}
 				} finally{
 					try {
 						if(!socket.isClosed())
@@ -123,8 +131,22 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 			inMsgHandler.onIncomingControlMessage(messageEnv.getControlMessage());
 	}
 
+	private void onIncomingGetToKnowMessage() {
+		final int srcMachine = inBuffer.getInt();
+		final int vertCount = inBuffer.getInt();
+		final List<Integer> srcVertices = new ArrayList<>(vertCount);
+		for(int i = 0; i < vertCount; i++) {
+			srcVertices.add(inBuffer.getInt());
+		}
+		inMsgHandler.onIncomingGetToKnowMessage(srcMachine, srcVertices);
+	}
+
+	public void getReadyForClose() {
+		readyForClose = true;
+	}
 
 	public void close() {
+		readyForClose = true;
 		try {
 			if(!socket.isClosed())
 				socket.close();

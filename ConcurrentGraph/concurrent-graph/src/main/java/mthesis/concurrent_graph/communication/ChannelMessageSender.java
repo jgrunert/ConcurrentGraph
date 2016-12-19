@@ -1,9 +1,10 @@
 package mthesis.concurrent_graph.communication;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,14 +27,14 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 public class ChannelMessageSender<M extends BaseWritable> {
 	private final Logger logger;
 	private final Socket socket;
-	private final DataOutputStream writer;
+	private final OutputStream writer;
 	private final byte[] outBytes = new byte[Settings.MAX_MESSAGE_SIZE];
 	private final ByteBuffer outBuffer = ByteBuffer.wrap(outBytes);
 	private final BlockingQueue<MessageToSend> outMessages = new LinkedBlockingQueue<>();
 	private Thread senderThread;
 
 
-	public ChannelMessageSender(Socket socket, DataOutputStream writer, int ownId) {
+	public ChannelMessageSender(Socket socket, OutputStream writer, int ownId) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;
 		this.writer = writer;
@@ -49,10 +50,14 @@ public class ChannelMessageSender<M extends BaseWritable> {
 
 						// Format: short MsgLength, byte MsgType, byte[] MsgContent
 						if(message.hasContent()){
+							outBuffer.position(2);  // Leave 2 bytes for content length
 							outBuffer.put(message.getTypeCode());
 							message.writeMessageToBuffer(outBuffer);
+							// Write position
 							final int msgLength = outBuffer.position();
-							writer.writeShort((short)msgLength);
+							outBuffer.position(0);
+							outBuffer.putShort((short)(msgLength - 2));
+							// Send message
 							writer.write(outBytes, 0, msgLength);
 							outBuffer.clear();
 						}
@@ -98,6 +103,10 @@ public class ChannelMessageSender<M extends BaseWritable> {
 
 	public void sendVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, M>> vertexMessages) {
 		outMessages.add(new VertexMessageToSend(superstepNo, srcMachine, broadcastFlag, vertexMessages));  // TODO Object pooling?
+	}
+
+	public void sendGetToKnownMessage(int srcMachine, Collection<Integer> vertices) {
+		outMessages.add(new GetToKnowMessageToSend(srcMachine, vertices));  // TODO Object pooling?
 	}
 
 	public void flush() {
@@ -150,6 +159,41 @@ public class ChannelMessageSender<M extends BaseWritable> {
 		@Override
 		public boolean flushAfter() {
 			return false;
+		}
+	}
+
+	private class GetToKnowMessageToSend implements MessageToSend {
+		private final int srcMachine;
+		private final Collection<Integer> vertices;
+
+		public GetToKnowMessageToSend(int srcMachine, Collection<Integer> vertices) {
+			super();
+			this.srcMachine = srcMachine;
+			this.vertices = vertices;
+		}
+
+		@Override
+		public boolean hasContent() {
+			return true;
+		}
+
+		@Override
+		public boolean flushAfter() {
+			return false;
+		}
+
+		@Override
+		public byte getTypeCode() {
+			return 2;
+		}
+
+		@Override
+		public void writeMessageToBuffer(ByteBuffer buffer) {
+			buffer.putInt(srcMachine);
+			buffer.putInt(vertices.size());
+			for(final Integer vert : vertices) {
+				buffer.putInt(vert);
+			}
 		}
 	}
 

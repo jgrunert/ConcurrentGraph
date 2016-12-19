@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -81,4 +82,6 @@ public abstract class AbstractMachine<M extends BaseWritable> {
 	}
 
 	public abstract void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, M>> vertexMessages);
+
+	public abstract void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices);
 }

@@ -2,6 +2,7 @@ package mthesis.concurrent_graph.worker;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -165,6 +166,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			logger.info("Worker finishing");
 			new VertexTextOutputWriter<V, E, M>().writeOutput(outputDir + File.separator + ownId + ".txt", localVerticesList);
 			sendMasterFinishedMessage();
+			messaging.getReadyForClose();
 			try {
 				Thread.sleep(200); // TODO Cleaner solution, for example a final message from master
 			}
@@ -379,18 +381,26 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	@Override
 	public void onIncomingVertexMessage(int msgSuperstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, M>> vertexMessages) {
-		// TODO Discovery
-		// final boolean registered = remoteVertexMachineRegistry.lookupEntry(srcVertex) != null;
-		// Update vertex registry if discovery enabled
-
-		//		if(Settings.VERTEX_DISCOVERY) {
-		//			if(remoteVertexMachineRegistry.addEntry(srcVertex, srcMachine)) {
-		//				superstepStats.NewVertexMachinesDiscovered++;
-		//				if(Settings.ACTIVE_VERTEX_DISCOVERY && messageContent != null && localVerticesIdMap.containsKey(dstVertex)) {
-		//					sendVertexMessageToMachine(dstVertex, -1, srcMachine, null);
-		//				}
-		//			}
-		//		}
+		// Discover vertices if enabled. Only discover for broadcast messages as they are a sign that vertices are unknown.
+		if(broadcastFlag && Settings.VERTEX_MACHINE_DISCOVERY) {
+			final HashSet<Integer> srcVertices = new HashSet<>();
+			for(final Pair<Integer, M> msg : vertexMessages) {
+				if(localVerticesIdMap.containsKey(msg.first)) {
+					srcVertices.add(msg.first);
+				}
+			}
+			// Also discover all src vertices from this incoming broadcast message, if enabled
+			if(Settings.VERTEX_MACHINE_DISCOVERY_INCOMING) {
+				for(final Integer srcVertId : srcVertices){
+					if(remoteVertexMachineRegistry.addEntry(srcVertId, srcMachine))
+						superstepStats.NewVertexMachinesDiscovered++;
+				}
+			}
+			// Send get-to-know message for all own vertices in this broadcast message
+			// Sender did not known these vertices, thats why a broadcast was sent.
+			if(!srcVertices.isEmpty())
+				messaging.sendGetToKnownMessage(srcMachine, srcVertices);
+		}
 
 		// Normal messages have content.
 		// Vertex messages without content are "get-to-know messages", only for vertex registry
@@ -413,7 +423,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 			}
 		}
+	}
 
+	@Override
+	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices) {
+		for(final Integer srcVertex : srcVertices) {
+			if(remoteVertexMachineRegistry.addEntry(srcVertex, srcMachine))
+				superstepStats.NewVertexMachinesDiscovered++;
+		}
 	}
 
 	@Override

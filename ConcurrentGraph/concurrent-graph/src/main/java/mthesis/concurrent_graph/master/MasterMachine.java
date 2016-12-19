@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.master;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -211,6 +212,12 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 
 	@Override
 	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, NullWritable>> vertexMessages) {
+		throw new RuntimeException("Master cannot handle vertex messages");
+	}
+
+
+	@Override
+	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> vertices) {
 		throw new RuntimeException("Master cannot handle vertex messages");
 	}
 }
