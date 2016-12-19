@@ -43,6 +43,7 @@ message MessageEnvelope {
 			optional int32 SentVertexMessagesLocal = 3;
 			optional int32 SentVertexMessagesUnicast = 4;
 			optional int32 SentVertexMessagesBroadcast = 5;
+			optional int32 SentVertexMessagesBuckets = 11;
 			optional int32 ReceivedCorrectVertexMessages = 6;
 			optional int32 ReceivedWrongVertexMessages = 7;
 			optional int32 NewVertexMachinesDiscovered = 8;

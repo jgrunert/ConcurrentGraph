@@ -71,6 +71,7 @@ public class ControlMessageBuildUtil {
 				.setSentVertexMessagesLocal(stats.SentVertexMessagesLocal)
 				.setSentVertexMessagesUnicast(stats.SentVertexMessagesUnicast)
 				.setSentVertexMessagesBroadcast(stats.SentVertexMessagesBroadcast)
+				.setSentVertexMessagesBuckets(stats.SentVertexMessagesBuckets)
 				.setReceivedCorrectVertexMessages(stats.ReceivedCorrectVertexMessages)
 				.setReceivedWrongVertexMessages(stats.ReceivedWrongVertexMessages)
 				.setNewVertexMachinesDiscovered(stats.NewVertexMachinesDiscovered)

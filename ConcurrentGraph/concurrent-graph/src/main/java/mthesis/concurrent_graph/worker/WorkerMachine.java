@@ -357,11 +357,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void sendUnicastVertexMessageBucket(VertexMessageBucket<M> msgBucket, int dstMachine) {
 		final List<Pair<Integer, M>> msgList = packVertexMessage(msgBucket);
 		messaging.sendVertexMessageUnicast(dstMachine, superstepNo, ownId, msgList);
+		superstepStats.SentVertexMessagesBuckets++;
 	}
 
 	private void sendBroadcastVertexMessageBucket() {
 		final List<Pair<Integer, M>> msgList = packVertexMessage(vertexMessageBroadcastBucket);
 		messaging.sendVertexMessageBroadcast(otherWorkerIds, superstepNo, ownId, msgList);
+		superstepStats.SentVertexMessagesBuckets += otherWorkerIds.size();
 	}
 
 	private List<Pair<Integer, M>> packVertexMessage(VertexMessageBucket<M> msgBucket) {

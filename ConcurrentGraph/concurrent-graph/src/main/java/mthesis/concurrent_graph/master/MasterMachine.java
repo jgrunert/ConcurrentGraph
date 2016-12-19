@@ -69,6 +69,7 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 				int SentVertexMessagesLocal = 0;
 				int SentVertexMessagesUnicast = 0;
 				int SentVertexMessagesBroadcast = 0;
+				int SentVertexMessagesBuckets = 0;
 				int ReceivedCorrectVertexMessages = 0;
 				int ReceivedWrongVertexMessages = 0;
 				int newVertexMachinesDiscovered = 0;
@@ -86,6 +87,7 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 							SentVertexMessagesLocal += workerStats.getSentVertexMessagesLocal();
 							SentVertexMessagesUnicast += workerStats.getSentVertexMessagesUnicast();
 							SentVertexMessagesBroadcast += workerStats.getSentVertexMessagesBroadcast();
+							SentVertexMessagesBuckets += workerStats.getSentVertexMessagesBuckets();
 							ReceivedCorrectVertexMessages += workerStats.getReceivedCorrectVertexMessages();
 							ReceivedWrongVertexMessages += workerStats.getReceivedWrongVertexMessages();
 							newVertexMachinesDiscovered += workerStats.getNewVertexMachinesDiscovered();
@@ -119,8 +121,8 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 				System.out.println("----- superstep " + superstepNo + " -----");
 				logger.info(String.format("- Master finished superstep %d after %dms (total %dms). activeWorkers: %d activeVertices: %d",
 						superstepNo, (timeNow - lastSuperstepTime), (timeNow - startTime), activeWorkers, activeVertices));
-				logger.info(String.format("  SentControlMessages: %d, SentVertexMessagesLocal: %d, SentVertexMessagesUnicast: %d, SentVertexMessagesBroadcast: %d",
-						SentControlMessages, SentVertexMessagesLocal, SentVertexMessagesUnicast, SentVertexMessagesBroadcast));
+				logger.info(String.format("  SentControlMessages: %d, SentVertexMessagesLocal: %d, SentVertexMessagesUnicast: %d, SentVertexMessagesBroadcast: %d, SentVertexMessagesBuckets %d",
+						SentControlMessages, SentVertexMessagesLocal, SentVertexMessagesUnicast, SentVertexMessagesBroadcast, SentVertexMessagesBuckets));
 				logger.info(String.format("  ReceivedCorrectVertexMessages: %d, ReceivedWrongVertexMessages: %d",
 						ReceivedCorrectVertexMessages, ReceivedWrongVertexMessages));
 				logger.info(String.format("  newVertexMachinesDiscovered: %d, totalVertexMachinesDiscovered: %d",

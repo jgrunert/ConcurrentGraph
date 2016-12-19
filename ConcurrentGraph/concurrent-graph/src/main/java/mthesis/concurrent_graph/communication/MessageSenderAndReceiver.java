@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -211,6 +212,12 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 
 	private void startConnection(int machineId, final Socket socket, final DataOutputStream writer,
 			final DataInputStream reader) {
+		try {
+			socket.setTcpNoDelay(Settings.TCP_NODELAY);
+		}
+		catch (final SocketException e) {
+			logger.error("set socket configs", e);
+		}
 		final ChannelMessageReceiver<M> receiver = new ChannelMessageReceiver<>(socket, reader, ownId, this, vertexMessageFactory);
 		receiver.startReceiver(machineId);
 		channelReceivers.add(receiver);
