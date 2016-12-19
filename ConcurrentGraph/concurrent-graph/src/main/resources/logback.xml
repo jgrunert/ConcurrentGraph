@@ -1,7 +1,6 @@
 <configuration>
 	<appender name="CONSOLE-stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<filter class="mthesis.concurrent_graph.logging.MainLogFilter" />
-		<filter class="mthesis.concurrent_graph.logging.NettyLogFilter" />
   		<filter class="mthesis.concurrent_graph.logging.StdOutFilter" />
   		<target>System.out</target>
 		<encoder>
@@ -14,7 +13,6 @@
 	<appender name="CONSOLE-stderr" class="ch.qos.logback.core.ConsoleAppender">
   		<filter class="mthesis.concurrent_graph.logging.ErrWarnCounter" />
 		<filter class="mthesis.concurrent_graph.logging.MainLogFilter" />
-		<filter class="mthesis.concurrent_graph.logging.NettyLogFilter" />
   		<filter class="mthesis.concurrent_graph.logging.ErrOutFilter" />
   		<target>System.err</target>
 		<encoder>
