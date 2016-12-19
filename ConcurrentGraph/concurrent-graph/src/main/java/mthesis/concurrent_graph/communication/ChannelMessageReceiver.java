@@ -26,6 +26,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  *
  */
 public class ChannelMessageReceiver<M extends BaseWritable> {
+
 	private final Logger logger;
 	private final int ownId;
 	private final Socket socket;
@@ -56,17 +57,17 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 				try {
 					int msgContentLength;
 					int readIndex;
-					while(!Thread.interrupted() && !socket.isClosed()) {
+					while (!Thread.interrupted() && !socket.isClosed()) {
 						reader.read(inBytes, 0, 2);
 						msgContentLength = inBuffer.getShort();
 
 						inBuffer.clear();
 						readIndex = 0;
-						while(readIndex < msgContentLength) {
+						while (readIndex < msgContentLength) {
 							readIndex += reader.read(inBytes, readIndex, msgContentLength - readIndex);
-							if(readIndex == -1) {
+							if (readIndex == -1) {
 								logger.debug("Reader returned -1, exiting reader");
-								break;
+								return;
 							}
 						}
 
@@ -90,16 +91,14 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 					}
 				}
 				catch (final Exception e) {
-					if(!readyForClose) {
-						if(socket.isClosed())
-							logger.debug("Socket closed");
-						else
-							logger.error("receive error", e);
+					if (!readyForClose) {
+						if (socket.isClosed()) logger.debug("Socket closed");
+						else logger.error("receive error", e);
 					}
-				} finally{
+				}
+				finally {
 					try {
-						if(!socket.isClosed())
-							socket.close();
+						if (!socket.isClosed()) socket.close();
 					}
 					catch (final IOException e) {
 						logger.error("close socket failed", e);
@@ -118,8 +117,10 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 		final int srcMachine = inBuffer.getInt();
 		final boolean broadcastFlag = inBuffer.get() == 0;
 		final int vertexMessagesCount = inBuffer.getInt();
-		final List<Pair<Integer, M>> vertexMessages = new ArrayList<>(vertexMessagesCount);  // TODO Pool instances?
-		for(int i = 0; i < vertexMessagesCount; i++) {
+		final List<Pair<Integer, M>> vertexMessages = new ArrayList<>(vertexMessagesCount); // TODO
+																							// Pool
+																							// instances?
+		for (int i = 0; i < vertexMessagesCount; i++) {
 			vertexMessages.add(new Pair<Integer, M>(inBuffer.getInt(), vertexMessageFactory.createFromBytes(inBuffer)));
 		}
 		inMsgHandler.onIncomingVertexMessage(msgSuperstepNo, srcMachine, broadcastFlag, vertexMessages);
@@ -127,15 +128,14 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 
 	private void onIncomingControlMessage(int offset, int size) throws InvalidProtocolBufferException {
 		final MessageEnvelope messageEnv = MessageEnvelope.parseFrom(ByteString.copyFrom(inBytes, offset, size));
-		if(messageEnv.hasControlMessage())
-			inMsgHandler.onIncomingControlMessage(messageEnv.getControlMessage());
+		if (messageEnv.hasControlMessage()) inMsgHandler.onIncomingControlMessage(messageEnv.getControlMessage());
 	}
 
 	private void onIncomingGetToKnowMessage() {
 		final int srcMachine = inBuffer.getInt();
 		final int vertCount = inBuffer.getInt();
 		final List<Integer> srcVertices = new ArrayList<>(vertCount);
-		for(int i = 0; i < vertCount; i++) {
+		for (int i = 0; i < vertCount; i++) {
 			srcVertices.add(inBuffer.getInt());
 		}
 		inMsgHandler.onIncomingGetToKnowMessage(srcMachine, srcVertices);
@@ -148,8 +148,7 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 	public void close() {
 		readyForClose = true;
 		try {
-			if(!socket.isClosed())
-				socket.close();
+			if (!socket.isClosed()) socket.close();
 		}
 		catch (final IOException e) {
 			logger.error("close socket failed", e);
