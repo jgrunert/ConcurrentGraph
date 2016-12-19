@@ -9,7 +9,7 @@ public class Settings {
 	public static final int VERTEX_MESSAGE_BUCKET_MAX_MESSAGES = 512;  // TODO Could be not constant, depending on message content size
 
 	//	public static final boolean KEEPALIVE = true;
-	public static final boolean TCP_NODELAY = false;
+	public static final boolean TCP_NODELAY = true;
 	//	public static final boolean SSL = System.getProperty("ssl") != null;
 	public static final int CONNECT_TIMEOUT = 10000;
 	public static final int MESSAGE_TIMEOUT = 6000;

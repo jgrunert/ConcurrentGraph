@@ -38,8 +38,6 @@ public class PagerankTest {
 			allCfg.put(i, new MachineConfig(host, baseControlMsgPort + 1 + i));
 		}
 
-		//Thread.sleep(10000);
-
 		System.out.println("Starting");
 		final ExampleTestUtils<DoubleWritable, NullWritable, DoubleWritable> testUtils = new ExampleTestUtils<>();
 		testUtils.startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir);
