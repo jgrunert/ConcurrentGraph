@@ -22,7 +22,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 /**
  * Receives messages on a channel from another machine. Runs a receive thread.
  * 
- * @author Jonas Gruenrt
+ * @author Jonas Grunert
  *
  */
 public class ChannelMessageReceiver<M extends BaseWritable> {

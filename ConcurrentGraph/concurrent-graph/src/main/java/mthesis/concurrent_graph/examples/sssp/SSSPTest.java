@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples.pagerank;
+package mthesis.concurrent_graph.examples.sssp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,8 @@ import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.master.input.RoundRobinBlockInputPartitioner;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.DoubleWritable;
-import mthesis.concurrent_graph.writable.NullWritable;
 
-public class PagerankTest {
+public class SSSPTest {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length < 3) {
@@ -25,19 +24,19 @@ public class PagerankTest {
 
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
-		final PagerankJobConfiguration jobConfig = new PagerankJobConfiguration();
+		final SSSPJobConfiguration jobConfig = new SSSPJobConfiguration();
 		// final MasterInputPartitioner inputPartitioner = new
 		// ContinousBlockInputPartitioner(partitionSize);
 		final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(partitionSize);
-		final MasterOutputEvaluator outputCombiner = new PagerankOutputEvaluator();
+		final MasterOutputEvaluator outputCombiner = new SSSPOutputEvaluator();
 
 		System.out.println("Starting");
-		final ExampleTestUtils<DoubleWritable, NullWritable, DoubleWritable> testUtils = new ExampleTestUtils<>();
+		final ExampleTestUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable> testUtils = new ExampleTestUtils<>();
 		if (config.StartOnThisMachine.get(config.masterId))
 			testUtils.startMaster(config.AllMachineConfigs, config.masterId, config.AllWorkerIds, inputFile,
 					inputPartitionDir, inputPartitioner, outputCombiner, outputDir);
 
-		final List<WorkerMachine<DoubleWritable, NullWritable, DoubleWritable>> workers = new ArrayList<>();
+		final List<WorkerMachine<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
 			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i))) workers
 					.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig));

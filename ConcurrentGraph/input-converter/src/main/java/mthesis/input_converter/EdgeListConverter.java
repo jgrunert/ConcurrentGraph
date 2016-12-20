@@ -15,9 +15,9 @@ import mthesis.input_converter.VertexFileWriter.Edge;
 /**
  * Reads a file with an ordered list of edges. Format: [vertex0]\t[edge0]
  * [vertex0]\t[edge1] [vertex1]\t[edge0] ...
- * 
+ *
  * Converts to standard vertex format
- * 
+ *
  * @author Jonas Grunert
  *
  */
@@ -25,8 +25,8 @@ public class EdgeListConverter {
 
 	protected static final Logger logger = LoggerFactory.getLogger(EdgeListConverter.class);
 
-	private static final String inputFile = "../../../ConcurrentGraph_Data/original/web-Stanford.txt";
-	private static final String outputFile = "../../../ConcurrentGraph_Data/converted/web-Stanford.txt";
+	private static final String inputFile = "../../../ConcurrentGraph_Data/original/roadNet-PA.txt";
+	private static final String outputFile = "../../../ConcurrentGraph_Data/converted/roadNet-PA.txt";
 
 
 	public static void main(String[] args) throws Exception {

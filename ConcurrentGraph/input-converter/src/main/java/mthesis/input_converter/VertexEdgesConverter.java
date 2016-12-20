@@ -12,9 +12,9 @@ import mthesis.input_converter.VertexFileWriter.Edge;
 
 /**
  * Converts from format [vertex] \t[edge] \t[edge] [vertex] ...
- * 
+ *
  * to standard vertex format
- * 
+ *
  * @author Jonas Grunert
  *
  */
