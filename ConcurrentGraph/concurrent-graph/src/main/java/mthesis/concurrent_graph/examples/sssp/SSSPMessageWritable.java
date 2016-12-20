@@ -10,9 +10,9 @@ public class SSSPMessageWritable extends BaseWritable {
 	public double Dist;
 
 
-	public SSSPMessageWritable(int dstVertex, double dist) {
+	public SSSPMessageWritable(int srcVertex, double dist) {
 		super();
-		SrcVertex = dstVertex;
+		SrcVertex = srcVertex;
 		Dist = dist;
 	}
 

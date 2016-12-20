@@ -6,9 +6,9 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class CCMessageWritable extends BaseWritable {
 
-	public CCMessageWritable(int dstVertex, int value) {
+	public CCMessageWritable(int srcVertex, int value) {
 		super();
-		SrcVertex = dstVertex;
+		SrcVertex = srcVertex;
 		Value = value;
 	}
 
