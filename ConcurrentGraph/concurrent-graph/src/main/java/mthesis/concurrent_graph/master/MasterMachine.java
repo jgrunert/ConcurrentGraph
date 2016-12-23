@@ -8,6 +8,7 @@ import java.util.Set;
 
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.MachineConfig;
+import mthesis.concurrent_graph.QueryGlobalValues;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
@@ -19,8 +20,13 @@ import mthesis.concurrent_graph.writable.NullWritable;
 
 /**
  * Concurrent graph processing master main
+ * 
+ * @author Jonas Grunert
+ *
+ * @param <G>
+ *            Global query values
  */
-public class MasterMachine extends AbstractMachine<NullWritable> {
+public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<NullWritable> {
 
 	private final List<Integer> workerIds;
 	private int superstepNo = -1;
@@ -32,8 +38,8 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 	private final MasterOutputEvaluator outputCombiner;
 
 
-	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds,
-			String inputFile, String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir) {
+	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
+			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir) {
 		super(machines, ownId, null);
 		this.workerIds = workerIds;
 		this.inputFile = inputFile;
@@ -55,10 +61,10 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 			//readAndPartition(inputData, inputDir, workerIds.size());
 			logger.info("Master input read and partitioned after " + (System.currentTimeMillis() - startTime) + "ms");
 			superstepNo = -1;
-			startWorkersAssignPartitions();  // Signal that input ready
+			startWorkersAssignPartitions(); // Signal that input ready
 
 			final Set<Integer> workersWaitingFor = new HashSet<>(workerIds.size());
-			while(!Thread.interrupted()) {
+			while (!Thread.interrupted()) {
 				// New superstep
 				workersWaitingFor.addAll(workerIds);
 
@@ -75,13 +81,12 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 				int ReceivedWrongVertexMessages = 0;
 				int newVertexMachinesDiscovered = 0;
 				int totalVertexMachinesDiscovered = 0;
-				while(!workersWaitingFor.isEmpty()) {
+				while (!workersWaitingFor.isEmpty()) {
 					final ControlMessage msg = inControlMessages.take();
-					if(msg.getType() == ControlMessageType.Worker_Superstep_Finished) {
-						if(msg.getSuperstepNo() == superstepNo) {
+					if (msg.getType() == ControlMessageType.Worker_Superstep_Finished) {
+						if (msg.getSuperstepNo() == superstepNo) {
 							final WorkerStatsMessage workerStats = msg.getWorkerStats();
-							if(workerStats.getActiveVertices() > 0)
-								activeWorkers++;
+							if (workerStats.getActiveVertices() > 0) activeWorkers++;
 							vertexCount += workerStats.getVertexCount();
 							activeVertices += workerStats.getActiveVertices();
 							SentControlMessages += workerStats.getSentControlMessages();
@@ -96,41 +101,47 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 							workersWaitingFor.remove(msg.getSrcMachine());
 						}
 						else {
-							logger.error("Recieved Control_Worker_Superstep_Finished for wrong superstep: " + msg.getSuperstepNo() +
-									" from " + msg.getSrcMachine());
+							logger.error("Recieved Control_Worker_Superstep_Finished for wrong superstep: " + msg.getSuperstepNo()
+									+ " from " + msg.getSrcMachine());
 						}
 					}
-					else if(msg.getType() == ControlMessageType.Worker_Finished) {
+					else if (msg.getType() == ControlMessageType.Worker_Finished) {
 						// Finished
-						logger.warn("Received unexpected worker finish, terminate after " + (System.currentTimeMillis() - startTime) + "ms");
+						logger.warn(
+								"Received unexpected worker finish, terminate after " + (System.currentTimeMillis() - startTime) + "ms");
 						break;
 					}
 					else {
-						logger.error("Recieved non Control_Worker_Superstep_Finished message: " + msg.getType() +
-								" from " + msg.getSrcMachine());
+						logger.error("Recieved non Control_Worker_Superstep_Finished message: " + msg.getType() + " from "
+								+ msg.getSrcMachine());
 					}
 				}
 
 				// Wrong message count should match broadcast message count.
 				// Otherwise there might be communication errors.
-				if(workerIds.size() > 1 && ReceivedWrongVertexMessages != SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)) {
-					logger.warn(String.format("Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
-							ReceivedWrongVertexMessages, SentVertexMessagesBroadcast, SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)));
+				if (workerIds.size() > 1
+						&& ReceivedWrongVertexMessages != SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)) {
+					logger.warn(String.format(
+							"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
+							ReceivedWrongVertexMessages, SentVertexMessagesBroadcast,
+							SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)));
 				}
 
 				final long timeNow = System.currentTimeMillis();
 				System.out.println("----- superstep " + superstepNo + " -----");
 				logger.info(String.format("- Master finished superstep %d after %dms (total %dms). activeWorkers: %d activeVertices: %d",
 						superstepNo, (timeNow - lastSuperstepTime), (timeNow - startTime), activeWorkers, activeVertices));
-				logger.info(String.format("  SentControlMessages: %d, SentVertexMessagesLocal: %d, SentVertexMessagesUnicast: %d, SentVertexMessagesBroadcast: %d, SentVertexMessagesBuckets %d",
-						SentControlMessages, SentVertexMessagesLocal, SentVertexMessagesUnicast, SentVertexMessagesBroadcast, SentVertexMessagesBuckets));
+				logger.info(String.format(
+						"  SentControlMessages: %d, SentVertexMessagesLocal: %d, SentVertexMessagesUnicast: %d, SentVertexMessagesBroadcast: %d, SentVertexMessagesBuckets %d",
+						SentControlMessages, SentVertexMessagesLocal, SentVertexMessagesUnicast, SentVertexMessagesBroadcast,
+						SentVertexMessagesBuckets));
 				logger.info(String.format("  ReceivedCorrectVertexMessages: %d, ReceivedWrongVertexMessages: %d",
 						ReceivedCorrectVertexMessages, ReceivedWrongVertexMessages));
 				logger.info(String.format("  newVertexMachinesDiscovered: %d, totalVertexMachinesDiscovered: %d",
 						newVertexMachinesDiscovered, totalVertexMachinesDiscovered));
 				lastSuperstepTime = timeNow;
 
-				if(activeWorkers > 0) {
+				if (activeWorkers > 0) {
 					// Next superstep
 					superstepNo++;
 					logger.info("Next master superstep: " + superstepNo);
@@ -166,10 +177,10 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 		try {
 			// Wait for workers to finish
 			final Set<Integer> workersWaitingFor = new HashSet<>(workerIds);
-			while(!workersWaitingFor.isEmpty()) {
+			while (!workersWaitingFor.isEmpty()) {
 				ControlMessage msg;
 				msg = inControlMessages.take();
-				if(msg.getType() == ControlMessageType.Worker_Finished) {
+				if (msg.getType() == ControlMessageType.Worker_Finished) {
 					workersWaitingFor.remove(msg.getSrcMachine());
 				}
 			}
@@ -181,12 +192,10 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 
 	private void finishMaster() {
 		// Aggregate output
-		try
-		{
+		try {
 			outputCombiner.evaluateOutput(outputDir);
 		}
-		catch(final Exception e)
-		{
+		catch (final Exception e) {
 			logger.error("writeOutput failed", e);
 		}
 	}
@@ -194,14 +203,15 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 
 	private void startWorkersAssignPartitions() {
 		final Map<Integer, List<String>> assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir, workerIds);
-		for(final Integer workerId : workerIds) {
+		for (final Integer workerId : workerIds) {
 			messaging.sendControlMessageUnicast(workerId,
 					ControlMessageBuildUtil.Build_Master_Startup(superstepNo, ownId, assignedPartitions.get(workerId)), true);
 		}
 	}
 
 	private void signalWorkersStartingSuperstep(int vertexCount, int activeVertices) {
-		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId, vertexCount, activeVertices), true);
+		messaging.sendControlMessageMulticast(workerIds,
+				ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId, vertexCount, activeVertices), true);
 	}
 
 	private void signalWorkersFinish() {
@@ -211,7 +221,8 @@ public class MasterMachine extends AbstractMachine<NullWritable> {
 
 
 	@Override
-	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, NullWritable>> vertexMessages) {
+	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag,
+			List<Pair<Integer, NullWritable>> vertexMessages) {
 		throw new RuntimeException("Master cannot handle vertex messages");
 	}
 

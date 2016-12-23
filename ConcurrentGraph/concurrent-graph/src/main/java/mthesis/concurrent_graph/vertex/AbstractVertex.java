@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import mthesis.concurrent_graph.worker.GlobalObjects;
+import mthesis.concurrent_graph.QueryGlobalValues;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
-public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable> {
+public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends QueryGlobalValues> {
+
 	public final int ID;
 	private V value;
 
@@ -17,11 +18,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	private List<Edge<E>> edges;
 
 	protected int superstepNo = 0;
-	private final VertexWorkerInterface<M> worker;
+	private final VertexWorkerInterface<M, G> worker;
 	private boolean votedHalt = false;
 
 
-	public AbstractVertex(int id, VertexWorkerInterface<M> worker) {
+	public AbstractVertex(int id, VertexWorkerInterface<M, G> worker) {
 		super();
 		this.ID = id;
 		this.setEdges(edges);
@@ -30,7 +31,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 
 	public void superstep(int superstep) {
-		if(isActive()) {
+		if (isActive()) {
 			this.superstepNo = superstep;
 			compute(messagesNextSuperstep);
 			messagesNextSuperstep.clear();
@@ -85,8 +86,8 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	public GlobalObjects getGlobalObjects() {
-		return worker.getGlobalObjects();
+	public G getQueryGlobalObjects() {
+		return worker.getQueryGlobalObjects();
 	}
 
 
@@ -96,8 +97,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 	private String valueToString() {
-		if(value == null)
-			return "";
+		if (value == null) return "";
 		return value.getString();
 	}
 }
