@@ -7,7 +7,8 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 
 /**
- * Base class for query global values such as initial values or aggregators.
+ * Base class for query global values such as initial configuration or aggregators.
+ * Configuration values remain unchanged while aggregated values are aggregated by the master.
  * 
  * @author Jonas Grunert
  *
@@ -17,6 +18,15 @@ public class QueryGlobalValues extends BaseWritable {
 	protected int ActiveVertices;
 	protected int VertexCount;
 
+	public QueryGlobalValues() {
+		super();
+	}
+
+	public QueryGlobalValues(int activeVertices, int vertexCount) {
+		super();
+		ActiveVertices = activeVertices;
+		VertexCount = vertexCount;
+	}
 
 	public QueryGlobalValues aggregate(List<QueryGlobalValues> singleValues) {
 		QueryGlobalValues aggregated = new QueryGlobalValues();
@@ -63,5 +73,20 @@ public class QueryGlobalValues extends BaseWritable {
 
 	public void setVertexCount(int vertexCount) {
 		VertexCount = vertexCount;
+	}
+
+
+	public static class Factory extends BaseWritable.BaseWritableFactory<QueryGlobalValues> {
+
+		@Override
+		public QueryGlobalValues createFromString(String str) {
+			final String[] sSplit = str.split(":");
+			return new QueryGlobalValues(Integer.parseInt(sSplit[0]), Integer.parseInt(sSplit[1]));
+		}
+
+		@Override
+		public QueryGlobalValues createFromBytes(ByteBuffer bytes) {
+			return new QueryGlobalValues(bytes.getInt(), bytes.getInt());
+		}
 	}
 }
