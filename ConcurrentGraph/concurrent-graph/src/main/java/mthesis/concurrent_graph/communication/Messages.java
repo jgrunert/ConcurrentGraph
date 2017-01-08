@@ -742,19 +742,15 @@ public final class Messages {
      */
     mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessageOrBuilder getAssignPartitionsOrBuilder();
 
-    // optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;
+    // optional bytes QueryGlobalValues = 6;
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
+     * <code>optional bytes QueryGlobalValues = 6;</code>
      */
-    boolean hasGlobalStats();
+    boolean hasQueryGlobalValues();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
+     * <code>optional bytes QueryGlobalValues = 6;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage getGlobalStats();
-    /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
-     */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessageOrBuilder getGlobalStatsOrBuilder();
+    com.google.protobuf.ByteString getQueryGlobalValues();
   }
   /**
    * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage}
@@ -855,16 +851,8 @@ public final class Messages {
               break;
             }
             case 50: {
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000020) == 0x00000020)) {
-                subBuilder = globalStats_.toBuilder();
-              }
-              globalStats_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.PARSER, extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(globalStats_);
-                globalStats_ = subBuilder.buildPartial();
-              }
               bitField0_ |= 0x00000020;
+              queryGlobalValues_ = input.readBytes();
               break;
             }
           }
@@ -2609,483 +2597,6 @@ public final class Messages {
       // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage)
     }
 
-    public interface GlobalStatsMessageOrBuilder
-        extends com.google.protobuf.MessageOrBuilder {
-
-      // optional int32 VertexCount = 1;
-      /**
-       * <code>optional int32 VertexCount = 1;</code>
-       */
-      boolean hasVertexCount();
-      /**
-       * <code>optional int32 VertexCount = 1;</code>
-       */
-      int getVertexCount();
-
-      // optional int32 ActiveVertices = 2;
-      /**
-       * <code>optional int32 ActiveVertices = 2;</code>
-       */
-      boolean hasActiveVertices();
-      /**
-       * <code>optional int32 ActiveVertices = 2;</code>
-       */
-      int getActiveVertices();
-    }
-    /**
-     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage}
-     */
-    public static final class GlobalStatsMessage extends
-        com.google.protobuf.GeneratedMessage
-        implements GlobalStatsMessageOrBuilder {
-      // Use GlobalStatsMessage.newBuilder() to construct.
-      private GlobalStatsMessage(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
-        super(builder);
-        this.unknownFields = builder.getUnknownFields();
-      }
-      private GlobalStatsMessage(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-      private static final GlobalStatsMessage defaultInstance;
-      public static GlobalStatsMessage getDefaultInstance() {
-        return defaultInstance;
-      }
-
-      public GlobalStatsMessage getDefaultInstanceForType() {
-        return defaultInstance;
-      }
-
-      private final com.google.protobuf.UnknownFieldSet unknownFields;
-      @java.lang.Override
-      public final com.google.protobuf.UnknownFieldSet
-          getUnknownFields() {
-        return this.unknownFields;
-      }
-      private GlobalStatsMessage(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        initFields();
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              default: {
-                if (!parseUnknownField(input, unknownFields,
-                                       extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-              case 8: {
-                bitField0_ |= 0x00000001;
-                vertexCount_ = input.readInt32();
-                break;
-              }
-              case 16: {
-                bitField0_ |= 0x00000002;
-                activeVertices_ = input.readInt32();
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e.getMessage()).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_descriptor;
-      }
-
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.Builder.class);
-      }
-
-      public static com.google.protobuf.Parser<GlobalStatsMessage> PARSER =
-          new com.google.protobuf.AbstractParser<GlobalStatsMessage>() {
-        public GlobalStatsMessage parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new GlobalStatsMessage(input, extensionRegistry);
-        }
-      };
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<GlobalStatsMessage> getParserForType() {
-        return PARSER;
-      }
-
-      private int bitField0_;
-      // optional int32 VertexCount = 1;
-      public static final int VERTEXCOUNT_FIELD_NUMBER = 1;
-      private int vertexCount_;
-      /**
-       * <code>optional int32 VertexCount = 1;</code>
-       */
-      public boolean hasVertexCount() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional int32 VertexCount = 1;</code>
-       */
-      public int getVertexCount() {
-        return vertexCount_;
-      }
-
-      // optional int32 ActiveVertices = 2;
-      public static final int ACTIVEVERTICES_FIELD_NUMBER = 2;
-      private int activeVertices_;
-      /**
-       * <code>optional int32 ActiveVertices = 2;</code>
-       */
-      public boolean hasActiveVertices() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional int32 ActiveVertices = 2;</code>
-       */
-      public int getActiveVertices() {
-        return activeVertices_;
-      }
-
-      private void initFields() {
-        vertexCount_ = 0;
-        activeVertices_ = 0;
-      }
-      private byte memoizedIsInitialized = -1;
-      public final boolean isInitialized() {
-        byte isInitialized = memoizedIsInitialized;
-        if (isInitialized != -1) return isInitialized == 1;
-
-        memoizedIsInitialized = 1;
-        return true;
-      }
-
-      public void writeTo(com.google.protobuf.CodedOutputStream output)
-                          throws java.io.IOException {
-        getSerializedSize();
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeInt32(1, vertexCount_);
-        }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          output.writeInt32(2, activeVertices_);
-        }
-        getUnknownFields().writeTo(output);
-      }
-
-      private int memoizedSerializedSize = -1;
-      public int getSerializedSize() {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-
-        size = 0;
-        if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(1, vertexCount_);
-        }
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(2, activeVertices_);
-        }
-        size += getUnknownFields().getSerializedSize();
-        memoizedSerializedSize = size;
-        return size;
-      }
-
-      private static final long serialVersionUID = 0L;
-      @java.lang.Override
-      protected java.lang.Object writeReplace()
-          throws java.io.ObjectStreamException {
-        return super.writeReplace();
-      }
-
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseFrom(
-          com.google.protobuf.ByteString data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseFrom(
-          com.google.protobuf.ByteString data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseFrom(byte[] data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseFrom(
-          byte[] data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseDelimitedFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseDelimitedFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input, extensionRegistry);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input);
-      }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parseFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
-      }
-
-      public static Builder newBuilder() { return Builder.create(); }
-      public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage prototype) {
-        return newBuilder().mergeFrom(prototype);
-      }
-      public Builder toBuilder() { return newBuilder(this); }
-
-      @java.lang.Override
-      protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
-      }
-      /**
-       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage}
-       */
-      public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder>
-         implements mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessageOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_descriptor;
-        }
-
-        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
-            internalGetFieldAccessorTable() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_fieldAccessorTable
-              .ensureFieldAccessorsInitialized(
-                  mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.Builder.class);
-        }
-
-        // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.newBuilder()
-        private Builder() {
-          maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
-          super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          }
-        }
-        private static Builder create() {
-          return new Builder();
-        }
-
-        public Builder clear() {
-          super.clear();
-          vertexCount_ = 0;
-          bitField0_ = (bitField0_ & ~0x00000001);
-          activeVertices_ = 0;
-          bitField0_ = (bitField0_ & ~0x00000002);
-          return this;
-        }
-
-        public Builder clone() {
-          return create().mergeFrom(buildPartial());
-        }
-
-        public com.google.protobuf.Descriptors.Descriptor
-            getDescriptorForType() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_descriptor;
-        }
-
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage getDefaultInstanceForType() {
-          return mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.getDefaultInstance();
-        }
-
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage build() {
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage result = buildPartial();
-          if (!result.isInitialized()) {
-            throw newUninitializedMessageException(result);
-          }
-          return result;
-        }
-
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage buildPartial() {
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage(this);
-          int from_bitField0_ = bitField0_;
-          int to_bitField0_ = 0;
-          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-            to_bitField0_ |= 0x00000001;
-          }
-          result.vertexCount_ = vertexCount_;
-          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-            to_bitField0_ |= 0x00000002;
-          }
-          result.activeVertices_ = activeVertices_;
-          result.bitField0_ = to_bitField0_;
-          onBuilt();
-          return result;
-        }
-
-        public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage) {
-            return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage)other);
-          } else {
-            super.mergeFrom(other);
-            return this;
-          }
-        }
-
-        public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage other) {
-          if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.getDefaultInstance()) return this;
-          if (other.hasVertexCount()) {
-            setVertexCount(other.getVertexCount());
-          }
-          if (other.hasActiveVertices()) {
-            setActiveVertices(other.getActiveVertices());
-          }
-          this.mergeUnknownFields(other.getUnknownFields());
-          return this;
-        }
-
-        public final boolean isInitialized() {
-          return true;
-        }
-
-        public Builder mergeFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage parsedMessage = null;
-          try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage) e.getUnfinishedMessage();
-            throw e;
-          } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
-          return this;
-        }
-        private int bitField0_;
-
-        // optional int32 VertexCount = 1;
-        private int vertexCount_ ;
-        /**
-         * <code>optional int32 VertexCount = 1;</code>
-         */
-        public boolean hasVertexCount() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
-        }
-        /**
-         * <code>optional int32 VertexCount = 1;</code>
-         */
-        public int getVertexCount() {
-          return vertexCount_;
-        }
-        /**
-         * <code>optional int32 VertexCount = 1;</code>
-         */
-        public Builder setVertexCount(int value) {
-          bitField0_ |= 0x00000001;
-          vertexCount_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>optional int32 VertexCount = 1;</code>
-         */
-        public Builder clearVertexCount() {
-          bitField0_ = (bitField0_ & ~0x00000001);
-          vertexCount_ = 0;
-          onChanged();
-          return this;
-        }
-
-        // optional int32 ActiveVertices = 2;
-        private int activeVertices_ ;
-        /**
-         * <code>optional int32 ActiveVertices = 2;</code>
-         */
-        public boolean hasActiveVertices() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
-        }
-        /**
-         * <code>optional int32 ActiveVertices = 2;</code>
-         */
-        public int getActiveVertices() {
-          return activeVertices_;
-        }
-        /**
-         * <code>optional int32 ActiveVertices = 2;</code>
-         */
-        public Builder setActiveVertices(int value) {
-          bitField0_ |= 0x00000002;
-          activeVertices_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>optional int32 ActiveVertices = 2;</code>
-         */
-        public Builder clearActiveVertices() {
-          bitField0_ = (bitField0_ & ~0x00000002);
-          activeVertices_ = 0;
-          onChanged();
-          return this;
-        }
-
-        // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage)
-      }
-
-      static {
-        defaultInstance = new GlobalStatsMessage(true);
-        defaultInstance.initFields();
-      }
-
-      // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage)
-    }
-
     private int bitField0_;
     // optional .mthesis.concurrent_graph.communication.messages.ControlMessageType Type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
@@ -3179,26 +2690,20 @@ public final class Messages {
       return assignPartitions_;
     }
 
-    // optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;
-    public static final int GLOBALSTATS_FIELD_NUMBER = 6;
-    private mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage globalStats_;
+    // optional bytes QueryGlobalValues = 6;
+    public static final int QUERYGLOBALVALUES_FIELD_NUMBER = 6;
+    private com.google.protobuf.ByteString queryGlobalValues_;
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
+     * <code>optional bytes QueryGlobalValues = 6;</code>
      */
-    public boolean hasGlobalStats() {
+    public boolean hasQueryGlobalValues() {
       return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
+     * <code>optional bytes QueryGlobalValues = 6;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage getGlobalStats() {
-      return globalStats_;
-    }
-    /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
-     */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessageOrBuilder getGlobalStatsOrBuilder() {
-      return globalStats_;
+    public com.google.protobuf.ByteString getQueryGlobalValues() {
+      return queryGlobalValues_;
     }
 
     private void initFields() {
@@ -3207,7 +2712,7 @@ public final class Messages {
       srcMachine_ = 0;
       workerStats_ = mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.getDefaultInstance();
       assignPartitions_ = mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage.getDefaultInstance();
-      globalStats_ = mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.getDefaultInstance();
+      queryGlobalValues_ = com.google.protobuf.ByteString.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3237,7 +2742,7 @@ public final class Messages {
         output.writeMessage(5, assignPartitions_);
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeMessage(6, globalStats_);
+        output.writeBytes(6, queryGlobalValues_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -3270,7 +2775,7 @@ public final class Messages {
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(6, globalStats_);
+          .computeBytesSize(6, queryGlobalValues_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3382,7 +2887,6 @@ public final class Messages {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getWorkerStatsFieldBuilder();
           getAssignPartitionsFieldBuilder();
-          getGlobalStatsFieldBuilder();
         }
       }
       private static Builder create() {
@@ -3409,11 +2913,7 @@ public final class Messages {
           assignPartitionsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
-        if (globalStatsBuilder_ == null) {
-          globalStats_ = mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.getDefaultInstance();
-        } else {
-          globalStatsBuilder_.clear();
-        }
+        queryGlobalValues_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
@@ -3474,11 +2974,7 @@ public final class Messages {
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
         }
-        if (globalStatsBuilder_ == null) {
-          result.globalStats_ = globalStats_;
-        } else {
-          result.globalStats_ = globalStatsBuilder_.build();
-        }
+        result.queryGlobalValues_ = queryGlobalValues_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3510,8 +3006,8 @@ public final class Messages {
         if (other.hasAssignPartitions()) {
           mergeAssignPartitions(other.getAssignPartitions());
         }
-        if (other.hasGlobalStats()) {
-          mergeGlobalStats(other.getGlobalStats());
+        if (other.hasQueryGlobalValues()) {
+          setQueryGlobalValues(other.getQueryGlobalValues());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -3876,121 +3372,40 @@ public final class Messages {
         return assignPartitionsBuilder_;
       }
 
-      // optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;
-      private mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage globalStats_ = mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessageOrBuilder> globalStatsBuilder_;
+      // optional bytes QueryGlobalValues = 6;
+      private com.google.protobuf.ByteString queryGlobalValues_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
+       * <code>optional bytes QueryGlobalValues = 6;</code>
        */
-      public boolean hasGlobalStats() {
+      public boolean hasQueryGlobalValues() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
+       * <code>optional bytes QueryGlobalValues = 6;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage getGlobalStats() {
-        if (globalStatsBuilder_ == null) {
-          return globalStats_;
-        } else {
-          return globalStatsBuilder_.getMessage();
-        }
+      public com.google.protobuf.ByteString getQueryGlobalValues() {
+        return queryGlobalValues_;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
+       * <code>optional bytes QueryGlobalValues = 6;</code>
        */
-      public Builder setGlobalStats(mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage value) {
-        if (globalStatsBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          globalStats_ = value;
-          onChanged();
-        } else {
-          globalStatsBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000020;
-        return this;
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
-       */
-      public Builder setGlobalStats(
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.Builder builderForValue) {
-        if (globalStatsBuilder_ == null) {
-          globalStats_ = builderForValue.build();
-          onChanged();
-        } else {
-          globalStatsBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000020;
-        return this;
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
-       */
-      public Builder mergeGlobalStats(mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage value) {
-        if (globalStatsBuilder_ == null) {
-          if (((bitField0_ & 0x00000020) == 0x00000020) &&
-              globalStats_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.getDefaultInstance()) {
-            globalStats_ =
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.newBuilder(globalStats_).mergeFrom(value).buildPartial();
-          } else {
-            globalStats_ = value;
-          }
-          onChanged();
-        } else {
-          globalStatsBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000020;
-        return this;
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
-       */
-      public Builder clearGlobalStats() {
-        if (globalStatsBuilder_ == null) {
-          globalStats_ = mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.getDefaultInstance();
-          onChanged();
-        } else {
-          globalStatsBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000020);
-        return this;
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
-       */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.Builder getGlobalStatsBuilder() {
-        bitField0_ |= 0x00000020;
+      public Builder setQueryGlobalValues(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        queryGlobalValues_ = value;
         onChanged();
-        return getGlobalStatsFieldBuilder().getBuilder();
+        return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
+       * <code>optional bytes QueryGlobalValues = 6;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessageOrBuilder getGlobalStatsOrBuilder() {
-        if (globalStatsBuilder_ != null) {
-          return globalStatsBuilder_.getMessageOrBuilder();
-        } else {
-          return globalStats_;
-        }
-      }
-      /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.GlobalStatsMessage GlobalStats = 6;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilder<
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessageOrBuilder> 
-          getGlobalStatsFieldBuilder() {
-        if (globalStatsBuilder_ == null) {
-          globalStatsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessageOrBuilder>(
-                  globalStats_,
-                  getParentForChildren(),
-                  isClean());
-          globalStats_ = null;
-        }
-        return globalStatsBuilder_;
+      public Builder clearQueryGlobalValues() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        queryGlobalValues_ = getDefaultInstance().getQueryGlobalValues();
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage)
@@ -4024,11 +3439,6 @@ public final class Messages {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -4042,7 +3452,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\314\007\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\273\006\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022g\n\013" +
@@ -4051,28 +3461,24 @@ public final class Messages {
       "ge.WorkerStatsMessage\022q\n\020AssignPartition" +
       "s\030\005 \001(\0132W.mthesis.concurrent_graph.commu" +
       "nication.messages.ControlMessage.AssignP" +
-      "artitionsMessage\022g\n\013GlobalStats\030\006 \001(\0132R." +
-      "mthesis.concurrent_graph.communication.m" +
-      "essages.ControlMessage.GlobalStatsMessag" +
-      "e\0321\n\027AssignPartitionsMessage\022\026\n\016Partitio" +
-      "nFiles\030\001 \003(\t\032\202\003\n\022WorkerStatsMessage\022\023\n\013V" +
-      "ertexCount\030\n \001(\005\022\026\n\016ActiveVertices\030\001 \001(\005" +
-      "\022\033\n\023SentControlMessages\030\002 \001(\005\022\037\n\027SentVer",
-      "texMessagesLocal\030\003 \001(\005\022!\n\031SentVertexMess" +
-      "agesUnicast\030\004 \001(\005\022#\n\033SentVertexMessagesB" +
-      "roadcast\030\005 \001(\005\022!\n\031SentVertexMessagesBuck" +
-      "ets\030\013 \001(\005\022%\n\035ReceivedCorrectVertexMessag" +
-      "es\030\006 \001(\005\022#\n\033ReceivedWrongVertexMessages\030" +
-      "\007 \001(\005\022#\n\033NewVertexMachinesDiscovered\030\010 \001" +
-      "(\005\022%\n\035TotalVertexMachinesDiscovered\030\t \001(" +
-      "\005\032A\n\022GlobalStatsMessage\022\023\n\013VertexCount\030\001" +
-      " \001(\005\022\026\n\016ActiveVertices\030\002 \001(\005*\253\001\n\022Control" +
-      "MessageType\022\025\n\021Channel_Handshake\020\001\022\034\n\030Wo",
-      "rker_Superstep_Barrier\020\002\022\035\n\031Worker_Super" +
-      "step_Finished\020\003\022\023\n\017Worker_Finished\020\004\022\031\n\025" +
-      "Master_Next_Superstep\020\005\022\021\n\rMaster_Finish" +
-      "\020\006B2\n&mthesis.concurrent_graph.communica" +
-      "tionB\010Messages"
+      "artitionsMessage\022\031\n\021QueryGlobalValues\030\006 " +
+      "\001(\014\0321\n\027AssignPartitionsMessage\022\026\n\016Partit" +
+      "ionFiles\030\001 \003(\t\032\202\003\n\022WorkerStatsMessage\022\023\n" +
+      "\013VertexCount\030\n \001(\005\022\026\n\016ActiveVertices\030\001 \001" +
+      "(\005\022\033\n\023SentControlMessages\030\002 \001(\005\022\037\n\027SentV" +
+      "ertexMessagesLocal\030\003 \001(\005\022!\n\031SentVertexMe" +
+      "ssagesUnicast\030\004 \001(\005\022#\n\033SentVertexMessage",
+      "sBroadcast\030\005 \001(\005\022!\n\031SentVertexMessagesBu" +
+      "ckets\030\013 \001(\005\022%\n\035ReceivedCorrectVertexMess" +
+      "ages\030\006 \001(\005\022#\n\033ReceivedWrongVertexMessage" +
+      "s\030\007 \001(\005\022#\n\033NewVertexMachinesDiscovered\030\010" +
+      " \001(\005\022%\n\035TotalVertexMachinesDiscovered\030\t " +
+      "\001(\005*\253\001\n\022ControlMessageType\022\025\n\021Channel_Ha" +
+      "ndshake\020\001\022\034\n\030Worker_Superstep_Barrier\020\002\022" +
+      "\035\n\031Worker_Superstep_Finished\020\003\022\023\n\017Worker" +
+      "_Finished\020\004\022\031\n\025Master_Next_Superstep\020\005\022\021" +
+      "\n\rMaster_Finish\020\006B2\n&mthesis.concurrent_",
+      "graph.communicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -4090,7 +3496,7 @@ public final class Messages {
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor,
-              new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "WorkerStats", "AssignPartitions", "GlobalStats", });
+              new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "WorkerStats", "AssignPartitions", "QueryGlobalValues", });
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_descriptor =
             internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(0);
           internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_fieldAccessorTable = new
@@ -4103,12 +3509,6 @@ public final class Messages {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor,
               new java.lang.String[] { "VertexCount", "ActiveVertices", "SentControlMessages", "SentVertexMessagesLocal", "SentVertexMessagesUnicast", "SentVertexMessagesBroadcast", "SentVertexMessagesBuckets", "ReceivedCorrectVertexMessages", "ReceivedWrongVertexMessages", "NewVertexMachinesDiscovered", "TotalVertexMachinesDiscovered", });
-          internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_descriptor =
-            internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(2);
-          internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_GlobalStatsMessage_descriptor,
-              new java.lang.String[] { "VertexCount", "ActiveVertices", });
           return null;
         }
       };
