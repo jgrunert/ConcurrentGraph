@@ -16,10 +16,10 @@ import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.QueryGlobalValues;
+import mthesis.concurrent_graph.QueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.GlobalStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.VertexMessageBucket;
 import mthesis.concurrent_graph.util.Pair;
@@ -51,10 +51,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private List<AbstractVertex<V, E, M, G>> localVerticesList;
 	private final Map<Integer, AbstractVertex<V, E, M, G>> localVerticesIdMap = new HashMap<>();
+
+	private final BaseQueryGlobalValuesFactory<G> globalValueFactory;
 	// Global, aggregated QueryGlobalValues. Aggregated and sent by master
-	private final G globalQueryValues;
+	private G globalQueryValues;
 	// Local QueryGlobalValues, are sent to master for aggregation.
-	private final G localQueryValues;
+	private G localQueryValues;
 
 	private final Set<Integer> channelBarrierWaitSet = new HashSet<>();
 	protected final Map<Integer, List<M>> inVertexMessages = new HashMap<>();
@@ -81,7 +83,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		for (final Integer workerId : otherWorkerIds) {
 			vertexMessageMachineBuckets.put(workerId, new VertexMessageBucket<>());
 		}
-		this.queryGlobalObjects = jobConfig.getGlobalValuesFactory().createFromBytes(bytes);
+		globalValueFactory = jobConfig.getGlobalValuesFactory();
+		localQueryValues = globalValueFactory.createDefault();
 
 		this.outputDir = outputDir;
 		this.jobConfig = jobConfig;
@@ -271,9 +274,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					switch (msg.getType()) {
 						case Master_Next_Superstep:
 							if (msg.getSuperstepNo() == superstepNo + 1) {
-								final GlobalStatsMessage globalStatsMsg = msg.getGlobalStats();
-								localQueryValues.setVertexCount(globalStatsMsg.getVertexCount());
-								localQueryValues.setActiveVertices(globalStatsMsg.getActiveVertices());
+								// TODO Global values, local values
 								return true;
 							}
 							else {
@@ -451,7 +452,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 	@Override
-	public G getQueryGlobalObjects() {
-		return queryGlobalObjects;
+	public G getLocalQueryValues() {
+		return localQueryValues;
+	}
+
+	@Override
+	public G getGlobalQueryValues() {
+		return globalQueryValues;
 	}
 }

@@ -7,5 +7,7 @@ public interface VertexWorkerInterface<M extends BaseWritable, G extends QueryGl
 
 	void sendVertexMessage(int dstVertex, M content);
 
-	G getQueryGlobalObjects();
+	G getLocalQueryValues();
+
+	G getGlobalQueryValues();
 }

@@ -39,13 +39,13 @@ public class QueryGlobalValues extends BaseWritable {
 
 	@Override
 	public void writeToBuffer(ByteBuffer buffer) {
-		// TODO Auto-generated method stub
-
+		buffer.putInt(ActiveVertices);
+		buffer.putInt(VertexCount);
 	}
 
 	@Override
 	public String getString() {
-		return null;
+		return ActiveVertices + ":" + VertexCount;
 	}
 
 
@@ -76,7 +76,18 @@ public class QueryGlobalValues extends BaseWritable {
 	}
 
 
-	public static class Factory extends BaseWritable.BaseWritableFactory<QueryGlobalValues> {
+
+	public static abstract class BaseQueryGlobalValuesFactory<T extends QueryGlobalValues> extends BaseWritableFactory<T> {
+
+		public abstract T createDefault();
+	}
+
+	public static class Factory extends BaseQueryGlobalValuesFactory<QueryGlobalValues> {
+
+		@Override
+		public QueryGlobalValues createDefault() {
+			return new QueryGlobalValues(0, 0);
+		}
 
 		@Override
 		public QueryGlobalValues createFromString(String str) {

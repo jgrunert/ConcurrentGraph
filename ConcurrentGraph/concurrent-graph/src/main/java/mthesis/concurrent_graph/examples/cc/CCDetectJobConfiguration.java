@@ -2,6 +2,7 @@ package mthesis.concurrent_graph.examples.cc;
 
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.QueryGlobalValues;
+import mthesis.concurrent_graph.QueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 import mthesis.concurrent_graph.writable.IntWritable;
@@ -30,7 +31,7 @@ public class CCDetectJobConfiguration extends JobConfiguration<IntWritable, Null
 	}
 
 	@Override
-	public BaseWritableFactory<QueryGlobalValues> getGlobalValuesFactory() {
+	public BaseQueryGlobalValuesFactory<QueryGlobalValues> getGlobalValuesFactory() {
 		return new QueryGlobalValues.Factory();
 	}
 

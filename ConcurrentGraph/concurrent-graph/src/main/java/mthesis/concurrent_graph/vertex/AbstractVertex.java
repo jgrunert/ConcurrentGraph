@@ -86,8 +86,12 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	public G getQueryGlobalObjects() {
-		return worker.getQueryGlobalObjects();
+	public G getLocalQueryValues() {
+		return worker.getLocalQueryValues();
+	}
+
+	public G getGlobalQueryValues() {
+		return worker.getGlobalQueryValues();
 	}
 
 

@@ -209,9 +209,9 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 		}
 	}
 
-	private void signalWorkersStartingSuperstep(int vertexCount, int activeVertices) {
+	private void signalWorkersStartingSuperstep(G globalValues) {
 		messaging.sendControlMessageMulticast(workerIds,
-				ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId, vertexCount, activeVertices), true);
+				ControlMessageBuildUtil.Build_Master_Next_Superstep(superstepNo, ownId, globalValues), true);
 	}
 
 	private void signalWorkersFinish() {
