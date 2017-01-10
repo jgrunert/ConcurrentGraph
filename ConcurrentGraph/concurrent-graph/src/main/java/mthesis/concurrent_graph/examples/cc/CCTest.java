@@ -41,7 +41,8 @@ public class CCTest {
 
 		System.out.println("Starting");
 		final ExampleTestUtils<IntWritable, NullWritable, CCMessageWritable, QueryGlobalValues> testUtils = new ExampleTestUtils<>();
-		testUtils.startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir);
+		testUtils.startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir,
+				jobConfig);
 
 		final List<WorkerMachine<IntWritable, NullWritable, CCMessageWritable, QueryGlobalValues>> workers = new ArrayList<>();
 		for (int i = 0; i < numWorkers; i++) {

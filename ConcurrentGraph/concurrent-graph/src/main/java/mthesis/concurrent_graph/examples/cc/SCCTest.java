@@ -41,7 +41,8 @@ public class SCCTest {
 
 		System.out.println("Starting");
 		final ExampleTestUtils<IntWritable, NullWritable, IntWritable, QueryGlobalValues> testUtils = new ExampleTestUtils<>();
-		testUtils.startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir);
+		testUtils.startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir,
+				jobConfig);
 
 		final List<WorkerMachine<IntWritable, NullWritable, IntWritable, QueryGlobalValues>> workers = new ArrayList<>();
 		for (int i = 0; i < numWorkers; i++) {

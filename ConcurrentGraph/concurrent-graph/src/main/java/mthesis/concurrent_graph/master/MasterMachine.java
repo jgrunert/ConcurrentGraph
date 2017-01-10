@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.master;
 
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Set;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.QueryGlobalValues;
+import mthesis.concurrent_graph.QueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
@@ -37,9 +39,12 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 	private final MasterInputPartitioner inputPartitioner;
 	private final MasterOutputEvaluator outputCombiner;
 
+	private final BaseQueryGlobalValuesFactory<G> globalValueFactory;
+
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
-			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir) {
+			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir,
+			BaseQueryGlobalValuesFactory<G> globalValueFactory) {
 		super(machines, ownId, null);
 		this.workerIds = workerIds;
 		this.inputFile = inputFile;
@@ -47,6 +52,7 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 		this.inputPartitioner = inputPartitioner;
 		this.outputCombiner = outputCombiner;
 		this.outputDir = outputDir;
+		this.globalValueFactory = globalValueFactory;
 		FileUtil.makeCleanDirectory(outputDir);
 	}
 
@@ -70,8 +76,6 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 
 				// Wait for workers to send finished control messages.
 				int activeWorkers = 0;
-				int activeVertices = 0;
-				int vertexCount = 0;
 				int SentControlMessages = 0;
 				int SentVertexMessagesLocal = 0;
 				int SentVertexMessagesUnicast = 0;
@@ -81,14 +85,17 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 				int ReceivedWrongVertexMessages = 0;
 				int newVertexMachinesDiscovered = 0;
 				int totalVertexMachinesDiscovered = 0;
+				G aggregatedGlobalValues = globalValueFactory.createDefault();
 				while (!workersWaitingFor.isEmpty()) {
 					final ControlMessage msg = inControlMessages.take();
 					if (msg.getType() == ControlMessageType.Worker_Superstep_Finished) {
 						if (msg.getSuperstepNo() == superstepNo) {
 							final WorkerStatsMessage workerStats = msg.getWorkerStats();
-							if (workerStats.getActiveVertices() > 0) activeWorkers++;
-							vertexCount += workerStats.getVertexCount();
-							activeVertices += workerStats.getActiveVertices();
+
+							G workerValues = globalValueFactory.createFromBytes(ByteBuffer.wrap(msg.getQueryGlobalValues().toByteArray()));
+							if (workerValues.getActiveVertices() > 0) activeWorkers++;
+							aggregatedGlobalValues.add(workerValues);
+
 							SentControlMessages += workerStats.getSentControlMessages();
 							SentVertexMessagesLocal += workerStats.getSentVertexMessagesLocal();
 							SentVertexMessagesUnicast += workerStats.getSentVertexMessagesUnicast();
@@ -130,7 +137,8 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 				final long timeNow = System.currentTimeMillis();
 				System.out.println("----- superstep " + superstepNo + " -----");
 				logger.info(String.format("- Master finished superstep %d after %dms (total %dms). activeWorkers: %d activeVertices: %d",
-						superstepNo, (timeNow - lastSuperstepTime), (timeNow - startTime), activeWorkers, activeVertices));
+						superstepNo, (timeNow - lastSuperstepTime), (timeNow - startTime), activeWorkers,
+						aggregatedGlobalValues.getActiveVertices()));
 				logger.info(String.format(
 						"  SentControlMessages: %d, SentVertexMessagesLocal: %d, SentVertexMessagesUnicast: %d, SentVertexMessagesBroadcast: %d, SentVertexMessagesBuckets %d",
 						SentControlMessages, SentVertexMessagesLocal, SentVertexMessagesUnicast, SentVertexMessagesBroadcast,
@@ -145,7 +153,7 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 					// Next superstep
 					superstepNo++;
 					logger.info("Next master superstep: " + superstepNo);
-					signalWorkersStartingSuperstep(vertexCount, activeVertices);
+					signalWorkersStartingSuperstep(aggregatedGlobalValues);
 				}
 				else {
 					// Finished

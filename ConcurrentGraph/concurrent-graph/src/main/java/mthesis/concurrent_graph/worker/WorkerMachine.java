@@ -1,6 +1,7 @@
 package mthesis.concurrent_graph.worker;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -119,7 +120,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		// Load assigned partitions
 		loadVertices(assignedPartitions);
-		superstepStats.ActiveVertices = localVerticesList.size();
+		localQueryValues.setVertexCount(localVerticesList.size());
+		localQueryValues.setActiveVertices(localVerticesList.size());
 		sendMasterSuperstepFinished();
 
 		try {
@@ -169,10 +171,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 
 				// Count active vertices
+				int activeVertices = 0;
 				for (final AbstractVertex<V, E, M, G> vertex : localVerticesList) {
-					if (vertex.isActive()) superstepStats.ActiveVertices++;
+					if (vertex.isActive()) activeVertices++;
 				}
-				logger.debug("Worker finished superstep message sort " + superstepNo + " activeVertices: " + superstepStats.ActiveVertices);
+				localQueryValues.setActiveVertices(activeVertices);
+				logger.debug("Worker finished superstep message sort " + superstepNo + " activeVertices: " + activeVertices);
 
 				// Signal master that ready
 				superstepStats.TotalVertexMachinesDiscovered = remoteVertexMachineRegistry.getRegistrySize();
@@ -274,7 +278,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					switch (msg.getType()) {
 						case Master_Next_Superstep:
 							if (msg.getSuperstepNo() == superstepNo + 1) {
-								// TODO Global values, local values
+								globalQueryValues = globalValueFactory
+										.createFromBytes(ByteBuffer.wrap(msg.getQueryGlobalValues().toByteArray()));
 								return true;
 							}
 							else {
@@ -325,8 +330,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void sendMasterSuperstepFinished() {
 		superstepStats.SentControlMessages++;
 		messaging.sendControlMessageUnicast(masterId,
-				ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId, superstepStats, localVerticesList.size()),
-				true);
+				ControlMessageBuildUtil.Build_Worker_Superstep_Finished(superstepNo, ownId, superstepStats, localQueryValues), true);
 	}
 
 	private void sendMasterFinishedMessage() {

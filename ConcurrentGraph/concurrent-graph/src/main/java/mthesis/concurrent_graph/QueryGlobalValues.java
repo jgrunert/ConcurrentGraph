@@ -1,7 +1,6 @@
 package mthesis.concurrent_graph;
 
 import java.nio.ByteBuffer;
-import java.util.List;
 
 import mthesis.concurrent_graph.writable.BaseWritable;
 
@@ -28,13 +27,18 @@ public class QueryGlobalValues extends BaseWritable {
 		VertexCount = vertexCount;
 	}
 
-	public QueryGlobalValues aggregate(List<QueryGlobalValues> singleValues) {
-		QueryGlobalValues aggregated = new QueryGlobalValues();
-		for (QueryGlobalValues v : singleValues) {
-			aggregated.ActiveVertices += v.ActiveVertices;
-			aggregated.VertexCount += v.VertexCount;
-		}
-		return aggregated;
+	//	public QueryGlobalValues aggregate(List<QueryGlobalValues> singleValues) {
+	//		QueryGlobalValues aggregated = new QueryGlobalValues();
+	//		for (QueryGlobalValues v : singleValues) {
+	//			aggregated.ActiveVertices += v.ActiveVertices;
+	//			aggregated.VertexCount += v.VertexCount;
+	//		}
+	//		return aggregated;
+	//	}	
+
+	public void add(QueryGlobalValues v) {
+		ActiveVertices += v.ActiveVertices;
+		VertexCount += v.VertexCount;
 	}
 
 	@Override

@@ -23,10 +23,11 @@ public class ExampleTestUtils<V extends BaseWritable, E extends BaseWritable, M 
 
 	@SuppressWarnings("rawtypes")
 	public MasterMachine startMaster(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
-			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir) {
+			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir,
+			JobConfiguration<V, E, M, G> jobConfig) {
 		@SuppressWarnings("unchecked")
 		final MasterMachine node = new MasterMachine(machines, ownId, workerIds, inputFile, inputPartitionDir, inputPartitioner,
-				outputCombiner, outputDir);
+				outputCombiner, outputDir, jobConfig.getGlobalValuesFactory());
 		node.start();
 		return node;
 	}

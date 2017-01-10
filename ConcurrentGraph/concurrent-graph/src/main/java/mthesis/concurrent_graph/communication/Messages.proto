@@ -36,9 +36,7 @@ message MessageEnvelope {
 			repeated string PartitionFiles = 1;
 		}
 		
-		message WorkerStatsMessage {	
-			optional int32 VertexCount = 10;
-			optional int32 ActiveVertices = 1;	
+		message WorkerStatsMessage {
 			optional int32 SentControlMessages = 2;
 			optional int32 SentVertexMessagesLocal = 3;
 			optional int32 SentVertexMessagesUnicast = 4;

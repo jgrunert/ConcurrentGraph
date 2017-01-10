@@ -3,6 +3,7 @@ package mthesis.concurrent_graph.examples.sssp;
 import java.util.ArrayList;
 import java.util.List;
 
+import mthesis.concurrent_graph.QueryGlobalValues;
 import mthesis.concurrent_graph.examples.common.ExampleTestUtils;
 import mthesis.concurrent_graph.examples.common.MachineClusterConfiguration;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
@@ -31,15 +32,14 @@ public class SSSPTest {
 		final MasterOutputEvaluator outputCombiner = new SSSPOutputEvaluator();
 
 		System.out.println("Starting");
-		final ExampleTestUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable> testUtils = new ExampleTestUtils<>();
-		if (config.StartOnThisMachine.get(config.masterId))
-			testUtils.startMaster(config.AllMachineConfigs, config.masterId, config.AllWorkerIds, inputFile,
-					inputPartitionDir, inputPartitioner, outputCombiner, outputDir);
+		final ExampleTestUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, QueryGlobalValues> testUtils = new ExampleTestUtils<>();
+		if (config.StartOnThisMachine.get(config.masterId)) testUtils.startMaster(config.AllMachineConfigs, config.masterId,
+				config.AllWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
 
-		final List<WorkerMachine<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable>> workers = new ArrayList<>();
+		final List<WorkerMachine<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, QueryGlobalValues>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
-			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i))) workers
-					.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig));
+			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i)))
+				workers.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig));
 		}
 	}
 }

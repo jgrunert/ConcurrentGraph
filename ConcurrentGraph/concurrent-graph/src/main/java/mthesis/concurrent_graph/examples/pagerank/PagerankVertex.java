@@ -24,14 +24,14 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 	@Override
 	protected void compute(List<DoubleWritable> messages) {
 		if (superstepNo == 0) {
-			setValue(new DoubleWritable(1.0 / getQueryGlobalObjects().getVertexCount()));
+			setValue(new DoubleWritable(1.0 / getGlobalQueryValues().getVertexCount()));
 		}
 		else {
 			double sum = 0;
 			for (final DoubleWritable msg : messages) {
 				sum += msg.Value;
 			}
-			final double value = 0.15 / getQueryGlobalObjects().getVertexCount() + 0.85 * sum;
+			final double value = 0.15 / getGlobalQueryValues().getVertexCount() + 0.85 * sum;
 			// if(Math.abs(value - getValue().Value) < 0.000001)
 			// voteHalt();
 			getValue().Value = value;

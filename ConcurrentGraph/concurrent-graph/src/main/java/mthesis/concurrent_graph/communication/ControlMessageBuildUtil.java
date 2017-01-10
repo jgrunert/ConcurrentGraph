@@ -53,10 +53,14 @@ public class ControlMessageBuildUtil {
 	}
 
 	public static MessageEnvelope Build_Worker_Superstep_Finished(int superstepNo, int srcMachineId, SuperstepStats stats,
-			int vertexCount) {
-		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder().setVertexCount(vertexCount)
-				.setActiveVertices(stats.ActiveVertices).setSentControlMessages(stats.SentControlMessages)
-				.setSentVertexMessagesLocal(stats.SentVertexMessagesLocal).setSentVertexMessagesUnicast(stats.SentVertexMessagesUnicast)
+			QueryGlobalValues localQueryValues) {
+		ByteBuffer localValues = ByteBuffer.allocate(QueryGlobalValuesBufferSize); // TODO Dont re allocate?
+		localQueryValues.writeToBuffer(localValues);
+		localValues.position(0);
+		
+		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder()
+				.setSentVertexMessagesLocal(stats.SentVertexMessagesLocal)
+				.setSentVertexMessagesUnicast(stats.SentVertexMessagesUnicast)
 				.setSentVertexMessagesBroadcast(stats.SentVertexMessagesBroadcast)
 				.setSentVertexMessagesBuckets(stats.SentVertexMessagesBuckets)
 				.setReceivedCorrectVertexMessages(stats.ReceivedCorrectVertexMessages)
@@ -65,6 +69,7 @@ public class ControlMessageBuildUtil {
 				.setTotalVertexMachinesDiscovered(stats.TotalVertexMachinesDiscovered).build();
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Superstep_Finished)
+						.setQueryGlobalValues(ByteString.copyFrom(localValues))
 						.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).setWorkerStats(workerStats).build())
 				.build();
 	}
