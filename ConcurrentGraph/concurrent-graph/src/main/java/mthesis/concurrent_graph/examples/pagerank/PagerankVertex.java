@@ -32,8 +32,7 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 				sum += msg.Value;
 			}
 			final double value = 0.15 / getGlobalQueryValues().getVertexCount() + 0.85 * sum;
-			// if(Math.abs(value - getValue().Value) < 0.000001)
-			// voteHalt();
+			if (Math.abs(value - getValue().Value) < 0.000001) voteHalt();
 			getValue().Value = value;
 		}
 
