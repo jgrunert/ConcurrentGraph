@@ -28,6 +28,11 @@ public class SSSPMessageWritable extends BaseWritable {
 		return SrcVertex + ":" + Dist;
 	}
 
+	@Override
+	public int getBytesLength() {
+		return 4 + 8;
+	}
+
 
 	public static class Factory extends BaseWritable.BaseWritableFactory<SSSPMessageWritable> {
 

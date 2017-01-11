@@ -1,16 +1,15 @@
 package mthesis.concurrent_graph.examples.sssp;
 
 import mthesis.concurrent_graph.JobConfiguration;
-import mthesis.concurrent_graph.QueryGlobalValues;
-import mthesis.concurrent_graph.QueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
-public class SSSPJobConfiguration extends JobConfiguration<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, QueryGlobalValues> {
+public class SSSPJobConfiguration extends JobConfiguration<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPGlobalValues> {
 
 	@Override
-	public VertexFactory<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, QueryGlobalValues> getVertexFactory() {
+	public VertexFactory<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPGlobalValues> getVertexFactory() {
 		return new SSSPVertex.Factory();
 	}
 
@@ -30,7 +29,7 @@ public class SSSPJobConfiguration extends JobConfiguration<SSSPVertexWritable, D
 	}
 
 	@Override
-	public BaseQueryGlobalValuesFactory<QueryGlobalValues> getGlobalValuesFactory() {
-		return new QueryGlobalValues.Factory();
+	public BaseQueryGlobalValuesFactory<SSSPGlobalValues> getGlobalValuesFactory() {
+		return new SSSPGlobalValues.Factory();
 	}
 }

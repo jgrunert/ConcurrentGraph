@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mthesis.concurrent_graph.QueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
@@ -18,12 +18,12 @@ import mthesis.concurrent_graph.writable.NullWritable;
  * @author Jonas Grunert
  *
  */
-public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CCMessageWritable, QueryGlobalValues> {
+public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> {
 
 	// TODO Have this in state?
 	private final Set<Integer> allNeighbors = new HashSet<>();
 
-	public CCDetectVertex(int id, VertexWorkerInterface<CCMessageWritable, QueryGlobalValues> messageSender) {
+	public CCDetectVertex(int id, VertexWorkerInterface<CCMessageWritable, BaseQueryGlobalValues> messageSender) {
 		super(id, messageSender);
 		setValue(new IntWritable(id));
 	}
@@ -37,7 +37,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 			}
 
 			sendMessageToAllOutgoingEdges(new CCMessageWritable(ID, ID));
-			voteHalt();
+			voteVertexInactive();
 			return;
 		}
 
@@ -58,16 +58,16 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 			if (knownNeighborsBefore < allNeighbors.size())
 				sendMessageToVertices(new CCMessageWritable(ID, getValue().Value), allNeighbors);
 			//System.out.println("Vote halt on " + ID + " with " + value);
-			voteHalt();
+			voteVertexInactive();
 		}
 	}
 
 
-	public static class Factory extends VertexFactory<IntWritable, NullWritable, CCMessageWritable, QueryGlobalValues> {
+	public static class Factory extends VertexFactory<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> {
 
 		@Override
-		public AbstractVertex<IntWritable, NullWritable, CCMessageWritable, QueryGlobalValues> newInstance(int id,
-				VertexWorkerInterface<CCMessageWritable, QueryGlobalValues> messageSender) {
+		public AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> newInstance(int id,
+				VertexWorkerInterface<CCMessageWritable, BaseQueryGlobalValues> messageSender) {
 			return new CCDetectVertex(id, messageSender);
 		}
 	}

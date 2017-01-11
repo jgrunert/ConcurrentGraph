@@ -1,17 +1,17 @@
 package mthesis.concurrent_graph.examples.pagerank;
 
 import mthesis.concurrent_graph.JobConfiguration;
-import mthesis.concurrent_graph.QueryGlobalValues;
-import mthesis.concurrent_graph.QueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
-public class PagerankJobConfiguration extends JobConfiguration<DoubleWritable, NullWritable, DoubleWritable, QueryGlobalValues> {
+public class PagerankJobConfiguration extends JobConfiguration<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> {
 
 	@Override
-	public VertexFactory<DoubleWritable, NullWritable, DoubleWritable, QueryGlobalValues> getVertexFactory() {
+	public VertexFactory<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> getVertexFactory() {
 		return new PagerankVertex.Factory();
 	}
 
@@ -31,7 +31,7 @@ public class PagerankJobConfiguration extends JobConfiguration<DoubleWritable, N
 	}
 
 	@Override
-	public BaseQueryGlobalValuesFactory<QueryGlobalValues> getGlobalValuesFactory() {
-		return new QueryGlobalValues.Factory();
+	public BaseQueryGlobalValuesFactory<BaseQueryGlobalValues> getGlobalValuesFactory() {
+		return new BaseQueryGlobalValues.Factory();
 	}
 }

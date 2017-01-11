@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.JobConfiguration;
-import mthesis.concurrent_graph.QueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
@@ -21,7 +21,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  * 
  * @author Jonas Grunert
  */
-public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends QueryGlobalValues> {
+public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues> {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

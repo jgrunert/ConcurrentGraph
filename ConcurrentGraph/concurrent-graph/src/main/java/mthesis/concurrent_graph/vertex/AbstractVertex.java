@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import mthesis.concurrent_graph.QueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
-public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends QueryGlobalValues> {
+public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues> {
 
 	public final int ID;
 	private V value;
@@ -19,7 +19,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	protected int superstepNo = 0;
 	private final VertexWorkerInterface<M, G> worker;
-	private boolean votedHalt = false;
+	private boolean vertexInactive = false;
 
 
 	public AbstractVertex(int id, VertexWorkerInterface<M, G> worker) {
@@ -58,12 +58,12 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	protected void voteHalt() {
-		votedHalt = true;
+	protected void voteVertexInactive() {
+		vertexInactive = true;
 	}
 
 	public boolean isActive() {
-		return !(votedHalt && messagesNextSuperstep.isEmpty());
+		return !(vertexInactive && messagesNextSuperstep.isEmpty());
 	}
 
 

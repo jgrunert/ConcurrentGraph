@@ -2,7 +2,7 @@ package mthesis.concurrent_graph.examples.cc;
 
 import java.util.List;
 
-import mthesis.concurrent_graph.QueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
@@ -15,9 +15,9 @@ import mthesis.concurrent_graph.writable.NullWritable;
  * @author Jonas Grunert
  *
  */
-public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, IntWritable, QueryGlobalValues> {
+public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> {
 
-	public SCCDetectVertex(int id, VertexWorkerInterface<IntWritable, QueryGlobalValues> messageSender) {
+	public SCCDetectVertex(int id, VertexWorkerInterface<IntWritable, BaseQueryGlobalValues> messageSender) {
 		super(id, messageSender);
 		setValue(new IntWritable(id));
 	}
@@ -26,7 +26,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	protected void compute(List<IntWritable> messages) {
 		if (superstepNo == 0) {
 			sendMessageToAllOutgoingEdges(getValue());
-			voteHalt();
+			voteVertexInactive();
 			return;
 		}
 
@@ -43,16 +43,16 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 		}
 		else {
 			//System.out.println("Vote halt on " + ID + " with " + value);
-			voteHalt();
+			voteVertexInactive();
 		}
 	}
 
 
-	public static class Factory extends VertexFactory<IntWritable, NullWritable, IntWritable, QueryGlobalValues> {
+	public static class Factory extends VertexFactory<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> {
 
 		@Override
-		public AbstractVertex<IntWritable, NullWritable, IntWritable, QueryGlobalValues> newInstance(int id,
-				VertexWorkerInterface<IntWritable, QueryGlobalValues> messageSender) {
+		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> newInstance(int id,
+				VertexWorkerInterface<IntWritable, BaseQueryGlobalValues> messageSender) {
 			return new SCCDetectVertex(id, messageSender);
 		}
 	}

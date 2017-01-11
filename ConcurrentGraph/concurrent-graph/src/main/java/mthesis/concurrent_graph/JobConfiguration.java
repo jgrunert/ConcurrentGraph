@@ -1,11 +1,11 @@
 package mthesis.concurrent_graph;
 
-import mthesis.concurrent_graph.QueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
-public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends QueryGlobalValues> {
+public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues> {
 
 	public abstract VertexFactory<V, E, M, G> getVertexFactory();
 

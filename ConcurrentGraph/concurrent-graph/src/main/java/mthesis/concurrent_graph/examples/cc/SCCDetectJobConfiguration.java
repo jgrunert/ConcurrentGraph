@@ -1,17 +1,17 @@
 package mthesis.concurrent_graph.examples.cc;
 
 import mthesis.concurrent_graph.JobConfiguration;
-import mthesis.concurrent_graph.QueryGlobalValues;
-import mthesis.concurrent_graph.QueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
-public class SCCDetectJobConfiguration extends JobConfiguration<IntWritable, NullWritable, IntWritable, QueryGlobalValues> {
+public class SCCDetectJobConfiguration extends JobConfiguration<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> {
 
 	@Override
-	public VertexFactory<IntWritable, NullWritable, IntWritable, QueryGlobalValues> getVertexFactory() {
+	public VertexFactory<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> getVertexFactory() {
 		return new SCCDetectVertex.Factory();
 	}
 
@@ -31,8 +31,8 @@ public class SCCDetectJobConfiguration extends JobConfiguration<IntWritable, Nul
 	}
 
 	@Override
-	public BaseQueryGlobalValuesFactory<QueryGlobalValues> getGlobalValuesFactory() {
-		return new QueryGlobalValues.Factory();
+	public BaseQueryGlobalValuesFactory<BaseQueryGlobalValues> getGlobalValuesFactory() {
+		return new BaseQueryGlobalValues.Factory();
 	}
 
 }

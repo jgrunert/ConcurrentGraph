@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.google.protobuf.ByteString;
 
-import mthesis.concurrent_graph.QueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
@@ -30,7 +30,7 @@ public class ControlMessageBuildUtil {
 				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).setAssignPartitions(assignPartitionsMsg).build()).build();
 	}
 
-	public static MessageEnvelope Build_Master_Next_Superstep(int superstepNo, int srcMachineId, QueryGlobalValues globalValues) {
+	public static MessageEnvelope Build_Master_Next_Superstep(int superstepNo, int srcMachineId, BaseQueryGlobalValues globalValues) {
 		ByteBuffer globalValuesBuffer = ByteBuffer.allocate(QueryGlobalValuesBufferSize); // TODO Dont re allocate?
 		globalValues.writeToBuffer(globalValuesBuffer);
 		globalValuesBuffer.position(0);
@@ -53,7 +53,7 @@ public class ControlMessageBuildUtil {
 	}
 
 	public static MessageEnvelope Build_Worker_Superstep_Finished(int superstepNo, int srcMachineId, SuperstepStats stats,
-			QueryGlobalValues localQueryValues) {
+			BaseQueryGlobalValues localQueryValues) {
 		ByteBuffer localValues = ByteBuffer.allocate(QueryGlobalValuesBufferSize); // TODO Dont re allocate?
 		localQueryValues.writeToBuffer(localValues);
 		localValues.position(0);

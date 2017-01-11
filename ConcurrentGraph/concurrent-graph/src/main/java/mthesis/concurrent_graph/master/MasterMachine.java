@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 import mthesis.concurrent_graph.AbstractMachine;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.MachineConfig;
-import mthesis.concurrent_graph.QueryGlobalValues;
-import mthesis.concurrent_graph.QueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
@@ -28,7 +28,7 @@ import mthesis.concurrent_graph.writable.NullWritable;
  * @param <G>
  *            Global query values
  */
-public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<NullWritable> {
+public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMachine<NullWritable> {
 
 	private final List<Integer> workerIds;
 	private int superstepNo = -1;
@@ -37,14 +37,15 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 	private final String inputPartitionDir;
 	private final String outputDir;
 	private final MasterInputPartitioner inputPartitioner;
-	private final MasterOutputEvaluator outputCombiner;
+	private final MasterOutputEvaluator<G> outputCombiner;
 
 	private final BaseQueryGlobalValuesFactory<G> globalValueFactory;
+	private final G baseQuery;
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
-			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator outputCombiner, String outputDir,
-			BaseQueryGlobalValuesFactory<G> globalValueFactory) {
+			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator<G> outputCombiner, String outputDir,
+			BaseQueryGlobalValuesFactory<G> globalValueFactory, G queryToProcess) {
 		super(machines, ownId, null);
 		this.workerIds = workerIds;
 		this.inputFile = inputFile;
@@ -53,6 +54,7 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 		this.outputCombiner = outputCombiner;
 		this.outputDir = outputDir;
 		this.globalValueFactory = globalValueFactory;
+		this.baseQuery = queryToProcess;
 		FileUtil.makeCleanDirectory(outputDir);
 	}
 
@@ -85,7 +87,7 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 				int ReceivedWrongVertexMessages = 0;
 				int newVertexMachinesDiscovered = 0;
 				int totalVertexMachinesDiscovered = 0;
-				G aggregatedGlobalValues = globalValueFactory.createDefault();
+				G aggregatedGlobalValues = globalValueFactory.createClone(baseQuery);
 				while (!workersWaitingFor.isEmpty()) {
 					final ControlMessage msg = inControlMessages.take();
 					if (msg.getType() == ControlMessageType.Worker_Superstep_Finished) {
@@ -201,7 +203,7 @@ public class MasterMachine<G extends QueryGlobalValues> extends AbstractMachine<
 	private void finishMaster() {
 		// Aggregate output
 		try {
-			outputCombiner.evaluateOutput(outputDir);
+			outputCombiner.evaluateOutput(outputDir, baseQuery);
 		}
 		catch (final Exception e) {
 			logger.error("writeOutput failed", e);

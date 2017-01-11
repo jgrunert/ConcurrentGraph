@@ -9,13 +9,31 @@ import java.nio.ByteBuffer;
  *
  */
 public abstract class BaseWritable {
+
 	public abstract void writeToBuffer(ByteBuffer buffer);
+
+	public abstract int getBytesLength();
+
 	public abstract String getString();
 
 
-	public static abstract class BaseWritableFactory<T>{
+	public byte[] getBytes() {
+		ByteBuffer buf = ByteBuffer.allocate(getBytesLength());
+		writeToBuffer(buf);
+		return buf.array();
+	}
+
+
+
+	public static abstract class BaseWritableFactory<T extends BaseWritable> {
+
 		public abstract T createFromString(String str);
+
 		public abstract T createFromBytes(ByteBuffer bytes);
+
+		public T createClone(T toClone) {
+			return createFromBytes(ByteBuffer.wrap(toClone.getBytes()));
+		}
 	}
 
 	@Override

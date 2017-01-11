@@ -22,8 +22,14 @@ public class IntWritable extends BaseWritable {
 		return Integer.toString(Value);
 	}
 
+	@Override
+	public int getBytesLength() {
+		return 4;
+	}
+
 
 	public static class Factory extends BaseWritableFactory<IntWritable> {
+
 		@Override
 		public IntWritable createFromString(String str) {
 			return new IntWritable(Integer.parseInt(str));

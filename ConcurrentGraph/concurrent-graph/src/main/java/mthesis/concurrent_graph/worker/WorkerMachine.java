@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
-import mthesis.concurrent_graph.QueryGlobalValues;
-import mthesis.concurrent_graph.QueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
@@ -41,7 +41,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  * @param <G>
  *            Global query values type
  */
-public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends QueryGlobalValues>
+public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues>
 		extends AbstractMachine<M> implements VertexWorkerInterface<M, G> {
 
 	private final List<Integer> otherWorkerIds;

@@ -28,6 +28,11 @@ public class SSSPVertexWritable extends BaseWritable {
 		return Pre + ":" + Dist;
 	}
 
+	@Override
+	public int getBytesLength() {
+		return 4 + 8;
+	}
+
 
 	public static class Factory extends BaseWritable.BaseWritableFactory<SSSPVertexWritable> {
 

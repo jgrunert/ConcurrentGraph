@@ -27,6 +27,11 @@ public class CCMessageWritable extends BaseWritable {
 		return SrcVertex + ":" + Value;
 	}
 
+	@Override
+	public int getBytesLength() {
+		return 2 * 4;
+	}
+
 
 	public static class Factory extends BaseWritable.BaseWritableFactory<CCMessageWritable> {
 

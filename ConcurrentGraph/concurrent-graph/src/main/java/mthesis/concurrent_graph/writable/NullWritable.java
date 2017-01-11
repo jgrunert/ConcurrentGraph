@@ -18,8 +18,14 @@ public class NullWritable extends BaseWritable {
 		return "";
 	}
 
+	@Override
+	public int getBytesLength() {
+		return 0;
+	}
+
 
 	public static class Factory extends BaseWritableFactory<NullWritable> {
+
 		@Override
 		public NullWritable createFromString(String str) {
 			return new NullWritable();

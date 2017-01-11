@@ -2,7 +2,7 @@ package mthesis.concurrent_graph.examples.pagerank;
 
 import java.util.List;
 
-import mthesis.concurrent_graph.QueryGlobalValues;
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
@@ -15,9 +15,9 @@ import mthesis.concurrent_graph.writable.NullWritable;
  * @author Jonas Grunert
  *
  */
-public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, QueryGlobalValues> {
+public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> {
 
-	public PagerankVertex(int id, VertexWorkerInterface<DoubleWritable, QueryGlobalValues> messageSender) {
+	public PagerankVertex(int id, VertexWorkerInterface<DoubleWritable, BaseQueryGlobalValues> messageSender) {
 		super(id, messageSender);
 	}
 
@@ -32,7 +32,7 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 				sum += msg.Value;
 			}
 			final double value = 0.15 / getGlobalQueryValues().getVertexCount() + 0.85 * sum;
-			if (Math.abs(value - getValue().Value) < 0.000001) voteHalt();
+			if (Math.abs(value - getValue().Value) < 0.000001) voteVertexInactive();
 			getValue().Value = value;
 		}
 
@@ -41,16 +41,16 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 			sendMessageToAllOutgoingEdges(new DoubleWritable(n));
 		}
 		else {
-			voteHalt();
+			voteVertexInactive();
 		}
 	}
 
 
-	public static class Factory extends VertexFactory<DoubleWritable, NullWritable, DoubleWritable, QueryGlobalValues> {
+	public static class Factory extends VertexFactory<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> {
 
 		@Override
-		public AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, QueryGlobalValues> newInstance(int id,
-				VertexWorkerInterface<DoubleWritable, QueryGlobalValues> messageSender) {
+		public AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> newInstance(int id,
+				VertexWorkerInterface<DoubleWritable, BaseQueryGlobalValues> messageSender) {
 			return new PagerankVertex(id, messageSender);
 		}
 	}

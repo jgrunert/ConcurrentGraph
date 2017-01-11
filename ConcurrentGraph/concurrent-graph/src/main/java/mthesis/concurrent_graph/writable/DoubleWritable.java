@@ -22,8 +22,14 @@ public class DoubleWritable extends BaseWritable {
 		return Double.toString(Value);
 	}
 
+	@Override
+	public int getBytesLength() {
+		return 8;
+	}
+
 
 	public static class Factory extends BaseWritableFactory<DoubleWritable> {
+
 		@Override
 		public DoubleWritable createFromString(String str) {
 			return new DoubleWritable(Double.parseDouble(str));
@@ -33,6 +39,5 @@ public class DoubleWritable extends BaseWritable {
 		public DoubleWritable createFromBytes(ByteBuffer bytes) {
 			return new DoubleWritable(bytes.getDouble());
 		}
-
 	}
 }
