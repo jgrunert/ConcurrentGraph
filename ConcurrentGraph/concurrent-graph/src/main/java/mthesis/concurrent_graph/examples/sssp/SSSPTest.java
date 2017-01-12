@@ -47,6 +47,7 @@ public class SSSPTest {
 		// Start query
 		System.out.println("Starting query");
 		if (master != null) master.startQuery(new SSSPQueryValues(0, 0, 6310, 10));
-		//if (master != null) master.startQuery(new SSSPQueryValues(1, 0, 6310, 10));
+		master.waitForQueryFinish(0);
+		if (master != null) master.startQuery(new SSSPQueryValues(1, 0, 6332, 10));
 	}
 }

@@ -98,6 +98,21 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		logger.info("Master started query " + query.QueryId);
 	}
 
+	public boolean isQueryActive(int queryId) {
+		return activeQueries.containsKey(queryId);
+	}
+
+	public void waitForQueryFinish(int queryId) {
+		while (activeQueries.containsKey(queryId)) {
+			try {
+				Thread.sleep(100);
+			}
+			catch (InterruptedException e) {
+				return;
+			}
+		}
+	}
+
 
 	@Override
 	public synchronized void onIncomingControlMessage(ControlMessage message) {
