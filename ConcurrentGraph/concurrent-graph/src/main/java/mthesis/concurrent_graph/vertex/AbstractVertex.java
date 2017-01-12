@@ -9,7 +9,7 @@ import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
-public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues> {
+public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
 	public final int ID;
 	private V value;
@@ -18,11 +18,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	private List<Edge<E>> edges;
 
 	protected int superstepNo = 0;
-	private final VertexWorkerInterface<M, G> worker;
+	private final VertexWorkerInterface<M, Q> worker;
 	private boolean vertexInactive = false;
 
 
-	public AbstractVertex(int id, VertexWorkerInterface<M, G> worker) {
+	public AbstractVertex(int id, VertexWorkerInterface<M, Q> worker) {
 		super();
 		this.ID = id;
 		this.setEdges(edges);
@@ -30,7 +30,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	public void superstep(int superstep, G query) {
+	public void superstep(int superstep, Q query) {
 		if (isActive()) {
 			this.superstepNo = superstep;
 			compute(messagesNextSuperstep, query);
@@ -38,7 +38,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		}
 	}
 
-	protected abstract void compute(List<M> messages, G query);
+	protected abstract void compute(List<M> messages, Q query);
 
 
 	protected void sendMessageToAllOutgoingEdges(M message) {
@@ -58,7 +58,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	protected void voteVertexInactive() {
+	protected void voteVertexHalt() {
 		vertexInactive = true;
 	}
 

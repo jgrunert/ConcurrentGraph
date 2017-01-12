@@ -22,14 +22,14 @@ import mthesis.concurrent_graph.worker.SuperstepStats;
  */
 public class ControlMessageBuildUtil {
 
-	public static MessageEnvelope Build_Master_WorkerInitialize(int superstepNo, int srcMachineId, List<String> partitions) {
+	public static MessageEnvelope Build_Master_WorkerInitialize(int srcMachineId, List<String> partitions) {
 		final AssignPartitionsMessage assignPartitionsMsg = AssignPartitionsMessage.newBuilder().addAllPartitionFiles(partitions).build();
-		return MessageEnvelope.newBuilder()
+		return MessageEnvelope.newBuilder() 
 				.setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Master_Worker_Initialize)
-				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId)
+				.setSrcMachine(srcMachineId)
 				.setAssignPartitions(assignPartitionsMsg).build()).build();
-	}
+	} 
 
 	public static MessageEnvelope Build_Master_QueryStart(int srcMachineId, BaseQueryGlobalValues query) {
 		return MessageEnvelope.newBuilder()

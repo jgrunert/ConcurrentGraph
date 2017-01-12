@@ -26,7 +26,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	protected void compute(List<IntWritable> messages, BaseQueryGlobalValues query) {
 		if (superstepNo == 0) {
 			sendMessageToAllOutgoingEdges(getValue());
-			voteVertexInactive();
+			voteVertexHalt();
 			return;
 		}
 
@@ -43,7 +43,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 		}
 		else {
 			//System.out.println("Vote halt on " + ID + " with " + value);
-			voteVertexInactive();
+			voteVertexHalt();
 		}
 	}
 

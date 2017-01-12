@@ -29,7 +29,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 /**
  * Concurrent graph processing worker main
- * 
+ *
  * @author Jonas Grunert
  *
  * @param <V>
@@ -38,26 +38,26 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  *            Edge type
  * @param <M>
  *            Vertex message type
- * @param <G>
+ * @param <Q>
  *            Global query values type
  */
-public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues>
-		extends AbstractMachine<M> implements VertexWorkerInterface<M, G> {
+public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
+		extends AbstractMachine<M> implements VertexWorkerInterface<M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
 	private final String outputDir;
 
-	private final JobConfiguration<V, E, M, G> jobConfig;
+	private final JobConfiguration<V, E, M, Q> jobConfig;
 
-	private List<AbstractVertex<V, E, M, G>> localVerticesList;
-	private final Map<Integer, AbstractVertex<V, E, M, G>> localVerticesIdMap = new HashMap<>();
+	private List<AbstractVertex<V, E, M, Q>> localVerticesList;
+	private final Map<Integer, AbstractVertex<V, E, M, Q>> localVerticesIdMap = new HashMap<>();
 
-	private final BaseQueryGlobalValuesFactory<G> globalValueFactory;
+	private final BaseQueryGlobalValuesFactory<Q> globalValueFactory;
 	// Global, aggregated QueryGlobalValues. Aggregated and sent by master
-	private volatile G activeQuery;
+	private volatile Q activeQuery;
 	// Local QueryGlobalValues, are sent to master for aggregation.
-	private G activeQueryLocal;
+	private Q activeQueryLocal;
 
 	private final Set<Integer> channelBarrierWaitSet = new HashSet<>();
 	protected final Map<Integer, List<M>> inVertexMessages = new HashMap<>();
@@ -77,7 +77,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
-			JobConfiguration<V, E, M, G> jobConfig) {
+			JobConfiguration<V, E, M, Q> jobConfig) {
 		super(machines, ownId, jobConfig.getMessageValueFactory());
 		this.masterId = masterId;
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
@@ -91,10 +91,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 	private void loadVertices(List<String> partitions) {
-		localVerticesList = new VertexTextInputReader<V, E, M, G>().getVertices(partitions, jobConfig, this);
+		localVerticesList = new VertexTextInputReader<V, E, M, Q>().getVertices(partitions, jobConfig, this);
 
 		synchronized (inVertexMessages) {
-			for (final AbstractVertex<V, E, M, G> vertex : localVerticesList) {
+			for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 				localVerticesIdMap.put(vertex.ID, vertex);
 				inVertexMessages.put(vertex.ID, new ArrayList<>());
 			}
@@ -126,7 +126,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			while (!Thread.interrupted()) {
 				// Wait for query
 				while (activeQuery == null) {
-					// TODO activeQueryLocal 
+					// TODO activeQueryLocal
 					Thread.sleep(100);
 				}
 
@@ -142,7 +142,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					// Compute and Messaging (done by vertices)
 					logger.info("Worker start superstep compute " + superstepNo);
-					for (final AbstractVertex<V, E, M, G> vertex : localVerticesList) {
+					for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 						//final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
 						vertex.superstep(superstepNo, activeQuery);
 						//vertMsgs.clear();
@@ -161,7 +161,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					// Incoming messages
 					synchronized (inVertexMessages) {
 						for (final Entry<Integer, List<M>> msgQueue : inVertexMessages.entrySet()) {
-							final AbstractVertex<V, E, M, G> vertex = localVerticesIdMap.get(msgQueue.getKey());
+							final AbstractVertex<V, E, M, Q> vertex = localVerticesIdMap.get(msgQueue.getKey());
 							if (vertex != null) {
 								vertex.messagesNextSuperstep.addAll(msgQueue.getValue());
 							}
@@ -174,7 +174,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					// Count active vertices
 					int activeVertices = 0;
-					for (final AbstractVertex<V, E, M, G> vertex : localVerticesList) {
+					for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 						if (vertex.isActive()) activeVertices++;
 					}
 					activeQueryLocal.setActiveVertices(activeVertices);
@@ -187,10 +187,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					// Wait for start superstep from master
 					if (!waitForMasterNextSuperstep()) {
-						logger.info("Worker finishing query " + activeQuery.QueryId);
-						new VertexTextOutputWriter<V, E, M, G>().writeOutput(
+						new VertexTextOutputWriter<V, E, M, Q>().writeOutput(
 								outputDir + File.separator + activeQuery.QueryId + File.separator + ownId + ".txt", localVerticesList);
 						sendMasterFinishedMessage();
+						logger.info("Worker finished query " + activeQuery.QueryId);
+						activeQuery = null;
 						break;
 					}
 					superstepNo++;

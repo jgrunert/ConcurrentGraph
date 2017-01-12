@@ -17,7 +17,15 @@ public class ExampleTestUtils<V extends BaseWritable, E extends BaseWritable, M 
 	public WorkerMachine<V, E, M, G> startWorker(Map<Integer, MachineConfig> allCfg, int id, List<Integer> allWorkers, String output,
 			JobConfiguration<V, E, M, G> jobConfig) {
 		final WorkerMachine<V, E, M, G> node = new WorkerMachine<>(allCfg, id, allWorkers, -1, output, jobConfig);
-		node.start();
+		Thread workerStartThread = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				node.start();
+			}
+		});
+		workerStartThread.setName("workerStartThread");
+		workerStartThread.start();
 		return node;
 	}
 
@@ -26,7 +34,15 @@ public class ExampleTestUtils<V extends BaseWritable, E extends BaseWritable, M 
 			JobConfiguration<V, E, M, G> jobConfig) {
 		final MasterMachine<G> node = new MasterMachine<G>(machines, ownId, workerIds, inputFile, inputPartitionDir, inputPartitioner,
 				outputCombiner, outputDir, jobConfig.getGlobalValuesFactory());
-		node.start();
+		Thread masterStartThread = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				node.start();
+			}
+		});
+		masterStartThread.setName("masterStartThread");
+		masterStartThread.start();
 		return node;
 	}
 }

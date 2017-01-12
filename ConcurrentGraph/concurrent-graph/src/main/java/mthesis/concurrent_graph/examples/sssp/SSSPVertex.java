@@ -10,7 +10,7 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
 
 /**
  * Example vertex for single source shortest path
- * 
+ *
  * @author Jonas Grunert
  *
  */
@@ -25,7 +25,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 	protected void compute(List<SSSPMessageWritable> messages, SSSPQueryValues query) {
 		if (superstepNo == 0) {
 			if (ID != query.From) {
-				voteVertexInactive();
+				voteVertexHalt();
 				return;
 			}
 			else {
@@ -57,11 +57,11 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 		if (minDist > query.MaxDist) {
 			// Vertex is out of range
 			setValue(null);
-			voteVertexInactive();
+			voteVertexHalt();
 			return;
 		}
 
-		System.out.println("COMP " + ID + " " + minDist);
+		//System.out.println("COMP " + ID + " " + minDist);
 		if (minDist < mutableValue.Dist) {
 			mutableValue.Dist = minDist;
 			mutableValue.Pre = minPre;
@@ -69,7 +69,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 				sendMessageToVertex(new SSSPMessageWritable(ID, mutableValue.Dist + edge.Value.Value), edge.TargetVertexId);
 			}
 		}
-		voteVertexInactive();
+		voteVertexHalt();
 	}
 
 

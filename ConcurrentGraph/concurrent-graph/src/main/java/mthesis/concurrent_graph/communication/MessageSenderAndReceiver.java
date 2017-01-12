@@ -31,11 +31,12 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 /**
  * Class to handle messaging between nodes.
  * Based on java sockets.
- * 
+ *
  * @author Jonas Grunert
  *
  */
 public class MessageSenderAndReceiver<M extends BaseWritable> {
+
 	private final Logger logger;
 
 	private final int ownId;
@@ -68,13 +69,14 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		try {
 			closingServer = false;
 			serverThread = new Thread(new Runnable() {
+
 				@Override
 				public void run() {
 					try {
 						runServer();
 					}
 					catch (final Exception e) {
-						if(!closingServer)
+						if (!closingServer)
 							logger.error("runServer", e);
 					}
 				}
@@ -90,11 +92,12 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 
 	public boolean startChannels() {
 		// Connect to all other machines with smaller IDs
-		for(final Entry<Integer, MachineConfig> machine : machineConfigs.entrySet()) {
-			if(machine.getKey() < ownId) {
+		for (final Entry<Integer, MachineConfig> machine : machineConfigs.entrySet()) {
+			if (machine.getKey() < ownId) {
 				try {
 					connectToMachine(machine.getValue().HostName, machine.getValue().MessagePort, machine.getKey());
-				} catch (final Exception e) {
+				}
+				catch (final Exception e) {
 					logger.error("Exception at connectToMachine " + machine.getKey(), e);
 					return false;
 				}
@@ -105,7 +108,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 
 	public boolean waitUntilConnected() {
 		final long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
-		while(System.currentTimeMillis() <= timeoutTime &&
+		while (System.currentTimeMillis() <= timeoutTime &&
 				!(channelReceivers.size() == (machineConfigs.size() - 1) && channelSenders.size() == (machineConfigs.size() - 1))) {
 			try {
 				Thread.sleep(1);
@@ -114,7 +117,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 				break;
 			}
 		}
-		if(channelReceivers.size() == (machineConfigs.size() - 1) && channelSenders.size() == (machineConfigs.size() - 1)) {
+		if (channelReceivers.size() == (machineConfigs.size() - 1) && channelSenders.size() == (machineConfigs.size() - 1)) {
 			logger.info("Established all connections");
 			return true;
 		}
@@ -125,17 +128,17 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 	}
 
 	public void getReadyForClose() {
-		for(final ChannelMessageReceiver<M> channel : channelReceivers) {
+		for (final ChannelMessageReceiver<M> channel : channelReceivers) {
 			channel.getReadyForClose();
 		}
 	}
 
 	public void stop() {
 		closingServer = true;
-		for(final ChannelMessageSender<M> channel : channelSenders.values()) {
+		for (final ChannelMessageSender<M> channel : channelSenders.values()) {
 			channel.close();
 		}
-		for(final ChannelMessageReceiver<M> channel : channelReceivers) {
+		for (final ChannelMessageReceiver<M> channel : channelReceivers) {
 			channel.close();
 		}
 		try {
@@ -152,8 +155,9 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		final ChannelMessageSender<M> ch = channelSenders.get(dstId);
 		ch.sendMessageEnvelope(message, flush);
 	}
+
 	public void sendControlMessageMulticast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
-		for(final Integer machineId : dstIds) {
+		for (final Integer machineId : dstIds) {
 			sendControlMessageUnicast(machineId, message, flush);
 		}
 	}
@@ -162,8 +166,10 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		final ChannelMessageSender<M> ch = channelSenders.get(dstMachine);
 		ch.sendVertexMessage(superstepNo, srcMachine, false, vertexMessages);
 	}
-	public void sendVertexMessageBroadcast(List<Integer> otherWorkerIds, int superstepNo, int srcMachine, List<Pair<Integer, M>> vertexMessages) {
-		for(final Integer machineId : otherWorkerIds) {
+
+	public void sendVertexMessageBroadcast(List<Integer> otherWorkerIds, int superstepNo, int srcMachine,
+			List<Pair<Integer, M>> vertexMessages) {
+		for (final Integer machineId : otherWorkerIds) {
 			final ChannelMessageSender<M> ch = channelSenders.get(machineId);
 			ch.sendVertexMessage(superstepNo, srcMachine, true, vertexMessages);
 		}
@@ -208,8 +214,8 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		serverSocket = new ServerSocket(port);
 		logger.info("Started connection server");
 
-		try{
-			while(!Thread.interrupted() && !serverSocket.isClosed()) {
+		try {
+			while (!Thread.interrupted() && !serverSocket.isClosed()) {
 				final Socket clientSocket = serverSocket.accept();
 
 				logger.debug("Accepted connection: " + clientSocket);
@@ -221,7 +227,7 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 				logger.debug("Handshaked and established connection channel: " + connectedMachineId + " -> " + ownId + " " + clientSocket);
 			}
 		}
-		finally{
+		finally {
 			serverSocket.close();
 			logger.info("Closed connection server");
 		}

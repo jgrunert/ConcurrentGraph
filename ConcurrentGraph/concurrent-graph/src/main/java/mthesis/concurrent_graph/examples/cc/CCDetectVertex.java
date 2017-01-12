@@ -37,7 +37,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 			}
 
 			sendMessageToAllOutgoingEdges(new CCMessageWritable(ID, ID));
-			voteVertexInactive();
+			voteVertexHalt();
 			return;
 		}
 
@@ -58,7 +58,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 			if (knownNeighborsBefore < allNeighbors.size())
 				sendMessageToVertices(new CCMessageWritable(ID, getValue().Value), allNeighbors);
 			//System.out.println("Vote halt on " + ID + " with " + value);
-			voteVertexInactive();
+			voteVertexHalt();
 		}
 	}
 
