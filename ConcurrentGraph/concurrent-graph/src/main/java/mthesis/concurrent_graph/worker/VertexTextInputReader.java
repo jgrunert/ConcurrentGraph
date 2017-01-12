@@ -8,8 +8,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
@@ -18,7 +18,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
 /**
  * Reads input from file with standard format Vertex0,VertexValue0|Edge1Neighbor,Edge1Value;Edge2Neighbor,Edge2Value Vertex1...
- * 
+ *
  * @author Jonas Grunert
  */
 public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues> {
@@ -26,7 +26,7 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public List<AbstractVertex<V, E, M, G>> getVertices(List<String> partitions, JobConfiguration<V, E, M, G> jobConfig,
-			VertexWorkerInterface<M, G> vertexMessageSender) {
+			VertexWorkerInterface<V, E, M, G> vertexMessageSender) {
 
 		final VertexFactory<V, E, M, G> vertexFactory = jobConfig.getVertexFactory();
 		final BaseWritableFactory<V> vertexValueFactory = jobConfig.getVertexValueFactory();
@@ -48,7 +48,7 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 
 					// Optional vertex value
 					if (splitVertex.length > 1 && vertexValueFactory != null) {
-						vertex.setValue(vertexValueFactory.createFromString(splitVertex[1]));
+						vertex.setDefaultValue(vertexValueFactory.createFromString(splitVertex[1]));
 					}
 
 					// Vertex edges

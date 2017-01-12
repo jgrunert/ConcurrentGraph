@@ -14,7 +14,7 @@ import mthesis.concurrent_graph.writable.NullWritable;
 
 /**
  * Example vertex to detect connected components in a graph
- * 
+ *
  * @author Jonas Grunert
  *
  */
@@ -23,14 +23,17 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 	// TODO Have this in state?
 	private final Set<Integer> allNeighbors = new HashSet<>();
 
-	public CCDetectVertex(int id, VertexWorkerInterface<CCMessageWritable, BaseQueryGlobalValues> messageSender) {
+	public CCDetectVertex(int id,
+			VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> messageSender) {
 		super(id, messageSender);
-		setValue(new IntWritable(id));
 	}
 
 	@Override
-	protected void compute(List<CCMessageWritable> messages, BaseQueryGlobalValues query) {
+	protected void compute(int superstepNo, List<CCMessageWritable> messages, BaseQueryGlobalValues query) {
 		if (superstepNo == 0) {
+			IntWritable value = new IntWritable(ID);
+			setValue(value, query.QueryId);
+
 			final List<Edge<NullWritable>> edges = getEdges();
 			for (final Edge<NullWritable> edge : edges) {
 				allNeighbors.add(edge.TargetVertexId);
@@ -41,7 +44,8 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 			return;
 		}
 
-		int min = getValue().Value;
+		IntWritable mutableValue = getValue(query.QueryId);
+		int min = mutableValue.Value;
 		final int knownNeighborsBefore = allNeighbors.size();
 		for (final CCMessageWritable msg : messages) {
 			allNeighbors.add(msg.SrcVertex);
@@ -50,13 +54,13 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 			min = Math.min(min, msgValue);
 		}
 
-		if (min < getValue().Value) {
-			getValue().Value = min;
-			sendMessageToVertices(new CCMessageWritable(ID, getValue().Value), allNeighbors);
+		if (min < mutableValue.Value) {
+			mutableValue.Value = min;
+			sendMessageToVertices(new CCMessageWritable(ID, mutableValue.Value), allNeighbors);
 		}
 		else {
 			if (knownNeighborsBefore < allNeighbors.size())
-				sendMessageToVertices(new CCMessageWritable(ID, getValue().Value), allNeighbors);
+				sendMessageToVertices(new CCMessageWritable(ID, mutableValue.Value), allNeighbors);
 			//System.out.println("Vote halt on " + ID + " with " + value);
 			voteVertexHalt();
 		}
@@ -67,7 +71,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 
 		@Override
 		public AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> newInstance(int id,
-				VertexWorkerInterface<CCMessageWritable, BaseQueryGlobalValues> messageSender) {
+				VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> messageSender) {
 			return new CCDetectVertex(id, messageSender);
 		}
 	}

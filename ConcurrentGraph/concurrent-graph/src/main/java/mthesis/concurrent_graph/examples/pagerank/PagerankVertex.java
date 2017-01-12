@@ -11,20 +11,23 @@ import mthesis.concurrent_graph.writable.NullWritable;
 
 /**
  * Example vertex for pagerank
- * 
+ *
  * @author Jonas Grunert
  *
  */
 public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> {
 
-	public PagerankVertex(int id, VertexWorkerInterface<DoubleWritable, BaseQueryGlobalValues> messageSender) {
+	public PagerankVertex(int id,
+			VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> messageSender) {
 		super(id, messageSender);
 	}
 
 	@Override
-	protected void compute(List<DoubleWritable> messages, BaseQueryGlobalValues query) {
+	protected void compute(int superstepNo, List<DoubleWritable> messages, BaseQueryGlobalValues query) {
+		DoubleWritable mutableValue;
 		if (superstepNo == 0) {
-			setValue(new DoubleWritable(1.0 / query.getVertexCount()));
+			mutableValue = new DoubleWritable(1.0 / query.getVertexCount());
+			setValue(mutableValue, query.QueryId);
 		}
 		else {
 			double sum = 0;
@@ -32,12 +35,13 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 				sum += msg.Value;
 			}
 			final double value = 0.15 / query.getVertexCount() + 0.85 * sum;
-			if (Math.abs(value - getValue().Value) < 0.000001) voteVertexHalt();
-			getValue().Value = value;
+			mutableValue = getValue(query.QueryId);
+			if (Math.abs(value - mutableValue.Value) < 0.000001) voteVertexHalt();
+			mutableValue.Value = value;
 		}
 
 		if (superstepNo < 30) {
-			final double n = getValue().Value / getEdges().size();
+			final double n = mutableValue.Value / getEdges().size();
 			sendMessageToAllOutgoingEdges(new DoubleWritable(n));
 		}
 		else {
@@ -50,7 +54,7 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 
 		@Override
 		public AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> newInstance(int id,
-				VertexWorkerInterface<DoubleWritable, BaseQueryGlobalValues> messageSender) {
+				VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> messageSender) {
 			return new PagerankVertex(id, messageSender);
 		}
 	}

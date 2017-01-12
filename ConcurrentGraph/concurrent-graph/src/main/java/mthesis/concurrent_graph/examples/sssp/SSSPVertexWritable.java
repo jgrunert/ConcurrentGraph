@@ -46,5 +46,10 @@ public class SSSPVertexWritable extends BaseWritable {
 		public SSSPVertexWritable createFromBytes(ByteBuffer bytes) {
 			return new SSSPVertexWritable(bytes.getInt(), bytes.getDouble());
 		}
+
+		@Override
+		public SSSPVertexWritable createClone(SSSPVertexWritable toClone) {
+			return new SSSPVertexWritable(toClone.Pre, toClone.Dist);
+		}
 	}
 }

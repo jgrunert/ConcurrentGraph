@@ -16,13 +16,13 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
  */
 public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> {
 
-	public SSSPVertex(int id, VertexWorkerInterface<SSSPMessageWritable, SSSPQueryValues> messageSender) {
+	public SSSPVertex(int id,
+			VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> messageSender) {
 		super(id, messageSender);
-		setValue(null); // Never activated nodes don't have a value
 	}
 
 	@Override
-	protected void compute(List<SSSPMessageWritable> messages, SSSPQueryValues query) {
+	protected void compute(int superstepNo, List<SSSPMessageWritable> messages, SSSPQueryValues query) {
 		if (superstepNo == 0) {
 			if (ID != query.From) {
 				voteVertexHalt();
@@ -31,7 +31,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			else {
 				System.out.println("GO " + ID);
 				SSSPVertexWritable mutableValue = new SSSPVertexWritable(-1, 0);
-				setValue(mutableValue);
+				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
 					sendMessageToVertex(new SSSPMessageWritable(ID, edge.Value.Value), edge.TargetVertexId);
 				}
@@ -39,10 +39,10 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			}
 		}
 
-		SSSPVertexWritable mutableValue = getValue();
+		SSSPVertexWritable mutableValue = getValue(query.QueryId);
 		if (mutableValue == null) {
 			mutableValue = new SSSPVertexWritable(-1, Double.POSITIVE_INFINITY);
-			setValue(mutableValue);
+			setValue(mutableValue, query.QueryId);
 		}
 
 		double minDist = mutableValue.Dist;
@@ -56,7 +56,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 
 		if (minDist > query.MaxDist) {
 			// Vertex is out of range
-			setValue(null);
+			setValue(null, query.QueryId);
 			voteVertexHalt();
 			return;
 		}
@@ -77,7 +77,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 
 		@Override
 		public AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> newInstance(int id,
-				VertexWorkerInterface<SSSPMessageWritable, SSSPQueryValues> messageSender) {
+				VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> messageSender) {
 			return new SSSPVertex(id, messageSender);
 		}
 	}

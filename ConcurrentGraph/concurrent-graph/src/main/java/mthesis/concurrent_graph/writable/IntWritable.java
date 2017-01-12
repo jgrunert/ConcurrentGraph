@@ -40,5 +40,9 @@ public class IntWritable extends BaseWritable {
 			return new IntWritable(bytes.getInt());
 		}
 
+		@Override
+		public IntWritable createClone(IntWritable toClone) {
+			return new IntWritable(toClone.Value);
+		}
 	}
 }

@@ -39,5 +39,10 @@ public class DoubleWritable extends BaseWritable {
 		public DoubleWritable createFromBytes(ByteBuffer bytes) {
 			return new DoubleWritable(bytes.getDouble());
 		}
+
+		@Override
+		public DoubleWritable createClone(DoubleWritable toClone) {
+			return new DoubleWritable(toClone.Value);
+		}
 	}
 }

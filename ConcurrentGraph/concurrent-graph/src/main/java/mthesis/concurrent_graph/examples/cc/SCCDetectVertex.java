@@ -11,35 +11,38 @@ import mthesis.concurrent_graph.writable.NullWritable;
 
 /**
  * Example vertex to detect strongly connected components in a graph
- * 
+ *
  * @author Jonas Grunert
  *
  */
 public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> {
 
-	public SCCDetectVertex(int id, VertexWorkerInterface<IntWritable, BaseQueryGlobalValues> messageSender) {
+	public SCCDetectVertex(int id,
+			VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> messageSender) {
 		super(id, messageSender);
-		setValue(new IntWritable(id));
 	}
 
 	@Override
-	protected void compute(List<IntWritable> messages, BaseQueryGlobalValues query) {
+	protected void compute(int superstepNo, List<IntWritable> messages, BaseQueryGlobalValues query) {
 		if (superstepNo == 0) {
-			sendMessageToAllOutgoingEdges(getValue());
+			IntWritable value = new IntWritable(ID);
+			setValue(value, query.QueryId);
+			sendMessageToAllOutgoingEdges(value);
 			voteVertexHalt();
 			return;
 		}
 
-		int min = getValue().Value;
+		IntWritable mutableValue = getValue(query.QueryId);
+		int min = mutableValue.Value;
 		for (final IntWritable msg : messages) {
 			final int msgValue = msg.Value;
 			//System.out.println("Get " + msgValue + " on " + ID + " from " + msg.SrcVertex);
 			min = Math.min(min, msgValue);
 		}
 
-		if (min < getValue().Value) {
-			getValue().Value = min;
-			sendMessageToAllOutgoingEdges(getValue());
+		if (min < mutableValue.Value) {
+			mutableValue.Value = min;
+			sendMessageToAllOutgoingEdges(mutableValue);
 		}
 		else {
 			//System.out.println("Vote halt on " + ID + " with " + value);
@@ -52,7 +55,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 
 		@Override
 		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> newInstance(int id,
-				VertexWorkerInterface<IntWritable, BaseQueryGlobalValues> messageSender) {
+				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> messageSender) {
 			return new SCCDetectVertex(id, messageSender);
 		}
 	}

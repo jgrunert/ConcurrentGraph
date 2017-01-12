@@ -35,5 +35,10 @@ public class NullWritable extends BaseWritable {
 		public NullWritable createFromBytes(ByteBuffer bytes) {
 			return new NullWritable();
 		}
+
+		@Override
+		public NullWritable createClone(NullWritable toClone) {
+			return new NullWritable();
+		}
 	}
 }

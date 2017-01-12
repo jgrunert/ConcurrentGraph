@@ -26,6 +26,7 @@ import mthesis.concurrent_graph.communication.VertexMessageBucket;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
+import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
 /**
  * Concurrent graph processing worker main
@@ -42,7 +43,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-		extends AbstractMachine<M> implements VertexWorkerInterface<M, Q> {
+		extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -53,6 +54,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private List<AbstractVertex<V, E, M, Q>> localVerticesList;
 	private final Map<Integer, AbstractVertex<V, E, M, Q>> localVerticesIdMap = new HashMap<>();
 
+	private final BaseWritableFactory<V> vertexValueFactory;
 	private final BaseQueryGlobalValuesFactory<Q> globalValueFactory;
 	// Global, aggregated QueryGlobalValues. Aggregated and sent by master
 	private volatile Q activeQuery;
@@ -84,6 +86,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		for (final Integer workerId : otherWorkerIds) {
 			vertexMessageMachineBuckets.put(workerId, new VertexMessageBucket<>());
 		}
+		vertexValueFactory = jobConfig.getVertexValueFactory();
 		globalValueFactory = jobConfig.getGlobalValuesFactory();
 
 		this.outputDir = outputDir;
@@ -131,6 +134,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 
 				superstepNo = 0;
+				for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
+					vertex.startQuery(activeQuery.QueryId);
+				}
 
 				// Process loop
 				while (activeQuery != null) {
@@ -163,7 +169,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						for (final Entry<Integer, List<M>> msgQueue : inVertexMessages.entrySet()) {
 							final AbstractVertex<V, E, M, Q> vertex = localVerticesIdMap.get(msgQueue.getKey());
 							if (vertex != null) {
-								vertex.messagesNextSuperstep.addAll(msgQueue.getValue());
+								vertex.queryMessagesNextSuperstep.get(activeQuery.QueryId).addAll(msgQueue.getValue());
 							}
 							else {
 								logger.error("Cannot find vertex for messages: " + msgQueue.getKey());
@@ -175,7 +181,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					// Count active vertices
 					int activeVertices = 0;
 					for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-						if (vertex.isActive()) activeVertices++;
+						if (vertex.isActive(activeQuery.QueryId)) activeVertices++;
 					}
 					activeQueryLocal.setActiveVertices(activeVertices);
 					logger.debug("Worker finished superstep message sort " + superstepNo + " activeVertices: " + activeVertices);
@@ -188,8 +194,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					// Wait for start superstep from master
 					if (!waitForMasterNextSuperstep()) {
 						new VertexTextOutputWriter<V, E, M, Q>().writeOutput(
-								outputDir + File.separator + activeQuery.QueryId + File.separator + ownId + ".txt", localVerticesList);
+								outputDir + File.separator + activeQuery.QueryId + File.separator + ownId + ".txt", localVerticesList,
+								activeQuery.QueryId);
 						sendMasterFinishedMessage();
+						for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
+							vertex.finishQuery(activeQuery.QueryId);
+						}
 						logger.info("Worker finished query " + activeQuery.QueryId);
 						activeQuery = null;
 						break;
@@ -491,5 +501,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		for (final Integer srcVertex : srcVertices) {
 			if (remoteVertexMachineRegistry.addEntry(srcVertex, srcMachine)) superstepStats.NewVertexMachinesDiscovered++;
 		}
+	}
+
+	@Override
+	public BaseWritableFactory<V> getVertexValueFactory() {
+		return vertexValueFactory;
 	}
 }
