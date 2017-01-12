@@ -23,7 +23,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	}
 
 	@Override
-	protected void compute(List<IntWritable> messages) {
+	protected void compute(List<IntWritable> messages, BaseQueryGlobalValues query) {
 		if (superstepNo == 0) {
 			sendMessageToAllOutgoingEdges(getValue());
 			voteVertexInactive();

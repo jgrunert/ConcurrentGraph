@@ -135,6 +135,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				// Process loop
 				while (activeQuery != null) {
 					// Next superstep
+					channelBarrierWaitSet.addAll(otherWorkerIds);
 					superstepStats = new SuperstepStats();
 					logger.debug("Starting superstep " + superstepNo);
 
@@ -185,8 +186,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 					// Wait for start superstep from master
-					channelBarrierWaitSet.addAll(otherWorkerIds);
 					if (!waitForMasterNextSuperstep()) {
+						logger.info("Worker finishing query " + activeQuery.QueryId);
+						new VertexTextOutputWriter<V, E, M, G>().writeOutput(
+								outputDir + File.separator + activeQuery.QueryId + File.separator + ownId + ".txt", localVerticesList);
+						sendMasterFinishedMessage();
 						break;
 					}
 					superstepNo++;
@@ -197,9 +201,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			logger.error("Exception at worker run", e);
 		}
 		finally {
-			logger.info("Worker finishing");
-			new VertexTextOutputWriter<V, E, M, G>().writeOutput(outputDir + File.separator + ownId + ".txt", localVerticesList);
-			sendMasterFinishedMessage();
+			logger.info("Worker closing");
 			messaging.getReadyForClose();
 			try {
 				Thread.sleep(200); // TODO Cleaner solution, for example a final message from master

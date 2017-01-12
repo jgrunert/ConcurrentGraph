@@ -77,7 +77,7 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 
 		try {
 			// Initialize workers
-			superstepNo = -1;
+			superstepNo = 0;
 			initializeWorkersAssignPartitions(); // Signal workers to initialize
 			waitForWorkersInitialized(); // Wait for workers to finish initialize
 			logger.info("Workers initialized after " + (System.currentTimeMillis() - masterStartTime) + "ms");
@@ -255,7 +255,7 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 	private void evaluateQueryResult(G query) {
 		// Aggregate output
 		try {
-			outputCombiner.evaluateOutput(outputDir, query);
+			outputCombiner.evaluateOutput(outputDir + File.separator + query.QueryId, query);
 		}
 		catch (final Exception e) {
 			logger.error("writeOutput failed", e);

@@ -8,6 +8,7 @@ import java.util.Map;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.examples.common.ExampleTestUtils;
+import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.ContinousBlockInputPartitioner;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
@@ -39,14 +40,17 @@ public class SCCTest {
 			allCfg.put(i, new MachineConfig(host, baseControlMsgPort + 1 + i));
 		}
 
-		System.out.println("Starting");
+		System.out.println("Starting machines");
+		MasterMachine<BaseQueryGlobalValues> master = null;
 		final ExampleTestUtils<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> testUtils = new ExampleTestUtils<>();
-		testUtils.startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir,
+		master = testUtils.startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir,
 				jobConfig);
 
 		final List<WorkerMachine<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues>> workers = new ArrayList<>();
 		for (int i = 0; i < numWorkers; i++) {
 			workers.add(testUtils.startWorker(allCfg, i, allWorkerIds, outputDir, jobConfig));
 		}
+
+		if (master != null) master.startQuery(new BaseQueryGlobalValues(0, 0, 0));
 	}
 }

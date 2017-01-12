@@ -29,7 +29,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 	}
 
 	@Override
-	protected void compute(List<CCMessageWritable> messages) {
+	protected void compute(List<CCMessageWritable> messages, BaseQueryGlobalValues query) {
 		if (superstepNo == 0) {
 			final List<Edge<NullWritable>> edges = getEdges();
 			for (final Edge<NullWritable> edge : edges) {
