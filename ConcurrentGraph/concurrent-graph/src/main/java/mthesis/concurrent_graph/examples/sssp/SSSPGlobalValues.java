@@ -11,12 +11,12 @@ public class SSSPGlobalValues extends BaseQueryGlobalValues {
 	public double MaxDist;
 
 
-	public SSSPGlobalValues(int from, int to, double maxDist) {
-		this(0, 0, from, to, maxDist);
+	public SSSPGlobalValues(int queryId, int from, int to, double maxDist) {
+		this(queryId, 0, 0, from, to, maxDist);
 	}
 
-	private SSSPGlobalValues(int activeVertices, int vertexCount, int from, int to, double maxDist) {
-		super(activeVertices, vertexCount);
+	private SSSPGlobalValues(int queryId, int activeVertices, int vertexCount, int from, int to, double maxDist) {
+		super(queryId, activeVertices, vertexCount);
 		From = from;
 		To = to;
 		MaxDist = maxDist;
@@ -46,20 +46,20 @@ public class SSSPGlobalValues extends BaseQueryGlobalValues {
 	public static class Factory extends BaseQueryGlobalValuesFactory<SSSPGlobalValues> {
 
 		@Override
-		public SSSPGlobalValues createDefault() {
-			return new SSSPGlobalValues(0, 0, 0, 0, 0);
+		public SSSPGlobalValues createDefault(int queryId) {
+			return new SSSPGlobalValues(queryId, 0, 0, 0, 0, 0);
 		}
 
 		@Override
 		public SSSPGlobalValues createFromString(String str) {
 			final String[] sSplit = str.split(":");
 			return new SSSPGlobalValues(Integer.parseInt(sSplit[0]), Integer.parseInt(sSplit[1]), Integer.parseInt(sSplit[2]),
-					Integer.parseInt(sSplit[3]), Double.parseDouble(sSplit[4]));
+					Integer.parseInt(sSplit[3]), Integer.parseInt(sSplit[4]), Double.parseDouble(sSplit[5]));
 		}
 
 		@Override
 		public SSSPGlobalValues createFromBytes(ByteBuffer bytes) {
-			return new SSSPGlobalValues(bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getDouble());
+			return new SSSPGlobalValues(bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getDouble());
 		}
 	}
 }

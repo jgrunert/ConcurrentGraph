@@ -14,12 +14,14 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  */
 public class BaseQueryGlobalValues extends BaseWritable {
 
+	public final int QueryId;
 	protected int ActiveVertices;
 	protected int VertexCount;
 
 
-	public BaseQueryGlobalValues(int activeVertices, int vertexCount) {
+	public BaseQueryGlobalValues(int queryId, int activeVertices, int vertexCount) {
 		super();
+		QueryId = queryId;
 		ActiveVertices = activeVertices;
 		VertexCount = vertexCount;
 	}
@@ -34,19 +36,21 @@ public class BaseQueryGlobalValues extends BaseWritable {
 	//	}	
 
 	public void add(BaseQueryGlobalValues v) {
+		if (QueryId != v.QueryId) throw new RuntimeException("Cannot add qureries with differend IDs: " + QueryId + " " + v.QueryId);
 		ActiveVertices += v.ActiveVertices;
 		VertexCount += v.VertexCount;
 	}
 
 	@Override
 	public void writeToBuffer(ByteBuffer buffer) {
+		buffer.putInt(QueryId);
 		buffer.putInt(ActiveVertices);
 		buffer.putInt(VertexCount);
 	}
 
 	@Override
 	public String getString() {
-		return ActiveVertices + ":" + VertexCount;
+		return QueryId + ":" + ActiveVertices + ":" + VertexCount;
 	}
 
 
@@ -80,25 +84,25 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 	public static abstract class BaseQueryGlobalValuesFactory<T extends BaseQueryGlobalValues> extends BaseWritableFactory<T> {
 
-		public abstract T createDefault();
+		public abstract T createDefault(int queryId);
 	}
 
 	public static class Factory extends BaseQueryGlobalValuesFactory<BaseQueryGlobalValues> {
 
 		@Override
-		public BaseQueryGlobalValues createDefault() {
-			return new BaseQueryGlobalValues(0, 0);
+		public BaseQueryGlobalValues createDefault(int queryId) {
+			return new BaseQueryGlobalValues(queryId, 0, 0);
 		}
 
 		@Override
 		public BaseQueryGlobalValues createFromString(String str) {
 			final String[] sSplit = str.split(":");
-			return new BaseQueryGlobalValues(Integer.parseInt(sSplit[0]), Integer.parseInt(sSplit[1]));
+			return new BaseQueryGlobalValues(Integer.parseInt(sSplit[0]), Integer.parseInt(sSplit[1]), Integer.parseInt(sSplit[2]));
 		}
 
 		@Override
 		public BaseQueryGlobalValues createFromBytes(ByteBuffer bytes) {
-			return new BaseQueryGlobalValues(bytes.getInt(), bytes.getInt());
+			return new BaseQueryGlobalValues(bytes.getInt(), bytes.getInt(), bytes.getInt());
 		}
 	}
 

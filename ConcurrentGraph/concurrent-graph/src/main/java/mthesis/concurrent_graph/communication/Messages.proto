@@ -11,17 +11,23 @@ message MessageEnvelope {
 		// Handshake at channel startup
 		Channel_Handshake = 1;
 	
-		// Message from workers to workers to signal superstep barrier
-		Worker_Superstep_Barrier = 2;
-		// Message from workers to signal master that a superstep is finished, including barrier and message sort
-		Worker_Superstep_Finished = 3;
-		// Message from workers to signal master that the worker is completely finished
-		Worker_Finished = 4;
+		// Message from worker to master when finished initializing and ready now
+		Worker_Initialized = 2;
+		// Message from workers to workers to signal query superstep barrier
+		Worker_Query_Superstep_Barrier = 3;
+		// Message from workers to signal master that a query superstep is finished, including barrier and message sort
+		Worker_Query_Superstep_Finished = 4;
+		// Message from workers to signal master that a query is finished
+		Worker_Query_Finished = 5;
 	
-		// Message to signal workers to start with next superstep
-		Master_Next_Superstep = 5;
-		// Message to signal workers to finish, output and terminate
-		Master_Finish = 6;
+		// Message from master to workers to initialize, assigning partition
+		Master_Worker_Initialize = 6;
+		// Message from master to workers to start a query
+		Master_Query_Start = 7;
+		// Message to signal workers to start with next query superstep
+		Master_Query_Next_Superstep = 8;
+		// Message to signal workers to finish a query, output and terminate
+		Master_Query_Finished = 9;
 	}
 	  
 	message ControlMessage {

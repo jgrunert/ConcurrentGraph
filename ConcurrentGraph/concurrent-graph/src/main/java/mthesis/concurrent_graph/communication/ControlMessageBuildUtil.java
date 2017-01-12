@@ -1,6 +1,5 @@
 package mthesis.concurrent_graph.communication;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import com.google.protobuf.ByteString;
@@ -22,42 +21,52 @@ import mthesis.concurrent_graph.worker.SuperstepStats;
  */
 public class ControlMessageBuildUtil {
 
-	private static final int QueryGlobalValuesBufferSize = 1024;
-
-	public static MessageEnvelope Build_Master_Startup(int superstepNo, int srcMachineId, List<String> partitions) {
+	public static MessageEnvelope Build_Master_WorkerInitialize(int superstepNo, int srcMachineId, List<String> partitions) {
 		final AssignPartitionsMessage assignPartitionsMsg = AssignPartitionsMessage.newBuilder().addAllPartitionFiles(partitions).build();
-		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Master_Next_Superstep)
-				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).setAssignPartitions(assignPartitionsMsg).build()).build();
+		return MessageEnvelope.newBuilder()
+				.setControlMessage(ControlMessage.newBuilder()
+				.setType(ControlMessageType.Master_Worker_Initialize)
+				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId)
+				.setAssignPartitions(assignPartitionsMsg).build()).build();
 	}
 
-	public static MessageEnvelope Build_Master_Next_Superstep(int superstepNo, int srcMachineId, BaseQueryGlobalValues globalValues) {
-		ByteBuffer globalValuesBuffer = ByteBuffer.allocate(QueryGlobalValuesBufferSize); // TODO Dont re allocate?
-		globalValues.writeToBuffer(globalValuesBuffer);
-		globalValuesBuffer.position(0);
-
+	public static MessageEnvelope Build_Master_QueryStart(int srcMachineId, BaseQueryGlobalValues query) {
 		return MessageEnvelope.newBuilder()
-				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Master_Next_Superstep).setSuperstepNo(superstepNo)
-						.setSrcMachine(srcMachineId).setQueryGlobalValues(ByteString.copyFrom(globalValuesBuffer)).build())
+				.setControlMessage(ControlMessage.newBuilder()
+				.setType(ControlMessageType.Master_Query_Next_Superstep)
+				.setSuperstepNo(0)
+				.setQueryGlobalValues(ByteString.copyFrom(query.getBytes()))
+				.setSrcMachine(srcMachineId).setQueryGlobalValues(ByteString.copyFrom(query.getBytes())).build())
+				.build();
+	}
+	
+	public static MessageEnvelope Build_Master_QueryNextSuperstep(int superstepNo, int srcMachineId, BaseQueryGlobalValues query) {
+		return MessageEnvelope.newBuilder()
+				.setControlMessage(ControlMessage.newBuilder()
+				.setType(ControlMessageType.Master_Query_Next_Superstep)
+				.setQueryGlobalValues(ByteString.copyFrom(query.getBytes()))
+				.setSuperstepNo(superstepNo)
+				.setSrcMachine(srcMachineId).setQueryGlobalValues(ByteString.copyFrom(query.getBytes())).build())
 				.build();
 	}
 
-	public static MessageEnvelope Build_Master_Finish(int superstepNo, int srcMachineId) {
-		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Master_Finish)
+	public static MessageEnvelope Build_Master_QueryFinish(int superstepNo, int srcMachineId, BaseQueryGlobalValues query) {
+		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
+				.setType(ControlMessageType.Master_Query_Finished)
+				.setQueryGlobalValues(ByteString.copyFrom(query.getBytes()))
 				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build()).build();
 	}
 
-	public static MessageEnvelope Build_Worker_Superstep_Barrier(int superstepNo, int srcMachineId) {
+	public static MessageEnvelope Build_Worker_QuerySuperstepBarrier(int superstepNo, int srcMachineId, BaseQueryGlobalValues query) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
-				.setType(ControlMessageType.Worker_Superstep_Barrier).setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build())
+				.setType(ControlMessageType.Worker_Query_Superstep_Barrier)
+				.setQueryGlobalValues(ByteString.copyFrom(query.getBytes()))
+				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build())
 				.build();
 	}
 
-	public static MessageEnvelope Build_Worker_Superstep_Finished(int superstepNo, int srcMachineId, SuperstepStats stats,
-			BaseQueryGlobalValues localQueryValues) {
-		ByteBuffer localValues = ByteBuffer.allocate(QueryGlobalValuesBufferSize); // TODO Dont re allocate?
-		localQueryValues.writeToBuffer(localValues);
-		localValues.position(0);
-		
+	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId, SuperstepStats stats,
+			BaseQueryGlobalValues localQuery) {
 		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder()
 				.setSentVertexMessagesLocal(stats.SentVertexMessagesLocal)
 				.setSentVertexMessagesUnicast(stats.SentVertexMessagesUnicast)
@@ -68,14 +77,18 @@ public class ControlMessageBuildUtil {
 				.setNewVertexMachinesDiscovered(stats.NewVertexMachinesDiscovered)
 				.setTotalVertexMachinesDiscovered(stats.TotalVertexMachinesDiscovered).build();
 		return MessageEnvelope.newBuilder()
-				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Superstep_Finished)
-						.setQueryGlobalValues(ByteString.copyFrom(localValues))
-						.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).setWorkerStats(workerStats).build())
+				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Superstep_Finished)
+						.setQueryGlobalValues(ByteString.copyFrom(localQuery.getBytes()))
+						.setSuperstepNo(superstepNo)
+						.setSrcMachine(srcMachineId).setWorkerStats(workerStats).build())
 				.build();
 	}
 
-	public static MessageEnvelope Build_Worker_Finished(int superstepNo, int srcMachineId) {
-		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Finished)
+	public static MessageEnvelope Build_Worker_QueryFinished(int superstepNo, int srcMachineId, BaseQueryGlobalValues localQuery) {
+		return MessageEnvelope.newBuilder()
+				.setControlMessage(ControlMessage.newBuilder()
+				.setQueryGlobalValues(ByteString.copyFrom(localQuery.getBytes()))
+				.setType(ControlMessageType.Worker_Query_Finished)
 				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build()).build();
 	}
 }

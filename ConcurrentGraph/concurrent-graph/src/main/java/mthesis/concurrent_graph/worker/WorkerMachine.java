@@ -14,10 +14,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import mthesis.concurrent_graph.AbstractMachine;
-import mthesis.concurrent_graph.JobConfiguration;
-import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.JobConfiguration;
+import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
@@ -125,62 +125,67 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		sendMasterSuperstepFinished();
 
 		try {
+			// Execution loop
 			while (!Thread.interrupted()) {
-				// Wait for start superstep from master
-				channelBarrierWaitSet.addAll(otherWorkerIds);
-				if (!waitForMasterNextSuperstep()) {
-					break;
-				}
 
-				// Next superstep
-				superstepNo++;
-				superstepStats = new SuperstepStats();
-				logger.debug("Starting superstep " + superstepNo);
-
-
-				// Compute and Messaging (done by vertices)
-				logger.info("Worker start superstep compute " + superstepNo);
-				for (final AbstractVertex<V, E, M, G> vertex : localVerticesList) {
-					//final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
-					vertex.superstep(superstepNo);
-					//vertMsgs.clear();
-				}
-				logger.debug("Worker finished superstep compute " + superstepNo);
-
-
-				// Barrier sync with other workers;
-				flushVertexMessages();
-				sendWorkersSuperstepFinished();
-				waitForWorkerSuperstepsFinished();
-				logger.debug("Worker finished superstep barrier " + superstepNo);
-
-
-				// Sort messages from buffers after barrier sync
-				// Incoming messages
-				synchronized (inVertexMessages) {
-					for (final Entry<Integer, List<M>> msgQueue : inVertexMessages.entrySet()) {
-						final AbstractVertex<V, E, M, G> vertex = localVerticesIdMap.get(msgQueue.getKey());
-						if (vertex != null) {
-							vertex.messagesNextSuperstep.addAll(msgQueue.getValue());
-						}
-						else {
-							logger.error("Cannot find vertex for messages: " + msgQueue.getKey());
-						}
-						msgQueue.getValue().clear();
+				// Query loop
+				while (globalQueryValues != null) {
+					// Wait for start superstep from master
+					channelBarrierWaitSet.addAll(otherWorkerIds);
+					if (!waitForMasterNextSuperstep()) {
+						break;
 					}
-				}
 
-				// Count active vertices
-				int activeVertices = 0;
-				for (final AbstractVertex<V, E, M, G> vertex : localVerticesList) {
-					if (vertex.isActive()) activeVertices++;
-				}
-				localQueryValues.setActiveVertices(activeVertices);
-				logger.debug("Worker finished superstep message sort " + superstepNo + " activeVertices: " + activeVertices);
+					// Next superstep
+					superstepNo++;
+					superstepStats = new SuperstepStats();
+					logger.debug("Starting superstep " + superstepNo);
 
-				// Signal master that ready
-				superstepStats.TotalVertexMachinesDiscovered = remoteVertexMachineRegistry.getRegistrySize();
-				sendMasterSuperstepFinished();
+
+					// Compute and Messaging (done by vertices)
+					logger.info("Worker start superstep compute " + superstepNo);
+					for (final AbstractVertex<V, E, M, G> vertex : localVerticesList) {
+						//final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
+						vertex.superstep(superstepNo);
+						//vertMsgs.clear();
+					}
+					logger.debug("Worker finished superstep compute " + superstepNo);
+
+
+					// Barrier sync with other workers;
+					flushVertexMessages();
+					sendWorkersSuperstepFinished();
+					waitForWorkerSuperstepsFinished();
+					logger.debug("Worker finished superstep barrier " + superstepNo);
+
+
+					// Sort messages from buffers after barrier sync
+					// Incoming messages
+					synchronized (inVertexMessages) {
+						for (final Entry<Integer, List<M>> msgQueue : inVertexMessages.entrySet()) {
+							final AbstractVertex<V, E, M, G> vertex = localVerticesIdMap.get(msgQueue.getKey());
+							if (vertex != null) {
+								vertex.messagesNextSuperstep.addAll(msgQueue.getValue());
+							}
+							else {
+								logger.error("Cannot find vertex for messages: " + msgQueue.getKey());
+							}
+							msgQueue.getValue().clear();
+						}
+					}
+
+					// Count active vertices
+					int activeVertices = 0;
+					for (final AbstractVertex<V, E, M, G> vertex : localVerticesList) {
+						if (vertex.isActive()) activeVertices++;
+					}
+					localQueryValues.setActiveVertices(activeVertices);
+					logger.debug("Worker finished superstep message sort " + superstepNo + " activeVertices: " + activeVertices);
+
+					// Signal master that ready
+					superstepStats.TotalVertexMachinesDiscovered = remoteVertexMachineRegistry.getRegistrySize();
+					sendMasterSuperstepFinished();
+				}
 			}
 		}
 		catch (final Exception e) {

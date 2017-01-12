@@ -29,44 +29,68 @@ public final class Messages {
     Channel_Handshake(1),
     /**
      * <pre>
-     * Message from workers to workers to signal superstep barrier
+     * Message from worker to master when finished initializing and ready now
      * </pre>
      *
-     * <code>Worker_Superstep_Barrier = 2;</code>
+     * <code>Worker_Initialized = 2;</code>
      */
-    Worker_Superstep_Barrier(2),
+    Worker_Initialized(2),
     /**
      * <pre>
-     * Message from workers to signal master that a superstep is finished, including barrier and message sort
+     * Message from workers to workers to signal query superstep barrier
      * </pre>
      *
-     * <code>Worker_Superstep_Finished = 3;</code>
+     * <code>Worker_Query_Superstep_Barrier = 3;</code>
      */
-    Worker_Superstep_Finished(3),
+    Worker_Query_Superstep_Barrier(3),
     /**
      * <pre>
-     * Message from workers to signal master that the worker is completely finished
+     * Message from workers to signal master that a query superstep is finished, including barrier and message sort
      * </pre>
      *
-     * <code>Worker_Finished = 4;</code>
+     * <code>Worker_Query_Superstep_Finished = 4;</code>
      */
-    Worker_Finished(4),
+    Worker_Query_Superstep_Finished(4),
     /**
      * <pre>
-     * Message to signal workers to start with next superstep
+     * Message from workers to signal master that a query is finished
      * </pre>
      *
-     * <code>Master_Next_Superstep = 5;</code>
+     * <code>Worker_Query_Finished = 5;</code>
      */
-    Master_Next_Superstep(5),
+    Worker_Query_Finished(5),
     /**
      * <pre>
-     * Message to signal workers to finish, output and terminate
+     * Message from master to workers to initialize, assigning partition
      * </pre>
      *
-     * <code>Master_Finish = 6;</code>
+     * <code>Master_Worker_Initialize = 6;</code>
      */
-    Master_Finish(6),
+    Master_Worker_Initialize(6),
+    /**
+     * <pre>
+     * Message from master to workers to start a query
+     * </pre>
+     *
+     * <code>Master_Query_Start = 7;</code>
+     */
+    Master_Query_Start(7),
+    /**
+     * <pre>
+     * Message to signal workers to start with next query superstep
+     * </pre>
+     *
+     * <code>Master_Query_Next_Superstep = 8;</code>
+     */
+    Master_Query_Next_Superstep(8),
+    /**
+     * <pre>
+     * Message to signal workers to finish a query, output and terminate
+     * </pre>
+     *
+     * <code>Master_Query_Finished = 9;</code>
+     */
+    Master_Query_Finished(9),
     ;
 
     /**
@@ -79,44 +103,68 @@ public final class Messages {
     public static final int Channel_Handshake_VALUE = 1;
     /**
      * <pre>
-     * Message from workers to workers to signal superstep barrier
+     * Message from worker to master when finished initializing and ready now
      * </pre>
      *
-     * <code>Worker_Superstep_Barrier = 2;</code>
+     * <code>Worker_Initialized = 2;</code>
      */
-    public static final int Worker_Superstep_Barrier_VALUE = 2;
+    public static final int Worker_Initialized_VALUE = 2;
     /**
      * <pre>
-     * Message from workers to signal master that a superstep is finished, including barrier and message sort
+     * Message from workers to workers to signal query superstep barrier
      * </pre>
      *
-     * <code>Worker_Superstep_Finished = 3;</code>
+     * <code>Worker_Query_Superstep_Barrier = 3;</code>
      */
-    public static final int Worker_Superstep_Finished_VALUE = 3;
+    public static final int Worker_Query_Superstep_Barrier_VALUE = 3;
     /**
      * <pre>
-     * Message from workers to signal master that the worker is completely finished
+     * Message from workers to signal master that a query superstep is finished, including barrier and message sort
      * </pre>
      *
-     * <code>Worker_Finished = 4;</code>
+     * <code>Worker_Query_Superstep_Finished = 4;</code>
      */
-    public static final int Worker_Finished_VALUE = 4;
+    public static final int Worker_Query_Superstep_Finished_VALUE = 4;
     /**
      * <pre>
-     * Message to signal workers to start with next superstep
+     * Message from workers to signal master that a query is finished
      * </pre>
      *
-     * <code>Master_Next_Superstep = 5;</code>
+     * <code>Worker_Query_Finished = 5;</code>
      */
-    public static final int Master_Next_Superstep_VALUE = 5;
+    public static final int Worker_Query_Finished_VALUE = 5;
     /**
      * <pre>
-     * Message to signal workers to finish, output and terminate
+     * Message from master to workers to initialize, assigning partition
      * </pre>
      *
-     * <code>Master_Finish = 6;</code>
+     * <code>Master_Worker_Initialize = 6;</code>
      */
-    public static final int Master_Finish_VALUE = 6;
+    public static final int Master_Worker_Initialize_VALUE = 6;
+    /**
+     * <pre>
+     * Message from master to workers to start a query
+     * </pre>
+     *
+     * <code>Master_Query_Start = 7;</code>
+     */
+    public static final int Master_Query_Start_VALUE = 7;
+    /**
+     * <pre>
+     * Message to signal workers to start with next query superstep
+     * </pre>
+     *
+     * <code>Master_Query_Next_Superstep = 8;</code>
+     */
+    public static final int Master_Query_Next_Superstep_VALUE = 8;
+    /**
+     * <pre>
+     * Message to signal workers to finish a query, output and terminate
+     * </pre>
+     *
+     * <code>Master_Query_Finished = 9;</code>
+     */
+    public static final int Master_Query_Finished_VALUE = 9;
 
 
     public final int getNumber() {
@@ -134,11 +182,14 @@ public final class Messages {
     public static ControlMessageType forNumber(int value) {
       switch (value) {
         case 1: return Channel_Handshake;
-        case 2: return Worker_Superstep_Barrier;
-        case 3: return Worker_Superstep_Finished;
-        case 4: return Worker_Finished;
-        case 5: return Master_Next_Superstep;
-        case 6: return Master_Finish;
+        case 2: return Worker_Initialized;
+        case 3: return Worker_Query_Superstep_Barrier;
+        case 4: return Worker_Query_Superstep_Finished;
+        case 5: return Worker_Query_Finished;
+        case 6: return Master_Worker_Initialize;
+        case 7: return Master_Query_Start;
+        case 8: return Master_Query_Next_Superstep;
+        case 9: return Master_Query_Finished;
         default: return null;
       }
     }
@@ -3682,13 +3733,16 @@ public final class Messages {
       "\030\013 \001(\005\022%\n\035ReceivedCorrectVertexMessages\030" +
       "\006 \001(\005\022#\n\033ReceivedWrongVertexMessages\030\007 \001" +
       "(\005\022#\n\033NewVertexMachinesDiscovered\030\010 \001(\005\022" +
-      "%\n\035TotalVertexMachinesDiscovered\030\t \001(\005*\253" +
-      "\001\n\022ControlMessageType\022\025\n\021Channel_Handsha" +
-      "ke\020\001\022\034\n\030Worker_Superstep_Barrier\020\002\022\035\n\031Wo" +
-      "rker_Superstep_Finished\020\003\022\023\n\017Worker_Fini" +
-      "shed\020\004\022\031\n\025Master_Next_Superstep\020\005\022\021\n\rMas" +
-      "ter_Finish\020\006B2\n&mthesis.concurrent_graph" +
-      ".communicationB\010Messages"
+      "%\n\035TotalVertexMachinesDiscovered\030\t \001(\005*\231" +
+      "\002\n\022ControlMessageType\022\025\n\021Channel_Handsha" +
+      "ke\020\001\022\026\n\022Worker_Initialized\020\002\022\"\n\036Worker_Q" +
+      "uery_Superstep_Barrier\020\003\022#\n\037Worker_Query" +
+      "_Superstep_Finished\020\004\022\031\n\025Worker_Query_Fi" +
+      "nished\020\005\022\034\n\030Master_Worker_Initialize\020\006\022\026" +
+      "\n\022Master_Query_Start\020\007\022\037\n\033Master_Query_N",
+      "ext_Superstep\020\010\022\031\n\025Master_Query_Finished" +
+      "\020\tB2\n&mthesis.concurrent_graph.communica" +
+      "tionB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
