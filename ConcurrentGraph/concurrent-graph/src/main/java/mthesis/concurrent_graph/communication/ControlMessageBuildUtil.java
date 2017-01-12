@@ -7,6 +7,7 @@ import com.google.protobuf.ByteString;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
@@ -33,10 +34,10 @@ public class ControlMessageBuildUtil {
 	public static MessageEnvelope Build_Master_QueryStart(int srcMachineId, BaseQueryGlobalValues query) {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
-				.setType(ControlMessageType.Master_Query_Next_Superstep)
+				.setType(ControlMessageType.Master_Query_Start)
 				.setSuperstepNo(0)
-				.setQueryGlobalValues(ByteString.copyFrom(query.getBytes()))
-				.setSrcMachine(srcMachineId).setQueryGlobalValues(ByteString.copyFrom(query.getBytes())).build())
+				.setQueryValues(ByteString.copyFrom(query.getBytes()))
+				.setSrcMachine(srcMachineId).build())
 				.build();
 	}
 	
@@ -44,27 +45,37 @@ public class ControlMessageBuildUtil {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Master_Query_Next_Superstep)
-				.setQueryGlobalValues(ByteString.copyFrom(query.getBytes()))
+				.setQueryValues(ByteString.copyFrom(query.getBytes()))
 				.setSuperstepNo(superstepNo)
-				.setSrcMachine(srcMachineId).setQueryGlobalValues(ByteString.copyFrom(query.getBytes())).build())
+				.setSrcMachine(srcMachineId).setQueryValues(ByteString.copyFrom(query.getBytes())).build())
 				.build();
 	}
 
-	public static MessageEnvelope Build_Master_QueryFinish(int superstepNo, int srcMachineId, BaseQueryGlobalValues query) {
+	public static MessageEnvelope Build_Master_QueryFinish(int srcMachineId, BaseQueryGlobalValues query) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Master_Query_Finished)
-				.setQueryGlobalValues(ByteString.copyFrom(query.getBytes()))
-				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build()).build();
+				.setQueryValues(ByteString.copyFrom(query.getBytes()))
+				.setSrcMachine(srcMachineId).build()).build();
 	}
 
 	public static MessageEnvelope Build_Worker_QuerySuperstepBarrier(int superstepNo, int srcMachineId, BaseQueryGlobalValues query) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Worker_Query_Superstep_Barrier)
-				.setQueryGlobalValues(ByteString.copyFrom(query.getBytes()))
+				.setQueryValues(ByteString.copyFrom(query.getBytes()))
 				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build())
 				.build();
 	}
 
+	public static MessageEnvelope Build_Worker_Initialized(int srcMachineId, int vertexCount) {
+		final WorkerInitializedMessage workerInit = WorkerInitializedMessage.newBuilder()
+				.setVertexCount(vertexCount).build();
+		return MessageEnvelope.newBuilder()
+				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Initialized)
+				.setWorkerInitialized(workerInit)
+				.setSrcMachine(srcMachineId).build())
+				.build();
+	}
+	
 	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId, SuperstepStats stats,
 			BaseQueryGlobalValues localQuery) {
 		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder()
@@ -78,7 +89,7 @@ public class ControlMessageBuildUtil {
 				.setTotalVertexMachinesDiscovered(stats.TotalVertexMachinesDiscovered).build();
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Superstep_Finished)
-						.setQueryGlobalValues(ByteString.copyFrom(localQuery.getBytes()))
+						.setQueryValues(ByteString.copyFrom(localQuery.getBytes()))
 						.setSuperstepNo(superstepNo)
 						.setSrcMachine(srcMachineId).setWorkerStats(workerStats).build())
 				.build();
@@ -87,7 +98,7 @@ public class ControlMessageBuildUtil {
 	public static MessageEnvelope Build_Worker_QueryFinished(int superstepNo, int srcMachineId, BaseQueryGlobalValues localQuery) {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
-				.setQueryGlobalValues(ByteString.copyFrom(localQuery.getBytes()))
+				.setQueryValues(ByteString.copyFrom(localQuery.getBytes()))
 				.setType(ControlMessageType.Worker_Query_Finished)
 				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build()).build();
 	}

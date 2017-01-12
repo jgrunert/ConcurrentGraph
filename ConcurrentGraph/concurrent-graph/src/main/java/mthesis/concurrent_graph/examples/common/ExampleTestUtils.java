@@ -24,15 +24,8 @@ public class ExampleTestUtils<V extends BaseWritable, E extends BaseWritable, M 
 	public MasterMachine<G> startMaster(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
 			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator<G> outputCombiner, String outputDir,
 			JobConfiguration<V, E, M, G> jobConfig) {
-		return startMaster(machines, ownId, workerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig,
-				jobConfig.getGlobalValuesFactory().createDefault());
-	}
-
-	public MasterMachine<G> startMaster(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
-			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator<G> outputCombiner, String outputDir,
-			JobConfiguration<V, E, M, G> jobConfig, G jobQuery) {
 		final MasterMachine<G> node = new MasterMachine<G>(machines, ownId, workerIds, inputFile, inputPartitionDir, inputPartitioner,
-				outputCombiner, outputDir, jobConfig.getGlobalValuesFactory(), jobQuery);
+				outputCombiner, outputDir, jobConfig.getGlobalValuesFactory());
 		node.start();
 		return node;
 	}

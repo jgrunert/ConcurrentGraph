@@ -6,10 +6,10 @@ import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
-public class SSSPJobConfiguration extends JobConfiguration<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPGlobalValues> {
+public class SSSPJobConfiguration extends JobConfiguration<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> {
 
 	@Override
-	public VertexFactory<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPGlobalValues> getVertexFactory() {
+	public VertexFactory<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> getVertexFactory() {
 		return new SSSPVertex.Factory();
 	}
 
@@ -29,7 +29,7 @@ public class SSSPJobConfiguration extends JobConfiguration<SSSPVertexWritable, D
 	}
 
 	@Override
-	public BaseQueryGlobalValuesFactory<SSSPGlobalValues> getGlobalValuesFactory() {
-		return new SSSPGlobalValues.Factory();
+	public BaseQueryGlobalValuesFactory<SSSPQueryValues> getGlobalValuesFactory() {
+		return new SSSPQueryValues.Factory();
 	}
 }

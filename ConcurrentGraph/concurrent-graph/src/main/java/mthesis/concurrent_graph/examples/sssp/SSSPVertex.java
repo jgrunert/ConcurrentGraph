@@ -14,17 +14,17 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
  * @author Jonas Grunert
  *
  */
-public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPGlobalValues> {
+public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> {
 
-	public SSSPVertex(int id, VertexWorkerInterface<SSSPMessageWritable, SSSPGlobalValues> messageSender) {
+	public SSSPVertex(int id, VertexWorkerInterface<SSSPMessageWritable, SSSPQueryValues> messageSender) {
 		super(id, messageSender);
 		setValue(null); // Never activated nodes don't have a value
 	}
 
 	@Override
-	protected void compute(List<SSSPMessageWritable> messages) {
+	protected void compute(List<SSSPMessageWritable> messages, SSSPQueryValues query) {
 		if (superstepNo == 0) {
-			if (ID != getGlobalQueryValues().From) {
+			if (ID != query.From) {
 				voteVertexInactive();
 				return;
 			}
@@ -54,7 +54,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			}
 		}
 
-		if (minDist > getGlobalQueryValues().MaxDist) {
+		if (minDist > query.MaxDist) {
 			// Vertex is out of range
 			setValue(null);
 			voteVertexInactive();
@@ -73,11 +73,11 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 	}
 
 
-	public static class Factory extends VertexFactory<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPGlobalValues> {
+	public static class Factory extends VertexFactory<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> {
 
 		@Override
-		public AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPGlobalValues> newInstance(int id,
-				VertexWorkerInterface<SSSPMessageWritable, SSSPGlobalValues> messageSender) {
+		public AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> newInstance(int id,
+				VertexWorkerInterface<SSSPMessageWritable, SSSPQueryValues> messageSender) {
 			return new SSSPVertex(id, messageSender);
 		}
 	}

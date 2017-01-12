@@ -38,6 +38,7 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 	private final String inputFile;
 	private final String inputPartitionDir;
 	private final String outputDir;
+	private int vertexCount;
 	private final MasterInputPartitioner inputPartitioner;
 	private final MasterOutputEvaluator<G> outputCombiner;
 
@@ -72,15 +73,14 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 	public void run() {
 		logger.info("Master started");
 		final long masterStartTime = System.currentTimeMillis();
-		//long lastSuperstepTime = startTime;
+		long lastSuperstepTime = masterStartTime; // TORO Multi query
 
 		try {
 			// Initialize workers
-			logger.info("Master input read and partitioned after " + (System.currentTimeMillis() - masterStartTime) + "ms");
 			superstepNo = -1;
 			initializeWorkersAssignPartitions(); // Signal workers to initialize
 			waitForWorkersInitialized(); // Wait for workers to finish initialize
-			logger.info("Workers initizlies " + (System.currentTimeMillis() - masterStartTime) + "ms");
+			logger.info("Workers initialized after " + (System.currentTimeMillis() - masterStartTime) + "ms");
 
 			// Process queries
 			boolean processingQuery = false;
@@ -94,9 +94,10 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 
 				if (!processingQuery) {
 					// Start new query
-					processingQuery = true;
+					activeQuery.setVertexCount(vertexCount);
 					signalWorkersQueryStart(activeQuery);
-					// TODO Vertex count etc
+					logger.info("Master started query " + activeQuery.QueryId);
+					processingQuery = true;
 				}
 
 				// New superstep
@@ -116,11 +117,11 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 				G aggregatedGlobalValues = globalValueFactory.createClone(activeQuery);
 				while (!workersWaitingFor.isEmpty()) {
 					final ControlMessage msg = inControlMessages.take();
-					if (msg.getType() == ControlMessageType.Worker_Superstep_Finished) {
+					if (msg.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
 						if (msg.getSuperstepNo() == superstepNo) {
 							final WorkerStatsMessage workerStats = msg.getWorkerStats();
 
-							G workerValues = globalValueFactory.createFromBytes(ByteBuffer.wrap(msg.getQueryGlobalValues().toByteArray()));
+							G workerValues = globalValueFactory.createFromBytes(ByteBuffer.wrap(msg.getQueryValues().toByteArray()));
 							if (workerValues.getActiveVertices() > 0) activeWorkers++;
 							aggregatedGlobalValues.add(workerValues);
 
@@ -140,12 +141,12 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 									+ " from " + msg.getSrcMachine());
 						}
 					}
-					else if (msg.getType() == ControlMessageType.Worker_Finished) {
-						// Finished
-						logger.warn(
-								"Received unexpected worker finish, terminate after " + (System.currentTimeMillis() - startTime) + "ms");
-						break;
-					}
+					//					else if (msg.getType() == ControlMessageType.Worker_Query_Finished) {
+					//						// Finished
+					//						logger.warn(
+					//								"Received unexpected worker finish, terminate after " + (System.currentTimeMillis() - startTime) + "ms");
+					//						break;
+					//					}
 					else {
 						logger.error("Recieved non Control_Worker_Superstep_Finished message: " + msg.getType() + " from "
 								+ msg.getSrcMachine());
@@ -165,7 +166,7 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 				final long timeNow = System.currentTimeMillis();
 				System.out.println("----- superstep " + superstepNo + " -----");
 				logger.info(String.format("- Master finished superstep %d after %dms (total %dms). activeWorkers: %d activeVertices: %d",
-						superstepNo, (timeNow - lastSuperstepTime), (timeNow - startTime), activeWorkers,
+						superstepNo, (timeNow - lastSuperstepTime), (timeNow - masterStartTime), activeWorkers, // Query time
 						aggregatedGlobalValues.getActiveVertices()));
 				logger.info(String.format(
 						"  SentControlMessages: %d, SentVertexMessagesLocal: %d, SentVertexMessagesUnicast: %d, SentVertexMessagesBroadcast: %d, SentVertexMessagesBuckets %d",
@@ -178,18 +179,19 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 				lastSuperstepTime = timeNow;
 
 				if (activeWorkers > 0) {
-					// Next superstep
+					// Next query superstep
 					superstepNo++;
 					logger.info("Next master superstep: " + superstepNo);
-					signalWorkersStartingSuperstep(aggregatedGlobalValues);
+					signalQueryNextSuperstep(aggregatedGlobalValues);
 				}
 				else {
-					// Finished
-					logger.info("All workers finished after " + (System.currentTimeMillis() - startTime) + "ms");
-					activeQuery = null;
+					// Finished query
+					logger.info("All workers finished after " + (System.currentTimeMillis() - masterStartTime) + "ms"); // TODO Query time
 					processingQuery = false;
-					// TODO Evaluate
-					evaluateQueryResult();
+					finishQueryWorkers(activeQuery);
+					evaluateQueryResult(activeQuery);
+					activeQuery = null;
+					// TODO Evaluate time
 				}
 			}
 		}
@@ -201,10 +203,7 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 		}
 		finally {
 			// End sequence: Let workers finish and output, then finish master before terminating
-			logger.info("Master finishing after " + (System.currentTimeMillis() - startTime) + "ms");
-			finishWorkers();
-			finishMaster();
-			logger.info("Master terminating after " + (System.currentTimeMillis() - startTime) + "ms");
+			logger.info("Master terminating after " + (System.currentTimeMillis() - masterStartTime) + "ms");
 			stop();
 		}
 	}
@@ -214,15 +213,20 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 	private void waitForWorkersInitialized() {
 		try {
 			final Set<Integer> workersWaitingFor = new HashSet<>(workerIds);
+			vertexCount = 0;
 			while (!workersWaitingFor.isEmpty()) {
 				ControlMessage msg;
 				msg = inControlMessages.take();
 				if (msg.getType() == ControlMessageType.Worker_Initialized) {
 					workersWaitingFor.remove(msg.getSrcMachine());
+					vertexCount += msg.getWorkerInitialized().getVertexCount();
 					logger.debug("Worker initialized: " + msg.getSrcMachine());
 				}
+				else {
+					logger.debug("waitForWorkersInitialized wrong message: " + msg.getType());
+				}
 			}
-			logger.info("All workers initialized");
+			logger.info("All workers initialized, " + workerIds.size() + " workers, " + vertexCount + " vertices");
 			//workersInitialized = true;
 		}
 		catch (final Exception e) {
@@ -231,14 +235,14 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 	}
 
 	// Wait for workers to finish queries
-	private void finishWorkers() {
-		signalWorkersFinish();
+	private void finishQueryWorkers(G query) {
+		signalWorkersQueryFinish(query);
 		try {
 			final Set<Integer> workersWaitingFor = new HashSet<>(workerIds);
 			while (!workersWaitingFor.isEmpty()) {
 				ControlMessage msg;
 				msg = inControlMessages.take();
-				if (msg.getType() == ControlMessageType.Worker_Finished) {
+				if (msg.getType() == ControlMessageType.Worker_Query_Finished) {
 					workersWaitingFor.remove(msg.getSrcMachine());
 				}
 			}
@@ -248,10 +252,10 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 		}
 	}
 
-	private void evaluateQueryResult() {
+	private void evaluateQueryResult(G query) {
 		// Aggregate output
 		try {
-			outputCombiner.evaluateOutput(outputDir, baseQuery);
+			outputCombiner.evaluateOutput(outputDir, query);
 		}
 		catch (final Exception e) {
 			logger.error("writeOutput failed", e);
@@ -271,13 +275,13 @@ public class MasterMachine<G extends BaseQueryGlobalValues> extends AbstractMach
 		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryStart(ownId, query), true);
 	}
 
-	private void signalWueryNextSuperstep(G query) {
+	private void signalQueryNextSuperstep(G query) {
 		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(superstepNo, ownId, query),
 				true);
 	}
 
-	private void signalWorkersQueryFinish() {
-		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryFinish(superstepNo, ownId), true);
+	private void signalWorkersQueryFinish(G query) {
+		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryFinish(ownId, query), true);
 	}
 
 

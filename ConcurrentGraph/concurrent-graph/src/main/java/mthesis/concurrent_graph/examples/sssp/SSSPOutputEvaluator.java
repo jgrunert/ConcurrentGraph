@@ -12,14 +12,14 @@ import java.util.Map.Entry;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.util.Pair;
 
-public class SSSPOutputEvaluator extends MasterOutputEvaluator<SSSPGlobalValues> {
+public class SSSPOutputEvaluator extends MasterOutputEvaluator<SSSPQueryValues> {
 
 	public SSSPOutputEvaluator() {
 		super();
 	}
 
 	@Override
-	public void evaluateOutput(String outputDir, SSSPGlobalValues query) {
+	public void evaluateOutput(String outputDir, SSSPQueryValues query) {
 		final File outFolder = new File(outputDir);
 		final File[] outFiles = outFolder.listFiles();
 		final Map<Integer, Pair<Integer, Double>> vertices = new HashMap<>();

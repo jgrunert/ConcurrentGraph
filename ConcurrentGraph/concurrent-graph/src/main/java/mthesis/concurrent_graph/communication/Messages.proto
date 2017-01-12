@@ -36,7 +36,8 @@ message MessageEnvelope {
 		optional int32 SrcMachine = 3;
 		optional WorkerStatsMessage WorkerStats = 4;
 		optional AssignPartitionsMessage AssignPartitions = 5;
-		optional bytes QueryGlobalValues = 6;
+		optional bytes QueryValues = 6;
+		optional WorkerInitializedMessage WorkerInitialized = 7;
 		
 		message AssignPartitionsMessage {	
 			repeated string PartitionFiles = 1;
@@ -52,5 +53,9 @@ message MessageEnvelope {
 			optional int32 ReceivedWrongVertexMessages = 7;
 			optional int32 NewVertexMachinesDiscovered = 8;
 			optional int32 TotalVertexMachinesDiscovered = 9;
+		}
+		
+		message WorkerInitializedMessage {
+			optional int32 VertexCount = 1;
 		}
 	}

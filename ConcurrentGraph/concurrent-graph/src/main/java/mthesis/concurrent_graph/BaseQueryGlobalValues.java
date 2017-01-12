@@ -108,6 +108,6 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 	@Override
 	public int getBytesLength() {
-		return 2 * 4;
+		return 3 * 4;
 	}
 }

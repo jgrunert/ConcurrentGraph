@@ -4,18 +4,18 @@ import java.nio.ByteBuffer;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 
-public class SSSPGlobalValues extends BaseQueryGlobalValues {
+public class SSSPQueryValues extends BaseQueryGlobalValues {
 
 	public int From;
 	public int To;
 	public double MaxDist;
 
 
-	public SSSPGlobalValues(int queryId, int from, int to, double maxDist) {
+	public SSSPQueryValues(int queryId, int from, int to, double maxDist) {
 		this(queryId, 0, 0, from, to, maxDist);
 	}
 
-	private SSSPGlobalValues(int queryId, int activeVertices, int vertexCount, int from, int to, double maxDist) {
+	private SSSPQueryValues(int queryId, int activeVertices, int vertexCount, int from, int to, double maxDist) {
 		super(queryId, activeVertices, vertexCount);
 		From = from;
 		To = to;
@@ -43,23 +43,23 @@ public class SSSPGlobalValues extends BaseQueryGlobalValues {
 
 
 
-	public static class Factory extends BaseQueryGlobalValuesFactory<SSSPGlobalValues> {
+	public static class Factory extends BaseQueryGlobalValuesFactory<SSSPQueryValues> {
 
 		@Override
-		public SSSPGlobalValues createDefault(int queryId) {
-			return new SSSPGlobalValues(queryId, 0, 0, 0, 0, 0);
+		public SSSPQueryValues createDefault(int queryId) {
+			return new SSSPQueryValues(queryId, 0, 0, 0, 0, 0);
 		}
 
 		@Override
-		public SSSPGlobalValues createFromString(String str) {
+		public SSSPQueryValues createFromString(String str) {
 			final String[] sSplit = str.split(":");
-			return new SSSPGlobalValues(Integer.parseInt(sSplit[0]), Integer.parseInt(sSplit[1]), Integer.parseInt(sSplit[2]),
+			return new SSSPQueryValues(Integer.parseInt(sSplit[0]), Integer.parseInt(sSplit[1]), Integer.parseInt(sSplit[2]),
 					Integer.parseInt(sSplit[3]), Integer.parseInt(sSplit[4]), Double.parseDouble(sSplit[5]));
 		}
 
 		@Override
-		public SSSPGlobalValues createFromBytes(ByteBuffer bytes) {
-			return new SSSPGlobalValues(bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getDouble());
+		public SSSPQueryValues createFromBytes(ByteBuffer bytes) {
+			return new SSSPQueryValues(bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getDouble());
 		}
 	}
 }

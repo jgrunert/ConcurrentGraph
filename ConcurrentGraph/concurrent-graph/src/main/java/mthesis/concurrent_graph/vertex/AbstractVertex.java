@@ -30,15 +30,15 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	public void superstep(int superstep) {
+	public void superstep(int superstep, G query) {
 		if (isActive()) {
 			this.superstepNo = superstep;
-			compute(messagesNextSuperstep);
+			compute(messagesNextSuperstep, query);
 			messagesNextSuperstep.clear();
 		}
 	}
 
-	protected abstract void compute(List<M> messages);
+	protected abstract void compute(List<M> messages, G query);
 
 
 	protected void sendMessageToAllOutgoingEdges(M message) {
@@ -83,15 +83,6 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	public void setEdges(List<Edge<E>> edges) {
 		this.edges = edges;
-	}
-
-
-	public G getLocalQueryValues() {
-		return worker.getLocalQueryValues();
-	}
-
-	public G getGlobalQueryValues() {
-		return worker.getGlobalQueryValues();
 	}
 
 

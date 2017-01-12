@@ -875,13 +875,26 @@ public final class Messages {
     mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessageOrBuilder getAssignPartitionsOrBuilder();
 
     /**
-     * <code>optional bytes QueryGlobalValues = 6;</code>
+     * <code>optional bytes QueryValues = 6;</code>
      */
-    boolean hasQueryGlobalValues();
+    boolean hasQueryValues();
     /**
-     * <code>optional bytes QueryGlobalValues = 6;</code>
+     * <code>optional bytes QueryValues = 6;</code>
      */
-    com.google.protobuf.ByteString getQueryGlobalValues();
+    com.google.protobuf.ByteString getQueryValues();
+
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+     */
+    boolean hasWorkerInitialized();
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+     */
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage getWorkerInitialized();
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+     */
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessageOrBuilder getWorkerInitializedOrBuilder();
   }
   /**
    * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage}
@@ -898,7 +911,7 @@ public final class Messages {
       type_ = 1;
       superstepNo_ = 0;
       srcMachine_ = 0;
-      queryGlobalValues_ = com.google.protobuf.ByteString.EMPTY;
+      queryValues_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -978,7 +991,20 @@ public final class Messages {
             }
             case 50: {
               bitField0_ |= 0x00000020;
-              queryGlobalValues_ = input.readBytes();
+              queryValues_ = input.readBytes();
+              break;
+            }
+            case 58: {
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000040) == 0x00000040)) {
+                subBuilder = workerInitialized_.toBuilder();
+              }
+              workerInitialized_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(workerInitialized_);
+                workerInitialized_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000040;
               break;
             }
           }
@@ -2731,6 +2757,472 @@ public final class Messages {
 
     }
 
+    public interface WorkerInitializedMessageOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <code>optional int32 VertexCount = 1;</code>
+       */
+      boolean hasVertexCount();
+      /**
+       * <code>optional int32 VertexCount = 1;</code>
+       */
+      int getVertexCount();
+    }
+    /**
+     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage}
+     */
+    public  static final class WorkerInitializedMessage extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage)
+        WorkerInitializedMessageOrBuilder {
+      // Use WorkerInitializedMessage.newBuilder() to construct.
+      private WorkerInitializedMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private WorkerInitializedMessage() {
+        vertexCount_ = 0;
+      }
+
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+      getUnknownFields() {
+        return this.unknownFields;
+      }
+      private WorkerInitializedMessage(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        this();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 8: {
+                bitField0_ |= 0x00000001;
+                vertexCount_ = input.readInt32();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.Builder.class);
+      }
+
+      private int bitField0_;
+      public static final int VERTEXCOUNT_FIELD_NUMBER = 1;
+      private int vertexCount_;
+      /**
+       * <code>optional int32 VertexCount = 1;</code>
+       */
+      public boolean hasVertexCount() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional int32 VertexCount = 1;</code>
+       */
+      public int getVertexCount() {
+        return vertexCount_;
+      }
+
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeInt32(1, vertexCount_);
+        }
+        unknownFields.writeTo(output);
+      }
+
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt32Size(1, vertexCount_);
+        }
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage)) {
+          return super.equals(obj);
+        }
+        mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage) obj;
+
+        boolean result = true;
+        result = result && (hasVertexCount() == other.hasVertexCount());
+        if (hasVertexCount()) {
+          result = result && (getVertexCount()
+              == other.getVertexCount());
+        }
+        result = result && unknownFields.equals(other.unknownFields);
+        return result;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptorForType().hashCode();
+        if (hasVertexCount()) {
+          hash = (37 * hash) + VERTEXCOUNT_FIELD_NUMBER;
+          hash = (53 * hash) + getVertexCount();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage)
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessageOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.Builder.class);
+        }
+
+        // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
+          }
+        }
+        public Builder clear() {
+          super.clear();
+          vertexCount_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000001);
+          return this;
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_descriptor;
+        }
+
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage getDefaultInstanceForType() {
+          return mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.getDefaultInstance();
+        }
+
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage build() {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage buildPartial() {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.vertexCount_ = vertexCount_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder clone() {
+          return (Builder) super.clone();
+        }
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.setField(field, value);
+        }
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return (Builder) super.clearField(field);
+        }
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return (Builder) super.clearOneof(oneof);
+        }
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
+          return (Builder) super.setRepeatedField(field, index, value);
+        }
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.addRepeatedField(field, value);
+        }
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage) {
+            return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage other) {
+          if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.getDefaultInstance()) return this;
+          if (other.hasVertexCount()) {
+            setVertexCount(other.getVertexCount());
+          }
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage) e.getUnfinishedMessage();
+            throw e.unwrapIOException();
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        private int vertexCount_ ;
+        /**
+         * <code>optional int32 VertexCount = 1;</code>
+         */
+        public boolean hasVertexCount() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>optional int32 VertexCount = 1;</code>
+         */
+        public int getVertexCount() {
+          return vertexCount_;
+        }
+        /**
+         * <code>optional int32 VertexCount = 1;</code>
+         */
+        public Builder setVertexCount(int value) {
+          bitField0_ |= 0x00000001;
+          vertexCount_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional int32 VertexCount = 1;</code>
+         */
+        public Builder clearVertexCount() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          vertexCount_ = 0;
+          onChanged();
+          return this;
+        }
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage)
+      }
+
+      // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage)
+      private static final mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage();
+      }
+
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<WorkerInitializedMessage>
+          PARSER = new com.google.protobuf.AbstractParser<WorkerInitializedMessage>() {
+        public WorkerInitializedMessage parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new WorkerInitializedMessage(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<WorkerInitializedMessage> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<WorkerInitializedMessage> getParserForType() {
+        return PARSER;
+      }
+
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
+    }
+
     private int bitField0_;
     public static final int TYPE_FIELD_NUMBER = 1;
     private int type_;
@@ -2820,19 +3312,40 @@ public final class Messages {
       return assignPartitions_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage.getDefaultInstance() : assignPartitions_;
     }
 
-    public static final int QUERYGLOBALVALUES_FIELD_NUMBER = 6;
-    private com.google.protobuf.ByteString queryGlobalValues_;
+    public static final int QUERYVALUES_FIELD_NUMBER = 6;
+    private com.google.protobuf.ByteString queryValues_;
     /**
-     * <code>optional bytes QueryGlobalValues = 6;</code>
+     * <code>optional bytes QueryValues = 6;</code>
      */
-    public boolean hasQueryGlobalValues() {
+    public boolean hasQueryValues() {
       return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>optional bytes QueryGlobalValues = 6;</code>
+     * <code>optional bytes QueryValues = 6;</code>
      */
-    public com.google.protobuf.ByteString getQueryGlobalValues() {
-      return queryGlobalValues_;
+    public com.google.protobuf.ByteString getQueryValues() {
+      return queryValues_;
+    }
+
+    public static final int WORKERINITIALIZED_FIELD_NUMBER = 7;
+    private mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage workerInitialized_;
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+     */
+    public boolean hasWorkerInitialized() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+     */
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage getWorkerInitialized() {
+      return workerInitialized_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.getDefaultInstance() : workerInitialized_;
+    }
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+     */
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessageOrBuilder getWorkerInitializedOrBuilder() {
+      return workerInitialized_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.getDefaultInstance() : workerInitialized_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2863,7 +3376,10 @@ public final class Messages {
         output.writeMessage(5, getAssignPartitions());
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeBytes(6, queryGlobalValues_);
+        output.writeBytes(6, queryValues_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeMessage(7, getWorkerInitialized());
       }
       unknownFields.writeTo(output);
     }
@@ -2895,7 +3411,11 @@ public final class Messages {
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(6, queryGlobalValues_);
+          .computeBytesSize(6, queryValues_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(7, getWorkerInitialized());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2938,10 +3458,15 @@ public final class Messages {
         result = result && getAssignPartitions()
             .equals(other.getAssignPartitions());
       }
-      result = result && (hasQueryGlobalValues() == other.hasQueryGlobalValues());
-      if (hasQueryGlobalValues()) {
-        result = result && getQueryGlobalValues()
-            .equals(other.getQueryGlobalValues());
+      result = result && (hasQueryValues() == other.hasQueryValues());
+      if (hasQueryValues()) {
+        result = result && getQueryValues()
+            .equals(other.getQueryValues());
+      }
+      result = result && (hasWorkerInitialized() == other.hasWorkerInitialized());
+      if (hasWorkerInitialized()) {
+        result = result && getWorkerInitialized()
+            .equals(other.getWorkerInitialized());
       }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
@@ -2974,9 +3499,13 @@ public final class Messages {
         hash = (37 * hash) + ASSIGNPARTITIONS_FIELD_NUMBER;
         hash = (53 * hash) + getAssignPartitions().hashCode();
       }
-      if (hasQueryGlobalValues()) {
-        hash = (37 * hash) + QUERYGLOBALVALUES_FIELD_NUMBER;
-        hash = (53 * hash) + getQueryGlobalValues().hashCode();
+      if (hasQueryValues()) {
+        hash = (37 * hash) + QUERYVALUES_FIELD_NUMBER;
+        hash = (53 * hash) + getQueryValues().hashCode();
+      }
+      if (hasWorkerInitialized()) {
+        hash = (37 * hash) + WORKERINITIALIZED_FIELD_NUMBER;
+        hash = (53 * hash) + getWorkerInitialized().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -3094,6 +3623,7 @@ public final class Messages {
                 .alwaysUseFieldBuilders) {
           getWorkerStatsFieldBuilder();
           getAssignPartitionsFieldBuilder();
+          getWorkerInitializedFieldBuilder();
         }
       }
       public Builder clear() {
@@ -3116,8 +3646,14 @@ public final class Messages {
           assignPartitionsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
-        queryGlobalValues_ = com.google.protobuf.ByteString.EMPTY;
+        queryValues_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000020);
+        if (workerInitializedBuilder_ == null) {
+          workerInitialized_ = null;
+        } else {
+          workerInitializedBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -3173,7 +3709,15 @@ public final class Messages {
         if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
           to_bitField0_ |= 0x00000020;
         }
-        result.queryGlobalValues_ = queryGlobalValues_;
+        result.queryValues_ = queryValues_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        if (workerInitializedBuilder_ == null) {
+          result.workerInitialized_ = workerInitialized_;
+        } else {
+          result.workerInitialized_ = workerInitializedBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3231,8 +3775,11 @@ public final class Messages {
         if (other.hasAssignPartitions()) {
           mergeAssignPartitions(other.getAssignPartitions());
         }
-        if (other.hasQueryGlobalValues()) {
-          setQueryGlobalValues(other.getQueryGlobalValues());
+        if (other.hasQueryValues()) {
+          setQueryValues(other.getQueryValues());
+        }
+        if (other.hasWorkerInitialized()) {
+          mergeWorkerInitialized(other.getWorkerInitialized());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -3598,39 +4145,157 @@ public final class Messages {
         return assignPartitionsBuilder_;
       }
 
-      private com.google.protobuf.ByteString queryGlobalValues_ = com.google.protobuf.ByteString.EMPTY;
+      private com.google.protobuf.ByteString queryValues_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>optional bytes QueryGlobalValues = 6;</code>
+       * <code>optional bytes QueryValues = 6;</code>
        */
-      public boolean hasQueryGlobalValues() {
+      public boolean hasQueryValues() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional bytes QueryGlobalValues = 6;</code>
+       * <code>optional bytes QueryValues = 6;</code>
        */
-      public com.google.protobuf.ByteString getQueryGlobalValues() {
-        return queryGlobalValues_;
+      public com.google.protobuf.ByteString getQueryValues() {
+        return queryValues_;
       }
       /**
-       * <code>optional bytes QueryGlobalValues = 6;</code>
+       * <code>optional bytes QueryValues = 6;</code>
        */
-      public Builder setQueryGlobalValues(com.google.protobuf.ByteString value) {
+      public Builder setQueryValues(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000020;
-        queryGlobalValues_ = value;
+        queryValues_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bytes QueryGlobalValues = 6;</code>
+       * <code>optional bytes QueryValues = 6;</code>
        */
-      public Builder clearQueryGlobalValues() {
+      public Builder clearQueryValues() {
         bitField0_ = (bitField0_ & ~0x00000020);
-        queryGlobalValues_ = getDefaultInstance().getQueryGlobalValues();
+        queryValues_ = getDefaultInstance().getQueryValues();
         onChanged();
         return this;
+      }
+
+      private mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage workerInitialized_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessageOrBuilder> workerInitializedBuilder_;
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+       */
+      public boolean hasWorkerInitialized() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+       */
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage getWorkerInitialized() {
+        if (workerInitializedBuilder_ == null) {
+          return workerInitialized_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.getDefaultInstance() : workerInitialized_;
+        } else {
+          return workerInitializedBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+       */
+      public Builder setWorkerInitialized(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage value) {
+        if (workerInitializedBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          workerInitialized_ = value;
+          onChanged();
+        } else {
+          workerInitializedBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+       */
+      public Builder setWorkerInitialized(
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.Builder builderForValue) {
+        if (workerInitializedBuilder_ == null) {
+          workerInitialized_ = builderForValue.build();
+          onChanged();
+        } else {
+          workerInitializedBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+       */
+      public Builder mergeWorkerInitialized(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage value) {
+        if (workerInitializedBuilder_ == null) {
+          if (((bitField0_ & 0x00000040) == 0x00000040) &&
+              workerInitialized_ != null &&
+              workerInitialized_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.getDefaultInstance()) {
+            workerInitialized_ =
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.newBuilder(workerInitialized_).mergeFrom(value).buildPartial();
+          } else {
+            workerInitialized_ = value;
+          }
+          onChanged();
+        } else {
+          workerInitializedBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+       */
+      public Builder clearWorkerInitialized() {
+        if (workerInitializedBuilder_ == null) {
+          workerInitialized_ = null;
+          onChanged();
+        } else {
+          workerInitializedBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000040);
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+       */
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.Builder getWorkerInitializedBuilder() {
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return getWorkerInitializedFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+       */
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessageOrBuilder getWorkerInitializedOrBuilder() {
+        if (workerInitializedBuilder_ != null) {
+          return workerInitializedBuilder_.getMessageOrBuilder();
+        } else {
+          return workerInitialized_ == null ?
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.getDefaultInstance() : workerInitialized_;
+        }
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerInitializedMessage WorkerInitialized = 7;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessageOrBuilder> 
+          getWorkerInitializedFieldBuilder() {
+        if (workerInitializedBuilder_ == null) {
+          workerInitializedBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessageOrBuilder>(
+                  getWorkerInitialized(),
+                  getParentForChildren(),
+                  isClean());
+          workerInitialized_ = null;
+        }
+        return workerInitializedBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -3701,6 +4366,11 @@ public final class Messages {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -3714,7 +4384,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\216\006\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\256\007\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022g\n\013" +
@@ -3723,23 +4393,27 @@ public final class Messages {
       "ge.WorkerStatsMessage\022q\n\020AssignPartition" +
       "s\030\005 \001(\0132W.mthesis.concurrent_graph.commu" +
       "nication.messages.ControlMessage.AssignP" +
-      "artitionsMessage\022\031\n\021QueryGlobalValues\030\006 " +
-      "\001(\014\0321\n\027AssignPartitionsMessage\022\026\n\016Partit" +
-      "ionFiles\030\001 \003(\t\032\325\002\n\022WorkerStatsMessage\022\033\n" +
-      "\023SentControlMessages\030\002 \001(\005\022\037\n\027SentVertex" +
-      "MessagesLocal\030\003 \001(\005\022!\n\031SentVertexMessage" +
-      "sUnicast\030\004 \001(\005\022#\n\033SentVertexMessagesBroa" +
-      "dcast\030\005 \001(\005\022!\n\031SentVertexMessagesBuckets",
-      "\030\013 \001(\005\022%\n\035ReceivedCorrectVertexMessages\030" +
-      "\006 \001(\005\022#\n\033ReceivedWrongVertexMessages\030\007 \001" +
-      "(\005\022#\n\033NewVertexMachinesDiscovered\030\010 \001(\005\022" +
-      "%\n\035TotalVertexMachinesDiscovered\030\t \001(\005*\231" +
+      "artitionsMessage\022\023\n\013QueryValues\030\006 \001(\014\022s\n" +
+      "\021WorkerInitialized\030\007 \001(\0132X.mthesis.concu" +
+      "rrent_graph.communication.messages.Contr" +
+      "olMessage.WorkerInitializedMessage\0321\n\027As" +
+      "signPartitionsMessage\022\026\n\016PartitionFiles\030" +
+      "\001 \003(\t\032\325\002\n\022WorkerStatsMessage\022\033\n\023SentCont" +
+      "rolMessages\030\002 \001(\005\022\037\n\027SentVertexMessagesL",
+      "ocal\030\003 \001(\005\022!\n\031SentVertexMessagesUnicast\030" +
+      "\004 \001(\005\022#\n\033SentVertexMessagesBroadcast\030\005 \001" +
+      "(\005\022!\n\031SentVertexMessagesBuckets\030\013 \001(\005\022%\n" +
+      "\035ReceivedCorrectVertexMessages\030\006 \001(\005\022#\n\033" +
+      "ReceivedWrongVertexMessages\030\007 \001(\005\022#\n\033New" +
+      "VertexMachinesDiscovered\030\010 \001(\005\022%\n\035TotalV" +
+      "ertexMachinesDiscovered\030\t \001(\005\032/\n\030WorkerI" +
+      "nitializedMessage\022\023\n\013VertexCount\030\001 \001(\005*\231" +
       "\002\n\022ControlMessageType\022\025\n\021Channel_Handsha" +
-      "ke\020\001\022\026\n\022Worker_Initialized\020\002\022\"\n\036Worker_Q" +
+      "ke\020\001\022\026\n\022Worker_Initialized\020\002\022\"\n\036Worker_Q",
       "uery_Superstep_Barrier\020\003\022#\n\037Worker_Query" +
       "_Superstep_Finished\020\004\022\031\n\025Worker_Query_Fi" +
       "nished\020\005\022\034\n\030Master_Worker_Initialize\020\006\022\026" +
-      "\n\022Master_Query_Start\020\007\022\037\n\033Master_Query_N",
+      "\n\022Master_Query_Start\020\007\022\037\n\033Master_Query_N" +
       "ext_Superstep\020\010\022\031\n\025Master_Query_Finished" +
       "\020\tB2\n&mthesis.concurrent_graph.communica" +
       "tionB\010Messages"
@@ -3767,7 +4441,7 @@ public final class Messages {
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor,
-        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "WorkerStats", "AssignPartitions", "QueryGlobalValues", });
+        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "WorkerStats", "AssignPartitions", "QueryValues", "WorkerInitialized", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(0);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_fieldAccessorTable = new
@@ -3780,6 +4454,12 @@ public final class Messages {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor,
         new java.lang.String[] { "SentControlMessages", "SentVertexMessagesLocal", "SentVertexMessagesUnicast", "SentVertexMessagesBroadcast", "SentVertexMessagesBuckets", "ReceivedCorrectVertexMessages", "ReceivedWrongVertexMessages", "NewVertexMachinesDiscovered", "TotalVertexMachinesDiscovered", });
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_descriptor =
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(2);
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_descriptor,
+        new java.lang.String[] { "VertexCount", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
