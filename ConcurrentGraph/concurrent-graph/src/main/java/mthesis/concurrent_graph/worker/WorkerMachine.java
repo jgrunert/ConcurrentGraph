@@ -447,6 +447,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					}
 					activeQuery.Query = query;
 					activeQuery.QueryLocal = globalValueFactory.createClone(query);
+					activeQuery.nextSuperstep();
 				}
 					break;
 
