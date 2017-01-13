@@ -3,8 +3,6 @@ package mthesis.concurrent_graph;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +26,6 @@ public abstract class AbstractMachine<M extends BaseWritable> {
 	protected final int ownId;
 
 	protected final MessageSenderAndReceiver<M> messaging;
-	protected final BlockingQueue<ControlMessage> inControlMessages = new LinkedBlockingQueue<>();
 
 	private Thread runThread;
 
@@ -81,9 +78,7 @@ public abstract class AbstractMachine<M extends BaseWritable> {
 	public abstract void run();
 
 
-	public void onIncomingControlMessage(ControlMessage message) {
-		inControlMessages.add(message);
-	}
+	public abstract void onIncomingControlMessage(ControlMessage message);
 
 	public abstract void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
 			List<Pair<Integer, M>> vertexMessages);

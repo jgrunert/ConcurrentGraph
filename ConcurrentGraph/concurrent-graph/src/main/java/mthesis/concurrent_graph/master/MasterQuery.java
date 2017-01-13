@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 
-public class ActiveQuery<Q extends BaseQueryGlobalValues> {
+public class MasterQuery<Q extends BaseQueryGlobalValues> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ActiveQuery.class);
+	private static final Logger logger = LoggerFactory.getLogger(MasterQuery.class);
 
 	public final Q Query;
 	public final long StartTime;
@@ -23,7 +23,7 @@ public class ActiveQuery<Q extends BaseQueryGlobalValues> {
 	public boolean IsComputing = true;
 
 
-	public ActiveQuery(Q query, Collection<Integer> workersToWait, BaseQueryGlobalValues.BaseQueryGlobalValuesFactory<Q> queryFactory) {
+	public MasterQuery(Q query, Collection<Integer> workersToWait, BaseQueryGlobalValues.BaseQueryGlobalValuesFactory<Q> queryFactory) {
 		super();
 		Query = query;
 		SuperstepNo = -1;

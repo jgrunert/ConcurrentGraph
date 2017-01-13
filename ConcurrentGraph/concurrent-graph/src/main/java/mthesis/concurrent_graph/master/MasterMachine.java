@@ -35,7 +35,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private long masterStartTime;
 	private final List<Integer> workerIds;
 	private final Set<Integer> workersToInitialize;
-	private Map<Integer, ActiveQuery<Q>> activeQueries = new HashMap<>();
+	private Map<Integer, MasterQuery<Q>> activeQueries = new HashMap<>();
 
 	private final String inputFile;
 	private final String inputPartitionDir;
@@ -104,7 +104,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		synchronized (this) {
 			FileUtil.makeCleanDirectory(outputDir + File.separator + Integer.toString(query.QueryId));
 			query.setVertexCount(vertexCount);
-			ActiveQuery<Q> activeQuery = new ActiveQuery<>(query, workerIds, queryValueFactory);
+			MasterQuery<Q> activeQuery = new MasterQuery<>(query, workerIds, queryValueFactory);
 			activeQueries.put(query.QueryId, activeQuery);
 		}
 
@@ -161,7 +161,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			// Get message query
 			if (message.getQueryValues().size() == 0) throw new RuntimeException("Control message without query: " + message);
 			Q msgQueryOnWorker = queryValueFactory.createFromBytes(ByteBuffer.wrap(message.getQueryValues().toByteArray()));
-			ActiveQuery<Q> msgActiveQuery = activeQueries.get(msgQueryOnWorker.QueryId);
+			MasterQuery<Q> msgActiveQuery = activeQueries.get(msgQueryOnWorker.QueryId);
 			if (msgActiveQuery == null) throw new RuntimeException("Control message without ungknown query: " + message);
 
 
@@ -254,7 +254,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	}
 
 
-	private void evaluateQueryResult(ActiveQuery<Q> query) {
+	private void evaluateQueryResult(MasterQuery<Q> query) {
 		// Aggregate output
 		try {
 			outputCombiner.evaluateOutput(outputDir + File.separator + query.Query.QueryId, query.Query);
