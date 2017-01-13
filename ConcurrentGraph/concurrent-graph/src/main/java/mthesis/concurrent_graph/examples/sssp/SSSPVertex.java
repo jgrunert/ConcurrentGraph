@@ -62,7 +62,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			return;
 		}
 
-		//System.out.println("COMP " + ID + " " + minDist);
+		System.out.println("COMP " + ID + " " + minDist);
 		if (minDist < mutableValue.Dist) {
 			mutableValue.Dist = minDist;
 			mutableValue.Pre = minPre;

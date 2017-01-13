@@ -47,8 +47,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
-			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator<Q> outputCombiner, String outputDir,
-			BaseQueryGlobalValuesFactory<Q> globalValueFactory) {
+			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator<Q> outputCombiner,
+			String outputDir, BaseQueryGlobalValuesFactory<Q> globalValueFactory) {
 		super(machines, ownId, null);
 		this.workerIds = workerIds;
 		this.workersToInitialize = new HashSet<>(workerIds);
@@ -68,7 +68,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		super.start();
 		// Initialize workers
 		initializeWorkersAssignPartitions(); // Signal workers to initialize
-		logger.info("Workers partitins assigned and initialize starting after " + (System.currentTimeMillis() - masterStartTime) + "ms");
+		logger.info("Workers partitins assigned and initialize starting after "
+				+ (System.currentTimeMillis() - masterStartTime) + "ms");
 	}
 
 
@@ -146,8 +147,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			logger.debug("Worker initialized: " + message.getSrcMachine());
 
 			if (workersToInitialize.isEmpty()) {
-				logger.info("All workers initialized, " + workerIds.size() + " workers, " + vertexCount + " vertices after " +
-						(System.currentTimeMillis() - masterStartTime) + "ms");
+				logger.info("All workers initialized, " + workerIds.size() + " workers, " + vertexCount
+						+ " vertices after " + (System.currentTimeMillis() - masterStartTime) + "ms");
 			}
 		}
 		else if (message.getType() == ControlMessageType.Worker_Query_Superstep_Finished
@@ -159,10 +160,13 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 
 			// Get message query
-			if (message.getQueryValues().size() == 0) throw new RuntimeException("Control message without query: " + message);
-			Q msgQueryOnWorker = queryValueFactory.createFromBytes(ByteBuffer.wrap(message.getQueryValues().toByteArray()));
+			if (message.getQueryValues().size() == 0)
+				throw new RuntimeException("Control message without query: " + message);
+			Q msgQueryOnWorker = queryValueFactory
+					.createFromBytes(ByteBuffer.wrap(message.getQueryValues().toByteArray()));
 			MasterQuery<Q> msgActiveQuery = activeQueries.get(msgQueryOnWorker.QueryId);
-			if (msgActiveQuery == null) throw new RuntimeException("Control message without ungknown query: " + message);
+			if (msgActiveQuery == null)
+				throw new RuntimeException("Control message without ungknown query: " + message);
 
 
 			if (message.getSuperstepNo() != msgActiveQuery.SuperstepNo) {
@@ -177,39 +181,44 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			msgActiveQuery.workersWaitingFor.remove(message.getSrcMachine());
 
 			// TODO re-introduce QuerySuperstepStats?
-			//			int SentControlMessages = 0;
-			//			int SentVertexMessagesLocal = 0;
-			//			int SentVertexMessagesUnicast = 0;
-			//			int SentVertexMessagesBroadcast = 0;
-			//			int SentVertexMessagesBuckets = 0;
-			//			int ReceivedCorrectVertexMessages = 0;
-			//			int ReceivedWrongVertexMessages = 0;
-			//			int newVertexMachinesDiscovered = 0;
-			//			int totalVertexMachinesDiscovered = 0;
+			// int SentControlMessages = 0;
+			// int SentVertexMessagesLocal = 0;
+			// int SentVertexMessagesUnicast = 0;
+			// int SentVertexMessagesBroadcast = 0;
+			// int SentVertexMessagesBuckets = 0;
+			// int ReceivedCorrectVertexMessages = 0;
+			// int ReceivedWrongVertexMessages = 0;
+			// int newVertexMachinesDiscovered = 0;
+			// int totalVertexMachinesDiscovered = 0;
 
 			if (message.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
 				if (!msgActiveQuery.IsComputing) {
-					logger.error("Query " + msgQueryOnWorker.QueryId + " not computing, wrong message: " + msgQueryOnWorker);
+					logger.error(
+							"Query " + msgQueryOnWorker.QueryId + " not computing, wrong message: " + msgQueryOnWorker);
 					return;
 				}
 
-				System.out.println(message.getSrcMachine() + " fin " + msgActiveQuery.Query.QueryId + " ss " + msgActiveQuery.SuperstepNo);
+				System.out.println(message.getSrcMachine() + " fin " + msgActiveQuery.Query.QueryId + " ss "
+						+ msgActiveQuery.SuperstepNo + " w " + msgActiveQuery.workersWaitingFor);
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
 
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
 					// All workers have superstep finished
 					if (msgActiveQuery.ActiveWorkers > 0) {
 						// Active workers, start next superstep
-						logger.info("Workers superstep query " + msgActiveQuery.Query.QueryId + ": " + msgActiveQuery.SuperstepNo +
-								" after " + (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
+						logger.info("Workers superstep query " + msgActiveQuery.Query.QueryId + ": "
+								+ msgActiveQuery.SuperstepNo + " after "
+								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
 						msgActiveQuery.nextSuperstep(workerIds, queryValueFactory);
-						logger.debug("Next master superstep query " + msgActiveQuery.Query.QueryId + ": " + msgActiveQuery.SuperstepNo);
+						logger.debug("Next master superstep query " + msgActiveQuery.Query.QueryId + ": "
+								+ msgActiveQuery.SuperstepNo);
 						signalQueryNextSuperstep(msgActiveQuery.QueryAggregator, msgActiveQuery.SuperstepNo);
 					}
 					else {
 						// All workers finished, finish query
-						logger.info("All workers finished for query " + msgActiveQuery.Query.QueryId + ": " + msgActiveQuery.SuperstepNo +
-								" after " + (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
+						logger.info("All workers finished for query " + msgActiveQuery.Query.QueryId + ": "
+								+ msgActiveQuery.SuperstepNo + " after "
+								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
 						msgActiveQuery.workersFinished(workerIds);
 						signalWorkersQueryFinish(msgActiveQuery.Query);
 					}
@@ -217,7 +226,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 			else { // Worker_Query_Finished
 				if (msgActiveQuery.IsComputing) {
-					logger.error("Query " + msgQueryOnWorker.QueryId + " still computing, wrong message: " + msgQueryOnWorker);
+					logger.error("Query " + msgQueryOnWorker.QueryId + " still computing, wrong message: "
+							+ msgQueryOnWorker);
 					return;
 				}
 
@@ -234,14 +244,19 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 
 			// TODO re-introduce?
-			//			// Wrong message count should match broadcast message count, therwise there might be communication errors.
-			//			if (workerIds.size() > 1
-			//					&& ReceivedWrongVertexMessages != SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)) {
-			//				logger.warn(String.format(
-			//						"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
-			//						ReceivedWrongVertexMessages, SentVertexMessagesBroadcast,
-			//						SentVertexMessagesBroadcast / (workerIds.size() - 1) * (workerIds.size() - 2)));
-			//			}
+			// // Wrong message count should match broadcast message count,
+			// therwise there might be communication errors.
+			// if (workerIds.size() > 1
+			// && ReceivedWrongVertexMessages != SentVertexMessagesBroadcast /
+			// (workerIds.size() - 1) * (workerIds.size() - 2)) {
+			// logger.warn(String.format(
+			// "Unexpected wrong vertex message count %d does not match
+			// broadcast message count %d. Should be %d. Possible communication
+			// errors.",
+			// ReceivedWrongVertexMessages, SentVertexMessagesBroadcast,
+			// SentVertexMessagesBroadcast / (workerIds.size() - 1) *
+			// (workerIds.size() - 2)));
+			// }
 		}
 		else {
 			logger.error("Unexpected control message type in message " + message);
@@ -267,24 +282,28 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 
 	private void initializeWorkersAssignPartitions() {
-		final Map<Integer, List<String>> assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir, workerIds);
+		final Map<Integer, List<String>> assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir,
+				workerIds);
 		for (final Integer workerId : workerIds) {
 			messaging.sendControlMessageUnicast(workerId,
-					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, assignedPartitions.get(workerId)), true);
+					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, assignedPartitions.get(workerId)),
+					true);
 		}
 	}
 
 	private void signalWorkersQueryStart(Q query) {
-		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryStart(ownId, query), true);
-	}
-
-	private void signalQueryNextSuperstep(Q query, int superstepNo) {
-		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(superstepNo, ownId, query),
+		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryStart(ownId, query),
 				true);
 	}
 
+	private void signalQueryNextSuperstep(Q query, int superstepNo) {
+		messaging.sendControlMessageMulticast(workerIds,
+				ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(superstepNo, ownId, query), true);
+	}
+
 	private void signalWorkersQueryFinish(Q query) {
-		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryFinish(ownId, query), true);
+		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryFinish(ownId, query),
+				true);
 	}
 
 

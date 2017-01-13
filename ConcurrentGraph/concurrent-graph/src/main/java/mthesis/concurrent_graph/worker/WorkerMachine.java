@@ -42,7 +42,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-		extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -98,6 +98,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private void loadVertices(List<String> partitions) {
 		localVerticesList = new VertexTextInputReader<V, E, M, Q>().getVertices(partitions, jobConfig, this);
+		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
+			localVerticesIdMap.put(vertex.ID, vertex);
+		}
 	}
 
 
@@ -449,7 +452,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					activeQuery.QueryLocal = globalValueFactory.createClone(query);
 					activeQuery.nextSuperstep();
 				}
-					break;
+				break;
 
 				case Master_Query_Finished: {
 					Q query = deserializeQuery(message.getQueryValues());
@@ -466,10 +469,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					}
 					else {
 						logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-								+ " at step " + activeQuery.SuperstepNo);
+						+ " at step " + activeQuery.SuperstepNo);
 					}
 				}
-					break;
+				break;
 
 				default:
 					logger.error("Unknown control message type: " + message);
@@ -540,7 +543,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void startQuery(Q query) {
 		if (activeQueries.containsKey(query.QueryId))
 			throw new RuntimeException("Thready with this ID already active: " + query.QueryId);
-		WorkerQuery<M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory);
+		WorkerQuery<M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory, localVerticesIdMap.keySet());
 
 		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 			vertex.startQuery(query.QueryId);
@@ -548,7 +551,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		Map<Integer, List<M>> queryMessageSlots = new HashMap<>();
 		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-			localVerticesIdMap.put(vertex.ID, vertex);
 			queryMessageSlots.put(vertex.ID, new ArrayList<>());
 		}
 		synchronized (activeQuery) {

@@ -25,8 +25,8 @@ public class EdgeListConverter {
 
 	protected static final Logger logger = LoggerFactory.getLogger(EdgeListConverter.class);
 
-	private static final String inputFile = "../../../ConcurrentGraph_Data/original/roadNet-PA.txt";
-	private static final String outputFile = "../../../ConcurrentGraph_Data/converted/roadNet-PA.txt";
+	private static final String inputFile = "../../../ConcurrentGraph_Data2/original/roadNet-PA.txt";
+	private static final String outputFile = "../../../ConcurrentGraph_Data2/converted/roadNet-PA.txt";
 
 
 	public static void main(String[] args) throws Exception {
