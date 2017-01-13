@@ -46,32 +46,30 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 
 	public void superstep(int superstepNo, Q query) {
-		//if (isActive()) {
 		List<M> messagesNextSuperstep = queryMessagesNextSuperstep.get(query.QueryId);
 
 		if (!(vertexInactive && messagesNextSuperstep.isEmpty())) {
 			compute(superstepNo, messagesNextSuperstep, query);
 			messagesNextSuperstep.clear();
 		}
-		//}
 	}
 
 	protected abstract void compute(int superstepNo, List<M> messages, Q query);
 
 
-	protected void sendMessageToAllOutgoingEdges(M message) {
+	protected void sendMessageToAllOutgoingEdges(M message, int queryId) {
 		for (final Edge<E> edge : edges) {
-			worker.sendVertexMessage(edge.TargetVertexId, message);
+			worker.sendVertexMessage(edge.TargetVertexId, message, queryId);
 		}
 	}
 
-	protected void sendMessageToVertex(M message, int sendTo) {
-		worker.sendVertexMessage(sendTo, message);
+	protected void sendMessageToVertex(M message, int sendTo, int queryId) {
+		worker.sendVertexMessage(sendTo, message, queryId);
 	}
 
-	protected void sendMessageToVertices(M message, Collection<Integer> sendTo) {
+	protected void sendMessageToVertices(M message, Collection<Integer> sendTo, int queryId) {
 		for (final Integer st : sendTo) {
-			worker.sendVertexMessage(st, message);
+			worker.sendVertexMessage(st, message, queryId);
 		}
 	}
 

@@ -272,7 +272,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 
 	@Override
-	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag,
+	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
 			List<Pair<Integer, NullWritable>> vertexMessages) {
 		throw new RuntimeException("Master cannot handle vertex messages");
 	}

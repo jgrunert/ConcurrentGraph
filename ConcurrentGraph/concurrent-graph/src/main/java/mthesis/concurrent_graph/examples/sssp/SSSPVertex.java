@@ -29,12 +29,13 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 				return;
 			}
 			else {
-				System.out.println("GO " + ID);
+				System.out.println("GO " + ID + " in " + query.QueryId);
 				SSSPVertexWritable mutableValue = new SSSPVertexWritable(-1, 0);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
-					sendMessageToVertex(new SSSPMessageWritable(ID, edge.Value.Value), edge.TargetVertexId);
+					sendMessageToVertex(new SSSPMessageWritable(ID, edge.Value.Value), edge.TargetVertexId, query.QueryId);
 				}
+				voteVertexHalt();
 				return;
 			}
 		}
@@ -66,7 +67,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			mutableValue.Dist = minDist;
 			mutableValue.Pre = minPre;
 			for (Edge<DoubleWritable> edge : getEdges()) {
-				sendMessageToVertex(new SSSPMessageWritable(ID, mutableValue.Dist + edge.Value.Value), edge.TargetVertexId);
+				sendMessageToVertex(new SSSPMessageWritable(ID, mutableValue.Dist + edge.Value.Value), edge.TargetVertexId, query.QueryId);
 			}
 		}
 		voteVertexHalt();

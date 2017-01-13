@@ -27,7 +27,7 @@ public class Settings {
 	 */
 	public static final boolean VERTEX_MACHINE_DISCOVERY_INCOMING = false;
 
-	public static final int LOG_LEVEL_Main = Level.DEBUG_INT;
+	public static final int LOG_LEVEL_Main = Level.INFO_INT;
 
 
 	/** Default size of slots for parallel queries */

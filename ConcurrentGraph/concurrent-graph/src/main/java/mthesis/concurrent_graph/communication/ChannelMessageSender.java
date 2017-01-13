@@ -20,11 +20,12 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 /**
  * Sends messages on a channel to another machine. Runs a sender thread.
- * 
+ *
  * @author Jonas Grunert
  *
  */
 public class ChannelMessageSender<M extends BaseWritable> {
+
 	private final Logger logger;
 	private final Socket socket;
 	private final OutputStream writer;
@@ -42,35 +43,36 @@ public class ChannelMessageSender<M extends BaseWritable> {
 
 	public void startSender(int ownId, int otherId) {
 		senderThread = new Thread(new Runnable() {
+
 			@Override
 			public void run() {
-				try{
-					while(!Thread.interrupted() && !socket.isClosed()) {
+				try {
+					while (!Thread.interrupted() && !socket.isClosed()) {
 						final MessageToSend message = outMessages.take();
 
 						// Format: short MsgLength, byte MsgType, byte[] MsgContent
-						if(message.hasContent()){
-							outBuffer.position(2);  // Leave 2 bytes for content length
+						if (message.hasContent()) {
+							outBuffer.position(2); // Leave 2 bytes for content length
 							outBuffer.put(message.getTypeCode());
 							message.writeMessageToBuffer(outBuffer);
 							// Write position
 							final int msgLength = outBuffer.position();
 							outBuffer.position(0);
-							outBuffer.putShort((short)(msgLength - 2));
+							outBuffer.putShort((short) (msgLength - 2));
 							// Send message
 							writer.write(outBytes, 0, msgLength);
 							outBuffer.clear();
 						}
-						if(message.flushAfter()) {
+						if (message.flushAfter()) {
 							writer.flush();
 						}
 					}
 				}
-				catch(final InterruptedException e2) {
+				catch (final InterruptedException e2) {
 					return;
 				}
-				catch(final Exception e) {
-					if(!socket.isClosed())
+				catch (final Exception e) {
+					if (!socket.isClosed())
 						logger.error("sending failed", e);
 				}
 				finally {
@@ -85,7 +87,7 @@ public class ChannelMessageSender<M extends BaseWritable> {
 
 	public void close() {
 		try {
-			if(!socket.isClosed())
+			if (!socket.isClosed())
 				socket.close();
 		}
 		catch (final IOException e) {
@@ -98,39 +100,48 @@ public class ChannelMessageSender<M extends BaseWritable> {
 
 
 	public void sendMessageEnvelope(MessageEnvelope message, boolean flush) {
-		outMessages.add(new MessageEnvelopeToSend(message, flush));  // TODO Object pooling?
+		outMessages.add(new MessageEnvelopeToSend(message, flush)); // TODO Object pooling?
 	}
 
-	public void sendVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, M>> vertexMessages) {
-		outMessages.add(new VertexMessageToSend(superstepNo, srcMachine, broadcastFlag, vertexMessages));  // TODO Object pooling?
+	public void sendVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
+			List<Pair<Integer, M>> vertexMessages) {
+		outMessages.add(new VertexMessageToSend(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages)); // TODO Object pooling?
 	}
 
 	public void sendGetToKnownMessage(int srcMachine, Collection<Integer> vertices) {
-		outMessages.add(new GetToKnowMessageToSend(srcMachine, vertices));  // TODO Object pooling?
+		outMessages.add(new GetToKnowMessageToSend(srcMachine, vertices)); // TODO Object pooling?
 	}
 
 	public void flush() {
-		outMessages.add(new FlushDummyMessage());  // TODO Object pooling?
+		outMessages.add(new FlushDummyMessage()); // TODO Object pooling?
 	}
 
 
 	private interface MessageToSend {
+
 		boolean hasContent();
+
 		boolean flushAfter();
+
 		byte getTypeCode();
+
 		void writeMessageToBuffer(ByteBuffer buffer);
 	}
 
 	private class VertexMessageToSend implements MessageToSend {
+
 		private final int superstepNo;
 		private final int srcMachine;
 		private final boolean broadcastFlag;
+		private final int queryId;
 		private final List<Pair<Integer, M>> vertexMessages;
 
-		public VertexMessageToSend(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, M>> vertexMessages) {
+		public VertexMessageToSend(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
+				List<Pair<Integer, M>> vertexMessages) {
 			this.srcMachine = srcMachine;
 			this.superstepNo = superstepNo;
 			this.broadcastFlag = broadcastFlag;
+			this.queryId = queryId;
 			this.vertexMessages = vertexMessages;
 		}
 
@@ -143,9 +154,10 @@ public class ChannelMessageSender<M extends BaseWritable> {
 		public void writeMessageToBuffer(ByteBuffer buffer) {
 			buffer.putInt(superstepNo);
 			buffer.putInt(srcMachine);
-			buffer.put(broadcastFlag ? (byte)0 : (byte)1);
+			buffer.put(broadcastFlag ? (byte) 0 : (byte) 1);
+			buffer.putInt(queryId);
 			buffer.putInt(vertexMessages.size());
-			for(final Pair<Integer, M> msg : vertexMessages) {
+			for (final Pair<Integer, M> msg : vertexMessages) {
 				buffer.putInt(msg.first);
 				msg.second.writeToBuffer(buffer);
 			}
@@ -163,6 +175,7 @@ public class ChannelMessageSender<M extends BaseWritable> {
 	}
 
 	private class GetToKnowMessageToSend implements MessageToSend {
+
 		private final int srcMachine;
 		private final Collection<Integer> vertices;
 
@@ -191,13 +204,14 @@ public class ChannelMessageSender<M extends BaseWritable> {
 		public void writeMessageToBuffer(ByteBuffer buffer) {
 			buffer.putInt(srcMachine);
 			buffer.putInt(vertices.size());
-			for(final Integer vert : vertices) {
+			for (final Integer vert : vertices) {
 				buffer.putInt(vert);
 			}
 		}
 	}
 
 	private class MessageEnvelopeToSend implements MessageToSend {
+
 		private final MessageEnvelope message;
 		private final boolean flushAfter;
 
@@ -229,6 +243,7 @@ public class ChannelMessageSender<M extends BaseWritable> {
 	}
 
 	private class FlushDummyMessage implements MessageToSend {
+
 		@Override
 		public boolean hasContent() {
 			return false;

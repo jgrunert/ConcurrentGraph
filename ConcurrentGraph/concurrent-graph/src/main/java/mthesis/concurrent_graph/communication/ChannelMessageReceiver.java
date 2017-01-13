@@ -21,7 +21,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 /**
  * Receives messages on a channel from another machine. Runs a receive thread.
- * 
+ *
  * @author Jonas Grunert
  *
  */
@@ -116,6 +116,7 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 		final int msgSuperstepNo = inBuffer.getInt();
 		final int srcMachine = inBuffer.getInt();
 		final boolean broadcastFlag = inBuffer.get() == 0;
+		final int queryId = inBuffer.getInt();
 		final int vertexMessagesCount = inBuffer.getInt();
 		final List<Pair<Integer, M>> vertexMessages = new ArrayList<>(vertexMessagesCount); // TODO
 																							// Pool
@@ -123,7 +124,7 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 		for (int i = 0; i < vertexMessagesCount; i++) {
 			vertexMessages.add(new Pair<Integer, M>(inBuffer.getInt(), vertexMessageFactory.createFromBytes(inBuffer)));
 		}
-		inMsgHandler.onIncomingVertexMessage(msgSuperstepNo, srcMachine, broadcastFlag, vertexMessages);
+		inMsgHandler.onIncomingVertexMessage(msgSuperstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
 	}
 
 	private void onIncomingControlMessage(int offset, int size) throws InvalidProtocolBufferException {

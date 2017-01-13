@@ -162,16 +162,19 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		}
 	}
 
-	public void sendVertexMessageUnicast(int dstMachine, int superstepNo, int srcMachine, List<Pair<Integer, M>> vertexMessages) {
+	public void sendVertexMessageUnicast(int dstMachine, int superstepNo, int srcMachine, int queryId,
+			List<Pair<Integer, M>> vertexMessages) {
+		if (vertexMessages.isEmpty()) return;
 		final ChannelMessageSender<M> ch = channelSenders.get(dstMachine);
-		ch.sendVertexMessage(superstepNo, srcMachine, false, vertexMessages);
+		ch.sendVertexMessage(superstepNo, srcMachine, false, queryId, vertexMessages);
 	}
 
 	public void sendVertexMessageBroadcast(List<Integer> otherWorkerIds, int superstepNo, int srcMachine,
-			List<Pair<Integer, M>> vertexMessages) {
+			int queryId, List<Pair<Integer, M>> vertexMessages) {
+		if (vertexMessages.isEmpty()) return;
 		for (final Integer machineId : otherWorkerIds) {
 			final ChannelMessageSender<M> ch = channelSenders.get(machineId);
-			ch.sendVertexMessage(superstepNo, srcMachine, true, vertexMessages);
+			ch.sendVertexMessage(superstepNo, srcMachine, true, queryId, vertexMessages);
 		}
 	}
 
@@ -190,8 +193,9 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		messageListener.onIncomingControlMessage(message);
 	}
 
-	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, List<Pair<Integer, M>> vertexMessages) {
-		messageListener.onIncomingVertexMessage(superstepNo, srcMachine, broadcastFlag, vertexMessages);
+	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
+			List<Pair<Integer, M>> vertexMessages) {
+		messageListener.onIncomingVertexMessage(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
 	}
 
 	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices) {

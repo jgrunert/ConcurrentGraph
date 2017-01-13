@@ -85,7 +85,7 @@ public abstract class AbstractMachine<M extends BaseWritable> {
 		inControlMessages.add(message);
 	}
 
-	public abstract void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag,
+	public abstract void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
 			List<Pair<Integer, M>> vertexMessages);
 
 	public abstract void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices);

@@ -76,22 +76,24 @@ public class ControlMessageBuildUtil {
 				.build();
 	}
 	
-	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId, SuperstepStats stats,
+	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId, //SuperstepStats stats,
 			BaseQueryGlobalValues localQuery) {
-		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder()
-				.setSentVertexMessagesLocal(stats.SentVertexMessagesLocal)
-				.setSentVertexMessagesUnicast(stats.SentVertexMessagesUnicast)
-				.setSentVertexMessagesBroadcast(stats.SentVertexMessagesBroadcast)
-				.setSentVertexMessagesBuckets(stats.SentVertexMessagesBuckets)
-				.setReceivedCorrectVertexMessages(stats.ReceivedCorrectVertexMessages)
-				.setReceivedWrongVertexMessages(stats.ReceivedWrongVertexMessages)
-				.setNewVertexMachinesDiscovered(stats.NewVertexMachinesDiscovered)
-				.setTotalVertexMachinesDiscovered(stats.TotalVertexMachinesDiscovered).build();
+//		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder()
+//				.setSentVertexMessagesLocal(stats.SentVertexMessagesLocal)
+//				.setSentVertexMessagesUnicast(stats.SentVertexMessagesUnicast)
+//				.setSentVertexMessagesBroadcast(stats.SentVertexMessagesBroadcast)
+//				.setSentVertexMessagesBuckets(stats.SentVertexMessagesBuckets)
+//				.setReceivedCorrectVertexMessages(stats.ReceivedCorrectVertexMessages)
+//				.setReceivedWrongVertexMessages(stats.ReceivedWrongVertexMessages)
+//				.setNewVertexMachinesDiscovered(stats.NewVertexMachinesDiscovered)
+//				.setTotalVertexMachinesDiscovered(stats.TotalVertexMachinesDiscovered).build();
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Superstep_Finished)
 						.setQueryValues(ByteString.copyFrom(localQuery.getBytes()))
 						.setSuperstepNo(superstepNo)
-						.setSrcMachine(srcMachineId).setWorkerStats(workerStats).build())
+						.setSrcMachine(srcMachineId)
+						//.setWorkerStats(workerStats)
+						.build())
 				.build();
 	}
 
