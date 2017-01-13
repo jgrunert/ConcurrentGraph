@@ -13,6 +13,7 @@ import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.MachineConfig;
+import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
@@ -78,6 +79,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		// Get query ready
 		if (activeQueries.containsKey(query.QueryId))
 			throw new RuntimeException("There is already an active query with this ID: " + query.QueryId);
+
 		logger.info("Start request for query: " + query.QueryId);
 		while (!workersToInitialize.isEmpty()) {
 			logger.info("Wait for workersInitialized before starting query: " + query.QueryId);
@@ -88,10 +90,23 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				throw new RuntimeException(e);
 			}
 		}
-		FileUtil.makeCleanDirectory(outputDir + File.separator + Integer.toString(query.QueryId));
-		query.setVertexCount(vertexCount);
-		ActiveQuery<Q> activeQuery = new ActiveQuery<>(query, workerIds, queryValueFactory);
-		activeQueries.put(query.QueryId, activeQuery);
+
+		while (activeQueries.size() >= Settings.MAX_PARALLEL_QUERIES) {
+			logger.info("Wait for activeQueries<MAX_PARALLEL_QUERIES before starting query: " + query.QueryId);
+			try {
+				Thread.sleep(1000);
+			}
+			catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		synchronized (this) {
+			FileUtil.makeCleanDirectory(outputDir + File.separator + Integer.toString(query.QueryId));
+			query.setVertexCount(vertexCount);
+			ActiveQuery<Q> activeQuery = new ActiveQuery<>(query, workerIds, queryValueFactory);
+			activeQueries.put(query.QueryId, activeQuery);
+		}
 
 		// Start query on workers
 		signalWorkersQueryStart(query);

@@ -32,4 +32,6 @@ public class Settings {
 
 	/** Default size of slots for parallel queries */
 	public static final int DEFAULT_QUERY_SLOTS = 4;
+	/** Maximum number parallel active of queries */
+	public static final int MAX_PARALLEL_QUERIES = 8;
 }

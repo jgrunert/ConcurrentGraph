@@ -2,6 +2,7 @@ package mthesis.concurrent_graph.examples.sssp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import mthesis.concurrent_graph.examples.common.ExampleTestUtils;
 import mthesis.concurrent_graph.examples.common.MachineClusterConfiguration;
@@ -45,10 +46,19 @@ public class SSSPTest {
 		}
 
 		// Start query
-		System.out.println("Starting query");
-		if (master != null) master.startQuery(new SSSPQueryValues(0, 0, 6310, 10));
-		if (master != null) master.startQuery(new SSSPQueryValues(1, 0, 6332, 10));
-		Thread.sleep(2000);
-		if (master != null) master.startQuery(new SSSPQueryValues(2, 0, 6310, 10));
+		if (master != null) {
+			System.out.println("Starting query test");
+			Random rd = new Random(0);
+			for (int i = 0; i < 100; i++) {
+				int from = rd.nextInt(1090863);
+				int to = rd.nextInt(1090863);
+				master.startQuery(new SSSPQueryValues(i, from, to, 100));
+			}
+		}
+
+		//		if (master != null) master.startQuery(new SSSPQueryValues(0, 0, 6310, 10));
+		//		if (master != null) master.startQuery(new SSSPQueryValues(1, 0, 6332, 10));
+		//		Thread.sleep(2000);
+		//		if (master != null) master.startQuery(new SSSPQueryValues(2, 0, 6310, 10));
 	}
 }
