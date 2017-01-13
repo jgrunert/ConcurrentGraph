@@ -36,7 +36,7 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 			}
 			final double value = 0.15 / query.getVertexCount() + 0.85 * sum;
 			mutableValue = getValue(query.QueryId);
-			if (Math.abs(value - mutableValue.Value) < 0.000001) voteVertexHalt();
+			if (Math.abs(value - mutableValue.Value) < 0.000001) voteVertexHalt(query.QueryId);
 			mutableValue.Value = value;
 		}
 
@@ -45,7 +45,7 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 			sendMessageToAllOutgoingEdges(new DoubleWritable(n), query.QueryId);
 		}
 		else {
-			voteVertexHalt();
+			voteVertexHalt(query.QueryId);
 		}
 	}
 

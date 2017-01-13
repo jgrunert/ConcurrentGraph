@@ -28,7 +28,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 			IntWritable value = new IntWritable(ID);
 			setValue(value, query.QueryId);
 			sendMessageToAllOutgoingEdges(value, query.QueryId);
-			voteVertexHalt();
+			voteVertexHalt(query.QueryId);
 			return;
 		}
 
@@ -46,7 +46,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 		}
 		else {
 			//System.out.println("Vote halt on " + ID + " with " + value);
-			voteVertexHalt();
+			voteVertexHalt(query.QueryId);
 		}
 	}
 

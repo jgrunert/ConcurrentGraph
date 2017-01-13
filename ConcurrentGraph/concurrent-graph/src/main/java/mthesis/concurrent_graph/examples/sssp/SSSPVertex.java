@@ -25,7 +25,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 	protected void compute(int superstepNo, List<SSSPMessageWritable> messages, SSSPQueryValues query) {
 		if (superstepNo == 0) {
 			if (ID != query.From) {
-				voteVertexHalt();
+				voteVertexHalt(query.QueryId);
 				return;
 			}
 			else {
@@ -35,7 +35,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 				for (Edge<DoubleWritable> edge : getEdges()) {
 					sendMessageToVertex(new SSSPMessageWritable(ID, edge.Value.Value), edge.TargetVertexId, query.QueryId);
 				}
-				voteVertexHalt();
+				voteVertexHalt(query.QueryId);
 				return;
 			}
 		}
@@ -58,7 +58,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 		if (minDist > query.MaxDist) {
 			// Vertex is out of range
 			setValue(null, query.QueryId);
-			voteVertexHalt();
+			voteVertexHalt(query.QueryId);
 			return;
 		}
 
@@ -70,7 +70,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 				sendMessageToVertex(new SSSPMessageWritable(ID, mutableValue.Dist + edge.Value.Value), edge.TargetVertexId, query.QueryId);
 			}
 		}
-		voteVertexHalt();
+		voteVertexHalt(query.QueryId);
 	}
 
 

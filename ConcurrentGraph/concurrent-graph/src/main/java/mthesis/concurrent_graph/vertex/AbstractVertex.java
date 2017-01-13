@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
+import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
@@ -22,10 +24,9 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public Int2ObjectMap<V> queryValues = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
 	private V vertexDefaultValue = null;
 	public Int2ObjectMap<List<M>> queryMessagesNextSuperstep = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
+	private Int2BooleanMap queryVertexInactive = new Int2BooleanOpenHashMap();
 
-	//protected int superstepNo = 0;
 	private final VertexWorkerInterface<V, E, M, Q> worker;
-	private boolean vertexInactive = false;
 
 
 	public AbstractVertex(int id, VertexWorkerInterface<V, E, M, Q> worker) {
@@ -36,11 +37,13 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	public void startQuery(int queryId) {
 		queryValues.put(queryId, vertexDefaultValue != null ? worker.getVertexValueFactory().createClone(vertexDefaultValue) : null);
+		queryVertexInactive.put(queryId, false);
 		queryMessagesNextSuperstep.put(queryId, new ArrayList<>());
 	}
 
 	public void finishQuery(int queryId) {
 		queryValues.remove(queryId);
+		queryVertexInactive.remove(queryId);
 		queryMessagesNextSuperstep.remove(queryId);
 	}
 
@@ -48,7 +51,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public void superstep(int superstepNo, Q query) {
 		List<M> messagesNextSuperstep = queryMessagesNextSuperstep.get(query.QueryId);
 
-		if (!(vertexInactive && messagesNextSuperstep.isEmpty())) {
+		if (!(queryVertexInactive.get(query.QueryId) && messagesNextSuperstep.isEmpty())) {
 			compute(superstepNo, messagesNextSuperstep, query);
 			messagesNextSuperstep.clear();
 		}
@@ -74,12 +77,12 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	protected void voteVertexHalt() {
-		vertexInactive = true;
+	protected void voteVertexHalt(int queryId) {
+		queryVertexInactive.put(queryId, true);
 	}
 
 	public boolean isActive(int queryId) {
-		return !(vertexInactive && queryMessagesNextSuperstep.get(queryId).isEmpty());
+		return !(queryVertexInactive.get(queryId) && queryMessagesNextSuperstep.get(queryId).isEmpty());
 	}
 
 

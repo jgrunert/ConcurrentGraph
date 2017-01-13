@@ -132,10 +132,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					// Next superstep
 					queryChannelBarrierWaitSet.get(queryId).addAll(otherWorkerIds);
 					//superstepStats = new SuperstepStats();
-					logger.debug("Starting query " + queryId + " superstep " + superstepNo);
-
 					// Compute and Messaging (done by vertices)
-					logger.info("Worker start query " + queryId + " superstep compute " + superstepNo);
+					logger.debug("Worker start query " + queryId + " superstep compute " + superstepNo);
 					for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 						//final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
 						vertex.superstep(superstepNo, activeQuery);

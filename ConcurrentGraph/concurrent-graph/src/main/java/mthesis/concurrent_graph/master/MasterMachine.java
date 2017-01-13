@@ -184,8 +184,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					// All workers have superstep finished
 					if (msgActiveQuery.ActiveWorkers > 0) {
 						// Active workers, start next superstep
+						logger.info("Workers superstep query " + msgActiveQuery.Query.QueryId + ": " + msgActiveQuery.SuperstepNo +
+								" after " + (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
 						msgActiveQuery.nextSuperstep(workerIds, queryValueFactory);
-						logger.info("Next master superstep query " + msgActiveQuery.Query.QueryId + ": " + msgActiveQuery.SuperstepNo);
+						logger.debug("Next master superstep query " + msgActiveQuery.Query.QueryId + ": " + msgActiveQuery.SuperstepNo);
 						signalQueryNextSuperstep(msgActiveQuery.QueryAggregator, msgActiveQuery.SuperstepNo);
 					}
 					else {
