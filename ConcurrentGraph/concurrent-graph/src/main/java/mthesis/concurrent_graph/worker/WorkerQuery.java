@@ -20,6 +20,8 @@ public class WorkerQuery<M extends BaseWritable, Q extends BaseQueryGlobalValues
 	private int masterSuperstepNo = 0;
 
 	public Set<Integer> ChannelBarrierWaitSet = new HashSet<>();
+	// Channgel barriers received for next superstep
+	public Set<Integer> ChannelBarrierPremature = new HashSet<>();
 	//public Int2ObjectMap<List<M>> InVertexMessages = new Int2ObjectOpenHashMap<>();
 	public boolean Master = false;
 

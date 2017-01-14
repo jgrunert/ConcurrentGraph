@@ -167,59 +167,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							superstepBarrierFinished(activeQuery);
 						}
 						logger.debug("Worker finished query " + queryId + " superstep " + superstepNo);
-
-
-						//					waitForWorkerSuperstepsFinished(activeQuery);
-						//					logger.debug("Worker finished query " + queryId + " superstep barrier " + superstepNo);
-
-
-						// Sort messages from buffers after barrier sync
-						// Incoming messages
-						//					synchronized (activeQuery.InVertexMessages) {
-						//						for (final Entry<Integer, List<M>> msgQueue : activeQuery.InVertexMessages.entrySet()) {
-						//							final AbstractVertex<V, E, M, Q> vertex = localVerticesIdMap.get(msgQueue.getKey());
-						//							if (vertex != null) {
-						//								if (!msgQueue.getValue().isEmpty())
-						//									vertex.queryMessagesNextSuperstep.get(activeQuery.Query.QueryId).addAll(msgQueue.getValue());
-						//							}
-						//							else {
-						//								logger.error("Cannot find vertex for messages: " + msgQueue.getKey());
-						//							}
-						//							msgQueue.getValue().clear();
-						//						}
-						//					}
-
-						// Count active vertices
-						//						int activeVertices = 0;
-						//						for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-						//							if (vertex.finishSuperstep(queryId)) activeVertices++;
-						//						}
-						//						activeQuery.QueryLocal.setActiveVertices(activeVertices);
-						//						logger.debug("Worker finished query " + queryId + " superstep message sort " + superstepNo + " activeVertices: "
-						//								+ activeVertices);
-
-						// Signal master that ready
-						//superstepStats.TotalVertexMachinesDiscovered = remoteVertexMachineRegistry.getRegistrySize();
-						//					activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
-						//					sendMasterSuperstepFinished(activeQuery);
-
-
-						// Wait for start superstep from master
-						//					if (!waitForMasterNextSuperstep(activeQuery, activeQuery.SuperstepNo + 1)) {
-						//						new VertexTextOutputWriter<V, E, M, Q>().writeOutput(
-						//								outputDir + File.separator + activeQuery.Query.QueryId + File.separator + ownId + ".txt", localVerticesList,
-						//								activeQuery.Query.QueryId);
-						//						sendMasterQueryFinishedMessage(activeQuery);
-						//						for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-						//							vertex.finishQuery(activeQuery.Query.QueryId);
-						//						}
-						//						logger.info("Worker finished query " + activeQuery.Query.QueryId);
-						//						synchronized (activeQuery) {
-						//							activeQueries.remove(queryId);
-						//						}
-						//						//activeQuery = null;
-						//						break;
-						//					}
 					}
 				}
 			}
@@ -382,6 +329,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					activeQuery.Query = query;
 					activeQuery.QueryLocal = globalValueFactory.createClone(query);
 					activeQuery.masterConfirmedNextSuperstep();
+					activeQuery.ChannelBarrierWaitSet.removeAll(activeQuery.ChannelBarrierPremature);
+					activeQuery.ChannelBarrierPremature.clear();
 				}
 					break;
 
@@ -402,9 +351,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							superstepBarrierFinished(activeQuery);
 						}
 					}
+					else if (message.getSuperstepNo() == activeQuery.getMasterSuperstepNo() + 1) {
+						activeQuery.ChannelBarrierPremature.add(message.getSrcMachine());
+					}
 					else {
 						logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-								+ " at step " + activeQuery.getMasterSuperstepNo());
+								+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getMasterSuperstepNo());
 					}
 				}
 					break;
@@ -506,7 +458,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 			queryMessageSlots.put(vertex.ID, new ArrayList<>());
 		}
-		synchronized (activeQuery) {
+		synchronized (activeQueries) {
 			activeQueries.put(query.QueryId, activeQuery);
 		}
 
@@ -518,7 +470,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				outputDir + File.separator + activeQuery.Query.QueryId + File.separator + ownId + ".txt", localVerticesList,
 				activeQuery.Query.QueryId);
 		sendMasterQueryFinishedMessage(activeQuery);
-		synchronized (activeQuery) {
+		synchronized (activeQueries) {
 			for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 				vertex.finishQuery(activeQuery.Query.QueryId);
 			}

@@ -198,15 +198,15 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					return;
 				}
 
-				System.out.println(message.getSrcMachine() + " fin " + msgActiveQuery.Query.QueryId + " ss "
-						+ msgActiveQuery.SuperstepNo + " w " + msgActiveQuery.workersWaitingFor);
+				//				System.out.println(message.getSrcMachine() + " fin " + msgActiveQuery.Query.QueryId + " ss "
+				//						+ msgActiveQuery.SuperstepNo + " w " + msgActiveQuery.workersWaitingFor);
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
 
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
 					// All workers have superstep finished
 					if (msgActiveQuery.ActiveWorkers > 0) {
 						// Active workers, start next superstep
-						logger.info("Workers superstep query " + msgActiveQuery.Query.QueryId + ": "
+						logger.info("Workers finished superstep query " + msgActiveQuery.Query.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
 						msgActiveQuery.nextSuperstep(workerIds, queryValueFactory);
@@ -216,7 +216,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					}
 					else {
 						// All workers finished, finish query
-						logger.info("All workers finished for query " + msgActiveQuery.Query.QueryId + ": "
+						logger.info("All workers no more active for query " + msgActiveQuery.Query.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
 						msgActiveQuery.workersFinished(workerIds);
