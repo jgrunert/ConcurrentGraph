@@ -41,7 +41,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
+		extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -172,6 +172,9 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 					}
 				}
 			}
+		}
+		catch (final InterruptedException e) {
+			return;
 		}
 		catch (final Exception e) {
 			logger.error("Exception at worker run", e);
@@ -304,7 +307,6 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 
 	@Override
 	public synchronized void onIncomingControlMessage(ControlMessage message) {
-		// TODO Everything async
 		if (message != null) {
 			switch (message.getType()) {
 				case Master_Worker_Initialize:
@@ -336,13 +338,13 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 						activeQuery.ChannelBarrierPremature.clear();
 					}
 				}
-				break;
+					break;
 
 				case Master_Query_Finished: {
 					Q query = deserializeQuery(message.getQueryValues());
 					finishQuery(activeQueries.get(query.QueryId));
 				}
-				break;
+					break;
 
 
 				case Worker_Query_Superstep_Barrier: {
@@ -360,19 +362,19 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 							synchronized (activeQuery) {
 								if (activeQuery.getCalculatedSuperstepNo() != activeQuery.getMasterSuperstepNo())
 									System.err
-									.println("A Oh no, calc not finished yet: " + activeQuery.Query.QueryId
-											+ ":" + activeQuery.getCalculatedSuperstepNo() + "/"
-											+ activeQuery.getMasterSuperstepNo() + " at " + ownId);
+											.println("A Oh no, calc not finished yet: " + activeQuery.Query.QueryId
+													+ ":" + activeQuery.getCalculatedSuperstepNo() + "/"
+													+ activeQuery.getMasterSuperstepNo() + " at " + ownId);
 
 								superstepBarrierFinished(activeQuery);
 								if (activeQuery.getCalculatedSuperstepNo() != activeQuery.getMasterSuperstepNo())
 									System.err
-									.println("B Oh no, calc not finished yet: " + activeQuery.Query.QueryId
-											+ ":" + activeQuery.getCalculatedSuperstepNo() + "/"
-											+ activeQuery.getMasterSuperstepNo() + " at " + ownId);
-//								else System.out.println("OK " + activeQuery.Query.QueryId + ":"
-//										+ activeQuery.getCalculatedSuperstepNo() + "/"
-//										+ activeQuery.getMasterSuperstepNo() + " at " + ownId);
+											.println("B Oh no, calc not finished yet: " + activeQuery.Query.QueryId
+													+ ":" + activeQuery.getCalculatedSuperstepNo() + "/"
+													+ activeQuery.getMasterSuperstepNo() + " at " + ownId);
+								//								else System.out.println("OK " + activeQuery.Query.QueryId + ":"
+								//										+ activeQuery.getCalculatedSuperstepNo() + "/"
+								//										+ activeQuery.getMasterSuperstepNo() + " at " + ownId);
 							}
 						}
 					}
@@ -381,14 +383,20 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 							activeQuery.ChannelBarrierPremature.add(message.getSrcMachine());
 						}
 						System.err.println("Premature " + " " + query.QueryId + ":" + message.getSuperstepNo()
-						+ " at " + ownId + " from " + message.getSrcMachine());
+								+ " at " + ownId + " from " + message.getSrcMachine());
 					}
 					else {
 						logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-						+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getMasterSuperstepNo());
+								+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getMasterSuperstepNo());
 					}
 				}
-				break;
+					break;
+
+				case Master_Shutdown: {
+					logger.info("Received shutdown signal");
+					stop();
+				}
+					break;
 
 				default:
 					logger.error("Unknown control message type: " + message);

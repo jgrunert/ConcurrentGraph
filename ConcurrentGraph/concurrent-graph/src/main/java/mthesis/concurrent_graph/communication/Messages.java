@@ -91,6 +91,14 @@ public final class Messages {
      * <code>Master_Query_Finished = 9;</code>
      */
     Master_Query_Finished(9),
+    /**
+     * <pre>
+     * Message to signal the system to shutdown
+     * </pre>
+     *
+     * <code>Master_Shutdown = 10;</code>
+     */
+    Master_Shutdown(10),
     ;
 
     /**
@@ -165,6 +173,14 @@ public final class Messages {
      * <code>Master_Query_Finished = 9;</code>
      */
     public static final int Master_Query_Finished_VALUE = 9;
+    /**
+     * <pre>
+     * Message to signal the system to shutdown
+     * </pre>
+     *
+     * <code>Master_Shutdown = 10;</code>
+     */
+    public static final int Master_Shutdown_VALUE = 10;
 
 
     public final int getNumber() {
@@ -190,6 +206,7 @@ public final class Messages {
         case 7: return Master_Query_Start;
         case 8: return Master_Query_Next_Superstep;
         case 9: return Master_Query_Finished;
+        case 10: return Master_Shutdown;
         default: return null;
       }
     }
@@ -4407,7 +4424,7 @@ public final class Messages {
       "ReceivedWrongVertexMessages\030\007 \001(\005\022#\n\033New" +
       "VertexMachinesDiscovered\030\010 \001(\005\022%\n\035TotalV" +
       "ertexMachinesDiscovered\030\t \001(\005\032/\n\030WorkerI" +
-      "nitializedMessage\022\023\n\013VertexCount\030\001 \001(\005*\231" +
+      "nitializedMessage\022\023\n\013VertexCount\030\001 \001(\005*\256" +
       "\002\n\022ControlMessageType\022\025\n\021Channel_Handsha" +
       "ke\020\001\022\026\n\022Worker_Initialized\020\002\022\"\n\036Worker_Q",
       "uery_Superstep_Barrier\020\003\022#\n\037Worker_Query" +
@@ -4415,8 +4432,8 @@ public final class Messages {
       "nished\020\005\022\034\n\030Master_Worker_Initialize\020\006\022\026" +
       "\n\022Master_Query_Start\020\007\022\037\n\033Master_Query_N" +
       "ext_Superstep\020\010\022\031\n\025Master_Query_Finished" +
-      "\020\tB2\n&mthesis.concurrent_graph.communica" +
-      "tionB\010Messages"
+      "\020\t\022\023\n\017Master_Shutdown\020\nB2\n&mthesis.concu" +
+      "rrent_graph.communicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

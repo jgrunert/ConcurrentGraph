@@ -60,20 +60,12 @@ public abstract class AbstractMachine<M extends BaseWritable> {
 
 
 	public void stop() {
+		logger.info("Stopping machine");
 		messaging.stop();
 		if (runThread != null)
 			runThread.interrupt();
+		logger.info("Machine stopped");
 	}
-
-	//	private void onMachineFinished() {
-	//		ErrWarnCounter.Enabled = false;
-	//		if (ErrWarnCounter.Warnings > 0)
-	//			logger.warn("Warnings: " + ErrWarnCounter.Warnings);
-	//		if (ErrWarnCounter.Errors > 0)
-	//			logger.warn("Errors: " + ErrWarnCounter.Errors);
-	//		if (ErrWarnCounter.Warnings == 0 && ErrWarnCounter.Errors == 0)
-	//			logger.info("No warnings or errors");
-	//	}
 
 	public abstract void run();
 

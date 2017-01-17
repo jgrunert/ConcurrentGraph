@@ -57,6 +57,12 @@ public class ControlMessageBuildUtil {
 				.setSrcMachine(srcMachineId).build()).build();
 	}
 
+	public static MessageEnvelope Build_Master_Shutdown(int srcMachineId) {
+		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
+				.setType(ControlMessageType.Master_Shutdown)
+				.setSrcMachine(srcMachineId).build()).build();
+	}
+
 	public static MessageEnvelope Build_Worker_QuerySuperstepBarrier(int superstepNo, int srcMachineId, BaseQueryGlobalValues query) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Worker_Query_Superstep_Barrier)

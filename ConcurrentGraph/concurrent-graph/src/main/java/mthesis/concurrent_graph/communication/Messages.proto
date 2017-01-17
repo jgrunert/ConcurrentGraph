@@ -28,6 +28,8 @@ message MessageEnvelope {
 		Master_Query_Next_Superstep = 8;
 		// Message to signal workers to finish a query, output and terminate
 		Master_Query_Finished = 9;
+		// Message to signal the system to shutdown
+		Master_Shutdown = 10;
 	}
 	  
 	message ControlMessage {

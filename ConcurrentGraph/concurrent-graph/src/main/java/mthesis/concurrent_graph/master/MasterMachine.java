@@ -17,6 +17,7 @@ import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
+import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.Pair;
@@ -120,6 +121,17 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 	public void waitForQueryFinish(int queryId) {
 		while (activeQueries.containsKey(queryId)) {
+			try {
+				Thread.sleep(100);
+			}
+			catch (InterruptedException e) {
+				return;
+			}
+		}
+	}
+
+	public void waitForAllQueriesFinish() {
+		while (!activeQueries.isEmpty()) {
 			try {
 				Thread.sleep(100);
 			}
@@ -263,6 +275,24 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		}
 	}
 
+	@Override
+	public void stop() {
+		signalWorkersShutdown();
+		super.stop();
+		printErrorCount();
+	}
+
+	private void printErrorCount() {
+		ErrWarnCounter.Enabled = false;
+		if (ErrWarnCounter.Warnings > 0)
+			logger.warn("Warnings: " + ErrWarnCounter.Warnings);
+		if (ErrWarnCounter.Errors > 0)
+			logger.warn("Errors: " + ErrWarnCounter.Errors);
+		if (ErrWarnCounter.Warnings == 0 && ErrWarnCounter.Errors == 0)
+			logger.info("No warnings or errors");
+	}
+
+
 
 	@Override
 	public void run() {
@@ -303,6 +333,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 	private void signalWorkersQueryFinish(Q query) {
 		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryFinish(ownId, query),
+				true);
+	}
+
+	private void signalWorkersShutdown() {
+		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_Shutdown(ownId),
 				true);
 	}
 

@@ -59,6 +59,8 @@ public class SSSPTest {
 			master.startQuery(new SSSPQueryValues(1, 0, 6332, 10));
 			Thread.sleep(2000);
 			master.startQuery(new SSSPQueryValues(2, 0, 6310, 10));
+			master.waitForAllQueriesFinish();
+			master.stop();
 		}
 	}
 }
