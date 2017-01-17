@@ -41,7 +41,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-		extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -140,33 +140,35 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				synchronized (activeQueries) {
 					for (WorkerQuery<M, Q> activeQuery : activeQueries.values()) {
-						// Only process query if ready for processing
-						if (!(activeQuery.getMasterSuperstepNo() > activeQuery.getCalculatedSuperstepNo())) continue;
+						synchronized (activeQuery) {
+							// Only process query if ready for processing
+							if (!(activeQuery.getMasterSuperstepNo() > activeQuery.getCalculatedSuperstepNo())) continue;
 
-						int queryId = activeQuery.Query.QueryId;
-						int superstepNo = activeQuery.getMasterSuperstepNo();
+							int queryId = activeQuery.Query.QueryId;
+							int superstepNo = activeQuery.getMasterSuperstepNo();
 
-						// Next superstep
-						//superstepStats = new SuperstepStats();
-						// Compute and Messaging (done by vertices)
-						logger.debug("Worker start query " + queryId + " superstep compute " + superstepNo);
-						for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-							//final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
-							vertex.superstep(superstepNo, activeQuery.Query);
-							//vertMsgs.clear();
+							// Next superstep
+							//superstepStats = new SuperstepStats();
+							// Compute and Messaging (done by vertices)
+							logger.debug("Worker start query " + queryId + " superstep compute " + superstepNo);
+							for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
+								//final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
+								vertex.superstep(superstepNo, activeQuery.Query);
+								//vertMsgs.clear();
+							}
+							activeQuery.calculatedSuperstep();
+
+
+							// Barrier sync with other workers;
+							if (!otherWorkerIds.isEmpty()) {
+								flushVertexMessages(queryId);
+								sendWorkersSuperstepFinished(activeQuery);
+							}
+							else {
+								superstepBarrierFinished(activeQuery);
+							}
+							logger.debug("Worker finished query " + queryId + " superstep " + superstepNo);
 						}
-						activeQuery.calculatedSuperstep();
-
-
-						// Barrier sync with other workers;
-						if (!otherWorkerIds.isEmpty()) {
-							flushVertexMessages(queryId);
-							sendWorkersSuperstepFinished(activeQuery);
-						}
-						else {
-							superstepBarrierFinished(activeQuery);
-						}
-						logger.debug("Worker finished query " + queryId + " superstep " + superstepNo);
 					}
 				}
 			}
@@ -329,37 +331,64 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					activeQuery.Query = query;
 					activeQuery.QueryLocal = globalValueFactory.createClone(query);
 					activeQuery.masterConfirmedNextSuperstep();
-					activeQuery.ChannelBarrierWaitSet.removeAll(activeQuery.ChannelBarrierPremature);
-					activeQuery.ChannelBarrierPremature.clear();
+					synchronized (activeQuery.ChannelBarrierWaitSet) {
+						activeQuery.ChannelBarrierWaitSet.removeAll(activeQuery.ChannelBarrierPremature);
+						activeQuery.ChannelBarrierPremature.clear();
+					}
 				}
-					break;
+				break;
 
 				case Master_Query_Finished: {
 					Q query = deserializeQuery(message.getQueryValues());
 					finishQuery(activeQueries.get(query.QueryId));
 				}
-					break;
+				break;
 
 
 				case Worker_Query_Superstep_Barrier: {
 					Q query = deserializeQuery(message.getQueryValues());
 					WorkerQuery<M, Q> activeQuery = activeQueries.get(query.QueryId);
 					if (message.getSuperstepNo() == activeQuery.getMasterSuperstepNo()) {
-						activeQuery.ChannelBarrierWaitSet.remove(message.getSrcMachine());
-						if (activeQuery.ChannelBarrierWaitSet.isEmpty()) {
+						boolean allClear;
+						synchronized (activeQuery.ChannelBarrierWaitSet) {
+							activeQuery.ChannelBarrierWaitSet.remove(message.getSrcMachine());
+							allClear = activeQuery.ChannelBarrierWaitSet.isEmpty();
+						}
+						if (allClear) {
 							// All worker superstep barriers received
-							superstepBarrierFinished(activeQuery);
+
+							synchronized (activeQuery) {
+								if (activeQuery.getCalculatedSuperstepNo() != activeQuery.getMasterSuperstepNo())
+									System.err
+									.println("A Oh no, calc not finished yet: " + activeQuery.Query.QueryId
+											+ ":" + activeQuery.getCalculatedSuperstepNo() + "/"
+											+ activeQuery.getMasterSuperstepNo() + " at " + ownId);
+
+								superstepBarrierFinished(activeQuery);
+								if (activeQuery.getCalculatedSuperstepNo() != activeQuery.getMasterSuperstepNo())
+									System.err
+									.println("B Oh no, calc not finished yet: " + activeQuery.Query.QueryId
+											+ ":" + activeQuery.getCalculatedSuperstepNo() + "/"
+											+ activeQuery.getMasterSuperstepNo() + " at " + ownId);
+//								else System.out.println("OK " + activeQuery.Query.QueryId + ":"
+//										+ activeQuery.getCalculatedSuperstepNo() + "/"
+//										+ activeQuery.getMasterSuperstepNo() + " at " + ownId);
+							}
 						}
 					}
 					else if (message.getSuperstepNo() == activeQuery.getMasterSuperstepNo() + 1) {
-						activeQuery.ChannelBarrierPremature.add(message.getSrcMachine());
+						synchronized (activeQuery.ChannelBarrierWaitSet) {
+							activeQuery.ChannelBarrierPremature.add(message.getSrcMachine());
+						}
+						System.err.println("Premature " + " " + query.QueryId + ":" + message.getSuperstepNo()
+						+ " at " + ownId + " from " + message.getSrcMachine());
 					}
 					else {
 						logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-								+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getMasterSuperstepNo());
+						+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getMasterSuperstepNo());
 					}
 				}
-					break;
+				break;
 
 				default:
 					logger.error("Unknown control message type: " + message);
@@ -448,7 +477,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (activeQueries.containsKey(query.QueryId))
 			throw new RuntimeException("Thready with this ID already active: " + query.QueryId);
 		WorkerQuery<M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory, localVerticesIdMap.keySet());
-		activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
+		synchronized (activeQuery.ChannelBarrierWaitSet) {
+			activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
+		}
 
 		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 			vertex.startQuery(query.QueryId);

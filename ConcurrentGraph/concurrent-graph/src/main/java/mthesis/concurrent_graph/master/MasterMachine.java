@@ -205,12 +205,12 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
 					// All workers have superstep finished
 					if (msgActiveQuery.ActiveWorkers > 0) {
-						// Active workers, start next superstep
+						// Active workers, start next superstep TODO Log debug
 						logger.info("Workers finished superstep query " + msgActiveQuery.Query.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
 						msgActiveQuery.nextSuperstep(workerIds, queryValueFactory);
-						logger.debug("Next master superstep query " + msgActiveQuery.Query.QueryId + ": "
+						logger.trace("Next master superstep query " + msgActiveQuery.Query.QueryId + ": "
 								+ msgActiveQuery.SuperstepNo);
 						signalQueryNextSuperstep(msgActiveQuery.QueryAggregator, msgActiveQuery.SuperstepNo);
 					}
@@ -239,7 +239,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					logger.info("All workers finished query " + msgActiveQuery.Query.QueryId);
 					evaluateQueryResult(msgActiveQuery);
 					activeQueries.remove(msgActiveQuery.Query.QueryId);
-					logger.info("Evaluated finished query " + msgActiveQuery.Query.QueryId);
+					logger.info("# Evaluated finished query " + msgActiveQuery.Query.QueryId);
 				}
 			}
 
