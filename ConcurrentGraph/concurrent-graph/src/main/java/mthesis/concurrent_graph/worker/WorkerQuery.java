@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -29,6 +31,8 @@ public class WorkerQuery<M extends BaseWritable, Q extends BaseQueryGlobalValues
 	public Set<Integer> ChannelBarrierPremature = new HashSet<>();
 	//public Int2ObjectMap<List<M>> InVertexMessages = new Int2ObjectOpenHashMap<>();
 	public boolean Master = false;
+
+	public IntSet ActiveVertices = new IntOpenHashSet();
 
 	//	public IntSet ActiveVertices = new IntOpenHashSet();
 

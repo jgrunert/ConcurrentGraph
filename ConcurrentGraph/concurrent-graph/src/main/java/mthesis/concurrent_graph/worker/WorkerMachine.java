@@ -150,14 +150,20 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							int queryId = activeQuery.Query.QueryId;
 							int superstepNo = activeQuery.getMasterSuperstepNo();
 
-							// Next superstep
-							//superstepStats = new SuperstepStats();
-							// Compute and Messaging (done by vertices)
+
+							// Next superstep. Compute and Messaging (done by vertices)
 							logger.debug("Worker start query " + queryId + " superstep compute " + superstepNo);
-							for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-								//final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
-								vertex.superstep(superstepNo, activeQuery);
-								//vertMsgs.clear();
+
+							// First frame: Call all vertices, second frame only active vertices
+							if (superstepNo == 0) {
+								for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
+									vertex.superstep(superstepNo, activeQuery);
+								}
+							}
+							else {
+								for (int vertex : activeQuery.ActiveVertices) {
+									localVerticesIdMap.get(vertex).superstep(superstepNo, activeQuery);
+								}
 							}
 							activeQuery.calculatedSuperstep();
 
@@ -437,13 +443,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				return;
 			}
 
-			int activeVertices = 0;
+			activeQuery.ActiveVertices.clear();
 			for (AbstractVertex<V, E, M, Q> vert : localVerticesList) {
 				if (vert.finishSuperstep(activeQuery.Query.QueryId)) {
-					activeVertices++;
+					activeQuery.ActiveVertices.add(vert.ID);
 				}
 			}
-			activeQuery.QueryLocal.setActiveVertices(activeVertices);
+			activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVertices.size());
 			synchronized (activeQuery.ChannelBarrierWaitSet) {
 				activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
 			}
