@@ -1,6 +1,7 @@
 package mthesis.concurrent_graph.master;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
@@ -69,7 +70,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		super.start();
 		// Initialize workers
 		initializeWorkersAssignPartitions(); // Signal workers to initialize
-		logger.info("Workers partitins assigned and initialize starting after "
+		logger.info("Workers partitions assigned and initialize starting after "
 				+ (System.currentTimeMillis() - masterStartTime) + "ms");
 	}
 
@@ -218,22 +219,23 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					// All workers have superstep finished
 					if (msgActiveQuery.ActiveWorkers > 0) {
 						// Active workers, start next superstep TODO Log debug
-						logger.info("Workers finished superstep " + msgActiveQuery.Query.QueryId + ":"
+						logger.info("Workers finished superstep " + msgActiveQuery.BaseQuery.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms. Active: "
-								+ msgActiveQuery.QueryAggregator.getActiveVertices());
-						msgActiveQuery.nextSuperstep(workerIds, queryValueFactory);
-						logger.trace("Next master superstep query " + msgActiveQuery.Query.QueryId + ": "
+								+ msgActiveQuery.QueryValueAggregator.getActiveVertices());
+						msgActiveQuery.nextSuperstep(workerIds);
+						logger.trace("Next master superstep query " + msgActiveQuery.BaseQuery.QueryId + ": "
 								+ msgActiveQuery.SuperstepNo);
-						signalQueryNextSuperstep(msgActiveQuery.QueryAggregator, msgActiveQuery.SuperstepNo);
+						signalQueryNextSuperstep(msgActiveQuery.QueryValueAggregator, msgActiveQuery.SuperstepNo);
+						msgActiveQuery.resetValueAggregator(queryValueFactory);
 					}
 					else {
 						// All workers finished, finish query
-						logger.info("All workers no more active for query " + msgActiveQuery.Query.QueryId + ":"
+						logger.info("All workers no more active for query " + msgActiveQuery.BaseQuery.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
 						msgActiveQuery.workersFinished(workerIds);
-						signalWorkersQueryFinish(msgActiveQuery.Query);
+						signalWorkersQueryFinish(msgActiveQuery.BaseQuery);
 					}
 				}
 			}
@@ -245,14 +247,14 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				}
 
 				msgActiveQuery.workersWaitingFor.remove(message.getSrcMachine());
-				logger.info("Worker " + message.getSrcMachine() + " finished query " + msgActiveQuery.Query.QueryId);
+				logger.info("Worker " + message.getSrcMachine() + " finished query " + msgActiveQuery.BaseQuery.QueryId);
 
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
 					// All workers have query finished
-					logger.info("All workers finished query " + msgActiveQuery.Query.QueryId);
+					logger.info("All workers finished query " + msgActiveQuery.BaseQuery.QueryId);
 					evaluateQueryResult(msgActiveQuery);
-					activeQueries.remove(msgActiveQuery.Query.QueryId);
-					logger.info("# Evaluated finished query " + msgActiveQuery.Query.QueryId);
+					activeQueries.remove(msgActiveQuery.BaseQuery.QueryId);
+					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId);
 				}
 			}
 
@@ -304,7 +306,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private void evaluateQueryResult(MasterQuery<Q> query) {
 		// Aggregate output
 		try {
-			outputCombiner.evaluateOutput(outputDir + File.separator + query.Query.QueryId, query.Query);
+			outputCombiner.evaluateOutput(outputDir + File.separator + query.BaseQuery.QueryId, query.BaseQuery);
 		}
 		catch (final Exception e) {
 			logger.error("writeOutput failed", e);
@@ -313,8 +315,15 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 
 	private void initializeWorkersAssignPartitions() {
-		final Map<Integer, List<String>> assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir,
-				workerIds);
+		Map<Integer, List<String>> assignedPartitions;
+		try {
+			assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir,
+					workerIds);
+		}
+		catch (IOException e) {
+			logger.error("Error at partitioning", e);
+			return;
+		}
 		for (final Integer workerId : workerIds) {
 			messaging.sendControlMessageUnicast(workerId,
 					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, assignedPartitions.get(workerId)),

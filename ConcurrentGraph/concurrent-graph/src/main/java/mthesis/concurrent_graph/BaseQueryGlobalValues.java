@@ -35,7 +35,7 @@ public class BaseQueryGlobalValues extends BaseWritable {
 	//		return aggregated;
 	//	}	
 
-	public void add(BaseQueryGlobalValues v) {
+	public void combine(BaseQueryGlobalValues v) {
 		if (QueryId != v.QueryId) throw new RuntimeException("Cannot add qureries with differend IDs: " + QueryId + " " + v.QueryId);
 		ActiveVertices += v.ActiveVertices;
 		VertexCount += v.VertexCount;

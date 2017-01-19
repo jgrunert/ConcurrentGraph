@@ -12,6 +12,7 @@ import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.ContinousBlockInputPartitioner;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
+import mthesis.concurrent_graph.worker.VertexTextInputReader;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
@@ -48,7 +49,7 @@ public class CCTest {
 
 		final List<WorkerMachine<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues>> workers = new ArrayList<>();
 		for (int i = 0; i < numWorkers; i++) {
-			workers.add(testUtils.startWorker(allCfg, i, allWorkerIds, outputDir, jobConfig));
+			workers.add(testUtils.startWorker(allCfg, i, allWorkerIds, outputDir, jobConfig, new VertexTextInputReader<>()));
 		}
 
 		if (master != null) master.startQuery(new BaseQueryGlobalValues(0, 0, 0));

@@ -50,6 +50,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private List<String> assignedPartitions;
 
 	private final JobConfiguration<V, E, M, Q> jobConfig;
+	private final BaseVertexInputReader<V, E, M, Q> vertexReader;
 
 	private List<AbstractVertex<V, E, M, Q>> localVerticesList;
 	private final Map<Integer, AbstractVertex<V, E, M, Q>> localVerticesIdMap = new HashMap<>();
@@ -82,7 +83,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
-			JobConfiguration<V, E, M, Q> jobConfig) {
+			JobConfiguration<V, E, M, Q> jobConfig,
+			BaseVertexInputReader<V, E, M, Q> vertexReader) {
 		super(machines, ownId, jobConfig.getMessageValueFactory());
 		this.masterId = masterId;
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
@@ -94,10 +96,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		this.outputDir = outputDir;
 		this.jobConfig = jobConfig;
+		this.vertexReader = vertexReader;
 	}
 
 	private void loadVertices(List<String> partitions) {
-		localVerticesList = new VertexTextInputReader<V, E, M, Q>().getVertices(partitions, jobConfig, this);
+		localVerticesList = vertexReader.getVertices(partitions, jobConfig, this);
 		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 			localVerticesIdMap.put(vertex.ID, vertex);
 		}
@@ -153,7 +156,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							logger.debug("Worker start query " + queryId + " superstep compute " + superstepNo);
 							for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 								//final List<VertexMessage<M>> vertMsgs = vertexMessageBuckets.get(vertex.ID);
-								vertex.superstep(superstepNo, activeQuery.Query);
+								vertex.superstep(superstepNo, activeQuery);
 								//vertMsgs.clear();
 							}
 							activeQuery.calculatedSuperstep();

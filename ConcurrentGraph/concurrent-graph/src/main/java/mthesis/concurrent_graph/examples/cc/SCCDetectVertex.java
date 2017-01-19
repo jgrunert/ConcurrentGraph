@@ -6,6 +6,7 @@ import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
+import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
@@ -23,7 +24,7 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	}
 
 	@Override
-	protected void compute(int superstepNo, List<IntWritable> messages, BaseQueryGlobalValues query) {
+	protected void compute(int superstepNo, List<IntWritable> messages, WorkerQuery<IntWritable, BaseQueryGlobalValues> query) {
 		if (superstepNo == 0) {
 			IntWritable value = new IntWritable(ID);
 			setValue(value, query.QueryId);

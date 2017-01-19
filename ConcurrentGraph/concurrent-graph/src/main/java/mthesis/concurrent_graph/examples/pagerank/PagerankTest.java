@@ -10,6 +10,7 @@ import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.master.input.RoundRobinBlockInputPartitioner;
+import mthesis.concurrent_graph.worker.VertexTextInputReader;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
@@ -42,7 +43,8 @@ public class PagerankTest {
 		final List<WorkerMachine<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
 			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i)))
-				workers.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig));
+				workers.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
+						new VertexTextInputReader<>()));
 		}
 
 		if (master != null) master.startQuery(new BaseQueryGlobalValues(0, 0, 0));

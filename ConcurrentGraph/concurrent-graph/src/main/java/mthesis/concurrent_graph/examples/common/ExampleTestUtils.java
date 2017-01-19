@@ -9,14 +9,15 @@ import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
+import mthesis.concurrent_graph.worker.BaseVertexInputReader;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
-public class ExampleTestUtils<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues> {
+public class ExampleTestUtils<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
-	public WorkerMachine<V, E, M, G> startWorker(Map<Integer, MachineConfig> allCfg, int id, List<Integer> allWorkers, String output,
-			JobConfiguration<V, E, M, G> jobConfig) {
-		final WorkerMachine<V, E, M, G> node = new WorkerMachine<>(allCfg, id, allWorkers, -1, output, jobConfig);
+	public WorkerMachine<V, E, M, Q> startWorker(Map<Integer, MachineConfig> allCfg, int id, List<Integer> allWorkers, String output,
+			JobConfiguration<V, E, M, Q> jobConfig, BaseVertexInputReader<V, E, M, Q> vertexReader) {
+		final WorkerMachine<V, E, M, Q> node = new WorkerMachine<>(allCfg, id, allWorkers, -1, output, jobConfig, vertexReader);
 		Thread workerStartThread = new Thread(new Runnable() {
 
 			@Override
@@ -29,10 +30,10 @@ public class ExampleTestUtils<V extends BaseWritable, E extends BaseWritable, M 
 		return node;
 	}
 
-	public MasterMachine<G> startMaster(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
-			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator<G> outputCombiner, String outputDir,
-			JobConfiguration<V, E, M, G> jobConfig) {
-		final MasterMachine<G> node = new MasterMachine<G>(machines, ownId, workerIds, inputFile, inputPartitionDir, inputPartitioner,
+	public MasterMachine<Q> startMaster(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
+			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator<Q> outputCombiner, String outputDir,
+			JobConfiguration<V, E, M, Q> jobConfig) {
+		final MasterMachine<Q> node = new MasterMachine<Q>(machines, ownId, workerIds, inputFile, inputPartitionDir, inputPartitioner,
 				outputCombiner, outputDir, jobConfig.getGlobalValuesFactory());
 		Thread masterStartThread = new Thread(new Runnable() {
 

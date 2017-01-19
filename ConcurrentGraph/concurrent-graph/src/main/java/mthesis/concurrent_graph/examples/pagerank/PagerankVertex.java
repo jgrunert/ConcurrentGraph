@@ -6,6 +6,7 @@ import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
+import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
@@ -23,10 +24,10 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 	}
 
 	@Override
-	protected void compute(int superstepNo, List<DoubleWritable> messages, BaseQueryGlobalValues query) {
+	protected void compute(int superstepNo, List<DoubleWritable> messages, WorkerQuery<DoubleWritable, BaseQueryGlobalValues> query) {
 		DoubleWritable mutableValue;
 		if (superstepNo == 0) {
-			mutableValue = new DoubleWritable(1.0 / query.getVertexCount());
+			mutableValue = new DoubleWritable(1.0 / query.Query.getVertexCount());
 			setValue(mutableValue, query.QueryId);
 		}
 		else {
@@ -34,7 +35,7 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 			for (final DoubleWritable msg : messages) {
 				sum += msg.Value;
 			}
-			final double value = 0.15 / query.getVertexCount() + 0.85 * sum;
+			final double value = 0.15 / query.Query.getVertexCount() + 0.85 * sum;
 			mutableValue = getValue(query.QueryId);
 			if (Math.abs(value - mutableValue.Value) < 0.000001) voteVertexHalt(query.QueryId);
 			mutableValue.Value = value;

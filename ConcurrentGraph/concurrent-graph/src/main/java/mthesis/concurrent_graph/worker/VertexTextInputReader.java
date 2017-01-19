@@ -21,18 +21,20 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *
  * @author Jonas Grunert
  */
-public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues> {
+public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
+		implements BaseVertexInputReader<V, E, M, Q> {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public List<AbstractVertex<V, E, M, G>> getVertices(List<String> partitions, JobConfiguration<V, E, M, G> jobConfig,
-			VertexWorkerInterface<V, E, M, G> vertexMessageSender) {
+	@Override
+	public List<AbstractVertex<V, E, M, Q>> getVertices(List<String> partitions, JobConfiguration<V, E, M, Q> jobConfig,
+			VertexWorkerInterface<V, E, M, Q> vertexMessageSender) {
 
-		final VertexFactory<V, E, M, G> vertexFactory = jobConfig.getVertexFactory();
+		final VertexFactory<V, E, M, Q> vertexFactory = jobConfig.getVertexFactory();
 		final BaseWritableFactory<V> vertexValueFactory = jobConfig.getVertexValueFactory();
 		final BaseWritableFactory<E> edgeValueFacgory = jobConfig.getEdgeValueFactory();
 
-		final List<AbstractVertex<V, E, M, G>> vertices = new ArrayList<>();
+		final List<AbstractVertex<V, E, M, Q>> vertices = new ArrayList<>();
 
 		for (final String partition : partitions) {
 			try (BufferedReader br = new BufferedReader(new FileReader(partition))) {
@@ -44,7 +46,7 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 					// Vertex ID
 					final String[] splitVertex = split0[0].split(",");
 					final int vertexId = Integer.parseInt(splitVertex[0]);
-					final AbstractVertex<V, E, M, G> vertex = vertexFactory.newInstance(vertexId, vertexMessageSender);
+					final AbstractVertex<V, E, M, Q> vertex = vertexFactory.newInstance(vertexId, vertexMessageSender);
 
 					// Optional vertex value
 					if (splitVertex.length > 1 && vertexValueFactory != null) {

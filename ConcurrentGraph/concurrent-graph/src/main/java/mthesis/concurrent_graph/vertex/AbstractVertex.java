@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
+import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -76,21 +77,26 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	public void superstep(int superstepNo, Q query) {
-		List<M> messagesThisSuperstep = queryMessagesThisSuperstep.get(query.QueryId);
+	public void superstep(int superstepNo, WorkerQuery<M, Q> query) {
+		int queryId = query.Query.QueryId;
+		List<M> messagesThisSuperstep = queryMessagesThisSuperstep.get(queryId);
 
-		if (!(queryVertexInactive.get(query.QueryId) && (messagesThisSuperstep == null || messagesThisSuperstep.isEmpty()))) {
+		if (!(queryVertexInactive.get(queryId) && (messagesThisSuperstep == null || messagesThisSuperstep.isEmpty()))) {
 			//			if (messagesThisSuperstep == null) {
 			//				messagesThisSuperstep = new ArrayList<>();
 			//				queryMessagesNextSuperstep.put(query.QueryId, messagesThisSuperstep);
 			//			}
+			// Reset halt flag
+			queryVertexInactive.remove(queryId);
+
+			// Compute vertex
 			compute(superstepNo, messagesThisSuperstep, query);
 			if (messagesThisSuperstep != null)
 				messagesThisSuperstep.clear();
 		}
 	}
 
-	protected abstract void compute(int superstepNo, List<M> messages, Q query);
+	protected abstract void compute(int superstepNo, List<M> messages, WorkerQuery<M, Q> query);
 
 
 	protected void sendMessageToAllOutgoingEdges(M message, int queryId) {
@@ -115,7 +121,8 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 	public boolean isActive(int queryId) {
-		return !(queryVertexInactive.get(queryId) && queryMessagesNextSuperstep.get(queryId).isEmpty());
+		List<M> messagesThisSuperstep = queryMessagesThisSuperstep.get(queryId);
+		return (!(queryVertexInactive.get(queryId) && (messagesThisSuperstep == null || messagesThisSuperstep.isEmpty())));
 	}
 
 

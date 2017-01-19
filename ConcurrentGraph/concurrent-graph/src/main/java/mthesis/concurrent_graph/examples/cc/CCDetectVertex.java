@@ -9,6 +9,7 @@ import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
+import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.IntWritable;
 import mthesis.concurrent_graph.writable.NullWritable;
 
@@ -29,7 +30,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 	}
 
 	@Override
-	protected void compute(int superstepNo, List<CCMessageWritable> messages, BaseQueryGlobalValues query) {
+	protected void compute(int superstepNo, List<CCMessageWritable> messages, WorkerQuery<CCMessageWritable, BaseQueryGlobalValues> query) {
 		if (superstepNo == 0) {
 			IntWritable value = new IntWritable(ID);
 			setValue(value, query.QueryId);

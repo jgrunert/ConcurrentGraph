@@ -6,6 +6,7 @@ import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
+import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
 /**
@@ -22,15 +23,15 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 	}
 
 	@Override
-	protected void compute(int superstepNo, List<SSSPMessageWritable> messages, SSSPQueryValues query) {
+	protected void compute(int superstepNo, List<SSSPMessageWritable> messages, WorkerQuery<SSSPMessageWritable, SSSPQueryValues> query) {
 		if (superstepNo == 0) {
-			if (ID != query.From) {
+			if (ID != query.Query.From) {
 				voteVertexHalt(query.QueryId);
 				return;
 			}
 			else {
 				System.out.println("GO " + ID + " in " + query.QueryId);
-				SSSPVertexWritable mutableValue = new SSSPVertexWritable(-1, 0);
+				SSSPVertexWritable mutableValue = new SSSPVertexWritable(-1, 0, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
 					sendMessageToVertex(new SSSPMessageWritable(ID, edge.Value.Value), edge.TargetVertexId, query.QueryId);
@@ -42,35 +43,64 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 
 		SSSPVertexWritable mutableValue = getValue(query.QueryId);
 		if (mutableValue == null) {
-			mutableValue = new SSSPVertexWritable(-1, Double.POSITIVE_INFINITY);
+			mutableValue = new SSSPVertexWritable(-1, Double.POSITIVE_INFINITY, false);
 			setValue(mutableValue, query.QueryId);
 		}
 
 		double minDist = mutableValue.Dist;
 		int minPre = mutableValue.Pre;
-		for (SSSPMessageWritable msg : messages) {
-			if (msg.Dist < minDist) {
-				minDist = msg.Dist;
-				minPre = msg.SrcVertex;
+		if (messages != null) {
+			for (SSSPMessageWritable msg : messages) {
+				if (msg.Dist < minDist) { // TODO Why NPE?
+					minDist = msg.Dist;
+					minPre = msg.SrcVertex;
+				}
 			}
 		}
 
-		if (minDist > query.MaxDist) {
+		if (minDist > query.Query.MaxDist) {
 			// Vertex is out of range
 			setValue(null, query.QueryId);
 			voteVertexHalt(query.QueryId);
 			return;
 		}
 
-		//		System.out.println("COMP " + ID + " " + minDist);
+		if (minDist > superstepNo * 40) { // TODO Better factor, dynamic?
+			// Come back later
+			if (minDist < mutableValue.Dist) {
+				mutableValue.Dist = minDist;
+				mutableValue.Pre = minPre;
+				mutableValue.SendMsgsLater = true; // Send messages to neighbors later
+			}
+			return;
+		}
+
+		//		if (superstepNo == 209) {
+		//			voteVertexHalt(query.QueryId);
+		//			return;
+		//		}
+
+		boolean sendMessages = mutableValue.SendMsgsLater;
 		if (minDist < mutableValue.Dist) {
 			mutableValue.Dist = minDist;
 			mutableValue.Pre = minPre;
+			sendMessages = true;
+		}
+		if (sendMessages) {
 			for (Edge<DoubleWritable> edge : getEdges()) {
 				sendMessageToVertex(new SSSPMessageWritable(ID, mutableValue.Dist + edge.Value.Value), edge.TargetVertexId, query.QueryId);
 			}
+			mutableValue.SendMsgsLater = false;
 		}
 		voteVertexHalt(query.QueryId);
+
+
+		// TODO Algorithm halt?
+		if (ID == query.Query.To) {
+			System.out.println("Target dist " + minDist + " max " + query.QueryLocal.MaxDist);
+			query.QueryLocal.TargetFound = true;
+			query.QueryLocal.MaxDist = minDist;
+		}
 	}
 
 

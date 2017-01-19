@@ -13,11 +13,11 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 
 	private static final Logger logger = LoggerFactory.getLogger(MasterQuery.class);
 
-	public final Q Query;
+	public final Q BaseQuery;
 	public final long StartTime;
 
 	public int SuperstepNo;
-	public Q QueryAggregator;
+	public Q QueryValueAggregator;
 	public int ActiveWorkers;
 	public final Set<Integer> workersWaitingFor;
 	public boolean IsComputing = true;
@@ -25,24 +25,28 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 
 	public MasterQuery(Q query, Collection<Integer> workersToWait, BaseQueryGlobalValues.BaseQueryGlobalValuesFactory<Q> queryFactory) {
 		super();
-		Query = query;
+		BaseQuery = query;
 		SuperstepNo = -1;
 		StartTime = System.currentTimeMillis();
 		workersWaitingFor = new HashSet<>(workersToWait.size());
-		nextSuperstep(workersToWait, queryFactory);
+		nextSuperstep(workersToWait);
+		resetValueAggregator(queryFactory);
 	}
 
-	public void nextSuperstep(Collection<Integer> workersToWait, BaseQueryGlobalValues.BaseQueryGlobalValuesFactory<Q> queryFactory) {
+	public void nextSuperstep(Collection<Integer> workersToWait) {
 		workersWaitingFor.addAll(workersToWait);
-		QueryAggregator = queryFactory.createClone(Query);
-		QueryAggregator.setVertexCount(0);
-		QueryAggregator.setActiveVertices(0);
-		ActiveWorkers = 0;
 		SuperstepNo++;
 	}
 
+	public void resetValueAggregator(BaseQueryGlobalValues.BaseQueryGlobalValuesFactory<Q> queryFactory) {
+		QueryValueAggregator = queryFactory.createClone(BaseQuery);
+		QueryValueAggregator.setVertexCount(0);
+		QueryValueAggregator.setActiveVertices(0);
+		ActiveWorkers = 0;
+	}
+
 	public void aggregateQuery(Q workerQueryMsg) {
-		QueryAggregator.add(workerQueryMsg);
+		QueryValueAggregator.combine(workerQueryMsg);
 		if (workerQueryMsg.getActiveVertices() > 0) ActiveWorkers++;
 	}
 
@@ -50,7 +54,7 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 		workersWaitingFor.addAll(workersToWait);
 		IsComputing = false;
 		if (ActiveWorkers != 0) logger.warn("Finishing query with active workers: " + ActiveWorkers);
-		if (QueryAggregator.getActiveVertices() != 0)
-			logger.warn("Finishing query with active vertices: " + QueryAggregator.getActiveVertices());
+		if (QueryValueAggregator.getActiveVertices() != 0)
+			logger.warn("Finishing query with active vertices: " + QueryValueAggregator.getActiveVertices());
 	}
 }
