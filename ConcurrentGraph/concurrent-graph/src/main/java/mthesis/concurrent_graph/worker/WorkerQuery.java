@@ -16,6 +16,8 @@ public class WorkerQuery<M extends BaseWritable, Q extends BaseQueryGlobalValues
 
 	// Last calculated superstep number
 	private int calculatedSuperstepNo = -1;
+	// Last superstep when finished barrier sync
+	private int barrierFinishedSuperstepNo = -1;
 	// Superstep to start confirmed by master, >= CalculatedSuperstepNo
 	private int masterSuperstepNo = 0;
 
@@ -42,6 +44,10 @@ public class WorkerQuery<M extends BaseWritable, Q extends BaseQueryGlobalValues
 		calculatedSuperstepNo++;
 	}
 
+	public void finishedBarrierSync() {
+		barrierFinishedSuperstepNo++;
+	}
+
 	public void masterConfirmedNextSuperstep() {
 		masterSuperstepNo++;
 	}
@@ -49,6 +55,10 @@ public class WorkerQuery<M extends BaseWritable, Q extends BaseQueryGlobalValues
 
 	public int getCalculatedSuperstepNo() {
 		return calculatedSuperstepNo;
+	}
+
+	public int getBarrierFinishedSuperstepNo() {
+		return barrierFinishedSuperstepNo;
 	}
 
 	public int getMasterSuperstepNo() {
