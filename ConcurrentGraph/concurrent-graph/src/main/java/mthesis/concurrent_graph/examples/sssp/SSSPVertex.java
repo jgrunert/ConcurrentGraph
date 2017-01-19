@@ -95,7 +95,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 		voteVertexHalt(query.QueryId);
 
 
-		// TODO Algorithm halt?
+		// TODO Better, faster termination
 		if (ID == query.Query.To) {
 			System.out.println("Target dist " + minDist + " max " + query.QueryLocal.MaxDist);
 			query.QueryLocal.TargetFound = true;

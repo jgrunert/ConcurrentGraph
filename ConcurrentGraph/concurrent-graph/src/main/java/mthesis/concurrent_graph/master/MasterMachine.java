@@ -221,6 +221,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						// Active workers, start next superstep TODO Log debug
 						logger.info("Workers finished superstep " + msgActiveQuery.BaseQuery.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
+								+ (System.currentTimeMillis() - msgActiveQuery.LastStepTime) + "ms. Total "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms. Active: "
 								+ msgActiveQuery.QueryValueAggregator.getActiveVertices());
 						msgActiveQuery.nextSuperstep(workerIds);
@@ -228,6 +229,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 								+ msgActiveQuery.SuperstepNo);
 						signalQueryNextSuperstep(msgActiveQuery.QueryValueAggregator, msgActiveQuery.SuperstepNo);
 						msgActiveQuery.resetValueAggregator(queryValueFactory);
+						msgActiveQuery.LastStepTime = System.currentTimeMillis();
 					}
 					else {
 						// All workers finished, finish query

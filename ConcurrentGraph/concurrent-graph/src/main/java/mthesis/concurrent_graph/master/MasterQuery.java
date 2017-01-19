@@ -15,6 +15,7 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 
 	public final Q BaseQuery;
 	public final long StartTime;
+	public long LastStepTime;
 
 	public int SuperstepNo;
 	public Q QueryValueAggregator;
@@ -28,6 +29,7 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 		BaseQuery = query;
 		SuperstepNo = -1;
 		StartTime = System.currentTimeMillis();
+		LastStepTime = StartTime;
 		workersWaitingFor = new HashSet<>(workersToWait.size());
 		nextSuperstep(workersToWait);
 		resetValueAggregator(queryFactory);
