@@ -124,7 +124,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			while (!Thread.interrupted()) {
 				// Wait for queries
 				while (activeQueries.isEmpty()) {
-					Thread.sleep(100);
+					Thread.sleep(1);
 				}
 
 				// Wait for ready queries
