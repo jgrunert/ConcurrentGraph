@@ -155,6 +155,17 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		return this.getClass().getSimpleName() + "_" + ID + "(" + queryValues + ")," + edges;
 	}
 
+	@SuppressWarnings("rawtypes")
+	@Override
+	public boolean equals(Object obj) {
+		return obj instanceof AbstractVertex && ((AbstractVertex) obj).ID == ID;
+	}
+
+	@Override
+	public int hashCode() {
+		return ID;
+	}
+
 	//	private String getValueString(int queryId) {
 	//		V value = getValue(queryId);
 	//		if (value == null) return "";
