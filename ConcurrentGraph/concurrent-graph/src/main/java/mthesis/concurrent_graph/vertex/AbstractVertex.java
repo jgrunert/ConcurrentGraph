@@ -26,6 +26,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	private V vertexDefaultValue = null;
 	private Int2BooleanMap queryVertexInactive = new Int2BooleanOpenHashMap();
 
+	// Message double buffer
 	public Int2ObjectMap<List<M>> queryMessagesThisSuperstep = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
 	public Int2ObjectMap<List<M>> queryMessagesNextSuperstep = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
 
@@ -53,10 +54,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	/**
 	 * Called after barrier sync complete.
-	 * Prepares received messages for next superstep.
+	 * Prepares received messages for next superstep, swaps double buffer.
 	 * @return isActive
 	 */
-	public void finishSuperstep(int queryId) {
+	public void prepareForNextSuperstep(int queryId) {
 		List<M> messagesLast = queryMessagesThisSuperstep.get(queryId);
 		List<M> messagesNext = queryMessagesNextSuperstep.get(queryId);
 		if (messagesNext != null && !messagesNext.isEmpty()) {

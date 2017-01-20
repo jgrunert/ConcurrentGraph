@@ -465,7 +465,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Prepare active vertices
 			//			long startTime3 = System.currentTimeMillis();
 			for (AbstractVertex<V, E, M, Q> vert : activeQuery.ActiveVerticesThis.values()) {
-				vert.finishSuperstep(activeQuery.Query.QueryId); // TODO Rename to prepare if works this way
+				vert.prepareForNextSuperstep(activeQuery.Query.QueryId); // TODO Rename to prepare if works this way
 			}
 			//			System.out.println("3 " + (System.currentTimeMillis() - startTime3) + "ms");
 
