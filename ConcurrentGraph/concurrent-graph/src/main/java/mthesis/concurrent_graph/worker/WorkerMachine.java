@@ -448,7 +448,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				return;
 			}
 
-			long startTime = System.currentTimeMillis();
+			//			long startTime = System.currentTimeMillis();
 			//			for (AbstractVertex<V, E, M, Q> vert : localVerticesList) {
 			//				if (vert.finishSuperstep(activeQuery.Query.QueryId)) {
 			//					activeQuery.ActiveVertices.put(vert.ID, vert);
@@ -456,18 +456,18 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			//			}
 
 			// Flush active vertices
-			long startTime2 = System.currentTimeMillis();
+			//			long startTime2 = System.currentTimeMillis();
 			activeQuery.ActiveVerticesThis.clear();
 			activeQuery.ActiveVerticesThis.putAll(activeQuery.ActiveVerticesNext);
 			activeQuery.ActiveVerticesNext.clear();
-			System.out.println("2 " + (System.currentTimeMillis() - startTime2) + "ms");
+			//			System.out.println("2 " + (System.currentTimeMillis() - startTime2) + "ms");
 
 			// Prepare active vertices
-			long startTime3 = System.currentTimeMillis();
-			for (AbstractVertex<V, E, M, Q> vert : localVerticesList) {
+			//			long startTime3 = System.currentTimeMillis();
+			for (AbstractVertex<V, E, M, Q> vert : activeQuery.ActiveVerticesThis.values()) {
 				vert.finishSuperstep(activeQuery.Query.QueryId); // TODO Rename to prepare if works this way
 			}
-			System.out.println("3 " + (System.currentTimeMillis() - startTime3) + "ms");
+			//			System.out.println("3 " + (System.currentTimeMillis() - startTime3) + "ms");
 
 			activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVerticesThis.size());
 			synchronized (activeQuery.ChannelBarrierWaitSet) {
@@ -478,9 +478,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			activeQuery.finishedBarrierSync();
 
 			// TODO Dont just clear. Two switchable sets? Needed for intersection calculation etc.
-			System.out.println(ownId + "  Active: " + activeQuery.ActiveVerticesThis.size());
+			//			System.out.println(ownId + "  Active: " + activeQuery.ActiveVerticesThis.size());
 
-			System.out.println("Finish barrier sync in " + (System.currentTimeMillis() - startTime) + "ms");
+			//			System.out.println("Finish barrier sync in " + (System.currentTimeMillis() - startTime) + "ms");
 			logger.debug(
 					"Worker finished barrier " + activeQuery.Query.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + ". Active: "
 							+ activeQuery.QueryLocal.getActiveVertices());
