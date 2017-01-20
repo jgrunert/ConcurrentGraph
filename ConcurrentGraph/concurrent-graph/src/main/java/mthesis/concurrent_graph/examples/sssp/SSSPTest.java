@@ -58,8 +58,8 @@ public class SSSPTest {
 			int queryIndex = 0;
 
 			// Short RT->ST
-			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 
 			//			// Big query through BW, Ludwigshafen->Heilbronn
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2942985, 6663036));
@@ -77,7 +77,7 @@ public class SSSPTest {
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164));
 			//
 			// Short RT->ST
-			master.startQuery(new SSSPQueryValues(queryIndex++, 7894832, 3184057));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 7894832, 3184057));
 			//
 			//			// Medium UL->ST
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 7311538, 589587));
