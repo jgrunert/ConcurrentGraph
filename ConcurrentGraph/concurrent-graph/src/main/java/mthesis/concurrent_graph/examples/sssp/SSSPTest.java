@@ -64,7 +64,7 @@ public class SSSPTest {
 			//			// Big query through BW, Ludwigshafen->Heilbronn
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2942985, 6663036));
 			//
-			// Very short ST-HBF->ST-Airport. Ca 17s with time sysout
+			// Very short ST-HBF->ST-Airport. Ca 3.5s with time sysout
 			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
 			//
 			//			// Medium PF->HB
