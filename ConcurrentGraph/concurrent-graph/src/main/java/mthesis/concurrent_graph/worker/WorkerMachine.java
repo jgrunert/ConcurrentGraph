@@ -162,8 +162,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 								}
 							}
 							else {
-								for (int vertex : activeQuery.ActiveVertices) {
-									localVerticesIdMap.get(vertex).superstep(superstepNo, activeQuery);
+								for (AbstractVertex vertex : activeQuery.ActiveVerticesThis.values()) {
+									vertex.superstep(superstepNo, activeQuery);
 								}
 							}
 							activeQuery.calculatedSuperstep();
@@ -259,12 +259,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(dstVertex);
 		if (msgVert != null) {
+			// Local message
 			//superstepStats.ReceivedCorrectVertexMessages++; // TODO Check superstep etc, sort by query
 			List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(queryId);
 			if (queryInMsgs == null) {
 				// Add queue if not already added
 				queryInMsgs = new ArrayList<>();
 				msgVert.queryMessagesNextSuperstep.put(queryId, queryInMsgs);
+				// Activate vertex
+				query.ActiveVerticesNext.put(msgVert.ID, msgVert);
 			}
 			queryInMsgs.add(messageContent);
 		}
@@ -446,20 +449,28 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 
 			long startTime = System.currentTimeMillis();
-			activeQuery.ActiveVertices.clear();
-			for (AbstractVertex<V, E, M, Q> vert : localVerticesList) {
-				if (vert.finishSuperstep(activeQuery.Query.QueryId)) {
-					activeQuery.ActiveVertices.add(vert.ID);
-				}
-			}
+			//			for (AbstractVertex<V, E, M, Q> vert : localVerticesList) {
+			//				if (vert.finishSuperstep(activeQuery.Query.QueryId)) {
+			//					activeQuery.ActiveVertices.put(vert.ID, vert);
+			//				}
+			//			}
 
-			activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVertices.size());
+			// Flush active vertices
+			activeQuery.ActiveVerticesThis.clear();
+			activeQuery.ActiveVerticesThis.putAll(activeQuery.ActiveVerticesNext);
+			activeQuery.ActiveVerticesNext.clear();
+
+			activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVerticesThis.size());
 			synchronized (activeQuery.ChannelBarrierWaitSet) {
 				activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
 			}
 			sendMasterSuperstepFinished(activeQuery);
 
 			activeQuery.finishedBarrierSync();
+
+			// TODO Dont just clear. Two switchable sets? Needed for intersection calculation etc.
+			System.out.println(ownId + "  Active: " + activeQuery.ActiveVerticesThis.size());
+
 			System.out.println("Finish barrier sync in " + (System.currentTimeMillis() - startTime) + "ms");
 			logger.debug(
 					"Worker finished barrier " + activeQuery.Query.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + ". Active: "
@@ -532,6 +543,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						// Add queue if not already added
 						queryInMsgs = new ArrayList<>();
 						msgVert.queryMessagesNextSuperstep.put(queryId, queryInMsgs);
+						// Activate vertex
+						activeQuery.ActiveVerticesNext.put(msgVert.ID, msgVert);
 					}
 					queryInMsgs.add(msg.second);
 				}
@@ -565,10 +578,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			vertex.startQuery(query.QueryId);
 		}
 
-		Map<Integer, List<M>> queryMessageSlots = new HashMap<>();
-		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-			queryMessageSlots.put(vertex.ID, new ArrayList<>());
-		}
 		synchronized (activeQueries) {
 			activeQueries.put(query.QueryId, activeQuery);
 		}

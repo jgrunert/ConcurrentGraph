@@ -93,6 +93,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			compute(superstepNo, messagesThisSuperstep, query);
 			if (messagesThisSuperstep != null)
 				messagesThisSuperstep.clear();
+
+			// Activate vertex for next superstep
+			if (!(queryVertexInactive.get(queryId)))
+				query.ActiveVerticesNext.put(ID, this);
 		}
 	}
 

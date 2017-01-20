@@ -1,13 +1,16 @@
 package mthesis.concurrent_graph.worker;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class WorkerQuery<M extends BaseWritable, Q extends BaseQueryGlobalValues> {
@@ -32,8 +35,11 @@ public class WorkerQuery<M extends BaseWritable, Q extends BaseQueryGlobalValues
 	//public Int2ObjectMap<List<M>> InVertexMessages = new Int2ObjectOpenHashMap<>();
 	public boolean Master = false;
 
-	public IntSet ActiveVertices = new IntOpenHashSet();
-
+	// TODO Generic? Typed set?
+	// Active vertices for next superstep
+	public ConcurrentMap<Integer, AbstractVertex> ActiveVerticesNext = new ConcurrentHashMap<>();
+	// Active vertices this superstep. THREADING: ONLY ACCESS WITH LOCK ON WorkerQuery
+	public Map<Integer, AbstractVertex> ActiveVerticesThis = new HashMap<>();
 	//	public IntSet ActiveVertices = new IntOpenHashSet();
 
 
