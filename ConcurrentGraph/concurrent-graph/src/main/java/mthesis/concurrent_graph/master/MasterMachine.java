@@ -211,9 +211,6 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					return;
 				}
 
-				//				System.out.println(message.getSrcMachine() + " fin " + msgActiveQuery.Query.QueryId + " ss "
-				//						+ msgActiveQuery.SuperstepNo + " w " + msgActiveQuery.workersWaitingFor);
-				System.out.println(message.getSrcMachine() + " " + msgQueryOnWorker.getActiveVertices());
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
 
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
