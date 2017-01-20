@@ -56,7 +56,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	 * Prepares received messages for next superstep.
 	 * @return isActive
 	 */
-	public boolean finishSuperstep(int queryId) {
+	public void finishSuperstep(int queryId) {
 		List<M> messagesLast = queryMessagesThisSuperstep.get(queryId);
 		List<M> messagesNext = queryMessagesNextSuperstep.get(queryId);
 		if (messagesNext != null && !messagesNext.isEmpty()) {
@@ -73,7 +73,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			messagesLast.clear();
 		}
 
-		return !(queryVertexInactive.get(queryId) && (messagesNext == null || messagesNext.isEmpty()));
+		//		return !(queryVertexInactive.get(queryId) && (messagesNext == null || messagesNext.isEmpty()));
 	}
 
 
