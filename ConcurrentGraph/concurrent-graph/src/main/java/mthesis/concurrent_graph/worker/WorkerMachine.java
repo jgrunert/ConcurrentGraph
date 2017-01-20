@@ -155,7 +155,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							logger.debug("Worker start query " + queryId + " superstep compute " + superstepNo);
 
 							// First frame: Call all vertices, second frame only active vertices
-							//							long startTime = System.currentTimeMillis();
+							long startTime = System.currentTimeMillis();
 							if (superstepNo == 0) {
 								for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
 									vertex.superstep(superstepNo, activeQuery);
@@ -167,7 +167,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 								}
 							}
 							activeQuery.calculatedSuperstep();
-							//							System.out.println("Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
+							System.out.println("Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
 
 
 							// Barrier sync with other workers;
@@ -445,13 +445,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				return;
 			}
 
-			//			long startTime = System.currentTimeMillis();
-			synchronized (activeQuery) {
-				activeQuery.ActiveVertices.clear();
-				for (AbstractVertex<V, E, M, Q> vert : localVerticesList) {
-					if (vert.finishSuperstep(activeQuery.Query.QueryId)) {
-						activeQuery.ActiveVertices.add(vert.ID);
-					}
+			long startTime = System.currentTimeMillis();
+			activeQuery.ActiveVertices.clear();
+			for (AbstractVertex<V, E, M, Q> vert : localVerticesList) {
+				if (vert.finishSuperstep(activeQuery.Query.QueryId)) {
+					activeQuery.ActiveVertices.add(vert.ID);
 				}
 			}
 
@@ -462,7 +460,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			sendMasterSuperstepFinished(activeQuery);
 
 			activeQuery.finishedBarrierSync();
-			//			System.out.println("Finish barrier sync in " + (System.currentTimeMillis() - startTime) + "ms");
+			System.out.println("Finish barrier sync in " + (System.currentTimeMillis() - startTime) + "ms");
 			logger.debug(
 					"Worker finished barrier " + activeQuery.Query.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + ". Active: "
 							+ activeQuery.QueryLocal.getActiveVertices());
@@ -471,9 +469,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 		// TODO Overlap test
-		//		System.out.println("- [" + ownId + "]  " + activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + " "
+		//				System.out.println("- [" + ownId + "]  " + activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + " "
 		//				+ activeQuery.ActiveVertices.size());
-		//		long startTime = System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
 		//		synchronized (activeQueries) {
 		//			synchronized (activeQuery) {
 		//				for (WorkerQuery<M, Q> otherQuery : activeQueries.values()) {
@@ -487,7 +485,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		//				}
 		//			}
 		//		}
-		//		System.out.println("Intersect calc in " + (System.currentTimeMillis() - startTime) + "ms");
+		System.out.println("Intersect calc in " + (System.currentTimeMillis() - startTime) + "ms");
 	}
 
 
