@@ -8,7 +8,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 /**
  * Base class for query global values such as initial configuration or aggregators.
  * Configuration values remain unchanged while aggregated values are aggregated by the master.
- * 
+ *
  * @author Jonas Grunert
  *
  */
@@ -18,27 +18,53 @@ public class BaseQueryGlobalValues extends BaseWritable {
 	protected int ActiveVertices;
 	protected int VertexCount;
 
+	public int MessagesTransmittedLocal;
+	public int MessagesSentUnicast;
+	public int MessagesSentBroadcast;
+	public int MessageBucketsSentUnicast;
+	public int MessageBucketsSentBroadcast;
+	public int MessagesReceivedWrongVertex;
+	public int MessagesReceivedCorrectVertex;
+	public int DiscoveredNewVertexMachines;
 
-	public BaseQueryGlobalValues(int queryId, int activeVertices, int vertexCount) {
+
+	public BaseQueryGlobalValues(int queryId) {
+		super();
+		QueryId = queryId;
+		ActiveVertices = 0;
+		VertexCount = 0;
+	}
+
+	public BaseQueryGlobalValues(int queryId, int activeVertices, int vertexCount, int messagesTransmittedLocal, int messagesSentUnicast,
+			int messagesSentBroadcast, int messageBucketsSentUnicast, int messageBucketsSentBroadcast, int messagesReceivedWrongVertex,
+			int messagesReceivedCorrectVertex, int discoveredNewVertexMachines) {
 		super();
 		QueryId = queryId;
 		ActiveVertices = activeVertices;
 		VertexCount = vertexCount;
+		MessagesTransmittedLocal = messagesTransmittedLocal;
+		MessagesSentUnicast = messagesSentUnicast;
+		MessagesSentBroadcast = messagesSentBroadcast;
+		MessageBucketsSentUnicast = messageBucketsSentUnicast;
+		MessageBucketsSentBroadcast = messageBucketsSentBroadcast;
+		MessagesReceivedWrongVertex = messagesReceivedWrongVertex;
+		MessagesReceivedCorrectVertex = messagesReceivedCorrectVertex;
+		DiscoveredNewVertexMachines = discoveredNewVertexMachines;
 	}
-
-	//	public QueryGlobalValues aggregate(List<QueryGlobalValues> singleValues) {
-	//		QueryGlobalValues aggregated = new QueryGlobalValues();
-	//		for (QueryGlobalValues v : singleValues) {
-	//			aggregated.ActiveVertices += v.ActiveVertices;
-	//			aggregated.VertexCount += v.VertexCount;
-	//		}
-	//		return aggregated;
-	//	}	
 
 	public void combine(BaseQueryGlobalValues v) {
 		if (QueryId != v.QueryId) throw new RuntimeException("Cannot add qureries with differend IDs: " + QueryId + " " + v.QueryId);
 		ActiveVertices += v.ActiveVertices;
 		VertexCount += v.VertexCount;
+
+		MessagesTransmittedLocal += v.MessagesTransmittedLocal;
+		MessagesSentUnicast += v.MessagesSentUnicast;
+		MessagesSentBroadcast += v.MessagesSentBroadcast;
+		MessageBucketsSentUnicast += v.MessageBucketsSentUnicast;
+		MessageBucketsSentBroadcast += v.MessageBucketsSentBroadcast;
+		MessagesReceivedWrongVertex += v.MessagesReceivedWrongVertex;
+		MessagesReceivedCorrectVertex += v.MessagesReceivedCorrectVertex;
+		DiscoveredNewVertexMachines += v.DiscoveredNewVertexMachines;
 	}
 
 	@Override
@@ -46,18 +72,35 @@ public class BaseQueryGlobalValues extends BaseWritable {
 		buffer.putInt(QueryId);
 		buffer.putInt(ActiveVertices);
 		buffer.putInt(VertexCount);
+
+		buffer.putInt(MessagesTransmittedLocal);
+		buffer.putInt(MessagesSentUnicast);
+		buffer.putInt(MessagesSentBroadcast);
+		buffer.putInt(MessageBucketsSentUnicast);
+		buffer.putInt(MessageBucketsSentBroadcast);
+		buffer.putInt(MessagesReceivedWrongVertex);
+		buffer.putInt(MessagesReceivedCorrectVertex);
+		buffer.putInt(DiscoveredNewVertexMachines);
 	}
 
 	@Override
 	public String getString() {
-		return QueryId + ":" + ActiveVertices + ":" + VertexCount;
+		return QueryId + ":" + ActiveVertices + ":" + VertexCount
+				+ ":" + MessagesTransmittedLocal
+				+ ":" + MessagesSentUnicast
+				+ ":" + MessagesSentBroadcast
+				+ ":" + MessageBucketsSentUnicast
+				+ ":" + MessageBucketsSentBroadcast
+				+ ":" + MessagesReceivedWrongVertex
+				+ ":" + MessagesReceivedCorrectVertex
+				+ ":" + DiscoveredNewVertexMachines;
 	}
 
 
-	//	public static abstract class BaseWritableFactory<T>{
-	//		public abstract T createFromString(String str);
-	//		public abstract T createFromBytes(ByteBuffer bytes);
-	//	}
+	@Override
+	public int getBytesLength() {
+		return 11 * 4;
+	}
 
 
 
@@ -91,23 +134,24 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 		@Override
 		public BaseQueryGlobalValues createDefault(int queryId) {
-			return new BaseQueryGlobalValues(queryId, 0, 0);
+			return new BaseQueryGlobalValues(queryId);
 		}
 
 		@Override
 		public BaseQueryGlobalValues createFromString(String str) {
 			final String[] sSplit = str.split(":");
-			return new BaseQueryGlobalValues(Integer.parseInt(sSplit[0]), Integer.parseInt(sSplit[1]), Integer.parseInt(sSplit[2]));
+			int iSplit = 0;
+			return new BaseQueryGlobalValues(Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]),
+					Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]),
+					Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]),
+					Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]));
 		}
 
 		@Override
 		public BaseQueryGlobalValues createFromBytes(ByteBuffer bytes) {
-			return new BaseQueryGlobalValues(bytes.getInt(), bytes.getInt(), bytes.getInt());
+			return new BaseQueryGlobalValues(bytes.getInt(), bytes.getInt(), bytes.getInt(),
+					bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(),
+					bytes.getInt());
 		}
-	}
-
-	@Override
-	public int getBytesLength() {
-		return 3 * 4;
 	}
 }

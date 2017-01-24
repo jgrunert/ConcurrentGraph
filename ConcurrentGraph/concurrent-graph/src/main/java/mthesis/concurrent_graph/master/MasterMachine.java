@@ -360,7 +360,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	}
 
 	@Override
-	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> vertices) {
+	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> vertices, int queryId) {
 		throw new RuntimeException("Master cannot handle GetToKnow messages");
 	}
 }

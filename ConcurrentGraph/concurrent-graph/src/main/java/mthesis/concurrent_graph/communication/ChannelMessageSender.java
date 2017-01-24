@@ -108,8 +108,8 @@ public class ChannelMessageSender<M extends BaseWritable> {
 		outMessages.add(new VertexMessageToSend(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages)); // TODO Object pooling?
 	}
 
-	public void sendGetToKnownMessage(int srcMachine, Collection<Integer> vertices) {
-		outMessages.add(new GetToKnowMessageToSend(srcMachine, vertices)); // TODO Object pooling?
+	public void sendGetToKnownMessage(int srcMachine, Collection<Integer> vertices, int queryId) {
+		outMessages.add(new GetToKnowMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
 	}
 
 	public void flush() {
@@ -177,12 +177,14 @@ public class ChannelMessageSender<M extends BaseWritable> {
 	private class GetToKnowMessageToSend implements MessageToSend {
 
 		private final int srcMachine;
+		private final int queryId;
 		private final Collection<Integer> vertices;
 
-		public GetToKnowMessageToSend(int srcMachine, Collection<Integer> vertices) {
+		public GetToKnowMessageToSend(int srcMachine, int queryId, Collection<Integer> vertices) {
 			super();
 			this.srcMachine = srcMachine;
 			this.vertices = vertices;
+			this.queryId = queryId;
 		}
 
 		@Override
@@ -203,6 +205,7 @@ public class ChannelMessageSender<M extends BaseWritable> {
 		@Override
 		public void writeMessageToBuffer(ByteBuffer buffer) {
 			buffer.putInt(srcMachine);
+			buffer.putInt(queryId);
 			buffer.putInt(vertices.size());
 			for (final Integer vert : vertices) {
 				buffer.putInt(vert);

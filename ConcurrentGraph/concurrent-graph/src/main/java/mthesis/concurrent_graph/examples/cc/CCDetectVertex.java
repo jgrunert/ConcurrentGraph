@@ -41,7 +41,7 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 				allNeighbors.add(edge.TargetVertexId);
 			}
 
-			sendMessageToAllOutgoingEdges(new CCMessageWritable(ID, ID), query.QueryId);
+			sendMessageToAllOutgoingEdges(new CCMessageWritable(ID, ID), query);
 			voteVertexHalt(query.QueryId);
 			return;
 		}
@@ -58,11 +58,11 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 
 		if (min < mutableValue.Value) {
 			mutableValue.Value = min;
-			sendMessageToVertices(new CCMessageWritable(ID, mutableValue.Value), allNeighbors, query.QueryId);
+			sendMessageToVertices(new CCMessageWritable(ID, mutableValue.Value), allNeighbors, query);
 		}
 		else {
 			if (knownNeighborsBefore < allNeighbors.size())
-				sendMessageToVertices(new CCMessageWritable(ID, mutableValue.Value), allNeighbors, query.QueryId);
+				sendMessageToVertices(new CCMessageWritable(ID, mutableValue.Value), allNeighbors, query);
 			//System.out.println("Vote halt on " + ID + " with " + value);
 			voteVertexHalt(query.QueryId);
 		}

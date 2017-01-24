@@ -52,6 +52,6 @@ public class CCTest {
 			workers.add(testUtils.startWorker(allCfg, i, allWorkerIds, outputDir, jobConfig, new VertexTextInputReader<>()));
 		}
 
-		if (master != null) master.startQuery(new BaseQueryGlobalValues(0, 0, 0));
+		if (master != null) master.startQuery(new BaseQueryGlobalValues(0));
 	}
 }

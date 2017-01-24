@@ -103,19 +103,19 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	protected abstract void compute(int superstepNo, List<M> messages, WorkerQuery<V, E, M, Q> query);
 
 
-	protected void sendMessageToAllOutgoingEdges(M message, int queryId) {
+	protected void sendMessageToAllOutgoingEdges(M message, WorkerQuery<V, E, M, Q> query) {
 		for (final Edge<E> edge : edges) {
-			worker.sendVertexMessage(edge.TargetVertexId, message, queryId);
+			worker.sendVertexMessage(edge.TargetVertexId, message, query);
 		}
 	}
 
-	protected void sendMessageToVertex(M message, int sendTo, int queryId) {
-		worker.sendVertexMessage(sendTo, message, queryId);
+	protected void sendMessageToVertex(M message, int sendTo, WorkerQuery<V, E, M, Q> query) {
+		worker.sendVertexMessage(sendTo, message, query);
 	}
 
-	protected void sendMessageToVertices(M message, Collection<Integer> sendTo, int queryId) {
+	protected void sendMessageToVertices(M message, Collection<Integer> sendTo, WorkerQuery<V, E, M, Q> query) {
 		for (final Integer st : sendTo) {
-			worker.sendVertexMessage(st, message, queryId);
+			worker.sendVertexMessage(st, message, query);
 		}
 	}
 

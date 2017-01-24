@@ -35,7 +35,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 				SSSPVertexWritable mutableValue = new SSSPVertexWritable(-1, 0, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
-					sendMessageToVertex(new SSSPMessageWritable(ID, edge.Value.Value), edge.TargetVertexId, query.QueryId);
+					sendMessageToVertex(new SSSPMessageWritable(ID, edge.Value.Value), edge.TargetVertexId, query);
 				}
 				voteVertexHalt(query.QueryId);
 				return;
@@ -89,7 +89,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 		}
 		if (sendMessages) {
 			for (Edge<DoubleWritable> edge : getEdges()) {
-				sendMessageToVertex(new SSSPMessageWritable(ID, mutableValue.Dist + edge.Value.Value), edge.TargetVertexId, query.QueryId);
+				sendMessageToVertex(new SSSPMessageWritable(ID, mutableValue.Dist + edge.Value.Value), edge.TargetVertexId, query);
 			}
 			mutableValue.SendMsgsLater = false;
 		}

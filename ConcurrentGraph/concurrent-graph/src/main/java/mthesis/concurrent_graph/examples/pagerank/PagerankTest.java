@@ -47,6 +47,6 @@ public class PagerankTest {
 						new VertexTextInputReader<>()));
 		}
 
-		if (master != null) master.startQuery(new BaseQueryGlobalValues(0, 0, 0));
+		if (master != null) master.startQuery(new BaseQueryGlobalValues(0));
 	}
 }

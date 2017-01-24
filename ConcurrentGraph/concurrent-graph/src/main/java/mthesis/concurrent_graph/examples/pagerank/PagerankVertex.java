@@ -44,7 +44,7 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 
 		if (superstepNo < 30) {
 			final double n = mutableValue.Value / getEdges().size();
-			sendMessageToAllOutgoingEdges(new DoubleWritable(n), query.QueryId);
+			sendMessageToAllOutgoingEdges(new DoubleWritable(n), query);
 		}
 		else {
 			voteVertexHalt(query.QueryId);

@@ -43,7 +43,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
+		extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -79,9 +79,6 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 	//	private final int[] outVertexMsgDstIdBuffer = new int[Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES];
 	//	private final List<M> outVertexMsgContentBuffer = new ArrayList<>(Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES);
 
-	// TODO re-introduce superstepStats?
-	//private SuperstepStats superstepStats;
-
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -113,8 +110,6 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 	@Override
 	public void run() {
 		logger.info("Starting run worker node " + ownId);
-		//superstepStats = new SuperstepStats();
-
 
 		try {
 			while (!started) {
@@ -170,12 +165,12 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 							}
 							activeQuery.calculatedSuperstep();
 							System.out
-							.println("[" + ownId + "]  Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
+									.println("[" + ownId + "]  Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
 
 
 							// Barrier sync with other workers;
 							if (!otherWorkerIds.isEmpty()) {
-								flushVertexMessages(queryId);
+								flushVertexMessages(activeQuery);
 								sendWorkersSuperstepFinished(activeQuery);
 							}
 							else {
@@ -212,42 +207,36 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 	}
 
 
-	public void flushVertexMessages(int queryId) {
-		WorkerQuery<V, E, M, Q> query = activeQueries.get(queryId);
-		sendBroadcastVertexMessageBucket(queryId, query.getMasterSuperstepNo());
+	public void flushVertexMessages(WorkerQuery<V, E, M, Q> query) {
+		sendBroadcastVertexMessageBucket(query, query.getMasterSuperstepNo());
 		for (final int otherWorkerId : otherWorkerIds) {
 			final VertexMessageBucket<M> msgBucket = vertexMessageMachineBuckets.get(otherWorkerId);
 			if (!msgBucket.messages.isEmpty())
-				sendUnicastVertexMessageBucket(msgBucket, otherWorkerId, queryId, query.getMasterSuperstepNo());
+				sendUnicastVertexMessageBucket(msgBucket, otherWorkerId, query, query.getMasterSuperstepNo());
 			messaging.flushChannel(otherWorkerId);
 		}
 	}
 
 
 	private void sendWorkersSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery) {
-		//superstepStats.SentControlMessages++;
 		messaging.sendControlMessageMulticast(otherWorkerIds,
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepBarrier(workerQuery.getMasterSuperstepNo(), ownId, workerQuery.Query),
 				true);
 	}
 
 	private void sendMasterInitialized() {
-		//superstepStats.SentControlMessages++;
 		messaging.sendControlMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Initialized(ownId, localVerticesList.size()),
 				true);
 	}
 
 	private void sendMasterSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery) {
-		//superstepStats.SentControlMessages++;
 		messaging.sendControlMessageUnicast(masterId,
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(workerQuery.getMasterSuperstepNo(), ownId,
 						workerQuery.QueryLocal),
 				true);
-		//ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(superstepNo, ownId, superstepStats, queryLocal), true);
 	}
 
 	private void sendMasterQueryFinishedMessage(WorkerQuery<V, E, M, Q> workerQuery) {
-		//superstepStats.SentControlMessages++;
 		messaging.sendControlMessageUnicast(masterId,
 				ControlMessageBuildUtil.Build_Worker_QueryFinished(workerQuery.getMasterSuperstepNo(), ownId, workerQuery.QueryLocal),
 				true);
@@ -257,19 +246,17 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 	 * Sends a vertex message. If local vertex, direct loopback. It remote vertex try to lookup machine. If machine not known broadcast message.
 	 */
 	@Override
-	public void sendVertexMessage(int dstVertex, M messageContent, int queryId) {
-		WorkerQuery<V, E, M, Q> query = activeQueries.get(queryId);
-
+	public void sendVertexMessage(int dstVertex, M messageContent, WorkerQuery<V, E, M, Q> query) {
 		final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(dstVertex);
 		if (msgVert != null) {
 			// Local message
-			//superstepStats.ReceivedCorrectVertexMessages++; // TODO Check superstep etc, sort by query
+			query.QueryLocal.MessagesTransmittedLocal++;
 			synchronized (vertexInMessageLock) {
-				List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(queryId);
+				List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(query.QueryId);
 				if (queryInMsgs == null) {
 					// Add queue if not already added
 					queryInMsgs = new ArrayList<>();
-					msgVert.queryMessagesNextSuperstep.put(queryId, queryInMsgs);
+					msgVert.queryMessagesNextSuperstep.put(query.QueryId, queryInMsgs);
 				}
 				queryInMsgs.add(messageContent);
 				// Activate vertex
@@ -281,14 +268,14 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 			final Integer remoteMachine = remoteVertexMachineRegistry.lookupEntry(dstVertex);
 			if (remoteMachine != null) {
 				// Unicast remote message
-				sendVertexMessageToMachine(remoteMachine, dstVertex, queryId, messageContent);
+				sendVertexMessageToMachine(remoteMachine, dstVertex, query, messageContent);
 			}
 			else {
 				// Broadcast remote message
-				//superstepStats.SentVertexMessagesBroadcast += otherWorkerIds.size();
+				query.QueryLocal.MessagesSentBroadcast += otherWorkerIds.size();
 				vertexMessageBroadcastBucket.addMessage(dstVertex, messageContent);
 				if (vertexMessageBroadcastBucket.messages.size() > Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
-					sendBroadcastVertexMessageBucket(queryId, query.getMasterSuperstepNo());
+					sendBroadcastVertexMessageBucket(query, query.getMasterSuperstepNo());
 				}
 			}
 		}
@@ -297,26 +284,26 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 	/**
 	 * Sends a vertex message directly to a remote machine, no lookup.
 	 */
-	public void sendVertexMessageToMachine(int dstMachine, int dstVertex, int queryId, M messageContent) {
-		WorkerQuery<V, E, M, Q> query = activeQueries.get(queryId);
-		//superstepStats.SentVertexMessagesUnicast++;
+	public void sendVertexMessageToMachine(int dstMachine, int dstVertex, WorkerQuery<V, E, M, Q> query, M messageContent) {
 		final VertexMessageBucket<M> msgBucket = vertexMessageMachineBuckets.get(dstMachine);
 		msgBucket.addMessage(dstVertex, messageContent);
 		if (msgBucket.messages.size() > Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
-			sendUnicastVertexMessageBucket(msgBucket, dstMachine, queryId, query.getMasterSuperstepNo());
+			sendUnicastVertexMessageBucket(msgBucket, dstMachine, query, query.getMasterSuperstepNo());
 		}
+		query.QueryLocal.MessagesSentUnicast++;
 	}
 
-	private void sendUnicastVertexMessageBucket(VertexMessageBucket<M> msgBucket, int dstMachine, int queryId, int superstepNo) {
+	private void sendUnicastVertexMessageBucket(VertexMessageBucket<M> msgBucket, int dstMachine, WorkerQuery<V, E, M, Q> query,
+			int superstepNo) {
 		final List<Pair<Integer, M>> msgList = packVertexMessage(msgBucket);
-		messaging.sendVertexMessageUnicast(dstMachine, superstepNo, ownId, queryId, msgList);
-		//superstepStats.SentVertexMessagesBuckets++;
+		messaging.sendVertexMessageUnicast(dstMachine, superstepNo, ownId, query.QueryId, msgList);
+		query.QueryLocal.MessageBucketsSentUnicast++;
 	}
 
-	private void sendBroadcastVertexMessageBucket(int queryId, int superstepNo) {
+	private void sendBroadcastVertexMessageBucket(WorkerQuery<V, E, M, Q> query, int superstepNo) {
 		final List<Pair<Integer, M>> msgList = packVertexMessage(vertexMessageBroadcastBucket);
-		messaging.sendVertexMessageBroadcast(otherWorkerIds, superstepNo, ownId, queryId, msgList);
-		//superstepStats.SentVertexMessagesBuckets += otherWorkerIds.size();
+		messaging.sendVertexMessageBroadcast(otherWorkerIds, superstepNo, ownId, query.QueryId, msgList);
+		query.QueryLocal.MessageBucketsSentBroadcast++;
 	}
 
 	private List<Pair<Integer, M>> packVertexMessage(VertexMessageBucket<M> msgBucket) {
@@ -370,13 +357,13 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 						// We already received all barrier syncs from other workers, directly finish superstep
 						checkSuperstepBarrierFinished(activeQuery);
 					}
-					break;
+						break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-					break;
+						break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -408,16 +395,16 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 						else {
 							// Completely wrong superstep
 							logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-							+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getMasterSuperstepNo());
+									+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getMasterSuperstepNo());
 						}
 					}
-					break;
+						break;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stop();
 					}
-					break;
+						break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -498,7 +485,7 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 
 		// TODO Overlap test. Dont calculate every time?
 		System.out.println("- [" + ownId + "]  " + activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo()
-		+ " active " + activeQuery.ActiveVerticesThis.size());
+				+ " active " + activeQuery.ActiveVerticesThis.size());
 		long startTime = System.currentTimeMillis();
 		synchronized (activeQueries) {
 			synchronized (activeQuery) {
@@ -524,6 +511,7 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 			List<Pair<Integer, M>> vertexMessages) {
 		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(queryId);
 		int superstepNo = activeQuery.getCalculatedSuperstepNo();
+
 		// Discover vertices if enabled. Only discover for broadcast messages as they are a sign that vertices are unknown.
 		if (broadcastFlag && Settings.VERTEX_MACHINE_DISCOVERY) {
 			final HashSet<Integer> srcVertices = new HashSet<>();
@@ -532,21 +520,20 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 					srcVertices.add(msg.first);
 				}
 			}
-			// Also discover all src vertices from this incoming broadcast message, if enabled
-			if (Settings.VERTEX_MACHINE_DISCOVERY_INCOMING) {
+
+			// Also discover all soruce vertices from this incoming broadcast message, if enabled
+			// Always discover at both sides. We need bidirectional for targeted invalidation of entries.
+			if (Settings.VERTEX_MACHINE_DISCOVERY) {
 				for (final Integer srcVertId : srcVertices) {
-					remoteVertexMachineRegistry.addEntry(srcVertId, srcMachine);
-					//if (remoteVertexMachineRegistry.addEntry(srcVertId, srcMachine)) superstepStats.NewVertexMachinesDiscovered++;
+					if (remoteVertexMachineRegistry.addEntry(srcVertId, srcMachine)) activeQuery.QueryLocal.DiscoveredNewVertexMachines++;
 				}
 			}
 			// Send get-to-know message for all own vertices in this broadcast message
 			// Sender did not known these vertices, thats why a broadcast was sent.
-			if (!srcVertices.isEmpty()) messaging.sendGetToKnownMessage(srcMachine, srcVertices);
+			if (!srcVertices.isEmpty()) messaging.sendGetToKnownMessage(srcMachine, srcVertices, queryId);
 		}
 
-		// Normal messages have content.
-		// Vertex messages without content are "get-to-know messages", only for vertex registry
-
+		// If message for correct superstep: Find vertices for them
 		if (msgSuperstepNo < superstepNo) {
 			logger.error("Message from past superstep in superstep " + superstepNo + " from " + srcMachine);
 		}
@@ -555,7 +542,7 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 				for (final Pair<Integer, M> msg : vertexMessages) {
 					final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(msg.first);
 					if (msgVert != null) {
-						//superstepStats.ReceivedCorrectVertexMessages++; // TODO Check superstep etc, sort by query
+						activeQuery.QueryLocal.MessagesReceivedCorrectVertex++;
 						List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(queryId);
 						if (queryInMsgs == null) {
 							// Add queue if not already added
@@ -566,20 +553,21 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 						// Activate vertex
 						activeQuery.ActiveVerticesNext.put(msgVert.ID, msgVert);
 					}
-					//					else {
-					//						superstepStats.ReceivedWrongVertexMessages++;
-					//					}
+					else {
+						if (!broadcastFlag)
+							logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from " + srcMachine);
+						activeQuery.QueryLocal.MessagesReceivedWrongVertex++;
+					}
 				}
 			}
 		}
 	}
 
 	@Override
-	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices) {
+	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices, int queryId) {
 		for (final Integer srcVertex : srcVertices) {
-			remoteVertexMachineRegistry.addEntry(srcVertex, srcMachine);
-			//if (remoteVertexMachineRegistry.addEntry(srcVertex, srcMachine))
-			//superstepStats.NewVertexMachinesDiscovered++;
+			if (remoteVertexMachineRegistry.addEntry(srcVertex, srcMachine))
+				activeQueries.get(queryId).QueryLocal.DiscoveredNewVertexMachines++;
 		}
 	}
 

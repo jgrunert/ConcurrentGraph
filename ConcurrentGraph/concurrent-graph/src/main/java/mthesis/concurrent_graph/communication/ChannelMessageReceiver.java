@@ -134,12 +134,13 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 
 	private void onIncomingGetToKnowMessage() {
 		final int srcMachine = inBuffer.getInt();
+		final int queryId = inBuffer.getInt();
 		final int vertCount = inBuffer.getInt();
 		final List<Integer> srcVertices = new ArrayList<>(vertCount);
 		for (int i = 0; i < vertCount; i++) {
 			srcVertices.add(inBuffer.getInt());
 		}
-		inMsgHandler.onIncomingGetToKnowMessage(srcMachine, srcVertices);
+		inMsgHandler.onIncomingGetToKnowMessage(srcMachine, srcVertices, queryId);
 	}
 
 	public void getReadyForClose() {

@@ -178,9 +178,9 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		}
 	}
 
-	public void sendGetToKnownMessage(int dstMachine, Collection<Integer> vertices) {
+	public void sendGetToKnownMessage(int dstMachine, Collection<Integer> vertices, int queryId) {
 		final ChannelMessageSender<M> ch = channelSenders.get(dstMachine);
-		ch.sendGetToKnownMessage(ownId, vertices);
+		ch.sendGetToKnownMessage(ownId, vertices, queryId);
 	}
 
 	public void flushChannel(int machineId) {
@@ -198,8 +198,8 @@ public class MessageSenderAndReceiver<M extends BaseWritable> {
 		messageListener.onIncomingVertexMessage(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
 	}
 
-	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices) {
-		messageListener.onIncomingGetToKnowMessage(srcMachine, srcVertices);
+	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices, int queryId) {
+		messageListener.onIncomingGetToKnowMessage(srcMachine, srcVertices, queryId);
 	}
 
 	private void connectToMachine(String host, int port, int machineId) throws Exception {

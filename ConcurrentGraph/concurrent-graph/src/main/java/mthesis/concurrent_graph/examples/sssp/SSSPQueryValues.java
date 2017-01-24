@@ -17,11 +17,20 @@ public class SSSPQueryValues extends BaseQueryGlobalValues {
 	 * Public query creation constructor
 	 */
 	public SSSPQueryValues(int queryId, int from, int to) {
-		this(queryId, 0, 0, from, to, Double.POSITIVE_INFINITY, false);
+		super(queryId);
+		From = from;
+		To = to;
+		MaxDist = Double.POSITIVE_INFINITY;
+		TargetFound = false;
 	}
 
-	private SSSPQueryValues(int queryId, int activeVertices, int vertexCount, int from, int to, double maxDist, boolean targetFound) {
-		super(queryId, activeVertices, vertexCount);
+	private SSSPQueryValues(int queryId, int activeVertices, int vertexCount, int messagesTransmittedLocal, int messagesSentUnicast,
+			int messagesSentBroadcast, int messageBucketsSentUnicast, int messageBucketsSentBroadcast, int messagesReceivedWrongVertex,
+			int messagesReceivedCorrectVertex, int discoveredNewVertexMachines,
+			int from, int to, double maxDist, boolean targetFound) {
+		super(queryId, activeVertices, vertexCount, messagesTransmittedLocal, messagesSentUnicast,
+				messagesSentBroadcast, messageBucketsSentUnicast, messageBucketsSentBroadcast, messagesReceivedWrongVertex,
+				messagesReceivedCorrectVertex, discoveredNewVertexMachines);
 		From = from;
 		To = to;
 		MaxDist = maxDist;
@@ -62,15 +71,17 @@ public class SSSPQueryValues extends BaseQueryGlobalValues {
 
 		@Override
 		public SSSPQueryValues createDefault(int queryId) {
-			return new SSSPQueryValues(queryId, 0, 0, 0, 0, 0, false);
+			return new SSSPQueryValues(queryId, 0, 0);
 		}
 
 		@Override
 		public SSSPQueryValues createFromString(String str) {
 			final String[] sSplit = str.split(":");
-			return new SSSPQueryValues(Integer.parseInt(sSplit[0]), Integer.parseInt(sSplit[1]), Integer.parseInt(sSplit[2]),
-					Integer.parseInt(sSplit[3]), Integer.parseInt(sSplit[4]), Double.parseDouble(sSplit[5]),
-					Boolean.parseBoolean(sSplit[6]));
+			int iSplit = 0;
+			return new SSSPQueryValues(Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]),
+					Integer.parseInt(sSplit[iSplit++]),
+					Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]), Double.parseDouble(sSplit[iSplit++]),
+					Boolean.parseBoolean(sSplit[iSplit++]));
 		}
 
 		@Override

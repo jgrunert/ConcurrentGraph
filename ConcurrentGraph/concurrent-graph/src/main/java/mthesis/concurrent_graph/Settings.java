@@ -21,11 +21,6 @@ public class Settings {
 	 * A receiver of a broadcast message replies with all dstVertex IDs on its machine.
 	 */
 	public static final boolean VERTEX_MACHINE_DISCOVERY = true;
-	/**
-	 * If enabled, also adds discovered vertices from incoming broadcast messages.
-	 * This increases learning speed but can also lead to discovered vertices but no corresponding outgoing edge.
-	 */
-	public static final boolean VERTEX_MACHINE_DISCOVERY_INCOMING = false;
 
 	public static final int LOG_LEVEL_Main = Level.INFO_INT;
 	//public static final int LOG_LEVEL_Main = Level.DEBUG_INT;
