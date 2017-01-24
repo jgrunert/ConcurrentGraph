@@ -270,6 +270,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				queryInMsgs = new ArrayList<>();
 				msgVert.queryMessagesNextSuperstep.put(queryId, queryInMsgs);
 			}
+			if (messageContent == null) {
+				logger.error("Null vertex message: " + messageContent);
+			}
 			queryInMsgs.add(messageContent);
 			// Activate vertex
 			query.ActiveVerticesNext.put(msgVert.ID, msgVert);
@@ -557,6 +560,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						// Add queue if not already added
 						queryInMsgs = new ArrayList<>();
 						msgVert.queryMessagesNextSuperstep.put(queryId, queryInMsgs);
+					}
+					if (msg.second == null) {
+						logger.error("Null vertex message: " + msg.first);
 					}
 					queryInMsgs.add(msg.second);
 					// Activate vertex
