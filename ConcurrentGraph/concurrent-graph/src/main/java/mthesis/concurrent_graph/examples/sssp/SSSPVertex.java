@@ -52,8 +52,6 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 		int minPre = mutableValue.Pre;
 		if (messages != null) {
 			for (SSSPMessageWritable msg : messages) {
-				if (msg == null)
-					continue;
 				if (msg.Dist < minDist) {
 					minDist = msg.Dist;
 					minPre = msg.SrcVertex;

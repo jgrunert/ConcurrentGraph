@@ -497,8 +497,8 @@ extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 
 
 		// TODO Overlap test. Dont calculate every time?
-		System.out.println("- [" + ownId + "]  " + activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + " "
-				+ activeQuery.ActiveVerticesThis.size());
+		System.out.println("- [" + ownId + "]  " + activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo()
+		+ " active " + activeQuery.ActiveVerticesThis.size());
 		long startTime = System.currentTimeMillis();
 		synchronized (activeQueries) {
 			synchronized (activeQuery) {
