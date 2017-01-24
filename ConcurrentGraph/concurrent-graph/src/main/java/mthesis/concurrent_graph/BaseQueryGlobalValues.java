@@ -17,7 +17,7 @@ public class BaseQueryGlobalValues extends BaseWritable {
 	public final int QueryId;
 	protected int ActiveVertices;
 	protected int VertexCount;
-	public final QueryStats Stats;
+	public QueryStats Stats;
 
 
 	public BaseQueryGlobalValues(int queryId) {
@@ -113,25 +113,26 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 	public static class QueryStats {
 
-		public int MessagesTransmittedLocal;
-		public int MessagesSentUnicast;
-		public int MessagesSentBroadcast;
-		public int MessageBucketsSentUnicast;
-		public int MessageBucketsSentBroadcast;
-		public int MessagesReceivedWrongVertex;
-		public int MessagesReceivedCorrectVertex;
-		public int DiscoveredNewVertexMachines;
-		public int ComputeTime;
-		public int StepFinishTime;
-		public int IntersectCalcTime;
+		public long MessagesTransmittedLocal;
+		public long MessagesSentUnicast;
+		public long MessagesSentBroadcast;
+		public long MessageBucketsSentUnicast;
+		public long MessageBucketsSentBroadcast;
+		public long MessagesReceivedWrongVertex;
+		public long MessagesReceivedCorrectVertex;
+		public long DiscoveredNewVertexMachines;
+		public long ComputeTime;
+		public long StepFinishTime;
+		public long IntersectCalcTime;
 
 		public QueryStats() {
 		}
 
-		public QueryStats(int messagesTransmittedLocal, int messagesSentUnicast, int messagesSentBroadcast, int messageBucketsSentUnicast,
-				int messageBucketsSentBroadcast, int messagesReceivedWrongVertex, int messagesReceivedCorrectVertex,
-				int discoveredNewVertexMachines,
-				int computeTime, int barrierTime, int intersectCalcTime) {
+		public QueryStats(long messagesTransmittedLocal, long messagesSentUnicast, long messagesSentBroadcast,
+				long messageBucketsSentUnicast,
+				long messageBucketsSentBroadcast, long messagesReceivedWrongVertex, long messagesReceivedCorrectVertex,
+				long discoveredNewVertexMachines,
+				long computeTime, long barrierTime, long intersectCalcTime) {
 			super();
 			MessagesTransmittedLocal = messagesTransmittedLocal;
 			MessagesSentUnicast = messagesSentUnicast;
@@ -148,17 +149,17 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 		public QueryStats(ByteBuffer bytes) {
 			super();
-			MessagesTransmittedLocal = bytes.getInt();
-			MessagesSentUnicast = bytes.getInt();
-			MessagesSentBroadcast = bytes.getInt();
-			MessageBucketsSentUnicast = bytes.getInt();
-			MessageBucketsSentBroadcast = bytes.getInt();
-			MessagesReceivedWrongVertex = bytes.getInt();
-			MessagesReceivedCorrectVertex = bytes.getInt();
-			DiscoveredNewVertexMachines = bytes.getInt();
-			ComputeTime = bytes.getInt();
-			StepFinishTime = bytes.getInt();
-			IntersectCalcTime = bytes.getInt();
+			MessagesTransmittedLocal = bytes.getLong();
+			MessagesSentUnicast = bytes.getLong();
+			MessagesSentBroadcast = bytes.getLong();
+			MessageBucketsSentUnicast = bytes.getLong();
+			MessageBucketsSentBroadcast = bytes.getLong();
+			MessagesReceivedWrongVertex = bytes.getLong();
+			MessagesReceivedCorrectVertex = bytes.getLong();
+			DiscoveredNewVertexMachines = bytes.getLong();
+			ComputeTime = bytes.getLong();
+			StepFinishTime = bytes.getLong();
+			IntersectCalcTime = bytes.getLong();
 		}
 
 		public void combine(QueryStats v) {
@@ -177,21 +178,21 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 
 		public void writeToBuffer(ByteBuffer buffer) {
-			buffer.putInt(MessagesTransmittedLocal);
-			buffer.putInt(MessagesSentUnicast);
-			buffer.putInt(MessagesSentBroadcast);
-			buffer.putInt(MessageBucketsSentUnicast);
-			buffer.putInt(MessageBucketsSentBroadcast);
-			buffer.putInt(MessagesReceivedWrongVertex);
-			buffer.putInt(MessagesReceivedCorrectVertex);
-			buffer.putInt(DiscoveredNewVertexMachines);
-			buffer.putInt(ComputeTime);
-			buffer.putInt(StepFinishTime);
-			buffer.putInt(IntersectCalcTime);
+			buffer.putLong(MessagesTransmittedLocal);
+			buffer.putLong(MessagesSentUnicast);
+			buffer.putLong(MessagesSentBroadcast);
+			buffer.putLong(MessageBucketsSentUnicast);
+			buffer.putLong(MessageBucketsSentBroadcast);
+			buffer.putLong(MessagesReceivedWrongVertex);
+			buffer.putLong(MessagesReceivedCorrectVertex);
+			buffer.putLong(DiscoveredNewVertexMachines);
+			buffer.putLong(ComputeTime);
+			buffer.putLong(StepFinishTime);
+			buffer.putLong(IntersectCalcTime);
 		}
 
 		public int getBytesLength() {
-			return 11 * 4;
+			return 11 * 8;
 		}
 
 		public String getString() {

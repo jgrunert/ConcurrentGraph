@@ -202,7 +202,20 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
 
+				// Check if all workers finished superstep
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
+					// Wrong message count should match broadcast message count, therwise there might be communication errors.
+					if (workerIds.size() > 1
+							&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
+									/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
+						logger.warn(String.format(
+								"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
+								msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex,
+								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast,
+								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast / (workerIds.size() - 1) *
+										(workerIds.size() - 2)));
+					}
+
 					// All workers have superstep finished
 					if (msgActiveQuery.ActiveWorkers > 0) {
 						// Active workers, start next superstep TODO Log debug
@@ -226,18 +239,6 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						msgActiveQuery.workersFinished(workerIds);
 						signalWorkersQueryFinish(msgActiveQuery.BaseQuery);
 					}
-				}
-
-				// Wrong message count should match broadcast message count, therwise there might be communication errors.
-				if (workerIds.size() > 1
-						&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
-								/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
-					logger.warn(String.format(
-							"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
-							msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex,
-							msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast,
-							msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast / (workerIds.size() - 1) *
-									(workerIds.size() - 2)));
 				}
 			}
 			else { // Worker_Query_Finished
