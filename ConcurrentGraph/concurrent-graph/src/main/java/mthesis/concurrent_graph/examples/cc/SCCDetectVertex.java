@@ -24,7 +24,8 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	}
 
 	@Override
-	protected void compute(int superstepNo, List<IntWritable> messages, WorkerQuery<IntWritable, BaseQueryGlobalValues> query) {
+	protected void compute(int superstepNo, List<IntWritable> messages,
+			WorkerQuery<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> query) {
 		if (superstepNo == 0) {
 			IntWritable value = new IntWritable(ID);
 			setValue(value, query.QueryId);

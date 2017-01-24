@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
@@ -21,6 +22,7 @@ import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.VertexMessageBucket;
+import mthesis.concurrent_graph.util.MiscUtil;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -60,7 +62,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private final BaseQueryGlobalValuesFactory<Q> globalValueFactory;
 
 	// Global, aggregated QueryGlobalValues. Aggregated and sent by master
-	private final Map<Integer, WorkerQuery<M, Q>> activeQueries = new HashMap<>();
+	private final Map<Integer, WorkerQuery<V, E, M, Q>> activeQueries = new HashMap<>();
 	// Local QueryGlobalValues, are sent to master for aggregation.
 	//	private final Map<Integer, Q> activeQueriesLocal = new HashMap<>();
 	//
@@ -133,7 +135,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				// Wait for ready queries
 				activeQueries: while (true) {
 					synchronized (activeQueries) {
-						for (WorkerQuery<M, Q> activeQuery : activeQueries.values()) {
+						for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 							if ((activeQuery.getMasterSuperstepNo() > activeQuery.getCalculatedSuperstepNo()))
 								break activeQueries;
 						}
@@ -142,7 +144,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 
 				synchronized (activeQueries) {
-					for (WorkerQuery<M, Q> activeQuery : activeQueries.values()) {
+					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 						synchronized (activeQuery) {
 							// Only process query if ready for processing
 							if (!(activeQuery.getMasterSuperstepNo() > activeQuery.getCalculatedSuperstepNo())) continue;
@@ -162,12 +164,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 								}
 							}
 							else {
-								for (AbstractVertex vertex : activeQuery.ActiveVerticesThis.values()) {
+								for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
 									vertex.superstep(superstepNo, activeQuery);
 								}
 							}
 							activeQuery.calculatedSuperstep();
-							System.out.println("Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
+							System.out
+									.println("[" + ownId + "]  Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
 
 
 							// Barrier sync with other workers;
@@ -210,7 +213,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 	public void flushVertexMessages(int queryId) {
-		WorkerQuery<M, Q> query = activeQueries.get(queryId);
+		WorkerQuery<V, E, M, Q> query = activeQueries.get(queryId);
 		sendBroadcastVertexMessageBucket(queryId, query.getMasterSuperstepNo());
 		for (final int otherWorkerId : otherWorkerIds) {
 			final VertexMessageBucket<M> msgBucket = vertexMessageMachineBuckets.get(otherWorkerId);
@@ -221,7 +224,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 
-	private void sendWorkersSuperstepFinished(WorkerQuery<M, Q> workerQuery) {
+	private void sendWorkersSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery) {
 		//superstepStats.SentControlMessages++;
 		messaging.sendControlMessageMulticast(otherWorkerIds,
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepBarrier(workerQuery.getMasterSuperstepNo(), ownId, workerQuery.Query),
@@ -234,7 +237,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				true);
 	}
 
-	private void sendMasterSuperstepFinished(WorkerQuery<M, Q> workerQuery) {
+	private void sendMasterSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery) {
 		//superstepStats.SentControlMessages++;
 		messaging.sendControlMessageUnicast(masterId,
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(workerQuery.getMasterSuperstepNo(), ownId,
@@ -243,7 +246,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		//ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(superstepNo, ownId, superstepStats, queryLocal), true);
 	}
 
-	private void sendMasterQueryFinishedMessage(WorkerQuery<M, Q> workerQuery) {
+	private void sendMasterQueryFinishedMessage(WorkerQuery<V, E, M, Q> workerQuery) {
 		//superstepStats.SentControlMessages++;
 		messaging.sendControlMessageUnicast(masterId,
 				ControlMessageBuildUtil.Build_Worker_QueryFinished(workerQuery.getMasterSuperstepNo(), ownId, workerQuery.QueryLocal),
@@ -255,7 +258,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 */
 	@Override
 	public void sendVertexMessage(int dstVertex, M messageContent, int queryId) {
-		WorkerQuery<M, Q> query = activeQueries.get(queryId);
+		WorkerQuery<V, E, M, Q> query = activeQueries.get(queryId);
 
 		final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(dstVertex);
 		if (msgVert != null) {
@@ -293,7 +296,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 * Sends a vertex message directly to a remote machine, no lookup.
 	 */
 	public void sendVertexMessageToMachine(int dstMachine, int dstVertex, int queryId, M messageContent) {
-		WorkerQuery<M, Q> query = activeQueries.get(queryId);
+		WorkerQuery<V, E, M, Q> query = activeQueries.get(queryId);
 		//superstepStats.SentVertexMessagesUnicast++;
 		final VertexMessageBucket<M> msgBucket = vertexMessageMachineBuckets.get(dstMachine);
 		msgBucket.addMessage(dstVertex, messageContent);
@@ -340,7 +343,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					case Master_Query_Next_Superstep: {
 						Q query = deserializeQuery(message.getQueryValues());
-						WorkerQuery<M, Q> activeQuery = activeQueries.get(query.QueryId);
+						WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(query.QueryId);
 						if (activeQuery == null) {
 							logger.error("Received Master_Next_Superstep for unknown query: " + message);
 							return;
@@ -376,7 +379,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					case Worker_Query_Superstep_Barrier: {
 						Q query = deserializeQuery(message.getQueryValues());
-						WorkerQuery<M, Q> activeQuery = activeQueries.get(query.QueryId);
+						WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(query.QueryId);
 
 						// We have to wait if the query is not already started
 						while (activeQuery == null) {
@@ -433,7 +436,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 * Will not finish the superstep barrier if already finished or if local superstep calculation not finished.
 	 * @param activeQuery
 	 */
-	private void checkSuperstepBarrierFinished(WorkerQuery<M, Q> activeQuery) {
+	private void checkSuperstepBarrierFinished(WorkerQuery<V, E, M, Q> activeQuery) {
 		synchronized (activeQuery) {
 			synchronized (activeQuery.ChannelBarrierWaitSet) {
 				if (!activeQuery.ChannelBarrierWaitSet.isEmpty()) {
@@ -457,8 +460,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 			// Flush active vertices
 			//			long startTime2 = System.currentTimeMillis();
-			activeQuery.ActiveVerticesThis.clear();
-			activeQuery.ActiveVerticesThis.putAll(activeQuery.ActiveVerticesNext);
+			ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> swap = activeQuery.ActiveVerticesThis;
+			activeQuery.ActiveVerticesThis = activeQuery.ActiveVerticesNext;
+			activeQuery.ActiveVerticesNext = swap;
 			activeQuery.ActiveVerticesNext.clear();
 			//			System.out.println("2 " + (System.currentTimeMillis() - startTime2) + "ms");
 
@@ -488,24 +492,25 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 
-		// TODO Overlap test
-		//				System.out.println("- [" + ownId + "]  " + activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + " "
-		//				+ activeQuery.ActiveVertices.size());
+		// TODO Overlap test. Dont calculate every time?
+		System.out.println("- [" + ownId + "]  " + activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + " "
+				+ activeQuery.ActiveVerticesThis.size());
 		long startTime = System.currentTimeMillis();
-		//		synchronized (activeQueries) {
-		//			synchronized (activeQuery) {
-		//				for (WorkerQuery<M, Q> otherQuery : activeQueries.values()) {
-		//					if (otherQuery.QueryId == activeQuery.QueryId) continue;
-		//					int intersects;
-		//					synchronized (otherQuery) {
-		//						intersects = MiscUtil.getIntersectCount(activeQuery.ActiveVertices, otherQuery.ActiveVertices);
-		//					}
-		//					//					System.out.println("  [" + ownId + "]  " + activeQuery.QueryId + " w " + otherQuery.QueryId + " " + intersects + "/"
-		//					//							+ otherQuery.ActiveVertices.size());
-		//				}
-		//			}
-		//		}
-		System.out.println("Intersect calc in " + (System.currentTimeMillis() - startTime) + "ms");
+		synchronized (activeQueries) {
+			synchronized (activeQuery) {
+				for (WorkerQuery<V, E, M, Q> otherQuery : activeQueries.values()) {
+					if (otherQuery.QueryId == activeQuery.QueryId) continue;
+					int intersects;
+					synchronized (otherQuery) {
+						intersects = MiscUtil.getIntersectCount(activeQuery.ActiveVerticesThis.keySet(),
+								otherQuery.ActiveVerticesThis.keySet());
+					}
+					System.out.println("  [" + ownId + "]  " + activeQuery.QueryId + " w " + otherQuery.QueryId + " " + intersects + "/"
+							+ otherQuery.ActiveVerticesThis.size());
+				}
+			}
+		}
+		System.out.println("  [" + ownId + "]  Intersect calc in " + (System.currentTimeMillis() - startTime) + "ms");
 	}
 
 
@@ -513,7 +518,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	@Override
 	public void onIncomingVertexMessage(int msgSuperstepNo, int srcMachine, boolean broadcastFlag, int queryId,
 			List<Pair<Integer, M>> vertexMessages) {
-		WorkerQuery<M, Q> activeQuery = activeQueries.get(queryId);
+		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(queryId);
 		int superstepNo = activeQuery.getCalculatedSuperstepNo();
 		// Discover vertices if enabled. Only discover for broadcast messages as they are a sign that vertices are unknown.
 		if (broadcastFlag && Settings.VERTEX_MACHINE_DISCOVERY) {
@@ -578,7 +583,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void startQuery(Q query) {
 		if (activeQueries.containsKey(query.QueryId))
 			throw new RuntimeException("Thready with this ID already active: " + query.QueryId);
-		WorkerQuery<M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory, localVerticesIdMap.keySet());
+		WorkerQuery<V, E, M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory, localVerticesIdMap.keySet());
 		synchronized (activeQuery.ChannelBarrierWaitSet) {
 			activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
 		}
@@ -594,7 +599,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		logger.info("Worker started query " + query.QueryId);
 	}
 
-	private void finishQuery(WorkerQuery<M, Q> activeQuery) {
+	private void finishQuery(WorkerQuery<V, E, M, Q> activeQuery) {
 		new VertexTextOutputWriter<V, E, M, Q>().writeOutput(
 				outputDir + File.separator + activeQuery.Query.QueryId + File.separator + ownId + ".txt", localVerticesList,
 				activeQuery.Query.QueryId);

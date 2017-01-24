@@ -73,12 +73,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			// Don't swap lists but clear messagesLast
 			messagesLast.clear();
 		}
-
-		//		return !(queryVertexInactive.get(queryId) && (messagesNext == null || messagesNext.isEmpty()));
 	}
 
 
-	public void superstep(int superstepNo, WorkerQuery<M, Q> query) {
+	public void superstep(int superstepNo, WorkerQuery<V, E, M, Q> query) {
 		int queryId = query.Query.QueryId;
 		List<M> messagesThisSuperstep = queryMessagesThisSuperstep.get(queryId);
 
@@ -101,7 +99,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		}
 	}
 
-	protected abstract void compute(int superstepNo, List<M> messages, WorkerQuery<M, Q> query);
+	protected abstract void compute(int superstepNo, List<M> messages, WorkerQuery<V, E, M, Q> query);
 
 
 	protected void sendMessageToAllOutgoingEdges(M message, int queryId) {
@@ -125,10 +123,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		queryVertexInactive.put(queryId, true);
 	}
 
-	public boolean isActive(int queryId) {
-		List<M> messagesThisSuperstep = queryMessagesThisSuperstep.get(queryId);
-		return (!(queryVertexInactive.get(queryId) && (messagesThisSuperstep == null || messagesThisSuperstep.isEmpty())));
-	}
+	//	public boolean isActive(int queryId) {
+	//		List<M> messagesThisSuperstep = queryMessagesThisSuperstep.get(queryId);
+	//		return (!(queryVertexInactive.get(queryId) && (messagesThisSuperstep == null || messagesThisSuperstep.isEmpty())));
+	//	}
 
 
 	public void setDefaultValue(V dv) {

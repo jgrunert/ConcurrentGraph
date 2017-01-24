@@ -23,7 +23,8 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 	}
 
 	@Override
-	protected void compute(int superstepNo, List<SSSPMessageWritable> messages, WorkerQuery<SSSPMessageWritable, SSSPQueryValues> query) {
+	protected void compute(int superstepNo, List<SSSPMessageWritable> messages,
+			WorkerQuery<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> query) {
 		if (superstepNo == 0) {
 			if (ID != query.Query.From) {
 				voteVertexHalt(query.QueryId);
@@ -51,6 +52,8 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 		int minPre = mutableValue.Pre;
 		if (messages != null) {
 			for (SSSPMessageWritable msg : messages) {
+				if (msg == null)
+					continue;
 				if (msg.Dist < minDist) { // TODO Why NPE?
 					minDist = msg.Dist;
 					minPre = msg.SrcVertex;

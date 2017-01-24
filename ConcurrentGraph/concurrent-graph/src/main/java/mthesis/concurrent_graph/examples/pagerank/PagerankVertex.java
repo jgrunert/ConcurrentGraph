@@ -24,7 +24,8 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 	}
 
 	@Override
-	protected void compute(int superstepNo, List<DoubleWritable> messages, WorkerQuery<DoubleWritable, BaseQueryGlobalValues> query) {
+	protected void compute(int superstepNo, List<DoubleWritable> messages,
+			WorkerQuery<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> query) {
 		DoubleWritable mutableValue;
 		if (superstepNo == 0) {
 			mutableValue = new DoubleWritable(1.0 / query.Query.getVertexCount());

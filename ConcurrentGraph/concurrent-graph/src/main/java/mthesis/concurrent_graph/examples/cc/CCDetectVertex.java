@@ -30,7 +30,8 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 	}
 
 	@Override
-	protected void compute(int superstepNo, List<CCMessageWritable> messages, WorkerQuery<CCMessageWritable, BaseQueryGlobalValues> query) {
+	protected void compute(int superstepNo, List<CCMessageWritable> messages,
+			WorkerQuery<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> query) {
 		if (superstepNo == 0) {
 			IntWritable value = new IntWritable(ID);
 			setValue(value, query.QueryId);

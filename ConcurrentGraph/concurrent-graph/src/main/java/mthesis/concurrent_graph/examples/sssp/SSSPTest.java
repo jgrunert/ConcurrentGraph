@@ -73,8 +73,8 @@ public class SSSPTest {
 			//			// Short TU->RT
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4982624, 3627927));
 			//
-			//			// Very short ST-Echterdingen->ST-HBF
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164));
+			// Very short ST-Echterdingen->ST-HBF
+			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164));
 			//
 			// Short RT->ST
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 7894832, 3184057));
@@ -84,6 +84,9 @@ public class SSSPTest {
 			//
 			//			// Short RT->TU
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3627927, 4982624));
+
+			// Short ST-HBF->TU
+			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
 
 			master.waitForAllQueriesFinish();
 			master.stop();
