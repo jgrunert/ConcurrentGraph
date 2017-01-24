@@ -193,17 +193,6 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 			msgActiveQuery.workersWaitingFor.remove(message.getSrcMachine());
 
-			// TODO re-introduce QuerySuperstepStats?
-			// int SentControlMessages = 0;
-			// int SentVertexMessagesLocal = 0;
-			// int SentVertexMessagesUnicast = 0;
-			// int SentVertexMessagesBroadcast = 0;
-			// int SentVertexMessagesBuckets = 0;
-			// int ReceivedCorrectVertexMessages = 0;
-			// int ReceivedWrongVertexMessages = 0;
-			// int newVertexMachinesDiscovered = 0;
-			// int totalVertexMachinesDiscovered = 0;
-
 			if (message.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
 				if (!msgActiveQuery.IsComputing) {
 					logger.error(
@@ -221,11 +210,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 								+ msgActiveQuery.SuperstepNo + " after "
 								+ (System.currentTimeMillis() - msgActiveQuery.LastStepTime) + "ms. Total "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms. Active: "
-								+ msgActiveQuery.QueryValueAggregator.getActiveVertices());
+								+ msgActiveQuery.QueryStepAggregator.getActiveVertices());
 						msgActiveQuery.nextSuperstep(workerIds);
 						logger.trace("Next master superstep query " + msgActiveQuery.BaseQuery.QueryId + ": "
 								+ msgActiveQuery.SuperstepNo);
-						signalQueryNextSuperstep(msgActiveQuery.QueryValueAggregator, msgActiveQuery.SuperstepNo);
+						signalQueryNextSuperstep(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
 						msgActiveQuery.resetValueAggregator(queryValueFactory);
 						msgActiveQuery.LastStepTime = System.currentTimeMillis();
 					}
@@ -237,6 +226,18 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						msgActiveQuery.workersFinished(workerIds);
 						signalWorkersQueryFinish(msgActiveQuery.BaseQuery);
 					}
+				}
+
+				// Wrong message count should match broadcast message count, therwise there might be communication errors.
+				if (workerIds.size() > 1
+						&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
+								/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
+					logger.warn(String.format(
+							"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
+							msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex,
+							msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast,
+							msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast / (workerIds.size() - 1) *
+									(workerIds.size() - 2)));
 				}
 			}
 			else { // Worker_Query_Finished
@@ -254,24 +255,13 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					logger.info("All workers finished query " + msgActiveQuery.BaseQuery.QueryId);
 					evaluateQueryResult(msgActiveQuery);
 					activeQueries.remove(msgActiveQuery.BaseQuery.QueryId);
-					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId);
+					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
+							+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms, "
+							+ " ComputeTime " + msgActiveQuery.QueryTotalAggregator.Stats.ComputeTime
+							+ " StepFinishTime " + msgActiveQuery.QueryTotalAggregator.Stats.StepFinishTime
+							+ " IntersectCalcTime " + msgActiveQuery.QueryTotalAggregator.Stats.IntersectCalcTime);
 				}
 			}
-
-			// TODO re-introduce?
-			// // Wrong message count should match broadcast message count,
-			// therwise there might be communication errors.
-			// if (workerIds.size() > 1
-			// && ReceivedWrongVertexMessages != SentVertexMessagesBroadcast /
-			// (workerIds.size() - 1) * (workerIds.size() - 2)) {
-			// logger.warn(String.format(
-			// "Unexpected wrong vertex message count %d does not match
-			// broadcast message count %d. Should be %d. Possible communication
-			// errors.",
-			// ReceivedWrongVertexMessages, SentVertexMessagesBroadcast,
-			// SentVertexMessagesBroadcast / (workerIds.size() - 1) *
-			// (workerIds.size() - 2)));
-			// }
 		}
 		else {
 			logger.error("Unexpected control message type in message " + message);

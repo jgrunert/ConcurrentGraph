@@ -18,7 +18,10 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 	public long LastStepTime;
 
 	public int SuperstepNo;
-	public Q QueryValueAggregator;
+	// Value aggregation of one superstep
+	public Q QueryStepAggregator;
+	// Value aggregation of all supersteps
+	public Q QueryTotalAggregator;
 	public int ActiveWorkers;
 	public final Set<Integer> workersWaitingFor;
 	public boolean IsComputing = true;
@@ -33,6 +36,7 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 		workersWaitingFor = new HashSet<>(workersToWait.size());
 		nextSuperstep(workersToWait);
 		resetValueAggregator(queryFactory);
+		QueryTotalAggregator = queryFactory.createClone(BaseQuery);
 	}
 
 	public void nextSuperstep(Collection<Integer> workersToWait) {
@@ -41,14 +45,15 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 	}
 
 	public void resetValueAggregator(BaseQueryGlobalValues.BaseQueryGlobalValuesFactory<Q> queryFactory) {
-		QueryValueAggregator = queryFactory.createClone(BaseQuery);
-		QueryValueAggregator.setVertexCount(0);
-		QueryValueAggregator.setActiveVertices(0);
+		QueryStepAggregator = queryFactory.createClone(BaseQuery);
+		QueryStepAggregator.setVertexCount(0);
+		QueryStepAggregator.setActiveVertices(0);
 		ActiveWorkers = 0;
 	}
 
 	public void aggregateQuery(Q workerQueryMsg) {
-		QueryValueAggregator.combine(workerQueryMsg);
+		QueryStepAggregator.combine(workerQueryMsg);
+		QueryTotalAggregator.combine(workerQueryMsg);
 		if (workerQueryMsg.getActiveVertices() > 0) ActiveWorkers++;
 	}
 
@@ -56,7 +61,7 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 		workersWaitingFor.addAll(workersToWait);
 		IsComputing = false;
 		if (ActiveWorkers != 0) logger.warn("Finishing query with active workers: " + ActiveWorkers);
-		if (QueryValueAggregator.getActiveVertices() != 0)
-			logger.warn("Finishing query with active vertices: " + QueryValueAggregator.getActiveVertices());
+		if (QueryStepAggregator.getActiveVertices() != 0)
+			logger.warn("Finishing query with active vertices: " + QueryStepAggregator.getActiveVertices());
 	}
 }

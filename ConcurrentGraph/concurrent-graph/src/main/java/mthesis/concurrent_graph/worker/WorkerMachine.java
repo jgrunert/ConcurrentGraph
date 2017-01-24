@@ -164,8 +164,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 								}
 							}
 							activeQuery.calculatedSuperstep();
-							System.out
-									.println("[" + ownId + "]  Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
+							//System.out.println("[" + ownId + "]  Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
+							activeQuery.QueryLocal.Stats.ComputeTime = (int) (System.currentTimeMillis() - startTime);
 
 
 							// Barrier sync with other workers;
@@ -250,7 +250,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(dstVertex);
 		if (msgVert != null) {
 			// Local message
-			query.QueryLocal.MessagesTransmittedLocal++;
+			query.QueryLocal.Stats.MessagesTransmittedLocal++;
 			synchronized (vertexInMessageLock) {
 				List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(query.QueryId);
 				if (queryInMsgs == null) {
@@ -272,7 +272,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 			else {
 				// Broadcast remote message
-				query.QueryLocal.MessagesSentBroadcast += otherWorkerIds.size();
+				query.QueryLocal.Stats.MessagesSentBroadcast += otherWorkerIds.size();
 				vertexMessageBroadcastBucket.addMessage(dstVertex, messageContent);
 				if (vertexMessageBroadcastBucket.messages.size() > Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
 					sendBroadcastVertexMessageBucket(query, query.getMasterSuperstepNo());
@@ -290,20 +290,20 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (msgBucket.messages.size() > Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
 			sendUnicastVertexMessageBucket(msgBucket, dstMachine, query, query.getMasterSuperstepNo());
 		}
-		query.QueryLocal.MessagesSentUnicast++;
+		query.QueryLocal.Stats.MessagesSentUnicast++;
 	}
 
 	private void sendUnicastVertexMessageBucket(VertexMessageBucket<M> msgBucket, int dstMachine, WorkerQuery<V, E, M, Q> query,
 			int superstepNo) {
 		final List<Pair<Integer, M>> msgList = packVertexMessage(msgBucket);
 		messaging.sendVertexMessageUnicast(dstMachine, superstepNo, ownId, query.QueryId, msgList);
-		query.QueryLocal.MessageBucketsSentUnicast++;
+		query.QueryLocal.Stats.MessageBucketsSentUnicast++;
 	}
 
 	private void sendBroadcastVertexMessageBucket(WorkerQuery<V, E, M, Q> query, int superstepNo) {
 		final List<Pair<Integer, M>> msgList = packVertexMessage(vertexMessageBroadcastBucket);
 		messaging.sendVertexMessageBroadcast(otherWorkerIds, superstepNo, ownId, query.QueryId, msgList);
-		query.QueryLocal.MessageBucketsSentBroadcast++;
+		query.QueryLocal.Stats.MessageBucketsSentBroadcast++;
 	}
 
 	private List<Pair<Integer, M>> packVertexMessage(VertexMessageBucket<M> msgBucket) {
@@ -448,7 +448,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			//			}
 
 			// Flush active vertices
-			//			long startTime2 = System.currentTimeMillis();
+			long startTime = System.currentTimeMillis();
 			synchronized (vertexInMessageLock) {
 				ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> swap = activeQuery.ActiveVerticesThis;
 				activeQuery.ActiveVerticesThis = activeQuery.ActiveVerticesNext;
@@ -479,13 +479,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			logger.debug(
 					"Worker finished barrier " + activeQuery.Query.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + ". Active: "
 							+ activeQuery.QueryLocal.getActiveVertices());
+			activeQuery.QueryLocal.Stats.StepFinishTime = (int) (System.currentTimeMillis() - startTime);
 		}
 
 
 
 		// TODO Overlap test. Dont calculate every time?
-		System.out.println("- [" + ownId + "]  " + activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo()
-				+ " active " + activeQuery.ActiveVerticesThis.size());
+		//		System.out.println("- [" + ownId + "]  " + activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo()
+		//				+ " active " + activeQuery.ActiveVerticesThis.size());
 		long startTime = System.currentTimeMillis();
 		synchronized (activeQueries) {
 			synchronized (activeQuery) {
@@ -496,12 +497,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						intersects = MiscUtil.getIntersectCount(activeQuery.ActiveVerticesThis.keySet(),
 								otherQuery.ActiveVerticesThis.keySet());
 					}
-					System.out.println("  [" + ownId + "]  " + activeQuery.QueryId + " w " + otherQuery.QueryId + " " + intersects + "/"
-							+ otherQuery.ActiveVerticesThis.size());
+					//					System.out.println("  [" + ownId + "]  " + activeQuery.QueryId + " w " + otherQuery.QueryId + " " + intersects + "/"
+					//							+ otherQuery.ActiveVerticesThis.size());
 				}
 			}
 		}
-		System.out.println("  [" + ownId + "]  Intersect calc in " + (System.currentTimeMillis() - startTime) + "ms");
+		//		System.out.println("  [" + ownId + "]  Intersect calc in " + (System.currentTimeMillis() - startTime) + "ms");
+		activeQuery.QueryLocal.Stats.IntersectCalcTime = (int) (System.currentTimeMillis() - startTime);
 	}
 
 
@@ -525,7 +527,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Always discover at both sides. We need bidirectional for targeted invalidation of entries.
 			if (Settings.VERTEX_MACHINE_DISCOVERY) {
 				for (final Integer srcVertId : srcVertices) {
-					if (remoteVertexMachineRegistry.addEntry(srcVertId, srcMachine)) activeQuery.QueryLocal.DiscoveredNewVertexMachines++;
+					if (remoteVertexMachineRegistry.addEntry(srcVertId, srcMachine))
+						activeQuery.QueryLocal.Stats.DiscoveredNewVertexMachines++;
 				}
 			}
 			// Send get-to-know message for all own vertices in this broadcast message
@@ -542,7 +545,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				for (final Pair<Integer, M> msg : vertexMessages) {
 					final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(msg.first);
 					if (msgVert != null) {
-						activeQuery.QueryLocal.MessagesReceivedCorrectVertex++;
+						activeQuery.QueryLocal.Stats.MessagesReceivedCorrectVertex++;
 						List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(queryId);
 						if (queryInMsgs == null) {
 							// Add queue if not already added
@@ -556,7 +559,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					else {
 						if (!broadcastFlag)
 							logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from " + srcMachine);
-						activeQuery.QueryLocal.MessagesReceivedWrongVertex++;
+						activeQuery.QueryLocal.Stats.MessagesReceivedWrongVertex++;
 					}
 				}
 			}
@@ -567,7 +570,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices, int queryId) {
 		for (final Integer srcVertex : srcVertices) {
 			if (remoteVertexMachineRegistry.addEntry(srcVertex, srcMachine))
-				activeQueries.get(queryId).QueryLocal.DiscoveredNewVertexMachines++;
+				activeQueries.get(queryId).QueryLocal.Stats.DiscoveredNewVertexMachines++;
 		}
 	}
 

@@ -24,13 +24,9 @@ public class SSSPQueryValues extends BaseQueryGlobalValues {
 		TargetFound = false;
 	}
 
-	private SSSPQueryValues(int queryId, int activeVertices, int vertexCount, int messagesTransmittedLocal, int messagesSentUnicast,
-			int messagesSentBroadcast, int messageBucketsSentUnicast, int messageBucketsSentBroadcast, int messagesReceivedWrongVertex,
-			int messagesReceivedCorrectVertex, int discoveredNewVertexMachines,
+	private SSSPQueryValues(int queryId, int activeVertices, int vertexCount, QueryStats stats,
 			int from, int to, double maxDist, boolean targetFound) {
-		super(queryId, activeVertices, vertexCount, messagesTransmittedLocal, messagesSentUnicast,
-				messagesSentBroadcast, messageBucketsSentUnicast, messageBucketsSentBroadcast, messagesReceivedWrongVertex,
-				messagesReceivedCorrectVertex, discoveredNewVertexMachines);
+		super(queryId, activeVertices, vertexCount, stats);
 		From = from;
 		To = to;
 		MaxDist = maxDist;
@@ -76,18 +72,13 @@ public class SSSPQueryValues extends BaseQueryGlobalValues {
 
 		@Override
 		public SSSPQueryValues createFromString(String str) {
-			final String[] sSplit = str.split(":");
-			int iSplit = 0;
-			return new SSSPQueryValues(Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]),
-					Integer.parseInt(sSplit[iSplit++]),
-					Integer.parseInt(sSplit[iSplit++]), Integer.parseInt(sSplit[iSplit++]), Double.parseDouble(sSplit[iSplit++]),
-					Boolean.parseBoolean(sSplit[iSplit++]));
+			throw new RuntimeException("createFromString not implemented for BaseQueryGlobalValues");
 		}
 
 		@Override
 		public SSSPQueryValues createFromBytes(ByteBuffer bytes) {
-			return new SSSPQueryValues(bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getInt(),
-					bytes.getDouble(), bytes.get() == 0);
+			return new SSSPQueryValues(bytes.getInt(), bytes.getInt(), bytes.getInt(), new QueryStats(bytes),
+					bytes.getInt(), bytes.getInt(), bytes.getDouble(), bytes.get() == 0);
 		}
 	}
 }
