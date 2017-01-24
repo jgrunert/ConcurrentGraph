@@ -208,36 +208,37 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					if (workerIds.size() > 1
 							&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
 									/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
-						logger.warn(String.format(
-								"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
-								msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex,
-								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast,
-								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast / (workerIds.size() - 1) *
-										(workerIds.size() - 2)));
+						// TODO Investigate
+						//						logger.warn(String.format(
+						//								"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
+						//								msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex,
+						//								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast,
+						//								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast / (workerIds.size() - 1) *
+						//										(workerIds.size() - 2)));
 					}
 
 					// All workers have superstep finished
 					if (msgActiveQuery.ActiveWorkers > 0) {
-						// Active workers, start next superstep TODO Log debug
-						logger.info("Workers finished superstep " + msgActiveQuery.BaseQuery.QueryId + ":"
+						// Active workers, start next superstep
+						msgActiveQuery.nextSuperstep(workerIds);
+						signalQueryNextSuperstep(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
+						msgActiveQuery.resetValueAggregator(queryValueFactory);
+						msgActiveQuery.LastStepTime = System.currentTimeMillis();
+						logger.debug("Workers finished superstep " + msgActiveQuery.BaseQuery.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
 								+ (System.currentTimeMillis() - msgActiveQuery.LastStepTime) + "ms. Total "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms. Active: "
 								+ msgActiveQuery.QueryStepAggregator.getActiveVertices());
-						msgActiveQuery.nextSuperstep(workerIds);
 						logger.trace("Next master superstep query " + msgActiveQuery.BaseQuery.QueryId + ": "
 								+ msgActiveQuery.SuperstepNo);
-						signalQueryNextSuperstep(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
-						msgActiveQuery.resetValueAggregator(queryValueFactory);
-						msgActiveQuery.LastStepTime = System.currentTimeMillis();
 					}
 					else {
 						// All workers finished, finish query
+						msgActiveQuery.workersFinished(workerIds);
+						signalWorkersQueryFinish(msgActiveQuery.BaseQuery);
 						logger.info("All workers no more active for query " + msgActiveQuery.BaseQuery.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
-						msgActiveQuery.workersFinished(workerIds);
-						signalWorkersQueryFinish(msgActiveQuery.BaseQuery);
 					}
 				}
 			}
