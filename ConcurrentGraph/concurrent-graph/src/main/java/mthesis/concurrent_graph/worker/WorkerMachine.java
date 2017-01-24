@@ -43,7 +43,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-		extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<M> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -56,7 +56,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private List<AbstractVertex<V, E, M, Q>> localVerticesList;
 	private final Map<Integer, AbstractVertex<V, E, M, Q>> localVerticesIdMap = new HashMap<>();
-	//	private final Object vertexInMessageLock = new Object();
 
 	private final BaseWritableFactory<V> vertexValueFactory;
 	private final BaseQueryGlobalValuesFactory<Q> globalValueFactory;
@@ -75,6 +74,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	// Buckets to collect messages to send
 	private final VertexMessageBucket<M> vertexMessageBroadcastBucket = new VertexMessageBucket<>();
 	private final Map<Integer, VertexMessageBucket<M>> vertexMessageMachineBuckets = new HashMap<>();
+	private final Object vertexInMessageLock = new Object();
 	// Buffer for sending outgoing message buckets
 	//	private final int[] outVertexMsgDstIdBuffer = new int[Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES];
 	//	private final List<M> outVertexMsgContentBuffer = new ArrayList<>(Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES);
@@ -170,7 +170,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							}
 							activeQuery.calculatedSuperstep();
 							System.out
-									.println("[" + ownId + "]  Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
+							.println("[" + ownId + "]  Calculated superstep in " + (System.currentTimeMillis() - startTime) + "ms");
 
 
 							// Barrier sync with other workers;
@@ -264,18 +264,17 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (msgVert != null) {
 			// Local message
 			//superstepStats.ReceivedCorrectVertexMessages++; // TODO Check superstep etc, sort by query
-			List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(queryId);
-			if (queryInMsgs == null) {
-				// Add queue if not already added
-				queryInMsgs = new ArrayList<>();
-				msgVert.queryMessagesNextSuperstep.put(queryId, queryInMsgs);
+			synchronized (vertexInMessageLock) {
+				List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(queryId);
+				if (queryInMsgs == null) {
+					// Add queue if not already added
+					queryInMsgs = new ArrayList<>();
+					msgVert.queryMessagesNextSuperstep.put(queryId, queryInMsgs);
+				}
+				queryInMsgs.add(messageContent);
+				// Activate vertex
+				query.ActiveVerticesNext.put(msgVert.ID, msgVert);
 			}
-			if (messageContent == null) {
-				logger.error("Null vertex message: " + messageContent);
-			}
-			queryInMsgs.add(messageContent);
-			// Activate vertex
-			query.ActiveVerticesNext.put(msgVert.ID, msgVert);
 		}
 		else {
 			// Remote message
@@ -371,13 +370,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						// We already received all barrier syncs from other workers, directly finish superstep
 						checkSuperstepBarrierFinished(activeQuery);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -409,16 +408,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						else {
 							// Completely wrong superstep
 							logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-									+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getMasterSuperstepNo());
+							+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getMasterSuperstepNo());
 						}
 					}
-						break;
+					break;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -463,26 +462,28 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 			// Flush active vertices
 			//			long startTime2 = System.currentTimeMillis();
-			ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> swap = activeQuery.ActiveVerticesThis;
-			activeQuery.ActiveVerticesThis = activeQuery.ActiveVerticesNext;
-			activeQuery.ActiveVerticesNext = swap;
-			activeQuery.ActiveVerticesNext.clear();
-			//			System.out.println("2 " + (System.currentTimeMillis() - startTime2) + "ms");
+			synchronized (vertexInMessageLock) {
+				ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> swap = activeQuery.ActiveVerticesThis;
+				activeQuery.ActiveVerticesThis = activeQuery.ActiveVerticesNext;
+				activeQuery.ActiveVerticesNext = swap;
+				activeQuery.ActiveVerticesNext.clear();
+				//			System.out.println("2 " + (System.currentTimeMillis() - startTime2) + "ms");
 
-			// Prepare active vertices
-			//			long startTime3 = System.currentTimeMillis();
-			for (AbstractVertex<V, E, M, Q> vert : activeQuery.ActiveVerticesThis.values()) {
-				vert.prepareForNextSuperstep(activeQuery.Query.QueryId); // TODO Rename to prepare if works this way
+				// Prepare active vertices
+				//			long startTime3 = System.currentTimeMillis();
+				for (AbstractVertex<V, E, M, Q> vert : activeQuery.ActiveVerticesThis.values()) {
+					vert.prepareForNextSuperstep(activeQuery.Query.QueryId); // TODO Rename to prepare if works this way
+				}
+				//			System.out.println("3 " + (System.currentTimeMillis() - startTime3) + "ms");
+
+				activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVerticesThis.size());
+				synchronized (activeQuery.ChannelBarrierWaitSet) {
+					activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
+				}
+				sendMasterSuperstepFinished(activeQuery);
+
+				activeQuery.finishedBarrierSync();
 			}
-			//			System.out.println("3 " + (System.currentTimeMillis() - startTime3) + "ms");
-
-			activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVerticesThis.size());
-			synchronized (activeQuery.ChannelBarrierWaitSet) {
-				activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
-			}
-			sendMasterSuperstepFinished(activeQuery);
-
-			activeQuery.finishedBarrierSync();
 
 			// TODO Dont just clear. Two switchable sets? Needed for intersection calculation etc.
 			//			System.out.println(ownId + "  Active: " + activeQuery.ActiveVerticesThis.size());
@@ -550,29 +551,26 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			logger.error("Message from past superstep in superstep " + superstepNo + " from " + srcMachine);
 		}
 		else {
-			//			synchronized (vertexInMessageLock) {
-			for (final Pair<Integer, M> msg : vertexMessages) {
-				final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(msg.first);
-				if (msgVert != null) {
-					//superstepStats.ReceivedCorrectVertexMessages++; // TODO Check superstep etc, sort by query
-					List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(queryId);
-					if (queryInMsgs == null) {
-						// Add queue if not already added
-						queryInMsgs = new ArrayList<>();
-						msgVert.queryMessagesNextSuperstep.put(queryId, queryInMsgs);
+			synchronized (vertexInMessageLock) {
+				for (final Pair<Integer, M> msg : vertexMessages) {
+					final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(msg.first);
+					if (msgVert != null) {
+						//superstepStats.ReceivedCorrectVertexMessages++; // TODO Check superstep etc, sort by query
+						List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(queryId);
+						if (queryInMsgs == null) {
+							// Add queue if not already added
+							queryInMsgs = new ArrayList<>();
+							msgVert.queryMessagesNextSuperstep.put(queryId, queryInMsgs);
+						}
+						queryInMsgs.add(msg.second);
+						// Activate vertex
+						activeQuery.ActiveVerticesNext.put(msgVert.ID, msgVert);
 					}
-					if (msg.second == null) {
-						logger.error("Null vertex message: " + msg.first);
-					}
-					queryInMsgs.add(msg.second);
-					// Activate vertex
-					activeQuery.ActiveVerticesNext.put(msgVert.ID, msgVert);
+					//					else {
+					//						superstepStats.ReceivedWrongVertexMessages++;
+					//					}
 				}
-				//					else {
-				//						superstepStats.ReceivedWrongVertexMessages++;
-				//					}
 			}
-			//			}
 		}
 	}
 

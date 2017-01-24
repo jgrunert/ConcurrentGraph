@@ -63,6 +63,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		if (messagesNext != null && !messagesNext.isEmpty()) {
 			// Swap last and next lists, recycle as much as possible
 			queryMessagesThisSuperstep.put(queryId, messagesNext);
+
 			if (messagesLast == null)
 				messagesLast = new ArrayList<>();
 			else

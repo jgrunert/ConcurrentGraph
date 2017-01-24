@@ -54,7 +54,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			for (SSSPMessageWritable msg : messages) {
 				if (msg == null)
 					continue;
-				if (msg.Dist < minDist) { // TODO Why NPE?
+				if (msg.Dist < minDist) {
 					minDist = msg.Dist;
 					minPre = msg.SrcVertex;
 				}
