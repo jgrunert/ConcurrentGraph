@@ -50,6 +50,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private final String queryStatsDir;
 	private final Map<Integer, List<SortedMap<Integer, Q>>> queryStatsStepMachines = new HashMap<>();
 	private final Map<Integer, List<Q>> queryStatsSteps = new HashMap<>();
+	private final Map<Integer, List<Long>> queryStatsStepTimes = new HashMap<>();
 	private final Map<Integer, Q> queryStatsTotals = new HashMap<>();
 
 	private final String inputFile;
@@ -112,6 +113,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		if (enableQueryStats) {
 			queryStatsStepMachines.put(query.QueryId, new ArrayList<>());
 			queryStatsSteps.put(query.QueryId, new ArrayList<>());
+			queryStatsStepTimes.put(query.QueryId, new ArrayList<>());
 		}
 
 		while (activeQueries.size() >= Settings.MAX_PARALLEL_QUERIES) {
@@ -255,6 +257,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					// Log query superstep stats
 					if (enableQueryStats) {
 						queryStatsSteps.get(msgQueryOnWorker.QueryId).add(msgActiveQuery.QueryStepAggregator);
+						queryStatsStepTimes.get(msgQueryOnWorker.QueryId).add((System.currentTimeMillis() - msgActiveQuery.LastStepTime));
 					}
 
 					// All workers have superstep finished
@@ -345,6 +348,29 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						sb.append(stepMachine.getActiveVertices());
 						sb.append(';');
 					}
+					writer.println(sb.toString());
+					sb.setLength(0);
+				}
+			}
+			catch (Exception e) {
+				logger.error("Exception when saveQueryStats", e);
+			}
+		}
+
+
+		for (Entry<Integer, List<Q>> querySteps : queryStatsSteps.entrySet()) {
+			try (PrintWriter writer = new PrintWriter(
+					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_times_steps.csv"))) {
+				for (int i = 0; i < querySteps.getValue().size(); i++) {
+					Q step = querySteps.getValue().get(i);
+					sb.append(queryStatsStepTimes.get(querySteps.getKey()).get(i));
+					sb.append(';');
+					sb.append(step.Stats.ComputeTime);
+					sb.append(';');
+					sb.append(step.Stats.StepFinishTime);
+					sb.append(';');
+					sb.append(step.Stats.IntersectCalcTime);
+					sb.append(';');
 					writer.println(sb.toString());
 					sb.setLength(0);
 				}
