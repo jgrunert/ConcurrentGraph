@@ -1,14 +1,20 @@
 package mthesis.concurrent_graph.master;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
@@ -39,6 +45,13 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private final Set<Integer> workersToInitialize;
 	private Map<Integer, MasterQuery<Q>> activeQueries = new HashMap<>();
 
+	// Query logging for later evaluation
+	private final boolean enableQueryStats = true;
+	private final String queryStatsDir;
+	private final Map<Integer, List<SortedMap<Integer, Q>>> queryStatsStepMachines = new HashMap<>();
+	private final Map<Integer, List<Q>> queryStatsSteps = new HashMap<>();
+	private final Map<Integer, Q> queryStatsTotals = new HashMap<>();
+
 	private final String inputFile;
 	private final String inputPartitionDir;
 	private final String outputDir;
@@ -60,8 +73,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		this.inputPartitioner = inputPartitioner;
 		this.outputCombiner = outputCombiner;
 		this.outputDir = outputDir;
+		this.queryStatsDir = outputDir + File.separator + "stats";
 		this.queryValueFactory = globalValueFactory;
 		FileUtil.makeCleanDirectory(outputDir);
+		FileUtil.makeCleanDirectory(queryStatsDir);
 	}
 
 	@Override
@@ -92,6 +107,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
+		}
+
+		if (enableQueryStats) {
+			queryStatsStepMachines.put(query.QueryId, new ArrayList<>());
+			queryStatsSteps.put(query.QueryId, new ArrayList<>());
 		}
 
 		while (activeQueries.size() >= Settings.MAX_PARALLEL_QUERIES) {
@@ -181,12 +201,13 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			if (msgActiveQuery == null)
 				throw new RuntimeException("Control message without ungknown query: " + message);
 
-
+			// Check superstep
 			if (message.getSuperstepNo() != msgActiveQuery.SuperstepNo) {
 				logger.error("Message for wrong superstep. not " + msgActiveQuery.SuperstepNo + ": " + message);
 				return;
 			}
 
+			// Check if a worker waiting for
 			if (!msgActiveQuery.workersWaitingFor.contains(message.getSrcMachine())) {
 				logger.error("Query " + msgQueryOnWorker.QueryId + " not waiting for " + msgQueryOnWorker);
 				return;
@@ -202,19 +223,38 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
 
+				// Log worker superstep stats
+				if (enableQueryStats) {
+					List<SortedMap<Integer, Q>> queryStepList = queryStatsStepMachines.get(msgQueryOnWorker.QueryId);
+					SortedMap<Integer, Q> queryStepWorkerMap;
+					if (queryStepList.size() <= message.getSuperstepNo()) {
+						queryStepWorkerMap = new TreeMap<>();
+						queryStepList.add(queryStepWorkerMap);
+					}
+					else {
+						queryStepWorkerMap = queryStepList.get(message.getSuperstepNo());
+					}
+					queryStepWorkerMap.put(message.getSrcMachine(), msgQueryOnWorker);
+				}
+
 				// Check if all workers finished superstep
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
 					// Wrong message count should match broadcast message count, therwise there might be communication errors.
 					if (workerIds.size() > 1
 							&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
 									/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
-						// TODO Investigate
+						// TODO Investigate why happening
 						//						logger.warn(String.format(
 						//								"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
 						//								msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex,
 						//								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast,
 						//								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast / (workerIds.size() - 1) *
 						//										(workerIds.size() - 2)));
+					}
+
+					// Log query superstep stats
+					if (enableQueryStats) {
+						queryStatsSteps.get(msgQueryOnWorker.QueryId).add(msgActiveQuery.QueryStepAggregator);
 					}
 
 					// All workers have superstep finished
@@ -239,6 +279,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						logger.info("All workers no more active for query " + msgActiveQuery.BaseQuery.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
 								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
+
+						// Log query total stats
+						if (enableQueryStats) {
+							queryStatsTotals.put(msgQueryOnWorker.QueryId, msgActiveQuery.QueryTotalAggregator);
+						}
 					}
 				}
 			}
@@ -274,6 +319,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	public void stop() {
 		signalWorkersShutdown();
 		super.stop();
+		saveQueryStats();
 		printErrorCount();
 	}
 
@@ -285,6 +331,28 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			logger.warn("Errors: " + ErrWarnCounter.Errors);
 		if (ErrWarnCounter.Warnings == 0 && ErrWarnCounter.Errors == 0)
 			logger.info("No warnings or errors");
+	}
+
+	private void saveQueryStats() {
+		if (!enableQueryStats) return;
+		StringBuilder sb = new StringBuilder();
+
+		for (Entry<Integer, List<SortedMap<Integer, Q>>> querySteps : queryStatsStepMachines.entrySet()) {
+			try (PrintWriter writer = new PrintWriter(
+					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_av_steps.csv"))) {
+				for (Map<Integer, Q> step : querySteps.getValue()) {
+					for (Q stepMachine : step.values()) {
+						sb.append(stepMachine.getActiveVertices());
+						sb.append(';');
+					}
+					writer.println(sb.toString());
+					sb.setLength(0);
+				}
+			}
+			catch (Exception e) {
+				logger.error("Exception when saveQueryStats", e);
+			}
+		}
 	}
 
 
