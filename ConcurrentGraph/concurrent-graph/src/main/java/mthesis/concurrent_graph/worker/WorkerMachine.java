@@ -500,16 +500,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		// Discover vertices if enabled. Only discover for broadcast messages as they are a sign that vertices are unknown.
 		if (broadcastFlag && Settings.VERTEX_MACHINE_DISCOVERY) {
+			// Collect all vertices from this broadcast message on this machine
 			final HashSet<Integer> srcVertices = new HashSet<>();
 			for (final Pair<Integer, M> msg : vertexMessages) {
 				if (localVerticesIdMap.containsKey(msg.first)) {
 					srcVertices.add(msg.first);
 				}
 			}
-
-			// Also discover all soruce vertices from this incoming broadcast message, if enabled
-			// Always discover at both sides. We need bidirectional for targeted invalidation of entries.
-			if (Settings.VERTEX_MACHINE_DISCOVERY) {
+			// Also discover all source vertices from this incoming broadcast message, if enabled.
+			if (Settings.VERTEX_MACHINE_DISCOVERY_INCOMING) {
 				for (final Integer srcVertId : srcVertices) {
 					if (remoteVertexMachineRegistry.addEntry(srcVertId, srcMachine))
 						activeQuery.QueryLocal.Stats.DiscoveredNewVertexMachines++;
