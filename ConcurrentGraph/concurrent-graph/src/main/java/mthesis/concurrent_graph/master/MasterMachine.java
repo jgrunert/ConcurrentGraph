@@ -216,6 +216,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 			msgActiveQuery.workersWaitingFor.remove(message.getSrcMachine());
 
+			// Query intersects on machine
+			//Map<Integer, Integer> queryIntersects = message.getQueryIntersections().getIntersectionsMap();
+
 			if (message.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
 				if (!msgActiveQuery.IsComputing) {
 					logger.error(
