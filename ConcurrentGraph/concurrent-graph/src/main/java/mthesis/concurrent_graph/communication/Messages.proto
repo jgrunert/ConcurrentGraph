@@ -41,7 +41,8 @@ message MessageEnvelope {
 		optional bytes QueryValues = 6;
 		optional WorkerInitializedMessage WorkerInitialized = 7;
 		optional QueryIntersectionsMessage QueryIntersections = 8;
-		optional MoveQueryVerticesMessage MoveQueryVertices = 9;
+		optional MoveQueryVerticesMessage SendQueryVertices = 9;
+		optional MoveQueryVerticesMessage ReceiveQueryVertices = 10;
 		
 		message AssignPartitionsMessage {	
 			repeated string PartitionFiles = 1;

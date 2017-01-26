@@ -27,6 +27,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
+import mthesis.concurrent_graph.util.MiscUtil;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.writable.NullWritable;
 
@@ -44,6 +45,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private final List<Integer> workerIds;
 	private final Set<Integer> workersToInitialize;
 	private Map<Integer, MasterQuery<Q>> activeQueries = new HashMap<>();
+	private Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts = new HashMap<>();
 
 	// Query logging for later evaluation
 	private final boolean enableQueryStats = true;
@@ -131,6 +133,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			query.setVertexCount(vertexCount);
 			MasterQuery<Q> activeQuery = new MasterQuery<>(query, workerIds, queryValueFactory);
 			activeQueries.put(query.QueryId, activeQuery);
+
+			Map<Integer, Integer> queryWorkerAVerts = new HashMap<>();
+			for (Integer worker : workerIds)
+				queryWorkerAVerts.put(worker, 0);
+			actQueryWorkerActiveVerts.put(query.QueryId, queryWorkerAVerts);
 		}
 
 		// Start query on workers
@@ -226,6 +233,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					return;
 				}
 
+				actQueryWorkerActiveVerts.get(msgQueryOnWorker.QueryId).put(message.getSrcMachine(),
+						msgQueryOnWorker.getActiveVertices());
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
 
 				// Log worker superstep stats
@@ -247,7 +256,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					// Wrong message count should match broadcast message count, therwise there might be communication errors.
 					if (workerIds.size() > 1
 							&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
-									/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
+							/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
 						// TODO Investigate why happening
 						//						logger.warn(String.format(
 						//								"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
@@ -267,7 +276,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					if (msgActiveQuery.ActiveWorkers > 0) {
 						// Active workers, start next superstep
 						msgActiveQuery.nextSuperstep(workerIds);
-						signalQueryNextSuperstep(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
+						startWorkersQueryNextSuperstep(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
 						msgActiveQuery.resetValueAggregator(queryValueFactory);
 						msgActiveQuery.LastStepTime = System.currentTimeMillis();
 						logger.debug("Workers finished superstep " + msgActiveQuery.BaseQuery.QueryId + ":"
@@ -308,6 +317,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					logger.info("All workers finished query " + msgActiveQuery.BaseQuery.QueryId);
 					evaluateQueryResult(msgActiveQuery);
 					activeQueries.remove(msgActiveQuery.BaseQuery.QueryId);
+					actQueryWorkerActiveVerts.remove(msgActiveQuery.BaseQuery.QueryId);
 					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
 							+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms, "
 							+ " ComputeTime " + msgActiveQuery.QueryTotalAggregator.Stats.ComputeTime
@@ -425,7 +435,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				true);
 	}
 
-	private void signalQueryNextSuperstep(Q query, int superstepNo) {
+	private void startWorkersQueryNextSuperstep(Q query, int superstepNo) {
+		// TODO Evaluate intersections, decide if move vertices
+		Map<Integer, Integer> workerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
+		workerActiveVerts = MiscUtil.sortByValueInverse(workerActiveVerts);
+
 		messaging.sendControlMessageMulticast(workerIds,
 				ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(superstepNo, ownId, query), true);
 	}
