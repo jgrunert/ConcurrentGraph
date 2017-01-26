@@ -229,10 +229,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				true);
 	}
 
-	private void sendMasterSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery) {
+	private void sendMasterSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery, Map<Integer, Integer> queryIntersects) {
 		messaging.sendControlMessageUnicast(masterId,
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(workerQuery.getMasterSuperstepNo(), ownId,
-						workerQuery.QueryLocal),
+						workerQuery.QueryLocal, queryIntersects),
 				true);
 	}
 
@@ -445,6 +445,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 			// Flush active vertices
 			long startTime = System.currentTimeMillis();
+			Map<Integer, Integer> queryIntersects = new HashMap<>();
 			synchronized (vertexInMessageLock) {
 				ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> swap = activeQuery.ActiveVerticesThis;
 				activeQuery.ActiveVerticesThis = activeQuery.ActiveVerticesNext;
@@ -471,6 +472,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						int intersects;
 						intersects = MiscUtil.getIntersectCount(activeQuery.ActiveVerticesThis.keySet(),
 								otherQuery.ActiveVerticesThis.keySet());
+						queryIntersects.put(otherQuery.QueryId, intersects);
 						//					System.out.println("  [" + ownId + "]  " + activeQuery.QueryId + " w " + otherQuery.QueryId + " " + intersects + "/"
 						//							+ otherQuery.ActiveVerticesThis.size());
 					}
@@ -480,7 +482,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 
 
-			sendMasterSuperstepFinished(activeQuery);
+			sendMasterSuperstepFinished(activeQuery, queryIntersects);
 			activeQuery.finishedBarrierSync();
 			logger.debug(
 					"Worker finished barrier " + activeQuery.Query.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + ". Active: "

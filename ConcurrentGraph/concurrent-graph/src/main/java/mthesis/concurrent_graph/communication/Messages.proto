@@ -40,6 +40,8 @@ message MessageEnvelope {
 		optional AssignPartitionsMessage AssignPartitions = 5;
 		optional bytes QueryValues = 6;
 		optional WorkerInitializedMessage WorkerInitialized = 7;
+		optional QueryIntersectionsMessage QueryIntersections = 8;
+		optional MoveQueryVerticesMessage MoveQueryVertices = 9;
 		
 		message AssignPartitionsMessage {	
 			repeated string PartitionFiles = 1;
@@ -59,5 +61,13 @@ message MessageEnvelope {
 		
 		message WorkerInitializedMessage {
 			optional int32 VertexCount = 1;
+		}
+		
+		message QueryIntersectionsMessage {
+			map<int32, int32> Intersections = 1;
+		}
+		
+		message MoveQueryVerticesMessage {
+			optional int32 MoveToMachine = 1;
 		}
 	}

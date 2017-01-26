@@ -1,12 +1,14 @@
 package mthesis.concurrent_graph.communication;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.protobuf.ByteString;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryIntersectionsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
@@ -82,22 +84,14 @@ public class ControlMessageBuildUtil {
 	}
 
 	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId, //SuperstepStats stats,
-			BaseQueryGlobalValues localQuery) {
-		//		final WorkerStatsMessage workerStats = WorkerStatsMessage.newBuilder()
-		//				.setSentVertexMessagesLocal(stats.SentVertexMessagesLocal)
-		//				.setSentVertexMessagesUnicast(stats.SentVertexMessagesUnicast)
-		//				.setSentVertexMessagesBroadcast(stats.SentVertexMessagesBroadcast)
-		//				.setSentVertexMessagesBuckets(stats.SentVertexMessagesBuckets)
-		//				.setReceivedCorrectVertexMessages(stats.ReceivedCorrectVertexMessages)
-		//				.setReceivedWrongVertexMessages(stats.ReceivedWrongVertexMessages)
-		//				.setNewVertexMachinesDiscovered(stats.NewVertexMachinesDiscovered)
-		//				.setTotalVertexMachinesDiscovered(stats.TotalVertexMachinesDiscovered).build();
+			BaseQueryGlobalValues localQuery, Map<Integer, Integer> queryIntersects) {
+		final QueryIntersectionsMessage intersectMsg = QueryIntersectionsMessage.newBuilder().putAllIntersections(queryIntersects).build();
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Superstep_Finished)
 						.setQueryValues(ByteString.copyFrom(localQuery.getBytes()))
 						.setSuperstepNo(superstepNo)
 						.setSrcMachine(srcMachineId)
-						//.setWorkerStats(workerStats)
+						.setQueryIntersections(intersectMsg)
 						.build())
 				.build();
 	}
