@@ -357,7 +357,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_av_steps.csv"))) {
 				for (Integer workerId : workerIds) {
-					sb.append(workerId.toString());
+					sb.append("Worker " + workerId);
 					sb.append(';');
 				}
 				writer.println(sb.toString());
@@ -365,7 +365,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 				for (Map<Integer, Q> step : querySteps.getValue()) {
 					for (Q stepMachine : step.values()) {
-						sb.append("Worker " + stepMachine);
+						sb.append(stepMachine.getActiveVertices());
 						sb.append(';');
 					}
 					writer.println(sb.toString());
@@ -446,13 +446,39 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				true);
 	}
 
+	/**
+	 * Let workers start next superstep of a query. Make decisions about vertices to move.
+	 */
 	private void startWorkersQueryNextSuperstep(Q query, int superstepNo) {
-		// TODO Evaluate intersections, decide if move vertices
+		// Evaluate intersections, decide if move vertices
 		Map<Integer, Integer> workerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
-		List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(workerActiveVerts).keySet());
 
-		for (Integer worker : sortedWorkers) {
-			messaging.sendControlMessageUnicast(worker,
+		// TODO Just a simple test: Move all other vertices to worker with most active vertices
+		List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(workerActiveVerts).keySet());
+		int receivingWorker = sortedWorkers.get(0);
+		List<Integer> sendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
+		List<Integer> notSendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
+		for (int i = 1; i < sortedWorkers.size(); i++) {
+			int workerId = sortedWorkers.get(i);
+			if (workerActiveVerts.get(workerId) > 0)
+				sendingWorkers.add(workerId);
+			else
+				notSendingWorkers.add(workerId);
+		}
+
+		System.out.println("/////");
+		System.out.println(workerActiveVerts);
+		System.out.println(
+				"receivingWorker " + receivingWorker + " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
+
+		messaging.sendControlMessageUnicast(receivingWorker,
+				ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertReceive(superstepNo, ownId, query, sendingWorkers), true);
+		for (Integer otherWorkerId : sendingWorkers) {
+			messaging.sendControlMessageUnicast(otherWorkerId,
+					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertSend(superstepNo, ownId, query, receivingWorker), true);
+		}
+		for (Integer otherWorkerId : notSendingWorkers) {
+			messaging.sendControlMessageUnicast(otherWorkerId,
 					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
 		}
 	}

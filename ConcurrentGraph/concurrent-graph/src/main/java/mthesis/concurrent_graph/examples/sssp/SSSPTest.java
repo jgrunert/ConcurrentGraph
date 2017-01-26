@@ -41,8 +41,8 @@ public class SSSPTest {
 		final List<WorkerMachine<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
 			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i))) workers
-			.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
-					new RoadNetVertexInputReader()));
+					.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
+							new RoadNetVertexInputReader()));
 		}
 
 		// Start query
@@ -57,24 +57,25 @@ public class SSSPTest {
 
 			int queryIndex = 0;
 
+			// Very short ST-HBF->ST-Airport. Ca 3.5s with time sysout. Test query "0"
+			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
+
+			// Very short Meersburg->Pfullendorf. Test query "1"
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
+
+			// Short Heidelberg->Heilbronn. Test query "2"
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
+
+			// Short Heidelberg->Heilbronn. Test query "3"
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
+
+
 			// Short RT->ST
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 
 			//			// Big query through BW, Ludwigshafen->Heilbronn
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2942985, 6663036));
-
-			// Very short ST-HBF->ST-Airport. Ca 3.5s with time sysout
-			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
-
-			//			// Very short Meersburg->Pfullendorf
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
-			//
-			//			// Short Heidelberg->Heilbronn
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
-			//
-			//			// Short Heidelberg->Heilbronn
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
 			//
 			//			// Short Mengen->Saulgau
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3080719, 609074));

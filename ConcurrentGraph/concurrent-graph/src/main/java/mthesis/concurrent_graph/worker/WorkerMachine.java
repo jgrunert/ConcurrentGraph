@@ -331,34 +331,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						break;
 
 					case Master_Query_Next_Superstep: {
-						Q query = deserializeQuery(message.getQueryValues());
-						WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(query.QueryId);
-						if (activeQuery == null) {
-							logger.error("Received Master_Next_Superstep for unknown query: " + message);
-							return;
-						}
-						if (message.getSuperstepNo() != activeQuery.getCalculatedSuperstepNo() + 1) {
-							logger.error("Received Master_Next_Superstep with wrong superstepNo: " + message.getSuperstepNo() + " at step "
-									+ activeQuery.getCalculatedSuperstepNo());
-							return;
-						}
-						synchronized (vertexInMessageLock) {
-							activeQuery.Query = query;
-							activeQuery.QueryLocal = globalValueFactory.createClone(query);
-							activeQuery.QueryLocal.Stats = new QueryStats();
-						}
-						activeQuery.masterConfirmedNextSuperstep();
-
-						synchronized (activeQuery.ChannelBarrierWaitSet) {
-							if (!activeQuery.ChannelBarrierPremature.isEmpty()) {
-								activeQuery.ChannelBarrierWaitSet.removeAll(activeQuery.ChannelBarrierPremature);
-								//								logger.warn("PREM " + activeQuery.Query.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + " " +
-								//										activeQuery.ChannelBarrierPremature + " " + activeQuery.ChannelBarrierWaitSet);
-							}
-							activeQuery.ChannelBarrierPremature.clear();
-						}
-						// We already received all barrier syncs from other workers, directly finish superstep
-						checkSuperstepBarrierFinished(activeQuery);
+						prepareNextSuperstep(message);
 					}
 						break;
 
@@ -422,6 +395,78 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			logger.error("exception at incomingControlMessage", e);
 		}
 	}
+
+	/**
+	 * Called after Master_Query_Next_Superstep message.
+	 * Prepare next superstep and start if already possible.
+	 */
+	private void prepareNextSuperstep(ControlMessage message) {
+		Q query = deserializeQuery(message.getQueryValues());
+		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(query.QueryId);
+
+		// Checks
+		if (activeQuery == null) {
+			logger.error("Received Master_Next_Superstep for unknown query: " + message);
+			return;
+		}
+		if (message.getSuperstepNo() != activeQuery.getCalculatedSuperstepNo() + 1) {
+			logger.error("Received Master_Next_Superstep with wrong superstepNo: " + message.getSuperstepNo() + " at step "
+					+ activeQuery.getCalculatedSuperstepNo());
+			return;
+		}
+
+		// Start new superstep query values
+		synchronized (vertexInMessageLock) {
+			activeQuery.Query = query;
+			activeQuery.QueryLocal = globalValueFactory.createClone(query);
+			activeQuery.QueryLocal.Stats = new QueryStats();
+		}
+
+		// Handle vertex moving if master tells us to do so
+		if (message.hasSendQueryVertices()) {
+			// Send query vertices to other worker
+			int sendTo = message.getSendQueryVertices().getSendToMachine();
+			System.out.println(ownId + " send to " + sendTo);
+			sendQueryVerticesIfNoIntersect(activeQuery, sendTo);
+		}
+		if (message.hasReceiveQueryVertices()) {
+			List<Integer> recvFrom = message.getReceiveQueryVertices().getRecvFromMachineList();
+			if (!recvFrom.isEmpty()) {
+				// Wait for receiving vertices from other worker
+				System.out.println(ownId + " recv from " + recvFrom);
+			}
+		}
+
+		startNextSuperstep(query, activeQuery);
+	}
+
+	/**
+	 * Called as soon as a query is ready for compute.
+	 * After Master_Query_Next_Superstep and received/sent vertices.
+	 */
+	private void startNextSuperstep(Q query, WorkerQuery<V, E, M, Q> activeQuery) {
+		// Mark query as ready for compute superstep
+		activeQuery.startNextSuperstep();
+
+		// Start new barrier sync
+		synchronized (activeQuery.ChannelBarrierWaitSet) {
+			if (!activeQuery.ChannelBarrierPremature.isEmpty()) {
+				activeQuery.ChannelBarrierWaitSet.removeAll(activeQuery.ChannelBarrierPremature);
+			}
+			activeQuery.ChannelBarrierPremature.clear();
+		}
+		// Check if we already received all barrier syncs from other workers, directly finish superstep
+		checkSuperstepBarrierFinished(activeQuery);
+	}
+
+	/**
+	 * Sends all active vertices of a query if they are only active at this query.
+	 * Used for incremental vertex migration.
+	 */
+	private void sendQueryVerticesIfNoIntersect(WorkerQuery<V, E, M, Q> query, int sendToWorker) {
+
+	}
+
 
 	/**
 	 * Called to check if superstep barrier syncs received and finishes superstep barrier if possible.

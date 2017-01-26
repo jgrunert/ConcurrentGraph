@@ -24,8 +24,8 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	private int calculatedSuperstepNo = -1;
 	// Last superstep when finished barrier sync
 	private int barrierFinishedSuperstepNo = -1;
-	// Superstep to start confirmed by master, >= CalculatedSuperstepNo
-	private int masterSuperstepNo = 0;
+	// Superstep to start, confirmed by master and ready. Is >= CalculatedSuperstepNo
+	private int startedSuperstepNo = 0;
 
 	public Set<Integer> ChannelBarrierWaitSet = new HashSet<>();
 	// Channgel barriers received for next superstep
@@ -59,8 +59,8 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 		barrierFinishedSuperstepNo++;
 	}
 
-	public void masterConfirmedNextSuperstep() {
-		masterSuperstepNo++;
+	public void startNextSuperstep() {
+		startedSuperstepNo++;
 	}
 
 
@@ -73,6 +73,6 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	}
 
 	public int getMasterSuperstepNo() {
-		return masterSuperstepNo;
+		return startedSuperstepNo;
 	}
 }
