@@ -927,17 +927,30 @@ public final class Messages {
     mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryIntersectionsMessageOrBuilder getQueryIntersectionsOrBuilder();
 
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    boolean hasMoveQueryVertices();
+    boolean hasSendQueryVertices();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getMoveQueryVertices();
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getSendQueryVertices();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getMoveQueryVerticesOrBuilder();
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder();
+
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     */
+    boolean hasReceiveQueryVertices();
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     */
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getReceiveQueryVertices();
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     */
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder();
   }
   /**
    * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage}
@@ -1066,14 +1079,27 @@ public final class Messages {
             case 74: {
               mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder subBuilder = null;
               if (((bitField0_ & 0x00000100) == 0x00000100)) {
-                subBuilder = moveQueryVertices_.toBuilder();
+                subBuilder = sendQueryVertices_.toBuilder();
               }
-              moveQueryVertices_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.PARSER, extensionRegistry);
+              sendQueryVertices_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(moveQueryVertices_);
-                moveQueryVertices_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(sendQueryVertices_);
+                sendQueryVertices_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000100;
+              break;
+            }
+            case 82: {
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000200) == 0x00000200)) {
+                subBuilder = receiveQueryVertices_.toBuilder();
+              }
+              receiveQueryVertices_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(receiveQueryVertices_);
+                receiveQueryVertices_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000200;
               break;
             }
           }
@@ -3379,10 +3405,9 @@ public final class Messages {
                   mutable_bitField0_ |= 0x00000001;
                 }
                 com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-                intersections__ = input.readMessage(
+                intersections = input.readMessage(
                     IntersectionsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-                intersections_.getMutableMap().put(
-                    intersections__.getKey(), intersections__.getValue());
+                intersections_.getMutableMap().put(intersections.getKey(), intersections.getValue());
                 break;
               }
             }
@@ -3508,12 +3533,15 @@ public final class Messages {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        com.google.protobuf.GeneratedMessageV3
-          .serializeIntegerMapTo(
-            output,
-            internalGetIntersections(),
-            IntersectionsDefaultEntryHolder.defaultEntry,
-            1);
+        for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
+             : internalGetIntersections().getMap().entrySet()) {
+          com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
+          intersections = IntersectionsDefaultEntryHolder.defaultEntry.newBuilderForType()
+              .setKey(entry.getKey())
+              .setValue(entry.getValue())
+              .build();
+          output.writeMessage(1, intersections);
+        }
         unknownFields.writeTo(output);
       }
 
@@ -3525,12 +3553,12 @@ public final class Messages {
         for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
              : internalGetIntersections().getMap().entrySet()) {
           com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-          intersections__ = IntersectionsDefaultEntryHolder.defaultEntry.newBuilderForType()
+          intersections = IntersectionsDefaultEntryHolder.defaultEntry.newBuilderForType()
               .setKey(entry.getKey())
               .setValue(entry.getValue())
               .build();
           size += com.google.protobuf.CodedOutputStream
-              .computeMessageSize(1, intersections__);
+              .computeMessageSize(1, intersections);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -4582,25 +4610,46 @@ public final class Messages {
       return queryIntersections_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryIntersectionsMessage.getDefaultInstance() : queryIntersections_;
     }
 
-    public static final int MOVEQUERYVERTICES_FIELD_NUMBER = 9;
-    private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage moveQueryVertices_;
+    public static final int SENDQUERYVERTICES_FIELD_NUMBER = 9;
+    private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage sendQueryVertices_;
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    public boolean hasMoveQueryVertices() {
+    public boolean hasSendQueryVertices() {
       return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getMoveQueryVertices() {
-      return moveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : moveQueryVertices_;
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getSendQueryVertices() {
+      return sendQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getMoveQueryVerticesOrBuilder() {
-      return moveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : moveQueryVertices_;
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder() {
+      return sendQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
+    }
+
+    public static final int RECEIVEQUERYVERTICES_FIELD_NUMBER = 10;
+    private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage receiveQueryVertices_;
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     */
+    public boolean hasReceiveQueryVertices() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     */
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getReceiveQueryVertices() {
+      return receiveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
+    }
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     */
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder() {
+      return receiveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -4640,7 +4689,10 @@ public final class Messages {
         output.writeMessage(8, getQueryIntersections());
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
-        output.writeMessage(9, getMoveQueryVertices());
+        output.writeMessage(9, getSendQueryVertices());
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeMessage(10, getReceiveQueryVertices());
       }
       unknownFields.writeTo(output);
     }
@@ -4684,7 +4736,11 @@ public final class Messages {
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(9, getMoveQueryVertices());
+          .computeMessageSize(9, getSendQueryVertices());
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10, getReceiveQueryVertices());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -4742,10 +4798,15 @@ public final class Messages {
         result = result && getQueryIntersections()
             .equals(other.getQueryIntersections());
       }
-      result = result && (hasMoveQueryVertices() == other.hasMoveQueryVertices());
-      if (hasMoveQueryVertices()) {
-        result = result && getMoveQueryVertices()
-            .equals(other.getMoveQueryVertices());
+      result = result && (hasSendQueryVertices() == other.hasSendQueryVertices());
+      if (hasSendQueryVertices()) {
+        result = result && getSendQueryVertices()
+            .equals(other.getSendQueryVertices());
+      }
+      result = result && (hasReceiveQueryVertices() == other.hasReceiveQueryVertices());
+      if (hasReceiveQueryVertices()) {
+        result = result && getReceiveQueryVertices()
+            .equals(other.getReceiveQueryVertices());
       }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
@@ -4790,9 +4851,13 @@ public final class Messages {
         hash = (37 * hash) + QUERYINTERSECTIONS_FIELD_NUMBER;
         hash = (53 * hash) + getQueryIntersections().hashCode();
       }
-      if (hasMoveQueryVertices()) {
-        hash = (37 * hash) + MOVEQUERYVERTICES_FIELD_NUMBER;
-        hash = (53 * hash) + getMoveQueryVertices().hashCode();
+      if (hasSendQueryVertices()) {
+        hash = (37 * hash) + SENDQUERYVERTICES_FIELD_NUMBER;
+        hash = (53 * hash) + getSendQueryVertices().hashCode();
+      }
+      if (hasReceiveQueryVertices()) {
+        hash = (37 * hash) + RECEIVEQUERYVERTICES_FIELD_NUMBER;
+        hash = (53 * hash) + getReceiveQueryVertices().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -4912,7 +4977,8 @@ public final class Messages {
           getAssignPartitionsFieldBuilder();
           getWorkerInitializedFieldBuilder();
           getQueryIntersectionsFieldBuilder();
-          getMoveQueryVerticesFieldBuilder();
+          getSendQueryVerticesFieldBuilder();
+          getReceiveQueryVerticesFieldBuilder();
         }
       }
       public Builder clear() {
@@ -4949,12 +5015,18 @@ public final class Messages {
           queryIntersectionsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000080);
-        if (moveQueryVerticesBuilder_ == null) {
-          moveQueryVertices_ = null;
+        if (sendQueryVerticesBuilder_ == null) {
+          sendQueryVertices_ = null;
         } else {
-          moveQueryVerticesBuilder_.clear();
+          sendQueryVerticesBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000100);
+        if (receiveQueryVerticesBuilder_ == null) {
+          receiveQueryVertices_ = null;
+        } else {
+          receiveQueryVerticesBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000200);
         return this;
       }
 
@@ -5030,10 +5102,18 @@ public final class Messages {
         if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
           to_bitField0_ |= 0x00000100;
         }
-        if (moveQueryVerticesBuilder_ == null) {
-          result.moveQueryVertices_ = moveQueryVertices_;
+        if (sendQueryVerticesBuilder_ == null) {
+          result.sendQueryVertices_ = sendQueryVertices_;
         } else {
-          result.moveQueryVertices_ = moveQueryVerticesBuilder_.build();
+          result.sendQueryVertices_ = sendQueryVerticesBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        if (receiveQueryVerticesBuilder_ == null) {
+          result.receiveQueryVertices_ = receiveQueryVertices_;
+        } else {
+          result.receiveQueryVertices_ = receiveQueryVerticesBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -5101,8 +5181,11 @@ public final class Messages {
         if (other.hasQueryIntersections()) {
           mergeQueryIntersections(other.getQueryIntersections());
         }
-        if (other.hasMoveQueryVertices()) {
-          mergeMoveQueryVertices(other.getMoveQueryVertices());
+        if (other.hasSendQueryVertices()) {
+          mergeSendQueryVertices(other.getSendQueryVertices());
+        }
+        if (other.hasReceiveQueryVertices()) {
+          mergeReceiveQueryVertices(other.getReceiveQueryVertices());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -5739,122 +5822,240 @@ public final class Messages {
         return queryIntersectionsBuilder_;
       }
 
-      private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage moveQueryVertices_ = null;
+      private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage sendQueryVertices_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder> moveQueryVerticesBuilder_;
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder> sendQueryVerticesBuilder_;
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public boolean hasMoveQueryVertices() {
+      public boolean hasSendQueryVertices() {
         return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getMoveQueryVertices() {
-        if (moveQueryVerticesBuilder_ == null) {
-          return moveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : moveQueryVertices_;
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getSendQueryVertices() {
+        if (sendQueryVerticesBuilder_ == null) {
+          return sendQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
         } else {
-          return moveQueryVerticesBuilder_.getMessage();
+          return sendQueryVerticesBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public Builder setMoveQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
-        if (moveQueryVerticesBuilder_ == null) {
+      public Builder setSendQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
+        if (sendQueryVerticesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          moveQueryVertices_ = value;
+          sendQueryVertices_ = value;
           onChanged();
         } else {
-          moveQueryVerticesBuilder_.setMessage(value);
+          sendQueryVerticesBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000100;
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public Builder setMoveQueryVertices(
+      public Builder setSendQueryVertices(
           mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder builderForValue) {
-        if (moveQueryVerticesBuilder_ == null) {
-          moveQueryVertices_ = builderForValue.build();
+        if (sendQueryVerticesBuilder_ == null) {
+          sendQueryVertices_ = builderForValue.build();
           onChanged();
         } else {
-          moveQueryVerticesBuilder_.setMessage(builderForValue.build());
+          sendQueryVerticesBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000100;
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public Builder mergeMoveQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
-        if (moveQueryVerticesBuilder_ == null) {
+      public Builder mergeSendQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
+        if (sendQueryVerticesBuilder_ == null) {
           if (((bitField0_ & 0x00000100) == 0x00000100) &&
-              moveQueryVertices_ != null &&
-              moveQueryVertices_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance()) {
-            moveQueryVertices_ =
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.newBuilder(moveQueryVertices_).mergeFrom(value).buildPartial();
+              sendQueryVertices_ != null &&
+              sendQueryVertices_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance()) {
+            sendQueryVertices_ =
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.newBuilder(sendQueryVertices_).mergeFrom(value).buildPartial();
           } else {
-            moveQueryVertices_ = value;
+            sendQueryVertices_ = value;
           }
           onChanged();
         } else {
-          moveQueryVerticesBuilder_.mergeFrom(value);
+          sendQueryVerticesBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000100;
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public Builder clearMoveQueryVertices() {
-        if (moveQueryVerticesBuilder_ == null) {
-          moveQueryVertices_ = null;
+      public Builder clearSendQueryVertices() {
+        if (sendQueryVerticesBuilder_ == null) {
+          sendQueryVertices_ = null;
           onChanged();
         } else {
-          moveQueryVerticesBuilder_.clear();
+          sendQueryVerticesBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder getMoveQueryVerticesBuilder() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder getSendQueryVerticesBuilder() {
         bitField0_ |= 0x00000100;
         onChanged();
-        return getMoveQueryVerticesFieldBuilder().getBuilder();
+        return getSendQueryVerticesFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getMoveQueryVerticesOrBuilder() {
-        if (moveQueryVerticesBuilder_ != null) {
-          return moveQueryVerticesBuilder_.getMessageOrBuilder();
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder() {
+        if (sendQueryVerticesBuilder_ != null) {
+          return sendQueryVerticesBuilder_.getMessageOrBuilder();
         } else {
-          return moveQueryVertices_ == null ?
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : moveQueryVertices_;
+          return sendQueryVertices_ == null ?
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage MoveQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder> 
-          getMoveQueryVerticesFieldBuilder() {
-        if (moveQueryVerticesBuilder_ == null) {
-          moveQueryVerticesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+          getSendQueryVerticesFieldBuilder() {
+        if (sendQueryVerticesBuilder_ == null) {
+          sendQueryVerticesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder>(
-                  getMoveQueryVertices(),
+                  getSendQueryVertices(),
                   getParentForChildren(),
                   isClean());
-          moveQueryVertices_ = null;
+          sendQueryVertices_ = null;
         }
-        return moveQueryVerticesBuilder_;
+        return sendQueryVerticesBuilder_;
+      }
+
+      private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage receiveQueryVertices_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder> receiveQueryVerticesBuilder_;
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       */
+      public boolean hasReceiveQueryVertices() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       */
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getReceiveQueryVertices() {
+        if (receiveQueryVerticesBuilder_ == null) {
+          return receiveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
+        } else {
+          return receiveQueryVerticesBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       */
+      public Builder setReceiveQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
+        if (receiveQueryVerticesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          receiveQueryVertices_ = value;
+          onChanged();
+        } else {
+          receiveQueryVerticesBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       */
+      public Builder setReceiveQueryVertices(
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder builderForValue) {
+        if (receiveQueryVerticesBuilder_ == null) {
+          receiveQueryVertices_ = builderForValue.build();
+          onChanged();
+        } else {
+          receiveQueryVerticesBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       */
+      public Builder mergeReceiveQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
+        if (receiveQueryVerticesBuilder_ == null) {
+          if (((bitField0_ & 0x00000200) == 0x00000200) &&
+              receiveQueryVertices_ != null &&
+              receiveQueryVertices_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance()) {
+            receiveQueryVertices_ =
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.newBuilder(receiveQueryVertices_).mergeFrom(value).buildPartial();
+          } else {
+            receiveQueryVertices_ = value;
+          }
+          onChanged();
+        } else {
+          receiveQueryVerticesBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       */
+      public Builder clearReceiveQueryVertices() {
+        if (receiveQueryVerticesBuilder_ == null) {
+          receiveQueryVertices_ = null;
+          onChanged();
+        } else {
+          receiveQueryVerticesBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000200);
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       */
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder getReceiveQueryVerticesBuilder() {
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return getReceiveQueryVerticesFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       */
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder() {
+        if (receiveQueryVerticesBuilder_ != null) {
+          return receiveQueryVerticesBuilder_.getMessageOrBuilder();
+        } else {
+          return receiveQueryVertices_ == null ?
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
+        }
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder> 
+          getReceiveQueryVerticesFieldBuilder() {
+        if (receiveQueryVerticesBuilder_ == null) {
+          receiveQueryVerticesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder>(
+                  getReceiveQueryVertices(),
+                  getParentForChildren(),
+                  isClean());
+          receiveQueryVertices_ = null;
+        }
+        return receiveQueryVerticesBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -5958,7 +6159,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\247\013\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\237\014\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022g\n\013" +
@@ -5973,34 +6174,37 @@ public final class Messages {
       "olMessage.WorkerInitializedMessage\022u\n\022Qu" +
       "eryIntersections\030\010 \001(\0132Y.mthesis.concurr" +
       "ent_graph.communication.messages.Control" +
-      "Message.QueryIntersectionsMessage\022s\n\021Mov",
-      "eQueryVertices\030\t \001(\0132X.mthesis.concurren" +
+      "Message.QueryIntersectionsMessage\022s\n\021Sen",
+      "dQueryVertices\030\t \001(\0132X.mthesis.concurren" +
+      "t_graph.communication.messages.ControlMe" +
+      "ssage.MoveQueryVerticesMessage\022v\n\024Receiv" +
+      "eQueryVertices\030\n \001(\0132X.mthesis.concurren" +
       "t_graph.communication.messages.ControlMe" +
       "ssage.MoveQueryVerticesMessage\0321\n\027Assign" +
       "PartitionsMessage\022\026\n\016PartitionFiles\030\001 \003(" +
       "\t\032\325\002\n\022WorkerStatsMessage\022\033\n\023SentControlM" +
       "essages\030\002 \001(\005\022\037\n\027SentVertexMessagesLocal" +
-      "\030\003 \001(\005\022!\n\031SentVertexMessagesUnicast\030\004 \001(" +
+      "\030\003 \001(\005\022!\n\031SentVertexMessagesUnicast\030\004 \001(",
       "\005\022#\n\033SentVertexMessagesBroadcast\030\005 \001(\005\022!" +
       "\n\031SentVertexMessagesBuckets\030\013 \001(\005\022%\n\035Rec" +
-      "eivedCorrectVertexMessages\030\006 \001(\005\022#\n\033Rece",
+      "eivedCorrectVertexMessages\030\006 \001(\005\022#\n\033Rece" +
       "ivedWrongVertexMessages\030\007 \001(\005\022#\n\033NewVert" +
       "exMachinesDiscovered\030\010 \001(\005\022%\n\035TotalVerte" +
       "xMachinesDiscovered\030\t \001(\005\032/\n\030WorkerIniti" +
       "alizedMessage\022\023\n\013VertexCount\030\001 \001(\005\032\327\001\n\031Q" +
       "ueryIntersectionsMessage\022\203\001\n\rIntersectio" +
       "ns\030\001 \003(\0132l.mthesis.concurrent_graph.comm" +
-      "unication.messages.ControlMessage.QueryI" +
+      "unication.messages.ControlMessage.QueryI",
       "ntersectionsMessage.IntersectionsEntry\0324" +
       "\n\022IntersectionsEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005val" +
-      "ue\030\002 \001(\005:\0028\001\0321\n\030MoveQueryVerticesMessage",
+      "ue\030\002 \001(\005:\0028\001\0321\n\030MoveQueryVerticesMessage" +
       "\022\025\n\rMoveToMachine\030\001 \001(\005*\256\002\n\022ControlMessa" +
       "geType\022\025\n\021Channel_Handshake\020\001\022\026\n\022Worker_" +
       "Initialized\020\002\022\"\n\036Worker_Query_Superstep_" +
       "Barrier\020\003\022#\n\037Worker_Query_Superstep_Fini" +
       "shed\020\004\022\031\n\025Worker_Query_Finished\020\005\022\034\n\030Mas" +
       "ter_Worker_Initialize\020\006\022\026\n\022Master_Query_" +
-      "Start\020\007\022\037\n\033Master_Query_Next_Superstep\020\010" +
+      "Start\020\007\022\037\n\033Master_Query_Next_Superstep\020\010",
       "\022\031\n\025Master_Query_Finished\020\t\022\023\n\017Master_Sh" +
       "utdown\020\nB2\n&mthesis.concurrent_graph.com" +
       "municationB\010Messages"
@@ -6028,7 +6232,7 @@ public final class Messages {
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor,
-        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "WorkerStats", "AssignPartitions", "QueryValues", "WorkerInitialized", "QueryIntersections", "MoveQueryVertices", });
+        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "WorkerStats", "AssignPartitions", "QueryValues", "WorkerInitialized", "QueryIntersections", "SendQueryVertices", "ReceiveQueryVertices", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(0);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_fieldAccessorTable = new

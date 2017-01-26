@@ -42,7 +42,34 @@ public class ControlMessageBuildUtil {
 				.build();
 	}
 
-	public static MessageEnvelope Build_Master_QueryNextSuperstep(int superstepNo, int srcMachineId, BaseQueryGlobalValues query) {
+
+	// Normal next superstep message, no vertex transfer
+	public static MessageEnvelope Build_Master_QueryNextSuperstep_NoVertMove(int superstepNo, int srcMachineId, BaseQueryGlobalValues query) {
+		return MessageEnvelope.newBuilder()
+				.setControlMessage(ControlMessage.newBuilder()
+						.setType(ControlMessageType.Master_Query_Next_Superstep)
+						.setQueryValues(ByteString.copyFrom(query.getBytes()))
+						.setSuperstepNo(superstepNo)
+						.setSrcMachine(srcMachineId).setQueryValues(ByteString.copyFrom(query.getBytes())).build())
+				.build();
+	}
+
+	// Transfer Vertices: Send to other worker
+	public static MessageEnvelope Build_Master_QueryNextSuperstep_VertSend(int superstepNo, int srcMachineId, BaseQueryGlobalValues query,
+			int sendTo) {
+		SendQueryVerticesMessage sendVertMsg;
+		return MessageEnvelope.newBuilder()
+				.setControlMessage(ControlMessage.newBuilder()
+						.setType(ControlMessageType.Master_Query_Next_Superstep)
+						.setQueryValues(ByteString.copyFrom(query.getBytes()))
+						.setSuperstepNo(superstepNo)
+						.setSrcMachine(srcMachineId).setQueryValues(ByteString.copyFrom(query.getBytes())).build())
+				.build();
+	}
+
+	// Transfer vertices: Receive vertices from one ore more workers before next superstep
+	public static MessageEnvelope Build_Master_QueryNextSuperstep_VertReceive(int superstepNo, int srcMachineId, BaseQueryGlobalValues query,
+			int[] receiveFrom) {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
 						.setType(ControlMessageType.Master_Query_Next_Superstep)

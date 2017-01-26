@@ -438,10 +438,12 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private void startWorkersQueryNextSuperstep(Q query, int superstepNo) {
 		// TODO Evaluate intersections, decide if move vertices
 		Map<Integer, Integer> workerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
-		workerActiveVerts = MiscUtil.sortByValueInverse(workerActiveVerts);
+		List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(workerActiveVerts).values());
 
-		messaging.sendControlMessageMulticast(workerIds,
-				ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(superstepNo, ownId, query), true);
+		for (Integer worker : sortedWorkers) {
+			messaging.sendControlMessageUnicast(worker,
+					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(superstepNo, ownId, query), true);
+		}
 	}
 
 	private void signalWorkersQueryFinish(Q query) {
