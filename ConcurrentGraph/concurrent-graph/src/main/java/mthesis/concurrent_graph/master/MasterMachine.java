@@ -256,7 +256,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					// Wrong message count should match broadcast message count, therwise there might be communication errors.
 					if (workerIds.size() > 1
 							&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
-							/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
+									/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
 						// TODO Investigate why happening
 						//						logger.warn(String.format(
 						//								"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
@@ -356,6 +356,13 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		for (Entry<Integer, List<SortedMap<Integer, Q>>> querySteps : queryStatsStepMachines.entrySet()) {
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_av_steps.csv"))) {
+				for (Integer workerId : workerIds) {
+					sb.append(workerId);
+					sb.append(';');
+				}
+				writer.println(sb.toString());
+				sb.setLength(0);
+
 				for (Map<Integer, Q> step : querySteps.getValue()) {
 					for (Q stepMachine : step.values()) {
 						sb.append(stepMachine.getActiveVertices());
@@ -374,6 +381,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		for (Entry<Integer, List<Q>> querySteps : queryStatsSteps.entrySet()) {
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_times_steps.csv"))) {
+				writer.println("ComputeTime;StepFinishTime;IntersectCalcTime;TotalTime;");
+
 				for (int i = 0; i < querySteps.getValue().size(); i++) {
 					Q step = querySteps.getValue().get(i);
 					sb.append(queryStatsStepTimes.get(querySteps.getKey()).get(i));
@@ -383,6 +392,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					sb.append(step.Stats.StepFinishTime);
 					sb.append(';');
 					sb.append(step.Stats.IntersectCalcTime);
+					sb.append(';');
+					sb.append(step.Stats.ComputeTime + step.Stats.IntersectCalcTime + step.Stats.IntersectCalcTime);
 					sb.append(';');
 					writer.println(sb.toString());
 					sb.setLength(0);
@@ -438,11 +449,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private void startWorkersQueryNextSuperstep(Q query, int superstepNo) {
 		// TODO Evaluate intersections, decide if move vertices
 		Map<Integer, Integer> workerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
-		List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(workerActiveVerts).values());
+		List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(workerActiveVerts).keySet());
 
 		for (Integer worker : sortedWorkers) {
 			messaging.sendControlMessageUnicast(worker,
-					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(superstepNo, ownId, query), true);
+					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
 		}
 	}
 

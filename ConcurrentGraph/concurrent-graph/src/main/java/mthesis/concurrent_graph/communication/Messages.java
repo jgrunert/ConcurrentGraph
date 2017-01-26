@@ -927,30 +927,30 @@ public final class Messages {
     mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryIntersectionsMessageOrBuilder getQueryIntersectionsOrBuilder();
 
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
      */
     boolean hasSendQueryVertices();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getSendQueryVertices();
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage getSendQueryVertices();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder();
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder();
 
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
      */
     boolean hasReceiveQueryVertices();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getReceiveQueryVertices();
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage getReceiveQueryVertices();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder();
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder();
   }
   /**
    * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage}
@@ -1077,11 +1077,11 @@ public final class Messages {
               break;
             }
             case 74: {
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder subBuilder = null;
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.Builder subBuilder = null;
               if (((bitField0_ & 0x00000100) == 0x00000100)) {
                 subBuilder = sendQueryVertices_.toBuilder();
               }
-              sendQueryVertices_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.PARSER, extensionRegistry);
+              sendQueryVertices_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.PARSER, extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(sendQueryVertices_);
                 sendQueryVertices_ = subBuilder.buildPartial();
@@ -1090,11 +1090,11 @@ public final class Messages {
               break;
             }
             case 82: {
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder subBuilder = null;
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.Builder subBuilder = null;
               if (((bitField0_ & 0x00000200) == 0x00000200)) {
                 subBuilder = receiveQueryVertices_.toBuilder();
               }
-              receiveQueryVertices_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.PARSER, extensionRegistry);
+              receiveQueryVertices_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.PARSER, extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(receiveQueryVertices_);
                 receiveQueryVertices_ = subBuilder.buildPartial();
@@ -3405,9 +3405,10 @@ public final class Messages {
                   mutable_bitField0_ |= 0x00000001;
                 }
                 com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-                intersections = input.readMessage(
+                intersections__ = input.readMessage(
                     IntersectionsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-                intersections_.getMutableMap().put(intersections.getKey(), intersections.getValue());
+                intersections_.getMutableMap().put(
+                    intersections__.getKey(), intersections__.getValue());
                 break;
               }
             }
@@ -3533,15 +3534,12 @@ public final class Messages {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
-             : internalGetIntersections().getMap().entrySet()) {
-          com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-          intersections = IntersectionsDefaultEntryHolder.defaultEntry.newBuilderForType()
-              .setKey(entry.getKey())
-              .setValue(entry.getValue())
-              .build();
-          output.writeMessage(1, intersections);
-        }
+        com.google.protobuf.GeneratedMessageV3
+          .serializeIntegerMapTo(
+            output,
+            internalGetIntersections(),
+            IntersectionsDefaultEntryHolder.defaultEntry,
+            1);
         unknownFields.writeTo(output);
       }
 
@@ -3553,12 +3551,12 @@ public final class Messages {
         for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
              : internalGetIntersections().getMap().entrySet()) {
           com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-          intersections = IntersectionsDefaultEntryHolder.defaultEntry.newBuilderForType()
+          intersections__ = IntersectionsDefaultEntryHolder.defaultEntry.newBuilderForType()
               .setKey(entry.getKey())
               .setValue(entry.getValue())
               .build();
           size += com.google.protobuf.CodedOutputStream
-              .computeMessageSize(1, intersections);
+              .computeMessageSize(1, intersections__);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -3998,32 +3996,32 @@ public final class Messages {
 
     }
 
-    public interface MoveQueryVerticesMessageOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage)
+    public interface SendQueryVerticesMessageOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage)
         com.google.protobuf.MessageOrBuilder {
 
       /**
-       * <code>optional int32 MoveToMachine = 1;</code>
+       * <code>optional int32 SendToMachine = 1;</code>
        */
-      boolean hasMoveToMachine();
+      boolean hasSendToMachine();
       /**
-       * <code>optional int32 MoveToMachine = 1;</code>
+       * <code>optional int32 SendToMachine = 1;</code>
        */
-      int getMoveToMachine();
+      int getSendToMachine();
     }
     /**
-     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage}
+     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage}
      */
-    public  static final class MoveQueryVerticesMessage extends
+    public  static final class SendQueryVerticesMessage extends
         com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage)
-        MoveQueryVerticesMessageOrBuilder {
-      // Use MoveQueryVerticesMessage.newBuilder() to construct.
-      private MoveQueryVerticesMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        // @@protoc_insertion_point(message_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage)
+        SendQueryVerticesMessageOrBuilder {
+      // Use SendQueryVerticesMessage.newBuilder() to construct.
+      private SendQueryVerticesMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
       }
-      private MoveQueryVerticesMessage() {
-        moveToMachine_ = 0;
+      private SendQueryVerticesMessage() {
+        sendToMachine_ = 0;
       }
 
       @java.lang.Override
@@ -4031,7 +4029,7 @@ public final class Messages {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private MoveQueryVerticesMessage(
+      private SendQueryVerticesMessage(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
@@ -4056,7 +4054,7 @@ public final class Messages {
               }
               case 8: {
                 bitField0_ |= 0x00000001;
-                moveToMachine_ = input.readInt32();
+                sendToMachine_ = input.readInt32();
                 break;
               }
             }
@@ -4073,30 +4071,30 @@ public final class Messages {
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_descriptor;
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_fieldAccessorTable
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder.class);
+                mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.Builder.class);
       }
 
       private int bitField0_;
-      public static final int MOVETOMACHINE_FIELD_NUMBER = 1;
-      private int moveToMachine_;
+      public static final int SENDTOMACHINE_FIELD_NUMBER = 1;
+      private int sendToMachine_;
       /**
-       * <code>optional int32 MoveToMachine = 1;</code>
+       * <code>optional int32 SendToMachine = 1;</code>
        */
-      public boolean hasMoveToMachine() {
+      public boolean hasSendToMachine() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional int32 MoveToMachine = 1;</code>
+       * <code>optional int32 SendToMachine = 1;</code>
        */
-      public int getMoveToMachine() {
-        return moveToMachine_;
+      public int getSendToMachine() {
+        return sendToMachine_;
       }
 
       private byte memoizedIsInitialized = -1;
@@ -4112,7 +4110,7 @@ public final class Messages {
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
-          output.writeInt32(1, moveToMachine_);
+          output.writeInt32(1, sendToMachine_);
         }
         unknownFields.writeTo(output);
       }
@@ -4124,7 +4122,7 @@ public final class Messages {
         size = 0;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeInt32Size(1, moveToMachine_);
+            .computeInt32Size(1, sendToMachine_);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -4137,16 +4135,16 @@ public final class Messages {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage)) {
+        if (!(obj instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage)) {
           return super.equals(obj);
         }
-        mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage) obj;
+        mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage) obj;
 
         boolean result = true;
-        result = result && (hasMoveToMachine() == other.hasMoveToMachine());
-        if (hasMoveToMachine()) {
-          result = result && (getMoveToMachine()
-              == other.getMoveToMachine());
+        result = result && (hasSendToMachine() == other.hasSendToMachine());
+        if (hasSendToMachine()) {
+          result = result && (getSendToMachine()
+              == other.getSendToMachine());
         }
         result = result && unknownFields.equals(other.unknownFields);
         return result;
@@ -4159,67 +4157,67 @@ public final class Messages {
         }
         int hash = 41;
         hash = (19 * hash) + getDescriptorForType().hashCode();
-        if (hasMoveToMachine()) {
-          hash = (37 * hash) + MOVETOMACHINE_FIELD_NUMBER;
-          hash = (53 * hash) + getMoveToMachine();
+        if (hasSendToMachine()) {
+          hash = (37 * hash) + SENDTOMACHINE_FIELD_NUMBER;
+          hash = (53 * hash) + getSendToMachine();
         }
         hash = (29 * hash) + unknownFields.hashCode();
         memoizedHashCode = hash;
         return hash;
       }
 
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseFrom(
           com.google.protobuf.ByteString data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseFrom(
           com.google.protobuf.ByteString data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseFrom(byte[] data)
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseFrom(byte[] data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseFrom(
           byte[] data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseFrom(java.io.InputStream input)
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseFrom(java.io.InputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input, extensionRegistry);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseDelimitedFrom(java.io.InputStream input)
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseDelimitedFrom(java.io.InputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseDelimitedWithIOException(PARSER, input);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseDelimitedFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseDelimitedFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseFrom(
           com.google.protobuf.CodedInputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parseFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
@@ -4231,7 +4229,7 @@ public final class Messages {
       public static Builder newBuilder() {
         return DEFAULT_INSTANCE.toBuilder();
       }
-      public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage prototype) {
+      public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage prototype) {
         return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
       }
       public Builder toBuilder() {
@@ -4246,25 +4244,25 @@ public final class Messages {
         return builder;
       }
       /**
-       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage}
+       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage}
        */
       public static final class Builder extends
           com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-          // @@protoc_insertion_point(builder_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage)
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder {
+          // @@protoc_insertion_point(builder_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage)
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessageOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_descriptor;
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_descriptor;
         }
 
         protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_fieldAccessorTable
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
-                  mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder.class);
+                  mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.Builder.class);
         }
 
-        // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.newBuilder()
+        // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.newBuilder()
         private Builder() {
           maybeForceBuilderInitialization();
         }
@@ -4281,36 +4279,36 @@ public final class Messages {
         }
         public Builder clear() {
           super.clear();
-          moveToMachine_ = 0;
+          sendToMachine_ = 0;
           bitField0_ = (bitField0_ & ~0x00000001);
           return this;
         }
 
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_descriptor;
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_descriptor;
         }
 
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getDefaultInstanceForType() {
-          return mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance();
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage getDefaultInstanceForType() {
+          return mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.getDefaultInstance();
         }
 
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage build() {
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage result = buildPartial();
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage build() {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage result = buildPartial();
           if (!result.isInitialized()) {
             throw newUninitializedMessageException(result);
           }
           return result;
         }
 
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage buildPartial() {
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage(this);
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage buildPartial() {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage(this);
           int from_bitField0_ = bitField0_;
           int to_bitField0_ = 0;
           if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
             to_bitField0_ |= 0x00000001;
           }
-          result.moveToMachine_ = moveToMachine_;
+          result.sendToMachine_ = sendToMachine_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -4343,18 +4341,18 @@ public final class Messages {
           return (Builder) super.addRepeatedField(field, value);
         }
         public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage) {
-            return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage)other);
+          if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage) {
+            return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage)other);
           } else {
             super.mergeFrom(other);
             return this;
           }
         }
 
-        public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage other) {
-          if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance()) return this;
-          if (other.hasMoveToMachine()) {
-            setMoveToMachine(other.getMoveToMachine());
+        public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage other) {
+          if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.getDefaultInstance()) return this;
+          if (other.hasSendToMachine()) {
+            setSendToMachine(other.getSendToMachine());
           }
           this.mergeUnknownFields(other.unknownFields);
           onChanged();
@@ -4369,11 +4367,11 @@ public final class Messages {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage parsedMessage = null;
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage parsedMessage = null;
           try {
             parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage) e.getUnfinishedMessage();
+            parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
             if (parsedMessage != null) {
@@ -4384,34 +4382,34 @@ public final class Messages {
         }
         private int bitField0_;
 
-        private int moveToMachine_ ;
+        private int sendToMachine_ ;
         /**
-         * <code>optional int32 MoveToMachine = 1;</code>
+         * <code>optional int32 SendToMachine = 1;</code>
          */
-        public boolean hasMoveToMachine() {
+        public boolean hasSendToMachine() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>optional int32 MoveToMachine = 1;</code>
+         * <code>optional int32 SendToMachine = 1;</code>
          */
-        public int getMoveToMachine() {
-          return moveToMachine_;
+        public int getSendToMachine() {
+          return sendToMachine_;
         }
         /**
-         * <code>optional int32 MoveToMachine = 1;</code>
+         * <code>optional int32 SendToMachine = 1;</code>
          */
-        public Builder setMoveToMachine(int value) {
+        public Builder setSendToMachine(int value) {
           bitField0_ |= 0x00000001;
-          moveToMachine_ = value;
+          sendToMachine_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional int32 MoveToMachine = 1;</code>
+         * <code>optional int32 SendToMachine = 1;</code>
          */
-        public Builder clearMoveToMachine() {
+        public Builder clearSendToMachine() {
           bitField0_ = (bitField0_ & ~0x00000001);
-          moveToMachine_ = 0;
+          sendToMachine_ = 0;
           onChanged();
           return this;
         }
@@ -4426,39 +4424,576 @@ public final class Messages {
         }
 
 
-        // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage)
+        // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage)
       }
 
-      // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage)
-      private static final mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage DEFAULT_INSTANCE;
+      // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage)
+      private static final mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage DEFAULT_INSTANCE;
       static {
-        DEFAULT_INSTANCE = new mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage();
+        DEFAULT_INSTANCE = new mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage();
       }
 
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getDefaultInstance() {
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage getDefaultInstance() {
         return DEFAULT_INSTANCE;
       }
 
-      @java.lang.Deprecated public static final com.google.protobuf.Parser<MoveQueryVerticesMessage>
-          PARSER = new com.google.protobuf.AbstractParser<MoveQueryVerticesMessage>() {
-        public MoveQueryVerticesMessage parsePartialFrom(
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<SendQueryVerticesMessage>
+          PARSER = new com.google.protobuf.AbstractParser<SendQueryVerticesMessage>() {
+        public SendQueryVerticesMessage parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-            return new MoveQueryVerticesMessage(input, extensionRegistry);
+            return new SendQueryVerticesMessage(input, extensionRegistry);
         }
       };
 
-      public static com.google.protobuf.Parser<MoveQueryVerticesMessage> parser() {
+      public static com.google.protobuf.Parser<SendQueryVerticesMessage> parser() {
         return PARSER;
       }
 
       @java.lang.Override
-      public com.google.protobuf.Parser<MoveQueryVerticesMessage> getParserForType() {
+      public com.google.protobuf.Parser<SendQueryVerticesMessage> getParserForType() {
         return PARSER;
       }
 
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getDefaultInstanceForType() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
+    }
+
+    public interface ReceiveQueryVerticesMessageOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <code>repeated int32 RecvFromMachine = 1;</code>
+       */
+      java.util.List<java.lang.Integer> getRecvFromMachineList();
+      /**
+       * <code>repeated int32 RecvFromMachine = 1;</code>
+       */
+      int getRecvFromMachineCount();
+      /**
+       * <code>repeated int32 RecvFromMachine = 1;</code>
+       */
+      int getRecvFromMachine(int index);
+    }
+    /**
+     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage}
+     */
+    public  static final class ReceiveQueryVerticesMessage extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage)
+        ReceiveQueryVerticesMessageOrBuilder {
+      // Use ReceiveQueryVerticesMessage.newBuilder() to construct.
+      private ReceiveQueryVerticesMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private ReceiveQueryVerticesMessage() {
+        recvFromMachine_ = java.util.Collections.emptyList();
+      }
+
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+      getUnknownFields() {
+        return this.unknownFields;
+      }
+      private ReceiveQueryVerticesMessage(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        this();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 8: {
+                if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                  recvFromMachine_ = new java.util.ArrayList<java.lang.Integer>();
+                  mutable_bitField0_ |= 0x00000001;
+                }
+                recvFromMachine_.add(input.readInt32());
+                break;
+              }
+              case 10: {
+                int length = input.readRawVarint32();
+                int limit = input.pushLimit(length);
+                if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
+                  recvFromMachine_ = new java.util.ArrayList<java.lang.Integer>();
+                  mutable_bitField0_ |= 0x00000001;
+                }
+                while (input.getBytesUntilLimit() > 0) {
+                  recvFromMachine_.add(input.readInt32());
+                }
+                input.popLimit(limit);
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e).setUnfinishedMessage(this);
+        } finally {
+          if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+            recvFromMachine_ = java.util.Collections.unmodifiableList(recvFromMachine_);
+          }
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.Builder.class);
+      }
+
+      public static final int RECVFROMMACHINE_FIELD_NUMBER = 1;
+      private java.util.List<java.lang.Integer> recvFromMachine_;
+      /**
+       * <code>repeated int32 RecvFromMachine = 1;</code>
+       */
+      public java.util.List<java.lang.Integer>
+          getRecvFromMachineList() {
+        return recvFromMachine_;
+      }
+      /**
+       * <code>repeated int32 RecvFromMachine = 1;</code>
+       */
+      public int getRecvFromMachineCount() {
+        return recvFromMachine_.size();
+      }
+      /**
+       * <code>repeated int32 RecvFromMachine = 1;</code>
+       */
+      public int getRecvFromMachine(int index) {
+        return recvFromMachine_.get(index);
+      }
+
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        for (int i = 0; i < recvFromMachine_.size(); i++) {
+          output.writeInt32(1, recvFromMachine_.get(i));
+        }
+        unknownFields.writeTo(output);
+      }
+
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        {
+          int dataSize = 0;
+          for (int i = 0; i < recvFromMachine_.size(); i++) {
+            dataSize += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(recvFromMachine_.get(i));
+          }
+          size += dataSize;
+          size += 1 * getRecvFromMachineList().size();
+        }
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage)) {
+          return super.equals(obj);
+        }
+        mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage) obj;
+
+        boolean result = true;
+        result = result && getRecvFromMachineList()
+            .equals(other.getRecvFromMachineList());
+        result = result && unknownFields.equals(other.unknownFields);
+        return result;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptorForType().hashCode();
+        if (getRecvFromMachineCount() > 0) {
+          hash = (37 * hash) + RECVFROMMACHINE_FIELD_NUMBER;
+          hash = (53 * hash) + getRecvFromMachineList().hashCode();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage)
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessageOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.Builder.class);
+        }
+
+        // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
+          }
+        }
+        public Builder clear() {
+          super.clear();
+          recvFromMachine_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          return this;
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_descriptor;
+        }
+
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage getDefaultInstanceForType() {
+          return mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.getDefaultInstance();
+        }
+
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage build() {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage buildPartial() {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage(this);
+          int from_bitField0_ = bitField0_;
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            recvFromMachine_ = java.util.Collections.unmodifiableList(recvFromMachine_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.recvFromMachine_ = recvFromMachine_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder clone() {
+          return (Builder) super.clone();
+        }
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.setField(field, value);
+        }
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return (Builder) super.clearField(field);
+        }
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return (Builder) super.clearOneof(oneof);
+        }
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
+          return (Builder) super.setRepeatedField(field, index, value);
+        }
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.addRepeatedField(field, value);
+        }
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage) {
+            return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage other) {
+          if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.getDefaultInstance()) return this;
+          if (!other.recvFromMachine_.isEmpty()) {
+            if (recvFromMachine_.isEmpty()) {
+              recvFromMachine_ = other.recvFromMachine_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureRecvFromMachineIsMutable();
+              recvFromMachine_.addAll(other.recvFromMachine_);
+            }
+            onChanged();
+          }
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage) e.getUnfinishedMessage();
+            throw e.unwrapIOException();
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        private java.util.List<java.lang.Integer> recvFromMachine_ = java.util.Collections.emptyList();
+        private void ensureRecvFromMachineIsMutable() {
+          if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+            recvFromMachine_ = new java.util.ArrayList<java.lang.Integer>(recvFromMachine_);
+            bitField0_ |= 0x00000001;
+           }
+        }
+        /**
+         * <code>repeated int32 RecvFromMachine = 1;</code>
+         */
+        public java.util.List<java.lang.Integer>
+            getRecvFromMachineList() {
+          return java.util.Collections.unmodifiableList(recvFromMachine_);
+        }
+        /**
+         * <code>repeated int32 RecvFromMachine = 1;</code>
+         */
+        public int getRecvFromMachineCount() {
+          return recvFromMachine_.size();
+        }
+        /**
+         * <code>repeated int32 RecvFromMachine = 1;</code>
+         */
+        public int getRecvFromMachine(int index) {
+          return recvFromMachine_.get(index);
+        }
+        /**
+         * <code>repeated int32 RecvFromMachine = 1;</code>
+         */
+        public Builder setRecvFromMachine(
+            int index, int value) {
+          ensureRecvFromMachineIsMutable();
+          recvFromMachine_.set(index, value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated int32 RecvFromMachine = 1;</code>
+         */
+        public Builder addRecvFromMachine(int value) {
+          ensureRecvFromMachineIsMutable();
+          recvFromMachine_.add(value);
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated int32 RecvFromMachine = 1;</code>
+         */
+        public Builder addAllRecvFromMachine(
+            java.lang.Iterable<? extends java.lang.Integer> values) {
+          ensureRecvFromMachineIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, recvFromMachine_);
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>repeated int32 RecvFromMachine = 1;</code>
+         */
+        public Builder clearRecvFromMachine() {
+          recvFromMachine_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+          return this;
+        }
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage)
+      }
+
+      // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage)
+      private static final mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage();
+      }
+
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<ReceiveQueryVerticesMessage>
+          PARSER = new com.google.protobuf.AbstractParser<ReceiveQueryVerticesMessage>() {
+        public ReceiveQueryVerticesMessage parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new ReceiveQueryVerticesMessage(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<ReceiveQueryVerticesMessage> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<ReceiveQueryVerticesMessage> getParserForType() {
+        return PARSER;
+      }
+
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
       }
 
@@ -4611,45 +5146,45 @@ public final class Messages {
     }
 
     public static final int SENDQUERYVERTICES_FIELD_NUMBER = 9;
-    private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage sendQueryVertices_;
+    private mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage sendQueryVertices_;
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
      */
     public boolean hasSendQueryVertices() {
       return ((bitField0_ & 0x00000100) == 0x00000100);
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getSendQueryVertices() {
-      return sendQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage getSendQueryVertices() {
+      return sendQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder() {
-      return sendQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder() {
+      return sendQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
     }
 
     public static final int RECEIVEQUERYVERTICES_FIELD_NUMBER = 10;
-    private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage receiveQueryVertices_;
+    private mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage receiveQueryVertices_;
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
      */
     public boolean hasReceiveQueryVertices() {
       return ((bitField0_ & 0x00000200) == 0x00000200);
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getReceiveQueryVertices() {
-      return receiveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage getReceiveQueryVertices() {
+      return receiveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder() {
-      return receiveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder() {
+      return receiveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -5822,29 +6357,29 @@ public final class Messages {
         return queryIntersectionsBuilder_;
       }
 
-      private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage sendQueryVertices_ = null;
+      private mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage sendQueryVertices_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder> sendQueryVerticesBuilder_;
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessageOrBuilder> sendQueryVerticesBuilder_;
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
        */
       public boolean hasSendQueryVertices() {
         return ((bitField0_ & 0x00000100) == 0x00000100);
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getSendQueryVertices() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage getSendQueryVertices() {
         if (sendQueryVerticesBuilder_ == null) {
-          return sendQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
+          return sendQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
         } else {
           return sendQueryVerticesBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public Builder setSendQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
+      public Builder setSendQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage value) {
         if (sendQueryVerticesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5858,10 +6393,10 @@ public final class Messages {
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
        */
       public Builder setSendQueryVertices(
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder builderForValue) {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.Builder builderForValue) {
         if (sendQueryVerticesBuilder_ == null) {
           sendQueryVertices_ = builderForValue.build();
           onChanged();
@@ -5872,15 +6407,15 @@ public final class Messages {
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public Builder mergeSendQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
+      public Builder mergeSendQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage value) {
         if (sendQueryVerticesBuilder_ == null) {
           if (((bitField0_ & 0x00000100) == 0x00000100) &&
               sendQueryVertices_ != null &&
-              sendQueryVertices_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance()) {
+              sendQueryVertices_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.getDefaultInstance()) {
             sendQueryVertices_ =
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.newBuilder(sendQueryVertices_).mergeFrom(value).buildPartial();
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.newBuilder(sendQueryVertices_).mergeFrom(value).buildPartial();
           } else {
             sendQueryVertices_ = value;
           }
@@ -5892,7 +6427,7 @@ public final class Messages {
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
        */
       public Builder clearSendQueryVertices() {
         if (sendQueryVerticesBuilder_ == null) {
@@ -5905,33 +6440,33 @@ public final class Messages {
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder getSendQueryVerticesBuilder() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.Builder getSendQueryVerticesBuilder() {
         bitField0_ |= 0x00000100;
         onChanged();
         return getSendQueryVerticesFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder() {
         if (sendQueryVerticesBuilder_ != null) {
           return sendQueryVerticesBuilder_.getMessageOrBuilder();
         } else {
           return sendQueryVertices_ == null ?
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.getDefaultInstance() : sendQueryVertices_;
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage SendQueryVertices = 9;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.SendQueryVerticesMessage SendQueryVertices = 9;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder> 
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessageOrBuilder> 
           getSendQueryVerticesFieldBuilder() {
         if (sendQueryVerticesBuilder_ == null) {
           sendQueryVerticesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder>(
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessageOrBuilder>(
                   getSendQueryVertices(),
                   getParentForChildren(),
                   isClean());
@@ -5940,29 +6475,29 @@ public final class Messages {
         return sendQueryVerticesBuilder_;
       }
 
-      private mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage receiveQueryVertices_ = null;
+      private mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage receiveQueryVertices_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder> receiveQueryVerticesBuilder_;
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessageOrBuilder> receiveQueryVerticesBuilder_;
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
        */
       public boolean hasReceiveQueryVertices() {
         return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage getReceiveQueryVertices() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage getReceiveQueryVertices() {
         if (receiveQueryVerticesBuilder_ == null) {
-          return receiveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
+          return receiveQueryVertices_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
         } else {
           return receiveQueryVerticesBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
        */
-      public Builder setReceiveQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
+      public Builder setReceiveQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage value) {
         if (receiveQueryVerticesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5976,10 +6511,10 @@ public final class Messages {
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
        */
       public Builder setReceiveQueryVertices(
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder builderForValue) {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.Builder builderForValue) {
         if (receiveQueryVerticesBuilder_ == null) {
           receiveQueryVertices_ = builderForValue.build();
           onChanged();
@@ -5990,15 +6525,15 @@ public final class Messages {
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
        */
-      public Builder mergeReceiveQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage value) {
+      public Builder mergeReceiveQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage value) {
         if (receiveQueryVerticesBuilder_ == null) {
           if (((bitField0_ & 0x00000200) == 0x00000200) &&
               receiveQueryVertices_ != null &&
-              receiveQueryVertices_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance()) {
+              receiveQueryVertices_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.getDefaultInstance()) {
             receiveQueryVertices_ =
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.newBuilder(receiveQueryVertices_).mergeFrom(value).buildPartial();
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.newBuilder(receiveQueryVertices_).mergeFrom(value).buildPartial();
           } else {
             receiveQueryVertices_ = value;
           }
@@ -6010,7 +6545,7 @@ public final class Messages {
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
        */
       public Builder clearReceiveQueryVertices() {
         if (receiveQueryVerticesBuilder_ == null) {
@@ -6023,33 +6558,33 @@ public final class Messages {
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder getReceiveQueryVerticesBuilder() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.Builder getReceiveQueryVerticesBuilder() {
         bitField0_ |= 0x00000200;
         onChanged();
         return getReceiveQueryVerticesFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder() {
         if (receiveQueryVerticesBuilder_ != null) {
           return receiveQueryVerticesBuilder_.getMessageOrBuilder();
         } else {
           return receiveQueryVertices_ == null ?
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.getDefaultInstance() : receiveQueryVertices_;
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.MoveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder> 
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessageOrBuilder> 
           getReceiveQueryVerticesFieldBuilder() {
         if (receiveQueryVerticesBuilder_ == null) {
           receiveQueryVerticesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.MoveQueryVerticesMessageOrBuilder>(
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessageOrBuilder>(
                   getReceiveQueryVertices(),
                   getParentForChildren(),
                   isClean());
@@ -6142,10 +6677,15 @@ public final class Messages {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_QueryIntersectionsMessage_IntersectionsEntry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_descriptor;
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_fieldAccessorTable;
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -6159,7 +6699,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\237\014\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\332\014\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022g\n\013" +
@@ -6177,37 +6717,38 @@ public final class Messages {
       "Message.QueryIntersectionsMessage\022s\n\021Sen",
       "dQueryVertices\030\t \001(\0132X.mthesis.concurren" +
       "t_graph.communication.messages.ControlMe" +
-      "ssage.MoveQueryVerticesMessage\022v\n\024Receiv" +
-      "eQueryVertices\030\n \001(\0132X.mthesis.concurren" +
+      "ssage.SendQueryVerticesMessage\022y\n\024Receiv" +
+      "eQueryVertices\030\n \001(\0132[.mthesis.concurren" +
       "t_graph.communication.messages.ControlMe" +
-      "ssage.MoveQueryVerticesMessage\0321\n\027Assign" +
-      "PartitionsMessage\022\026\n\016PartitionFiles\030\001 \003(" +
-      "\t\032\325\002\n\022WorkerStatsMessage\022\033\n\023SentControlM" +
-      "essages\030\002 \001(\005\022\037\n\027SentVertexMessagesLocal" +
-      "\030\003 \001(\005\022!\n\031SentVertexMessagesUnicast\030\004 \001(",
-      "\005\022#\n\033SentVertexMessagesBroadcast\030\005 \001(\005\022!" +
-      "\n\031SentVertexMessagesBuckets\030\013 \001(\005\022%\n\035Rec" +
-      "eivedCorrectVertexMessages\030\006 \001(\005\022#\n\033Rece" +
-      "ivedWrongVertexMessages\030\007 \001(\005\022#\n\033NewVert" +
-      "exMachinesDiscovered\030\010 \001(\005\022%\n\035TotalVerte" +
-      "xMachinesDiscovered\030\t \001(\005\032/\n\030WorkerIniti" +
-      "alizedMessage\022\023\n\013VertexCount\030\001 \001(\005\032\327\001\n\031Q" +
-      "ueryIntersectionsMessage\022\203\001\n\rIntersectio" +
-      "ns\030\001 \003(\0132l.mthesis.concurrent_graph.comm" +
-      "unication.messages.ControlMessage.QueryI",
-      "ntersectionsMessage.IntersectionsEntry\0324" +
-      "\n\022IntersectionsEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005val" +
-      "ue\030\002 \001(\005:\0028\001\0321\n\030MoveQueryVerticesMessage" +
-      "\022\025\n\rMoveToMachine\030\001 \001(\005*\256\002\n\022ControlMessa" +
-      "geType\022\025\n\021Channel_Handshake\020\001\022\026\n\022Worker_" +
-      "Initialized\020\002\022\"\n\036Worker_Query_Superstep_" +
-      "Barrier\020\003\022#\n\037Worker_Query_Superstep_Fini" +
-      "shed\020\004\022\031\n\025Worker_Query_Finished\020\005\022\034\n\030Mas" +
-      "ter_Worker_Initialize\020\006\022\026\n\022Master_Query_" +
-      "Start\020\007\022\037\n\033Master_Query_Next_Superstep\020\010",
-      "\022\031\n\025Master_Query_Finished\020\t\022\023\n\017Master_Sh" +
-      "utdown\020\nB2\n&mthesis.concurrent_graph.com" +
-      "municationB\010Messages"
+      "ssage.ReceiveQueryVerticesMessage\0321\n\027Ass" +
+      "ignPartitionsMessage\022\026\n\016PartitionFiles\030\001" +
+      " \003(\t\032\325\002\n\022WorkerStatsMessage\022\033\n\023SentContr" +
+      "olMessages\030\002 \001(\005\022\037\n\027SentVertexMessagesLo" +
+      "cal\030\003 \001(\005\022!\n\031SentVertexMessagesUnicast\030\004",
+      " \001(\005\022#\n\033SentVertexMessagesBroadcast\030\005 \001(" +
+      "\005\022!\n\031SentVertexMessagesBuckets\030\013 \001(\005\022%\n\035" +
+      "ReceivedCorrectVertexMessages\030\006 \001(\005\022#\n\033R" +
+      "eceivedWrongVertexMessages\030\007 \001(\005\022#\n\033NewV" +
+      "ertexMachinesDiscovered\030\010 \001(\005\022%\n\035TotalVe" +
+      "rtexMachinesDiscovered\030\t \001(\005\032/\n\030WorkerIn" +
+      "itializedMessage\022\023\n\013VertexCount\030\001 \001(\005\032\327\001" +
+      "\n\031QueryIntersectionsMessage\022\203\001\n\rIntersec" +
+      "tions\030\001 \003(\0132l.mthesis.concurrent_graph.c" +
+      "ommunication.messages.ControlMessage.Que",
+      "ryIntersectionsMessage.IntersectionsEntr" +
+      "y\0324\n\022IntersectionsEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005" +
+      "value\030\002 \001(\005:\0028\001\0321\n\030SendQueryVerticesMess" +
+      "age\022\025\n\rSendToMachine\030\001 \001(\005\0326\n\033ReceiveQue" +
+      "ryVerticesMessage\022\027\n\017RecvFromMachine\030\001 \003" +
+      "(\005*\256\002\n\022ControlMessageType\022\025\n\021Channel_Han" +
+      "dshake\020\001\022\026\n\022Worker_Initialized\020\002\022\"\n\036Work" +
+      "er_Query_Superstep_Barrier\020\003\022#\n\037Worker_Q" +
+      "uery_Superstep_Finished\020\004\022\031\n\025Worker_Quer" +
+      "y_Finished\020\005\022\034\n\030Master_Worker_Initialize",
+      "\020\006\022\026\n\022Master_Query_Start\020\007\022\037\n\033Master_Que" +
+      "ry_Next_Superstep\020\010\022\031\n\025Master_Query_Fini" +
+      "shed\020\t\022\023\n\017Master_Shutdown\020\nB2\n&mthesis.c" +
+      "oncurrent_graph.communicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -6263,12 +6804,18 @@ public final class Messages {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_QueryIntersectionsMessage_IntersectionsEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_descriptor =
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(4);
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_fieldAccessorTable = new
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_MoveQueryVerticesMessage_descriptor,
-        new java.lang.String[] { "MoveToMachine", });
+        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_descriptor,
+        new java.lang.String[] { "SendToMachine", });
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_descriptor =
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(5);
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_ReceiveQueryVerticesMessage_descriptor,
+        new java.lang.String[] { "RecvFromMachine", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

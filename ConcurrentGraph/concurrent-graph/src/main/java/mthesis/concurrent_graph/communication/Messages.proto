@@ -1,3 +1,5 @@
+syntax = "proto2";
+
 package mthesis.concurrent_graph.communication.messages;
 
 option java_package = "mthesis.concurrent_graph.communication";
@@ -73,6 +75,6 @@ message MessageEnvelope {
 		}
 		
 		message ReceiveQueryVerticesMessage {
-			optional repeated int32 RecvFromMachine = 1;
+			repeated int32 RecvFromMachine = 1;
 		}
 	}
