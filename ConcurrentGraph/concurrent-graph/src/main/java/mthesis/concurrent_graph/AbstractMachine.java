@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.util.Pair;
+import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -31,11 +32,11 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 
 
 	protected AbstractMachine(Map<Integer, MachineConfig> machines, int ownId,
-			BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
+			JobConfiguration<V, E, M, Q> jobConfig) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		//this.machines = machines;
 		this.ownId = ownId;
-		this.messaging = new MessageSenderAndReceiver<V, E, M, Q>(machines, ownId, this, vertexMessageFactory);
+		this.messaging = new MessageSenderAndReceiver<V, E, M, Q>(machines, ownId, this, jobConfig);
 	}
 
 	public void start() {
@@ -76,4 +77,8 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 			List<Pair<Integer, M>> vertexMessages);
 
 	public abstract void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices, int queryId);
+
+	public abstract void onIncomingMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> srcVertices, int queryId);
+
+	public abstract void onIncomingInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> srcVertices, int queryId);
 }

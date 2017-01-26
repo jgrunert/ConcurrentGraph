@@ -12,9 +12,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.util.Pair;
+import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -24,7 +26,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  * @author Jonas Grunert
  *
  */
-public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable> {
+public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
 	private final Logger logger;
 	private final Socket socket;
@@ -112,7 +114,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 		outMessages.add(new GetToKnowMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
 	}
 
-	public void sendMoveVerticesMessage(int srcMachine, Collection<V> vertices, int queryId) {
+	public void sendMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> vertices, int queryId) {
 		outMessages.add(new MoveVerticesMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
 	}
 
@@ -257,9 +259,9 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 
 		private final int srcMachine;
 		private final int queryId;
-		private final Collection<V> vertices;
+		private final Collection<AbstractVertex<V, E, M, Q>> vertices;
 
-		public MoveVerticesMessageToSend(int srcMachine, int queryId, Collection<V> vertices) {
+		public MoveVerticesMessageToSend(int srcMachine, int queryId, Collection<AbstractVertex<V, E, M, Q>> vertices) {
 			super();
 			this.srcMachine = srcMachine;
 			this.vertices = vertices;
@@ -286,7 +288,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 			buffer.putInt(srcMachine);
 			buffer.putInt(queryId);
 			buffer.putInt(vertices.size());
-			for (final V vert : vertices) {
+			for (final AbstractVertex<V, E, M, Q> vert : vertices) {
 				vert.writeToBuffer(buffer);
 			}
 		}
@@ -317,7 +319,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 
 		@Override
 		public byte getTypeCode() {
-			return 5;
+			return 4;
 		}
 
 		@Override

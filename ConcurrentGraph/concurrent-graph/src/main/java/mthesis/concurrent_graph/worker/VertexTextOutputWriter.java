@@ -2,7 +2,7 @@ package mthesis.concurrent_graph.worker;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.List;
+import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ public class VertexTextOutputWriter<V extends BaseWritable, E extends BaseWritab
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public void writeOutput(String file, List<AbstractVertex<V, E, M, G>> vertices, int queryId) {
+	public void writeOutput(String file, Collection<AbstractVertex<V, E, M, G>> vertices, int queryId) {
 		try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
 			for (final AbstractVertex<V, E, M, G> vertex : vertices) {
 				final V value = vertex.getValue(queryId);

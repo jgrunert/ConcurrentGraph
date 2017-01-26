@@ -55,8 +55,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private final JobConfiguration<V, E, M, Q> jobConfig;
 	private final BaseVertexInputReader<V, E, M, Q> vertexReader;
 
-	private List<AbstractVertex<V, E, M, Q>> localVerticesList;
-	private final Map<Integer, AbstractVertex<V, E, M, Q>> localVerticesIdMap = new HashMap<>();
+	//private List<AbstractVertex<V, E, M, Q>> localVerticesList;
+	private final Map<Integer, AbstractVertex<V, E, M, Q>> localVertices = new HashMap<>();
 
 	private final BaseWritableFactory<V> vertexValueFactory;
 	private final BaseQueryGlobalValuesFactory<Q> globalValueFactory;
@@ -86,7 +86,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
 			JobConfiguration<V, E, M, Q> jobConfig,
 			BaseVertexInputReader<V, E, M, Q> vertexReader) {
-		super(machines, ownId, jobConfig.getMessageValueFactory());
+		super(machines, ownId, jobConfig);
 		this.masterId = masterId;
 		this.otherWorkerIds = workerIds.stream().filter(p -> p != ownId).collect(Collectors.toList());
 		for (final Integer workerId : otherWorkerIds) {
@@ -101,9 +101,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 	private void loadVertices(List<String> partitions) {
-		localVerticesList = vertexReader.getVertices(partitions, jobConfig, this);
+		List<AbstractVertex<V, E, M, Q>> localVerticesList = vertexReader.getVertices(partitions, jobConfig, this);
 		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-			localVerticesIdMap.put(vertex.ID, vertex);
+			localVertices.put(vertex.ID, vertex);
 		}
 	}
 
@@ -155,7 +155,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						// First frame: Call all vertices, second frame only active vertices
 						long startTime = System.currentTimeMillis();
 						if (superstepNo == 0) {
-							for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
+							for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
 								vertex.superstep(superstepNo, activeQuery);
 							}
 						}
@@ -225,7 +225,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 	private void sendMasterInitialized() {
-		messaging.sendControlMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Initialized(ownId, localVerticesList.size()),
+		messaging.sendControlMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Initialized(ownId, localVertices.size()),
 				true);
 	}
 
@@ -247,7 +247,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 */
 	@Override
 	public void sendVertexMessage(int dstVertex, M messageContent, WorkerQuery<V, E, M, Q> query) {
-		final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(dstVertex);
+		final AbstractVertex<V, E, M, Q> msgVert = localVertices.get(dstVertex);
 		if (msgVert != null) {
 			// Local message
 			query.QueryLocal.Stats.MessagesTransmittedLocal++;
@@ -429,7 +429,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			System.out.println(ownId + " send to " + sendTo);
 			sendQueryVerticesIfNoIntersect(activeQuery, sendTo);
 		}
-		if (message.hasReceiveQueryVertices()) {
+		else if (message.hasReceiveQueryVertices()) {
 			List<Integer> recvFrom = message.getReceiveQueryVertices().getRecvFromMachineList();
 			if (!recvFrom.isEmpty()) {
 				// Wait for receiving vertices from other worker
@@ -464,7 +464,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 * Used for incremental vertex migration.
 	 */
 	private void sendQueryVerticesIfNoIntersect(WorkerQuery<V, E, M, Q> query, int sendToWorker) {
-
+		int queryId = query.QueryId;
+		List<AbstractVertex<V, E, M, Q>> verticesToMove = new ArrayList<>();
+		for (AbstractVertex<V, E, M, Q> activeVertex : query.ActiveVerticesThis.values()) {
+			if (activeVertex.queryValues.size() == 1) {
+				// Vertex only active at one query, this query
+				assert activeVertex.queryValues.containsKey(queryId);
+				localVertices.remove(activeVertex.ID);
+				verticesToMove.add(activeVertex);
+			}
+		}
 	}
 
 
@@ -536,7 +545,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 
-
 	@Override
 	public void onIncomingVertexMessage(int msgSuperstepNo, int srcMachine, boolean broadcastFlag, int queryId,
 			List<Pair<Integer, M>> vertexMessages) {
@@ -548,7 +556,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Collect all vertices from this broadcast message on this machine
 			final HashSet<Integer> srcVertices = new HashSet<>();
 			for (final Pair<Integer, M> msg : vertexMessages) {
-				if (localVerticesIdMap.containsKey(msg.first)) {
+				if (localVertices.containsKey(msg.first)) {
 					srcVertices.add(msg.first);
 				}
 			}
@@ -571,7 +579,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		else {
 			synchronized (vertexInMessageLock) {
 				for (final Pair<Integer, M> msg : vertexMessages) {
-					final AbstractVertex<V, E, M, Q> msgVert = localVerticesIdMap.get(msg.first);
+					final AbstractVertex<V, E, M, Q> msgVert = localVertices.get(msg.first);
 					if (msgVert != null) {
 						activeQuery.QueryLocal.Stats.MessagesReceivedCorrectVertex++;
 						List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(queryId);
@@ -602,17 +610,25 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 	}
 
+	@Override
+	public void onIncomingMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> srcVertices, int queryId) {
+		// TODO
+		System.out.println("TODO onIncomingMoveVerticesMessage");
+	}
+
+	@Override
+	public void onIncomingInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> srcVertices, int queryId) {
+		// TODO
+		System.out.println("TODO onIncomingInvalidateRegisteredVerticesMessage");
+	}
+
 
 	private void startQuery(Q query) {
 		if (activeQueries.containsKey(query.QueryId))
 			throw new RuntimeException("Thready with this ID already active: " + query.QueryId);
-		WorkerQuery<V, E, M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory, localVerticesIdMap.keySet());
+		WorkerQuery<V, E, M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory, localVertices.keySet());
 		synchronized (activeQuery.ChannelBarrierWaitSet) {
 			activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
-		}
-
-		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-			vertex.startQuery(query.QueryId);
 		}
 
 		synchronized (activeQueries) {
@@ -624,11 +640,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private void finishQuery(WorkerQuery<V, E, M, Q> activeQuery) {
 		new VertexTextOutputWriter<V, E, M, Q>().writeOutput(
-				outputDir + File.separator + activeQuery.Query.QueryId + File.separator + ownId + ".txt", localVerticesList,
+				outputDir + File.separator + activeQuery.Query.QueryId + File.separator + ownId + ".txt", localVertices.values(),
 				activeQuery.Query.QueryId);
 		sendMasterQueryFinishedMessage(activeQuery);
 		synchronized (activeQueries) {
-			for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
+			for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
 				vertex.finishQuery(activeQuery.Query.QueryId);
 			}
 			logger.info("Worker finished query " + activeQuery.Query.QueryId);

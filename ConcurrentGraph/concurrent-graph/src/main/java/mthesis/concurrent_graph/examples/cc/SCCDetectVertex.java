@@ -1,8 +1,10 @@
 package mthesis.concurrent_graph.examples.cc;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
@@ -21,6 +23,12 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	public SCCDetectVertex(int id,
 			VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> messageSender) {
 		super(id, messageSender);
+	}
+
+	public SCCDetectVertex(ByteBuffer bufferToRead,
+			VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> worker,
+			JobConfiguration<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> jobConfig) {
+		super(bufferToRead, worker, jobConfig);
 	}
 
 	@Override
@@ -55,10 +63,21 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 
 	public static class Factory extends VertexFactory<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> {
 
+		public Factory(JobConfiguration<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> jobConfig) {
+			super(jobConfig);
+		}
+
 		@Override
 		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> newInstance(int id,
 				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> messageSender) {
 			return new SCCDetectVertex(id, messageSender);
+		}
+
+		@Override
+		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> newInstance(ByteBuffer bufferToRead,
+				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> worker) {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 }

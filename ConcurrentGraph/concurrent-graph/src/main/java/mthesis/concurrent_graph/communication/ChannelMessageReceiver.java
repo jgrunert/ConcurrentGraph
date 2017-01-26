@@ -17,6 +17,8 @@ import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.util.Pair;
+import mthesis.concurrent_graph.vertex.AbstractVertex;
+import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -38,15 +40,18 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 	private Thread thread;
 	private volatile boolean readyForClose;
+	private final VertexFactory<V, E, M, Q> vertexFactory;
 
 	public ChannelMessageReceiver(Socket socket, InputStream reader, int ownId,
-			MessageSenderAndReceiver<V, E, M, Q> inMsgHandler, BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
+			MessageSenderAndReceiver<V, E, M, Q> inMsgHandler, BaseWritable.BaseWritableFactory<M> vertexMessageFactory,
+			VertexFactory<V, E, M, Q> vertexFactory) {
 		this.ownId = ownId;
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;
 		this.reader = reader;
 		this.inMsgHandler = inMsgHandler;
 		this.vertexMessageFactory = vertexMessageFactory;
+		this.vertexFactory = vertexFactory;
 	}
 
 	public void startReceiver(int connectedMachineId) {
@@ -82,6 +87,12 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 								break;
 							case 2:
 								onIncomingGetToKnowMessage();
+								break;
+							case 3:
+								onIncomingMoveVerticesMessage();
+								break;
+							case 4:
+								onIncomingInvalidateRegisteredVerticesMessage();
 								break;
 
 							default:
@@ -143,6 +154,29 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 		}
 		inMsgHandler.onIncomingGetToKnowMessage(srcMachine, srcVertices, queryId);
 	}
+
+	private void onIncomingMoveVerticesMessage() {
+		final int srcMachine = inBuffer.getInt();
+		final int queryId = inBuffer.getInt();
+		final int vertCount = inBuffer.getInt();
+		final List<AbstractVertex<V, E, M, Q>> srcVertices = new ArrayList<>(vertCount);
+		for (int i = 0; i < vertCount; i++) {
+			srcVertices.add(vertexFactory.newInstance(inBuffer));
+		}
+		inMsgHandler.onIncomingMoveVerticesMessage(srcMachine, srcVertices, queryId);
+	}
+
+	private void onIncomingInvalidateRegisteredVerticesMessage() {
+		final int srcMachine = inBuffer.getInt();
+		final int queryId = inBuffer.getInt();
+		final int vertCount = inBuffer.getInt();
+		final List<Integer> srcVertices = new ArrayList<>(vertCount);
+		for (int i = 0; i < vertCount; i++) {
+			srcVertices.add(inBuffer.getInt());
+		}
+		inMsgHandler.onIncomingInvalidateRegisteredVerticesMessage(srcMachine, srcVertices, queryId);
+	}
+
 
 	public void getReadyForClose() {
 		readyForClose = true;

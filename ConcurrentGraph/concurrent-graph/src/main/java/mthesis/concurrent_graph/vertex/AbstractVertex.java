@@ -1,18 +1,22 @@
 package mthesis.concurrent_graph.vertex;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 
-import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
-import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.BaseWritable;
+import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
 
 public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
@@ -22,9 +26,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	// TODO More efficient datastructure? Arrays, re-use objects etc
 	// value = (V[]) new Object[n + 1];
 	private List<Edge<E>> edges;
-	public Int2ObjectMap<V> queryValues = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
 	private V vertexDefaultValue = null;
-	private Int2BooleanMap queryVertexInactive = new Int2BooleanOpenHashMap();
+	public final Int2ObjectMap<V> queryValues = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
+	// Queries this vertex is inactive for
+	private IntSet queriesVertexInactive = new IntOpenHashSet(Settings.DEFAULT_QUERY_SLOTS);
 
 	// Message double buffer
 	public Int2ObjectMap<List<M>> queryMessagesThisSuperstep = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
@@ -39,16 +44,62 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		this.worker = worker;
 	}
 
+	public AbstractVertex(ByteBuffer bufferToRead, VertexWorkerInterface<V, E, M, Q> worker,
+			JobConfiguration<V, E, M, Q> jobConfig) {
+		super();
+		this.ID = bufferToRead.getInt();
+		this.worker = worker;
 
-	public void startQuery(int queryId) {
-		//		queryValues.put(queryId, vertexDefaultValue != null ? worker.getVertexValueFactory().createClone(vertexDefaultValue) : null);
-		//		queryVertexInactive.put(queryId, false);
-		//		queryMessagesNextSuperstep.put(queryId, new ArrayList<>());
+		BaseWritableFactory<V> vertexValueFactory = jobConfig.getVertexValueFactory();
+		BaseWritableFactory<E> edgeValueFactory = jobConfig.getEdgeValueFactory();
+
+		int edgeCount = bufferToRead.getInt();
+		edges = new ArrayList<>(edgeCount);
+		for (int i = 0; i < edgeCount; i++) {
+			edges.add(new Edge<>(bufferToRead.getInt(), edgeValueFactory.createFromBytes(bufferToRead)));
+		}
+
+		vertexDefaultValue = vertexValueFactory.createFromBytes(bufferToRead);
+		int queryValuesCount = bufferToRead.getInt();
+		for (int i = 0; i < queryValuesCount; i++) {
+			queryValues.put(bufferToRead.getInt(), vertexValueFactory.createFromBytes(bufferToRead));
+		}
+
+		int queriesVertexInactiveCount = bufferToRead.getInt();
+		for (int i = 0; i < queriesVertexInactiveCount; i++) {
+			queriesVertexInactive.add(bufferToRead.getInt());
+		}
+	}
+
+	public void writeToBuffer(ByteBuffer buffer) {
+		buffer.putInt(ID);
+		vertexDefaultValue.writeToBuffer(buffer);
+
+		buffer.putInt(edges.size());
+		for (Edge<E> e : edges) {
+			buffer.putInt(e.TargetVertexId);
+			e.Value.writeToBuffer(buffer);
+		}
+
+		vertexDefaultValue.writeToBuffer(buffer);
+		buffer.putInt(queryValues.size());
+		for (Entry<Integer, V> qv : queryValues.entrySet()) {
+			buffer.putInt(qv.getKey());
+			qv.getValue().writeToBuffer(buffer);
+		}
+
+		buffer.putInt(queriesVertexInactive.size());
+		for (Integer qi : queriesVertexInactive) {
+			buffer.putInt(qi);
+		}
+
+		System.out.println(queryMessagesThisSuperstep.size() + " / " + queryMessagesNextSuperstep.size());
+		// TODO Send which queryMessages?
 	}
 
 	public void finishQuery(int queryId) {
 		queryValues.remove(queryId);
-		queryVertexInactive.remove(queryId);
+		queriesVertexInactive.remove(queryId);
 		queryMessagesNextSuperstep.remove(queryId);
 	}
 
@@ -81,13 +132,13 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		int queryId = query.Query.QueryId;
 		List<M> messagesThisSuperstep = queryMessagesThisSuperstep.get(queryId);
 
-		if (!(queryVertexInactive.get(queryId) && (messagesThisSuperstep == null || messagesThisSuperstep.isEmpty()))) {
+		if (!(queriesVertexInactive.contains(queryId) && (messagesThisSuperstep == null || messagesThisSuperstep.isEmpty()))) {
 			//			if (messagesThisSuperstep == null) {
 			//				messagesThisSuperstep = new ArrayList<>();
 			//				queryMessagesNextSuperstep.put(query.QueryId, messagesThisSuperstep);
 			//			}
 			// Reset halt flag
-			queryVertexInactive.remove(queryId);
+			queriesVertexInactive.remove(queryId);
 
 			// Compute vertex
 			compute(superstepNo, messagesThisSuperstep, query);
@@ -95,7 +146,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 				messagesThisSuperstep.clear();
 
 			// Activate vertex for next superstep
-			if (!(queryVertexInactive.get(queryId)))
+			if (!(queriesVertexInactive.contains(queryId)))
 				query.ActiveVerticesNext.put(ID, this);
 		}
 	}
@@ -121,7 +172,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 
 	protected void voteVertexHalt(int queryId) {
-		queryVertexInactive.put(queryId, true);
+		queriesVertexInactive.contains(queryId);
 	}
 
 	//	public boolean isActive(int queryId) {

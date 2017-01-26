@@ -29,6 +29,7 @@ import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.MiscUtil;
 import mthesis.concurrent_graph.util.Pair;
+import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.NullWritable;
 
 /**
@@ -504,5 +505,16 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	@Override
 	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> vertices, int queryId) {
 		throw new RuntimeException("Master cannot handle GetToKnow messages");
+	}
+
+	@Override
+	public void onIncomingMoveVerticesMessage(int srcMachine,
+			Collection<AbstractVertex<NullWritable, NullWritable, NullWritable, Q>> srcVertices, int queryId) {
+		throw new RuntimeException("Master cannot handle");
+	}
+
+	@Override
+	public void onIncomingInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> srcVertices, int queryId) {
+		throw new RuntimeException("Master cannot handle");
 	}
 }
