@@ -114,8 +114,8 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 		outMessages.add(new GetToKnowMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
 	}
 
-	public void sendMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> vertices, int queryId) {
-		outMessages.add(new MoveVerticesMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
+	public void sendMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> vertices, int queryId, boolean lastSegment) {
+		outMessages.add(new MoveVerticesMessageToSend(srcMachine, queryId, vertices, lastSegment)); // TODO Object pooling?
 	}
 
 	public void sendInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> vertices, int queryId) {
@@ -260,12 +260,15 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 		private final int srcMachine;
 		private final int queryId;
 		private final Collection<AbstractVertex<V, E, M, Q>> vertices;
+		private final boolean lastSegment;
 
-		public MoveVerticesMessageToSend(int srcMachine, int queryId, Collection<AbstractVertex<V, E, M, Q>> vertices) {
+		public MoveVerticesMessageToSend(int srcMachine, int queryId, Collection<AbstractVertex<V, E, M, Q>> vertices,
+				boolean lastSegment) {
 			super();
 			this.srcMachine = srcMachine;
 			this.vertices = vertices;
 			this.queryId = queryId;
+			this.lastSegment = lastSegment;
 		}
 
 		@Override
@@ -275,7 +278,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 
 		@Override
 		public boolean flushAfter() {
-			return false;
+			return lastSegment;
 		}
 
 		@Override
@@ -287,6 +290,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 		public void writeMessageToBuffer(ByteBuffer buffer) {
 			buffer.putInt(srcMachine);
 			buffer.putInt(queryId);
+			buffer.put(lastSegment ? (byte) 0 : (byte) 1);
 			buffer.putInt(vertices.size());
 			for (final AbstractVertex<V, E, M, Q> vert : vertices) {
 				vert.writeToBuffer(buffer);

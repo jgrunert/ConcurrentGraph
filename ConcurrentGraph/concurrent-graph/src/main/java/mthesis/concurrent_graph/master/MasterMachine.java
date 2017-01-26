@@ -509,7 +509,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 	@Override
 	public void onIncomingMoveVerticesMessage(int srcMachine,
-			Collection<AbstractVertex<NullWritable, NullWritable, NullWritable, Q>> srcVertices, int queryId) {
+			Collection<AbstractVertex<NullWritable, NullWritable, NullWritable, Q>> srcVertices, int queryId, boolean lastSegment) {
 		throw new RuntimeException("Master cannot handle");
 	}
 

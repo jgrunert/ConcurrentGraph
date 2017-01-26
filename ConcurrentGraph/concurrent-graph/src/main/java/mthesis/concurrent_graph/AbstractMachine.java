@@ -82,7 +82,8 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 
 	public abstract void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices, int queryId);
 
-	public abstract void onIncomingMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> srcVertices, int queryId);
+	public abstract void onIncomingMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> srcVertices, int queryId,
+			boolean lastSegment);
 
 	public abstract void onIncomingInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> srcVertices, int queryId);
 }

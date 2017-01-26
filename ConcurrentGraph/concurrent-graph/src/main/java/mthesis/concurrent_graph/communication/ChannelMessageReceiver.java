@@ -164,12 +164,13 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 	private void onIncomingMoveVerticesMessage() {
 		final int srcMachine = inBuffer.getInt();
 		final int queryId = inBuffer.getInt();
+		final boolean lastSegment = inBuffer.get() == 0;
 		final int vertCount = inBuffer.getInt();
 		final List<AbstractVertex<V, E, M, Q>> srcVertices = new ArrayList<>(vertCount);
 		for (int i = 0; i < vertCount; i++) {
 			srcVertices.add(vertexFactory.newInstance(inBuffer, worker, jobConfig));
 		}
-		inMsgHandler.onIncomingMoveVerticesMessage(srcMachine, srcVertices, queryId);
+		inMsgHandler.onIncomingMoveVerticesMessage(srcMachine, srcVertices, queryId, lastSegment);
 	}
 
 	private void onIncomingInvalidateRegisteredVerticesMessage() {

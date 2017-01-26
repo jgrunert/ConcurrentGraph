@@ -47,11 +47,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public AbstractVertex(ByteBuffer bufferToRead, VertexWorkerInterface<V, E, M, Q> worker,
 			JobConfiguration<V, E, M, Q> jobConfig) {
 		super();
-		this.ID = bufferToRead.getInt();
 		this.worker = worker;
-
 		BaseWritableFactory<V> vertexValueFactory = jobConfig.getVertexValueFactory();
 		BaseWritableFactory<E> edgeValueFactory = jobConfig.getEdgeValueFactory();
+
+		this.ID = bufferToRead.getInt();
 
 		int edgeCount = bufferToRead.getInt();
 		edges = new ArrayList<>(edgeCount);
@@ -59,7 +59,9 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			edges.add(new Edge<>(bufferToRead.getInt(), edgeValueFactory.createFromBytes(bufferToRead)));
 		}
 
-		vertexDefaultValue = vertexValueFactory.createFromBytes(bufferToRead);
+		if (bufferToRead.get() == 0)
+			vertexDefaultValue = vertexValueFactory.createFromBytes(bufferToRead);
+
 		int queryValuesCount = bufferToRead.getInt();
 		for (int i = 0; i < queryValuesCount; i++) {
 			queryValues.put(bufferToRead.getInt(), vertexValueFactory.createFromBytes(bufferToRead));
@@ -73,7 +75,6 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	public void writeToBuffer(ByteBuffer buffer) {
 		buffer.putInt(ID);
-		vertexDefaultValue.writeToBuffer(buffer);
 
 		buffer.putInt(edges.size());
 		for (Edge<E> e : edges) {
@@ -81,7 +82,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			e.Value.writeToBuffer(buffer);
 		}
 
-		vertexDefaultValue.writeToBuffer(buffer);
+		buffer.put(vertexDefaultValue != null ? (byte) 0 : (byte) 1);
+		if (vertexDefaultValue != null)
+			vertexDefaultValue.writeToBuffer(buffer);
+
 		buffer.putInt(queryValues.size());
 		for (Entry<Integer, V> qv : queryValues.entrySet()) {
 			buffer.putInt(qv.getKey());
@@ -172,7 +176,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 
 	protected void voteVertexHalt(int queryId) {
-		queriesVertexInactive.contains(queryId);
+		queriesVertexInactive.add(queryId);
 	}
 
 	//	public boolean isActive(int queryId) {

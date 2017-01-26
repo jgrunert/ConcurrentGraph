@@ -426,7 +426,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (message.hasSendQueryVertices()) {
 			// Send query vertices to other worker
 			int sendTo = message.getSendQueryVertices().getSendToMachine();
-			System.out.println(ownId + " send to " + sendTo);
+			System.out.println(ownId + " send to " + sendTo + "  " + activeQuery.ActiveVerticesThis.size());
 			sendQueryVerticesIfNoIntersect(activeQuery, sendTo);
 		}
 		else if (message.hasReceiveQueryVertices()) {
@@ -472,8 +472,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				assert activeVertex.queryValues.containsKey(queryId);
 				localVertices.remove(activeVertex.ID);
 				verticesToMove.add(activeVertex);
+				// Send vertices if bucket full
+				if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
+					messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
+					verticesToMove.clear();
+				}
 			}
 		}
+		// Send remaining vertices
+		messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, true);
 	}
 
 
@@ -611,9 +618,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 	@Override
-	public void onIncomingMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> srcVertices, int queryId) {
+	public void onIncomingMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> srcVertices, int queryId,
+			boolean lastSegment) {
 		// TODO
-		System.out.println("TODO onIncomingMoveVerticesMessage");
+		System.out
+				.println("TODO onIncomingMoveVerticesMessage " + ownId + "->" + srcMachine + " " + lastSegment + "  " + srcVertices.size());
 	}
 
 	@Override

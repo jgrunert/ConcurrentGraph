@@ -190,9 +190,9 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		ch.sendGetToKnownMessage(ownId, vertices, queryId);
 	}
 
-	public void sendMoveVerticesMessage(int dstMachine, Collection<AbstractVertex<V, E, M, Q>> vertices, int queryId) {
+	public void sendMoveVerticesMessage(int dstMachine, Collection<AbstractVertex<V, E, M, Q>> vertices, int queryId, boolean lastSegment) {
 		final ChannelMessageSender<V, E, M, Q> ch = channelSenders.get(dstMachine);
-		ch.sendMoveVerticesMessage(ownId, vertices, queryId);
+		ch.sendMoveVerticesMessage(ownId, vertices, queryId, lastSegment);
 	}
 
 	public void sendInvalidateRegisteredVerticesMessage(int dstMachine, Collection<Integer> vertices, int queryId) {
@@ -219,8 +219,9 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		messageListener.onIncomingGetToKnowMessage(srcMachine, srcVertices, queryId);
 	}
 
-	public void onIncomingMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> srcVertices, int queryId) {
-		messageListener.onIncomingMoveVerticesMessage(srcMachine, srcVertices, queryId);
+	public void onIncomingMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> srcVertices, int queryId,
+			boolean lastSegment) {
+		messageListener.onIncomingMoveVerticesMessage(srcMachine, srcVertices, queryId, lastSegment);
 	}
 
 	public void onIncomingInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> srcVertices, int queryId) {
