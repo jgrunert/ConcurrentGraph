@@ -357,7 +357,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_av_steps.csv"))) {
 				for (Integer workerId : workerIds) {
-					sb.append(workerId);
+					sb.append(workerId.toString());
 					sb.append(';');
 				}
 				writer.println(sb.toString());
@@ -365,7 +365,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 				for (Map<Integer, Q> step : querySteps.getValue()) {
 					for (Q stepMachine : step.values()) {
-						sb.append(stepMachine.getActiveVertices());
+						sb.append("Worker " + stepMachine);
 						sb.append(';');
 					}
 					writer.println(sb.toString());
@@ -381,19 +381,19 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		for (Entry<Integer, List<Q>> querySteps : queryStatsSteps.entrySet()) {
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_times_steps.csv"))) {
-				writer.println("ComputeTime;StepFinishTime;IntersectCalcTime;TotalTime;");
+				writer.println("StepTime;TotalTimes;ComputeTime;StepFinishTime;IntersectCalcTime;");
 
 				for (int i = 0; i < querySteps.getValue().size(); i++) {
 					Q step = querySteps.getValue().get(i);
 					sb.append(queryStatsStepTimes.get(querySteps.getKey()).get(i));
+					sb.append(';');
+					sb.append(step.Stats.ComputeTime + step.Stats.IntersectCalcTime + step.Stats.IntersectCalcTime);
 					sb.append(';');
 					sb.append(step.Stats.ComputeTime);
 					sb.append(';');
 					sb.append(step.Stats.StepFinishTime);
 					sb.append(';');
 					sb.append(step.Stats.IntersectCalcTime);
-					sb.append(';');
-					sb.append(step.Stats.ComputeTime + step.Stats.IntersectCalcTime + step.Stats.IntersectCalcTime);
 					sb.append(';');
 					writer.println(sb.toString());
 					sb.setLength(0);
