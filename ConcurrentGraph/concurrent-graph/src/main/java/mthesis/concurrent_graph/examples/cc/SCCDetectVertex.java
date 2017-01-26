@@ -63,10 +63,6 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 
 	public static class Factory extends VertexFactory<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> {
 
-		public Factory(JobConfiguration<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> jobConfig) {
-			super(jobConfig);
-		}
-
 		@Override
 		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> newInstance(int id,
 				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> messageSender) {
@@ -75,9 +71,9 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 
 		@Override
 		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> newInstance(ByteBuffer bufferToRead,
-				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> worker) {
-			// TODO Auto-generated method stub
-			return null;
+				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> worker,
+				JobConfiguration<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> jobConfig) {
+			return new SCCDetectVertex(bufferToRead, worker, jobConfig);
 		}
 	}
 }

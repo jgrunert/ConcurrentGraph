@@ -1,8 +1,10 @@
 package mthesis.concurrent_graph.examples.pagerank;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
@@ -22,6 +24,13 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 			VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> messageSender) {
 		super(id, messageSender);
 	}
+
+	public PagerankVertex(ByteBuffer bufferToRead,
+			VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> worker,
+			JobConfiguration<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> jobConfig) {
+		super(bufferToRead, worker, jobConfig);
+	}
+
 
 	@Override
 	protected void compute(int superstepNo, List<DoubleWritable> messages,
@@ -58,6 +67,13 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 		public AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> newInstance(int id,
 				VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> messageSender) {
 			return new PagerankVertex(id, messageSender);
+		}
+
+		@Override
+		public AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> newInstance(ByteBuffer bufferToRead,
+				VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> worker,
+				JobConfiguration<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> jobConfig) {
+			return new PagerankVertex(bufferToRead, worker, jobConfig);
 		}
 	}
 }

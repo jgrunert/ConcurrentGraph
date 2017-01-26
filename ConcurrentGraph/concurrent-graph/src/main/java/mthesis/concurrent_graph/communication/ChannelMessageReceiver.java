@@ -14,11 +14,13 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
+import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -37,21 +39,25 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 	private final byte[] inBytes = new byte[Settings.MAX_MESSAGE_SIZE];
 	private final ByteBuffer inBuffer = ByteBuffer.wrap(inBytes);
 	private final MessageSenderAndReceiver<V, E, M, Q> inMsgHandler;
-	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 	private Thread thread;
 	private volatile boolean readyForClose;
+	private final VertexWorkerInterface<V, E, M, Q> worker;
+	private final JobConfiguration<V, E, M, Q> jobConfig;
 	private final VertexFactory<V, E, M, Q> vertexFactory;
+	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 
 	public ChannelMessageReceiver(Socket socket, InputStream reader, int ownId,
-			MessageSenderAndReceiver<V, E, M, Q> inMsgHandler, BaseWritable.BaseWritableFactory<M> vertexMessageFactory,
-			VertexFactory<V, E, M, Q> vertexFactory) {
+			MessageSenderAndReceiver<V, E, M, Q> inMsgHandler,
+			VertexWorkerInterface<V, E, M, Q> worker, JobConfiguration<V, E, M, Q> jobConfig) {
 		this.ownId = ownId;
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;
 		this.reader = reader;
 		this.inMsgHandler = inMsgHandler;
-		this.vertexMessageFactory = vertexMessageFactory;
-		this.vertexFactory = vertexFactory;
+		this.worker = worker;
+		this.jobConfig = jobConfig;
+		this.vertexFactory = jobConfig != null ? jobConfig.getVertexFactory() : null;
+		this.vertexMessageFactory = jobConfig != null ? jobConfig.getMessageValueFactory() : null;
 	}
 
 	public void startReceiver(int connectedMachineId) {
@@ -161,7 +167,7 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 		final int vertCount = inBuffer.getInt();
 		final List<AbstractVertex<V, E, M, Q>> srcVertices = new ArrayList<>(vertCount);
 		for (int i = 0; i < vertCount; i++) {
-			srcVertices.add(vertexFactory.newInstance(inBuffer));
+			srcVertices.add(vertexFactory.newInstance(inBuffer, worker, jobConfig));
 		}
 		inMsgHandler.onIncomingMoveVerticesMessage(srcMachine, srcVertices, queryId);
 	}

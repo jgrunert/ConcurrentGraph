@@ -79,10 +79,6 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 
 	public static class Factory extends VertexFactory<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> {
 
-		public Factory(JobConfiguration<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> jobConfig) {
-			super(jobConfig);
-		}
-
 		@Override
 		public AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> newInstance(int id,
 				VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> messageSender) {
@@ -91,7 +87,8 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 
 		@Override
 		public AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> newInstance(ByteBuffer bufferToRead,
-				VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> worker) {
+				VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> worker,
+				JobConfiguration<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> jobConfig) {
 			return new CCDetectVertex(bufferToRead, worker, jobConfig);
 		}
 	}

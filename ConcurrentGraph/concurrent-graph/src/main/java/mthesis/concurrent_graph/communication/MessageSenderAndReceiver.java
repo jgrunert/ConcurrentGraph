@@ -28,6 +28,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
+import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -47,6 +48,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	private final ConcurrentHashMap<Integer, ChannelMessageSender<V, E, M, Q>> channelSenders = new ConcurrentHashMap<>();
 	private final List<ChannelMessageReceiver<V, E, M, Q>> channelReceivers = new LinkedList<>();
 	private final AbstractMachine<V, E, M, Q> messageListener;
+	private final VertexWorkerInterface<V, E, M, Q> worker;
 	private final JobConfiguration<V, E, M, Q> jobConfiguration;
 	private Thread serverThread;
 	private ServerSocket serverSocket;
@@ -55,11 +57,13 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 
 	public MessageSenderAndReceiver(Map<Integer, MachineConfig> machines, int ownId,
+			VertexWorkerInterface<V, E, M, Q> worker,
 			AbstractMachine<V, E, M, Q> listener, JobConfiguration<V, E, M, Q> jobConfiguration) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.ownId = ownId;
 		this.machineConfigs = machines;
 		this.messageListener = listener;
+		this.worker = worker;
 		this.jobConfiguration = jobConfiguration;
 	}
 
@@ -268,7 +272,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 			logger.error("set socket configs", e);
 		}
 		final ChannelMessageReceiver<V, E, M, Q> receiver = new ChannelMessageReceiver<>(socket, reader, ownId, this,
-				jobConfiguration.getMessageValueFactory(), jobConfiguration.getVertexFactory());
+				worker, jobConfiguration);
 		receiver.startReceiver(machineId);
 		channelReceivers.add(receiver);
 		final ChannelMessageSender<V, E, M, Q> sender = new ChannelMessageSender<>(socket, writer, ownId);

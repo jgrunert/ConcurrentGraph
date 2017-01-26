@@ -11,6 +11,8 @@ import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
+import mthesis.concurrent_graph.worker.VertexWorkerInterface;
+import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -36,7 +38,9 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		//this.machines = machines;
 		this.ownId = ownId;
-		this.messaging = new MessageSenderAndReceiver<V, E, M, Q>(machines, ownId, this, jobConfig);
+		// Hack to get worker interface
+		VertexWorkerInterface<V, E, M, Q> worker = (this instanceof WorkerMachine<?, ?, ?, ?>) ? (WorkerMachine<V, E, M, Q>) this : null;
+		this.messaging = new MessageSenderAndReceiver<V, E, M, Q>(machines, ownId, worker, this, jobConfig);
 	}
 
 	public void start() {

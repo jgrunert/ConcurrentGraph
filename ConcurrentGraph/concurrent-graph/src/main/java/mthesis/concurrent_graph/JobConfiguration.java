@@ -7,13 +7,42 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
 public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
-	public abstract VertexFactory<V, E, M, Q> getVertexFactory();
+	private final VertexFactory<V, E, M, Q> vertexFactory;
+	private final BaseWritableFactory<V> vertexValueFactory;
+	private final BaseWritableFactory<E> edgeValueFactory;
+	private final BaseWritableFactory<M> messageValueFactory;
+	private final BaseQueryGlobalValuesFactory<Q> globalValuesFactory;
 
-	public abstract BaseWritableFactory<V> getVertexValueFactory();
 
-	public abstract BaseWritableFactory<E> getEdgeValueFactory();
+	public JobConfiguration(VertexFactory<V, E, M, Q> vertexFactory, BaseWritableFactory<V> vertexValueFactory,
+			BaseWritableFactory<E> edgeValueFactory, BaseWritableFactory<M> messageValueFactory,
+			BaseQueryGlobalValuesFactory<Q> globalValuesFactory) {
+		super();
+		this.vertexFactory = vertexFactory;
+		this.vertexValueFactory = vertexValueFactory;
+		this.edgeValueFactory = edgeValueFactory;
+		this.messageValueFactory = messageValueFactory;
+		this.globalValuesFactory = globalValuesFactory;
+	}
 
-	public abstract BaseWritableFactory<M> getMessageValueFactory();
 
-	public abstract BaseQueryGlobalValuesFactory<Q> getGlobalValuesFactory();
+	public VertexFactory<V, E, M, Q> getVertexFactory() {
+		return vertexFactory;
+	}
+
+	public BaseWritableFactory<V> getVertexValueFactory() {
+		return vertexValueFactory;
+	}
+
+	public BaseWritableFactory<E> getEdgeValueFactory() {
+		return edgeValueFactory;
+	}
+
+	public BaseWritableFactory<M> getMessageValueFactory() {
+		return messageValueFactory;
+	}
+
+	public BaseQueryGlobalValuesFactory<Q> getGlobalValuesFactory() {
+		return globalValuesFactory;
+	}
 }

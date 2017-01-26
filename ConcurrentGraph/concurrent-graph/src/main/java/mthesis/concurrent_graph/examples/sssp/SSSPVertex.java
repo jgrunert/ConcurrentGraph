@@ -1,7 +1,9 @@
 package mthesis.concurrent_graph.examples.sssp;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
@@ -20,6 +22,12 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 	public SSSPVertex(int id,
 			VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> messageSender) {
 		super(id, messageSender);
+	}
+
+	public SSSPVertex(ByteBuffer bufferToRead,
+			VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> worker,
+			JobConfiguration<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> jobConfig) {
+		super(bufferToRead, worker, jobConfig);
 	}
 
 	@Override
@@ -111,6 +119,13 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 		public AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> newInstance(int id,
 				VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> messageSender) {
 			return new SSSPVertex(id, messageSender);
+		}
+
+		@Override
+		public AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> newInstance(ByteBuffer bufferToRead,
+				VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> worker,
+				JobConfiguration<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> jobConfig) {
+			return new SSSPVertex(bufferToRead, worker, jobConfig);
 		}
 	}
 }
