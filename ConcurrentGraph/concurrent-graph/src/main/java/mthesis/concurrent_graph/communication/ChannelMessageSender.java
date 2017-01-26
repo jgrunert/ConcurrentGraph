@@ -24,7 +24,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  * @author Jonas Grunert
  *
  */
-public class ChannelMessageSender<M extends BaseWritable> {
+public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable> {
 
 	private final Logger logger;
 	private final Socket socket;
@@ -112,6 +112,14 @@ public class ChannelMessageSender<M extends BaseWritable> {
 		outMessages.add(new GetToKnowMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
 	}
 
+	public void sendMoveVerticesMessage(int srcMachine, Collection<V> vertices, int queryId) {
+		outMessages.add(new MoveVerticesMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
+	}
+
+	public void sendInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> vertices, int queryId) {
+		outMessages.add(new InvalidateRegisteredVerticesMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
+	}
+
 	public void flush() {
 		outMessages.add(new FlushDummyMessage()); // TODO Object pooling?
 	}
@@ -174,6 +182,38 @@ public class ChannelMessageSender<M extends BaseWritable> {
 		}
 	}
 
+	private class MessageEnvelopeToSend implements MessageToSend {
+
+		private final MessageEnvelope message;
+		private final boolean flushAfter;
+
+		public MessageEnvelopeToSend(MessageEnvelope message, boolean flushAfter) {
+			this.message = message;
+			this.flushAfter = flushAfter;
+		}
+
+		@Override
+		public byte getTypeCode() {
+			return 1;
+		}
+
+		@Override
+		public void writeMessageToBuffer(ByteBuffer buffer) {
+			buffer.put(message.toByteArray());
+		}
+
+
+		@Override
+		public boolean hasContent() {
+			return true;
+		}
+
+		@Override
+		public boolean flushAfter() {
+			return flushAfter;
+		}
+	}
+
 	private class GetToKnowMessageToSend implements MessageToSend {
 
 		private final int srcMachine;
@@ -213,26 +253,18 @@ public class ChannelMessageSender<M extends BaseWritable> {
 		}
 	}
 
-	private class MessageEnvelopeToSend implements MessageToSend {
+	private class MoveVerticesMessageToSend implements MessageToSend {
 
-		private final MessageEnvelope message;
-		private final boolean flushAfter;
+		private final int srcMachine;
+		private final int queryId;
+		private final Collection<V> vertices;
 
-		public MessageEnvelopeToSend(MessageEnvelope message, boolean flushAfter) {
-			this.message = message;
-			this.flushAfter = flushAfter;
+		public MoveVerticesMessageToSend(int srcMachine, int queryId, Collection<V> vertices) {
+			super();
+			this.srcMachine = srcMachine;
+			this.vertices = vertices;
+			this.queryId = queryId;
 		}
-
-		@Override
-		public byte getTypeCode() {
-			return 1;
-		}
-
-		@Override
-		public void writeMessageToBuffer(ByteBuffer buffer) {
-			buffer.put(message.toByteArray());
-		}
-
 
 		@Override
 		public boolean hasContent() {
@@ -241,7 +273,61 @@ public class ChannelMessageSender<M extends BaseWritable> {
 
 		@Override
 		public boolean flushAfter() {
-			return flushAfter;
+			return false;
+		}
+
+		@Override
+		public byte getTypeCode() {
+			return 3;
+		}
+
+		@Override
+		public void writeMessageToBuffer(ByteBuffer buffer) {
+			buffer.putInt(srcMachine);
+			buffer.putInt(queryId);
+			buffer.putInt(vertices.size());
+			for (final V vert : vertices) {
+				vert.writeToBuffer(buffer);
+			}
+		}
+	}
+
+	private class InvalidateRegisteredVerticesMessageToSend implements MessageToSend {
+
+		private final int srcMachine;
+		private final int queryId;
+		private final Collection<Integer> vertices;
+
+		public InvalidateRegisteredVerticesMessageToSend(int srcMachine, int queryId, Collection<Integer> vertices) {
+			super();
+			this.srcMachine = srcMachine;
+			this.vertices = vertices;
+			this.queryId = queryId;
+		}
+
+		@Override
+		public boolean hasContent() {
+			return true;
+		}
+
+		@Override
+		public boolean flushAfter() {
+			return false;
+		}
+
+		@Override
+		public byte getTypeCode() {
+			return 5;
+		}
+
+		@Override
+		public void writeMessageToBuffer(ByteBuffer buffer) {
+			buffer.putInt(srcMachine);
+			buffer.putInt(queryId);
+			buffer.putInt(vertices.size());
+			for (final Integer vert : vertices) {
+				buffer.putInt(vert);
+			}
 		}
 	}
 

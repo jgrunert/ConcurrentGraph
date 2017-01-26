@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.util.Pair;
@@ -25,7 +26,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  * @author Jonas Grunert
  *
  */
-public class ChannelMessageReceiver<M extends BaseWritable> {
+public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
 	private final Logger logger;
 	private final int ownId;
@@ -33,13 +34,13 @@ public class ChannelMessageReceiver<M extends BaseWritable> {
 	private final InputStream reader;
 	private final byte[] inBytes = new byte[Settings.MAX_MESSAGE_SIZE];
 	private final ByteBuffer inBuffer = ByteBuffer.wrap(inBytes);
-	private final MessageSenderAndReceiver<M> inMsgHandler;
+	private final MessageSenderAndReceiver<V, E, M, Q> inMsgHandler;
 	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 	private Thread thread;
 	private volatile boolean readyForClose;
 
 	public ChannelMessageReceiver(Socket socket, InputStream reader, int ownId,
-			MessageSenderAndReceiver<M> inMsgHandler, BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
+			MessageSenderAndReceiver<V, E, M, Q> inMsgHandler, BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
 		this.ownId = ownId;
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;

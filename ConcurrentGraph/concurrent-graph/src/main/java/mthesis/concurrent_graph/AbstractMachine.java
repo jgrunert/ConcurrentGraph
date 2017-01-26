@@ -19,13 +19,13 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  *
  * @author Jonas Grunert
  */
-public abstract class AbstractMachine<M extends BaseWritable> {
+public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
 	protected final Logger logger;
 	//private final Map<Integer, Pair<String, Integer>> machines;
 	protected final int ownId;
 
-	protected final MessageSenderAndReceiver<M> messaging;
+	protected final MessageSenderAndReceiver<V, E, M, Q> messaging;
 
 	private Thread runThread;
 
@@ -35,7 +35,7 @@ public abstract class AbstractMachine<M extends BaseWritable> {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		//this.machines = machines;
 		this.ownId = ownId;
-		this.messaging = new MessageSenderAndReceiver<>(machines, ownId, this, vertexMessageFactory);
+		this.messaging = new MessageSenderAndReceiver<V, E, M, Q>(machines, ownId, this, vertexMessageFactory);
 	}
 
 	public void start() {

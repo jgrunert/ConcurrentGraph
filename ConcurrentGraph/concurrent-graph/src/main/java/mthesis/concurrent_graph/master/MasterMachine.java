@@ -39,7 +39,7 @@ import mthesis.concurrent_graph.writable.NullWritable;
  * @param <Q>
  *            Global query values
  */
-public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMachine<NullWritable> {
+public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMachine<NullWritable, NullWritable, NullWritable, Q> {
 
 	private long masterStartTime;
 	private final List<Integer> workerIds;
