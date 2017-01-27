@@ -102,8 +102,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private void loadVertices(List<String> partitions) {
 		List<AbstractVertex<V, E, M, Q>> localVerticesList = vertexReader.getVertices(partitions, jobConfig, this);
-		for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
-			localVertices.put(vertex.ID, vertex);
+		synchronized (localVertices) {
+			for (final AbstractVertex<V, E, M, Q> vertex : localVerticesList) {
+				localVertices.put(vertex.ID, vertex);
+			}
 		}
 	}
 
@@ -490,13 +492,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void sendQueryVertices(WorkerQuery<V, E, M, Q> query, int sendToWorker) {
 		int queryId = query.QueryId;
 		List<AbstractVertex<V, E, M, Q>> verticesToMove = new ArrayList<>();
-		for (AbstractVertex<V, E, M, Q> activeVertex : query.ActiveVerticesThis.values()) {
-			localVertices.remove(activeVertex.ID);
-			verticesToMove.add(activeVertex);
-			// Send vertices if bucket full
-			if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
-				messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
-				verticesToMove = new ArrayList<>();
+		synchronized (localVertices) {
+			for (AbstractVertex<V, E, M, Q> activeVertex : query.ActiveVerticesThis.values()) {
+				localVertices.remove(activeVertex.ID);
+				verticesToMove.add(activeVertex);
+				// Send vertices if bucket full
+				if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
+					messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
+					verticesToMove = new ArrayList<>();
+				}
 			}
 		}
 		query.ActiveVerticesThis.clear();
