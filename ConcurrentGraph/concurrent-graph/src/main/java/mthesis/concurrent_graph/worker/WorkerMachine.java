@@ -148,7 +148,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					synchronized (activeQuery) {
 						int queryId = activeQuery.Query.QueryId;
 						int superstepNo = activeQuery.getStartedSuperstepNo();
-						System.out.println(ownId + " CALC " + superstepNo);
 
 						// Next superstep. Compute and Messaging (done by vertices)
 						logger.debug("Worker start query " + queryId + " superstep compute " + superstepNo);
@@ -230,7 +229,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 	private void sendWorkersSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery) {
-		System.out.println(ownId + " Send " + workerQuery.getStartedSuperstepNo());
 		messaging.sendControlMessageMulticast(otherWorkerIds,
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepBarrier(workerQuery.getStartedSuperstepNo(), ownId, workerQuery.Query),
 				true);
@@ -361,7 +359,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					case Worker_Query_Superstep_Barrier: {
 						Q query = deserializeQuery(message.getQueryValues());
 						WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(query.QueryId);
-						System.out.println(ownId + " Received " + message.getSuperstepNo());
 
 						// We have to wait if the query is not already started
 						while (activeQuery == null) {
@@ -462,9 +459,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					|| activeQuery.VertexMovesReceived.size() == activeQuery.VertexMovesWaitingFor.size()) {
 				assert activeQuery.VertexMovesWaitingFor.isEmpty()
 						|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
-				System.out.println(ownId + " SNS1 " + (activeQuery.getStartedSuperstepNo() + 1));
-				if (activeQuery.getStartedSuperstepNo() != activeQuery.getCalculatedSuperstepNo())
-					System.err.println("WTF");
 				startNextSuperstep(activeQuery);
 			}
 		}
@@ -477,8 +471,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void startNextSuperstep(WorkerQuery<V, E, M, Q> activeQuery) {
 		// Mark query as ready for compute superstep
 		activeQuery.startNextSuperstep();
-
-		System.out.println(ownId + " Start " + activeQuery.getStartedSuperstepNo());
 
 		// Start new barrier sync
 		synchronized (activeQuery.ChannelBarrierWaitSet) {
@@ -503,7 +495,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			verticesToMove.add(activeVertex);
 			// Send vertices if bucket full
 			if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
-				System.out.println(ownId + " multisegment " + verticesToMove.size());
 				messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
 				verticesToMove = new ArrayList<>();
 			}
@@ -670,10 +661,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				if (activeQuery.VertexMovesReceived.size() >= activeQuery.VertexMovesWaitingFor.size() &&
 						activeQuery.getPreparedSuperstepNo() == (activeQuery.getCalculatedSuperstepNo() + 1)) {
 					// All vertex moves received - start superstep
-					System.out.println("moved " + activeQuery.MovedVertices.size());
 					assert activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
-					System.out
-							.println(ownId + " SNS2 " + (activeQuery.getStartedSuperstepNo() + 1) + " " + activeQuery.VertexMovesReceived);
 					startNextSuperstep(activeQuery);
 				}
 			}

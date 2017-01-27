@@ -60,15 +60,6 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 							// Write position
 							final int msgLength = outBuffer.position();
 
-							// TODO Testcode
-							if (msgLength == 102) {
-								String line = "";
-								for (int i = 0; i < 104; i++) {
-									line += outBuffer.array()[i] + ", ";
-								}
-								System.out.println(line);
-							}
-
 							outBuffer.position(0);
 							outBuffer.putShort((short) (msgLength - 2));
 							// Send message
@@ -302,7 +293,6 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 			buffer.putInt(queryId);
 			buffer.put(lastSegment ? (byte) 0 : (byte) 1);
 			buffer.putInt(vertices.size());
-			System.out.println(srcMachine + " vertices " + vertices.size());
 			for (final AbstractVertex<V, E, M, Q> vert : vertices) {
 				vert.writeToBuffer(buffer);
 			}
