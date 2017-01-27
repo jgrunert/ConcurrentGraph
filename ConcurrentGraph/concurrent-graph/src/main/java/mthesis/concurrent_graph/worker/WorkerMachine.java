@@ -456,11 +456,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 
 			// Start next superstep if waiting for no vertices to move
+			activeQuery.preparedSuperstep();
+
 			if (activeQuery.VertexMovesWaitingFor.isEmpty()
 					|| activeQuery.VertexMovesReceived.size() == activeQuery.VertexMovesWaitingFor.size()) {
 				assert activeQuery.VertexMovesWaitingFor.isEmpty()
 						|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
 				System.out.println(ownId + " SNS1 " + (activeQuery.getStartedSuperstepNo() + 1));
+				if (activeQuery.getStartedSuperstepNo() != activeQuery.getCalculatedSuperstepNo())
+					System.err.println("WTF");
 				startNextSuperstep(activeQuery);
 			}
 		}
@@ -662,7 +666,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				assert !activeQuery.VertexMovesReceived.contains(srcMachine);
 				activeQuery.VertexMovesReceived.add(srcMachine);
 
-				if (activeQuery.VertexMovesReceived.size() >= activeQuery.VertexMovesWaitingFor.size()) {
+				// Start superstep if already received master start next superstep and all vertices received
+				if (activeQuery.VertexMovesReceived.size() >= activeQuery.VertexMovesWaitingFor.size() &&
+						activeQuery.getPreparedSuperstepNo() == (activeQuery.getCalculatedSuperstepNo() + 1)) {
 					// All vertex moves received - start superstep
 					System.out.println("moved " + activeQuery.MovedVertices.size());
 					assert activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);

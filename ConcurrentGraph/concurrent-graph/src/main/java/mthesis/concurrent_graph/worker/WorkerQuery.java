@@ -26,6 +26,8 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	private volatile int calculatedSuperstepNo = -1;
 	// Last superstep when finished barrier sync
 	private volatile int barrierFinishedSuperstepNo = -1;
+	// Superstep prepared, confirmed by master. Is >= CalculatedSuperstepNo
+	private volatile int preparedSuperstepNo = 0;
 	// Superstep to start, confirmed by master and ready. Is >= CalculatedSuperstepNo
 	private volatile int startedSuperstepNo = 0;
 
@@ -70,9 +72,13 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 		barrierFinishedSuperstepNo++;
 	}
 
+	public void preparedSuperstep() {
+		assert preparedSuperstepNo == calculatedSuperstepNo && preparedSuperstepNo == barrierFinishedSuperstepNo;
+		preparedSuperstepNo++;
+	}
+
 	public void startNextSuperstep() {
-		assert startedSuperstepNo == calculatedSuperstepNo;
-		//assert startedSuperstepNo == calculatedSuperstepNo && startedSuperstepNo == barrierFinishedSuperstepNo;
+		assert (startedSuperstepNo + 1) == preparedSuperstepNo;
 		startedSuperstepNo++;
 	}
 
@@ -83,6 +89,10 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 
 	public int getBarrierFinishedSuperstepNo() {
 		return barrierFinishedSuperstepNo;
+	}
+
+	public int getPreparedSuperstepNo() {
+		return preparedSuperstepNo;
 	}
 
 	public int getStartedSuperstepNo() {
