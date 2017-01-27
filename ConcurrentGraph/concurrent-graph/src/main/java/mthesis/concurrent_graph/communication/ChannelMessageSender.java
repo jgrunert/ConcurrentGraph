@@ -302,6 +302,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 			buffer.putInt(queryId);
 			buffer.put(lastSegment ? (byte) 0 : (byte) 1);
 			buffer.putInt(vertices.size());
+			System.out.println(srcMachine + " vertices " + vertices.size());
 			for (final AbstractVertex<V, E, M, Q> vert : vertices) {
 				vert.writeToBuffer(buffer);
 			}

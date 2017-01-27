@@ -9,7 +9,7 @@ public class Settings {
 	/** Maximum number of messages per vertex message. Must ensure that messages not >MAX_MESSAGE_SIZE/MsgSize. */
 	public static final int VERTEX_MESSAGE_BUCKET_MAX_MESSAGES = 512; // TODO Could be not constant, depending on message content size
 	/** Maximum number of vertices per vertex-move message. Must ensure that messages not >MAX_MESSAGE_SIZE/VertSize. */
-	public static final int VERTEX_MOVE_BUCKET_MAX_VERTICES = 512; // TODO Could be not constant, depending on message content size
+	public static final int VERTEX_MOVE_BUCKET_MAX_VERTICES = 128; // TODO Could be not constant, depending on message content size
 
 	//	public static final boolean KEEPALIVE = true;
 	public static final boolean TCP_NODELAY = true;

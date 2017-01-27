@@ -1,7 +1,9 @@
 package mthesis.concurrent_graph.worker;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -39,6 +41,13 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> ActiveVerticesThis = new ConcurrentHashMap<>();
 	//	public IntSet ActiveVertices = new IntOpenHashSet();
 
+	// Vertices of this query, moved to this machine, for the current superstep. Apply before beginning superstep.
+	public List<AbstractVertex<V, E, M, Q>> MovedVertices = new ArrayList<>();
+	// Set of machines to wait for to move vertices here, for the current superstep.
+	public Set<Integer> VertexMovesWaitingFor = new HashSet<>();
+	// Machine received vertices from, for the current superstep.
+	public Set<Integer> VertexMovesReceived = new HashSet<>();
+
 
 	public WorkerQuery(Q globalQueryValues, BaseQueryGlobalValuesFactory<Q> globalValueFactory,
 			Collection<Integer> vertexIds) {
@@ -52,14 +61,18 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	}
 
 	public void calculatedSuperstep() {
+		assert (calculatedSuperstepNo + 1) == startedSuperstepNo;
 		calculatedSuperstepNo++;
 	}
 
 	public void finishedBarrierSync() {
+		assert (barrierFinishedSuperstepNo + 1) == startedSuperstepNo;
 		barrierFinishedSuperstepNo++;
 	}
 
 	public void startNextSuperstep() {
+		assert startedSuperstepNo == calculatedSuperstepNo;
+		//assert startedSuperstepNo == calculatedSuperstepNo && startedSuperstepNo == barrierFinishedSuperstepNo;
 		startedSuperstepNo++;
 	}
 
@@ -72,7 +85,7 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 		return barrierFinishedSuperstepNo;
 	}
 
-	public int getMasterSuperstepNo() {
+	public int getStartedSuperstepNo() {
 		return startedSuperstepNo;
 	}
 }
