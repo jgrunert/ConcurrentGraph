@@ -460,48 +460,57 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	 * Let workers start next superstep of a query. Make decisions about vertices to move.
 	 */
 	private void startWorkersQueryNextSuperstep(Q query, int superstepNo) {
-		// Evaluate intersections, decide if move vertices
-		Map<Integer, Integer> workerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
-		Map<Integer, Integer> workerIntersectsSum = new HashMap<>(workerActiveVerts.size());
-		for (Entry<Integer, Map<Integer, Integer>> wIntersects : actQueryWorkerIntersects.get(query.QueryId).entrySet()) {
-			int intersectSum = 0;
-			for (Integer intersect : wIntersects.getValue().values()) {
-				intersectSum += intersect;
+		if (Settings.VERTEX_MOVE_ENABLED) {
+			// Evaluate intersections, decide if move vertices
+			Map<Integer, Integer> workerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
+			Map<Integer, Integer> workerIntersectsSum = new HashMap<>(workerActiveVerts.size());
+			for (Entry<Integer, Map<Integer, Integer>> wIntersects : actQueryWorkerIntersects.get(query.QueryId).entrySet()) {
+				int intersectSum = 0;
+				for (Integer intersect : wIntersects.getValue().values()) {
+					intersectSum += intersect;
+				}
+				workerIntersectsSum.put(wIntersects.getKey(), intersectSum);
+				if (intersectSum > 0) { // TODO Testcode
+					System.err.println("INTERSECT " + wIntersects);
+				}
 			}
-			workerIntersectsSum.put(wIntersects.getKey(), intersectSum);
-			if (intersectSum > 0) { // TODO Testcode
-				System.err.println("INTERSECT " + wIntersects);
+
+			// TODO Just a simple test algorithm: Move all other vertices to worker with most active vertices
+			List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(workerActiveVerts).keySet());
+			int receivingWorker = sortedWorkers.get(0);
+			List<Integer> sendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
+			List<Integer> notSendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
+			for (int i = 1; i < sortedWorkers.size(); i++) {
+				int workerId = sortedWorkers.get(i);
+				// Only move vertices from workers with active, query-exclusive vertices
+				if (workerActiveVerts.get(workerId) > 0 && workerIntersectsSum.get(workerId) == 0)
+					sendingWorkers.add(workerId);
+				else
+					notSendingWorkers.add(workerId);
+			}
+
+			//		System.out.println("/////");
+			//		System.out.println(workerActiveVerts);
+			//		System.out.println(
+			//				"receivingWorker " + receivingWorker + " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
+
+			messaging.sendControlMessageUnicast(receivingWorker,
+					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertReceive(superstepNo, ownId, query, sendingWorkers), true);
+			for (Integer otherWorkerId : sendingWorkers) {
+				messaging.sendControlMessageUnicast(otherWorkerId,
+						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertSend(superstepNo, ownId, query, receivingWorker), true);
+			}
+			for (Integer otherWorkerId : notSendingWorkers) {
+				messaging.sendControlMessageUnicast(otherWorkerId,
+						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
 			}
 		}
-
-		// TODO Just a simple test algorithm: Move all other vertices to worker with most active vertices
-		List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(workerActiveVerts).keySet());
-		int receivingWorker = sortedWorkers.get(0);
-		List<Integer> sendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
-		List<Integer> notSendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
-		for (int i = 1; i < sortedWorkers.size(); i++) {
-			int workerId = sortedWorkers.get(i);
-			// Only move vertices from workers with active, query-exclusive vertices
-			if (workerActiveVerts.get(workerId) > 0 && workerIntersectsSum.get(workerId) == 0)
-				sendingWorkers.add(workerId);
-			else
-				notSendingWorkers.add(workerId);
-		}
-
-		//		System.out.println("/////");
-		//		System.out.println(workerActiveVerts);
-		//		System.out.println(
-		//				"receivingWorker " + receivingWorker + " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
-
-		messaging.sendControlMessageUnicast(receivingWorker,
-				ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertReceive(superstepNo, ownId, query, sendingWorkers), true);
-		for (Integer otherWorkerId : sendingWorkers) {
-			messaging.sendControlMessageUnicast(otherWorkerId,
-					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertSend(superstepNo, ownId, query, receivingWorker), true);
-		}
-		for (Integer otherWorkerId : notSendingWorkers) {
-			messaging.sendControlMessageUnicast(otherWorkerId,
-					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
+		else {
+			// No vertex move
+			for (Integer otherWorkerId : workerIds) {
+				messaging.sendControlMessageUnicast(otherWorkerId,
+						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
+			}
 		}
 	}
 

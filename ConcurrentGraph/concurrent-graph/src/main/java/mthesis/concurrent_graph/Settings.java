@@ -17,6 +17,9 @@ public class Settings {
 	public static final int CONNECT_TIMEOUT = 10000;
 	public static final int MESSAGE_TIMEOUT = 6000;
 
+
+	public static final boolean VERTEX_MOVE_ENABLED = true;
+
 	/**
 	 * When enabled, machines will discover and store mappings VertexId->Machine.
 	 * This is done by sending "get-to-know-messages":
