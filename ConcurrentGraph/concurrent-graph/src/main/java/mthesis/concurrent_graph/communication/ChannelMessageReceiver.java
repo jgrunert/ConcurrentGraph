@@ -83,6 +83,14 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 							}
 						}
 
+						if (msgContentLength == 100) {
+							String line = "";
+							for (int i = 0; i < 104; i++) {
+								line += inBuffer.array()[i] + ", ";
+							}
+							System.out.println(line);
+						}
+
 						final byte msgType = inBuffer.get();
 						switch (msgType) {
 							case 0:

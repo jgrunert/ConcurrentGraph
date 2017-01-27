@@ -50,6 +50,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		this.worker = worker;
 		BaseWritableFactory<V> vertexValueFactory = jobConfig.getVertexValueFactory();
 		BaseWritableFactory<E> edgeValueFactory = jobConfig.getEdgeValueFactory();
+		BaseWritableFactory<M> messageValueFactory = jobConfig.getMessageValueFactory();
 
 		this.ID = bufferToRead.getInt();
 
@@ -64,12 +65,25 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 		int queryValuesCount = bufferToRead.getInt();
 		for (int i = 0; i < queryValuesCount; i++) {
-			queryValues.put(bufferToRead.getInt(), vertexValueFactory.createFromBytes(bufferToRead));
+			int key = bufferToRead.getInt();
+			V value = vertexValueFactory.createFromBytes(bufferToRead);
+			queryValues.put(key, value);
 		}
 
 		int queriesVertexInactiveCount = bufferToRead.getInt();
 		for (int i = 0; i < queriesVertexInactiveCount; i++) {
 			queriesVertexInactive.add(bufferToRead.getInt());
+		}
+
+		int queryMessagesThisSuperstepCount = bufferToRead.getInt();
+		for (int i = 0; i < queryMessagesThisSuperstepCount; i++) {
+			int key = bufferToRead.getInt();
+			int valueCount = bufferToRead.getInt();
+			List<M> msgs = new ArrayList<>(valueCount);
+			for (int iV = 0; iV < valueCount; iV++) {
+				msgs.add(messageValueFactory.createFromBytes(bufferToRead));
+			}
+			queryMessagesThisSuperstep.put(key, msgs);
 		}
 	}
 
@@ -97,8 +111,19 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			buffer.putInt(qi);
 		}
 
-		System.out.println(queryMessagesThisSuperstep.size() + " / " + queryMessagesNextSuperstep.size());
-		// TODO Send which queryMessages?
+		buffer.putInt(queryMessagesThisSuperstep.size());
+		for (Entry<Integer, List<M>> qMsgs : queryMessagesThisSuperstep.entrySet()) {
+			buffer.putInt(qMsgs.getKey());
+			buffer.putInt(qMsgs.getValue().size());
+			for (M msg : qMsgs.getValue()) {
+				msg.writeToBuffer(buffer);
+			}
+		}
+
+		for (List<M> qMsgs : queryMessagesNextSuperstep.values()) {
+			if (!qMsgs.isEmpty())
+				throw new RuntimeException("Cant send vertex with messages for next superstep");
+		}
 	}
 
 	public void finishQuery(int queryId) {

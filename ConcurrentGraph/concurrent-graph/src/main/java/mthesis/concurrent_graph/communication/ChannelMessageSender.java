@@ -59,6 +59,16 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 							message.writeMessageToBuffer(outBuffer);
 							// Write position
 							final int msgLength = outBuffer.position();
+
+							// TODO Testcode
+							if (msgLength == 102) {
+								String line = "";
+								for (int i = 0; i < 104; i++) {
+									line += outBuffer.array()[i] + ", ";
+								}
+								System.out.println(line);
+							}
+
 							outBuffer.position(0);
 							outBuffer.putShort((short) (msgLength - 2));
 							// Send message

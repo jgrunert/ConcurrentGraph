@@ -46,7 +46,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private final List<Integer> workerIds;
 	private final Set<Integer> workersToInitialize;
 	private Map<Integer, MasterQuery<Q>> activeQueries = new HashMap<>();
+
+	/** Map<Machine, Map<QueryId, ActiveVertexCount>> */
 	private Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts = new HashMap<>();
+	/** Map<Machine, Map<QueryId, Map<IntersectWithWorkerId, IntersectingsCount>>> */
+	private Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects = new HashMap<>();
 
 	// Query logging for later evaluation
 	private final boolean enableQueryStats = true;
@@ -136,9 +140,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			activeQueries.put(query.QueryId, activeQuery);
 
 			Map<Integer, Integer> queryWorkerAVerts = new HashMap<>();
-			for (Integer worker : workerIds)
+			for (Integer worker : workerIds) {
 				queryWorkerAVerts.put(worker, 0);
+			}
 			actQueryWorkerActiveVerts.put(query.QueryId, queryWorkerAVerts);
+			actQueryWorkerIntersects.put(query.QueryId, new HashMap<>());
 		}
 
 		// Start query on workers
@@ -177,6 +183,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	public synchronized void onIncomingControlMessage(ControlMessage message) {
 		// TODO No more super.onIncomingControlMessage(message);
 
+		int srcMachine = message.getSrcMachine();
+
 		// Process query
 		if (message.getType() == ControlMessageType.Worker_Initialized) {
 			// Process Worker_Initialized message
@@ -185,9 +193,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				return;
 			}
 
-			workersToInitialize.remove(message.getSrcMachine());
+			workersToInitialize.remove(srcMachine);
 			vertexCount += message.getWorkerInitialized().getVertexCount();
-			logger.debug("Worker initialized: " + message.getSrcMachine());
+			logger.debug("Worker initialized: " + srcMachine);
 
 			if (workersToInitialize.isEmpty()) {
 				logger.info("All workers initialized, " + workerIds.size() + " workers, " + vertexCount
@@ -218,14 +226,15 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 
 			// Check if a worker waiting for
-			if (!msgActiveQuery.workersWaitingFor.contains(message.getSrcMachine())) {
+			if (!msgActiveQuery.workersWaitingFor.contains(srcMachine)) {
 				logger.error("Query " + msgQueryOnWorker.QueryId + " not waiting for " + msgQueryOnWorker);
 				return;
 			}
-			msgActiveQuery.workersWaitingFor.remove(message.getSrcMachine());
+			msgActiveQuery.workersWaitingFor.remove(srcMachine);
 
 			// Query intersects on machine
-			//Map<Integer, Integer> queryIntersects = message.getQueryIntersections().getIntersectionsMap();
+			Map<Integer, Integer> queryIntersects = message.getQueryIntersections().getIntersectionsMap();
+			actQueryWorkerIntersects.get(msgQueryOnWorker.QueryId).put(srcMachine, queryIntersects);
 
 			if (message.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
 				if (!msgActiveQuery.IsComputing) {
@@ -234,7 +243,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					return;
 				}
 
-				actQueryWorkerActiveVerts.get(msgQueryOnWorker.QueryId).put(message.getSrcMachine(),
+				actQueryWorkerActiveVerts.get(msgQueryOnWorker.QueryId).put(srcMachine,
 						msgQueryOnWorker.getActiveVertices());
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
 
@@ -249,7 +258,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					else {
 						queryStepWorkerMap = queryStepList.get(message.getSuperstepNo());
 					}
-					queryStepWorkerMap.put(message.getSrcMachine(), msgQueryOnWorker);
+					queryStepWorkerMap.put(srcMachine, msgQueryOnWorker);
 				}
 
 				// Check if all workers finished superstep
@@ -310,8 +319,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					return;
 				}
 
-				msgActiveQuery.workersWaitingFor.remove(message.getSrcMachine());
-				logger.info("Worker " + message.getSrcMachine() + " finished query " + msgActiveQuery.BaseQuery.QueryId);
+				msgActiveQuery.workersWaitingFor.remove(srcMachine);
+				logger.info("Worker " + srcMachine + " finished query " + msgActiveQuery.BaseQuery.QueryId);
 
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
 					// All workers have query finished
@@ -453,15 +462,27 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private void startWorkersQueryNextSuperstep(Q query, int superstepNo) {
 		// Evaluate intersections, decide if move vertices
 		Map<Integer, Integer> workerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
+		Map<Integer, Integer> workerIntersectsSum = new HashMap<>(workerActiveVerts.size());
+		for (Entry<Integer, Map<Integer, Integer>> wIntersects : actQueryWorkerIntersects.get(query.QueryId).entrySet()) {
+			int intersectSum = 0;
+			for (Integer intersect : wIntersects.getValue().values()) {
+				intersectSum += intersect;
+			}
+			workerIntersectsSum.put(wIntersects.getKey(), intersectSum);
+			if (intersectSum > 0) { // TODO Testcode
+				System.err.println("INTERSECT " + wIntersects);
+			}
+		}
 
-		// TODO Just a simple test: Move all other vertices to worker with most active vertices
+		// TODO Just a simple test algorithm: Move all other vertices to worker with most active vertices
 		List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(workerActiveVerts).keySet());
 		int receivingWorker = sortedWorkers.get(0);
 		List<Integer> sendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
 		List<Integer> notSendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
 		for (int i = 1; i < sortedWorkers.size(); i++) {
 			int workerId = sortedWorkers.get(i);
-			if (workerActiveVerts.get(workerId) > 0)
+			// Only move vertices from workers with active, query-exclusive vertices
+			if (workerActiveVerts.get(workerId) > 0 && workerIntersectsSum.get(workerId) == 0)
 				sendingWorkers.add(workerId);
 			else
 				notSendingWorkers.add(workerId);
