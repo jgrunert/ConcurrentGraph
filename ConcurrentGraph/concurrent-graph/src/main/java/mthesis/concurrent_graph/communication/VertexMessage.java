@@ -9,7 +9,7 @@ import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-implements SendableMessage {
+		implements ChannelMessage {
 
 	public final int superstepNo;
 	public final int srcMachine;

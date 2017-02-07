@@ -5,12 +5,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mthesis.concurrent_graph.communication.GetToKnowMessage;
-import mthesis.concurrent_graph.communication.InvalidateRegisteredVerticesMessage;
+import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.MessageSenderAndReceiver;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage;
-import mthesis.concurrent_graph.communication.MoveVerticesMessage;
-import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -75,13 +71,5 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 	public abstract void run();
 
 
-	public abstract void onIncomingControlMessage(ControlMessage message);
-
-	public abstract void onIncomingVertexMessage(VertexMessage<V, E, M, Q> message);
-
-	public abstract void onIncomingGetToKnowMessage(GetToKnowMessage message);
-
-	public abstract void onIncomingMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message);
-
-	public abstract void onIncomingInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message);
+	public abstract void onIncomingMessage(ChannelMessage message);
 }

@@ -20,13 +20,12 @@ import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
-import mthesis.concurrent_graph.communication.GetToKnowMessage;
-import mthesis.concurrent_graph.communication.InvalidateRegisteredVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
-import mthesis.concurrent_graph.communication.MoveVerticesMessage;
-import mthesis.concurrent_graph.communication.VertexMessage;
+import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
+import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
@@ -181,13 +180,24 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 
 	@Override
-	public synchronized void onIncomingControlMessage(ControlMessage message) {
+	public synchronized void onIncomingMessage(ChannelMessage message) {
 		// TODO No more super.onIncomingControlMessage(message);
 
-		int srcMachine = message.getSrcMachine();
+		if (message.getTypeCode() != 1) {
+			logger.error("Master machine can only handle ProtoEnvelopeMessage");
+			return;
+		}
+		MessageEnvelope protoMsg = ((ProtoEnvelopeMessage) message).message;
+		if (!protoMsg.hasControlMessage()) {
+			logger.error("Master machine can only handle ProtoEnvelopeMessage with ControlMessage");
+			return;
+		}
+		ControlMessage controlMsg = protoMsg.getControlMessage();
+
+		int srcMachine = controlMsg.getSrcMachine();
 
 		// Process query
-		if (message.getType() == ControlMessageType.Worker_Initialized) {
+		if (controlMsg.getType() == ControlMessageType.Worker_Initialized) {
 			// Process Worker_Initialized message
 			if (workersToInitialize.isEmpty()) {
 				logger.error("Received Worker_Initialized but all workers intitialized");
@@ -195,7 +205,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 
 			workersToInitialize.remove(srcMachine);
-			vertexCount += message.getWorkerInitialized().getVertexCount();
+			vertexCount += controlMsg.getWorkerInitialized().getVertexCount();
 			logger.debug("Worker initialized: " + srcMachine);
 
 			if (workersToInitialize.isEmpty()) {
@@ -203,8 +213,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						+ " vertices after " + (System.currentTimeMillis() - masterStartTime) + "ms");
 			}
 		}
-		else if (message.getType() == ControlMessageType.Worker_Query_Superstep_Finished
-				|| message.getType() == ControlMessageType.Worker_Query_Finished) {
+		else if (controlMsg.getType() == ControlMessageType.Worker_Query_Superstep_Finished
+				|| controlMsg.getType() == ControlMessageType.Worker_Query_Finished) {
 			// Process worker query message
 			if (!workersToInitialize.isEmpty()) {
 				logger.error("Received non-Worker_Initialized but not all workers intitialized");
@@ -212,16 +222,16 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 
 			// Get message query
-			if (message.getQueryValues().size() == 0)
+			if (controlMsg.getQueryValues().size() == 0)
 				throw new RuntimeException("Control message without query: " + message);
 			Q msgQueryOnWorker = queryValueFactory
-					.createFromBytes(ByteBuffer.wrap(message.getQueryValues().toByteArray()));
+					.createFromBytes(ByteBuffer.wrap(controlMsg.getQueryValues().toByteArray()));
 			MasterQuery<Q> msgActiveQuery = activeQueries.get(msgQueryOnWorker.QueryId);
 			if (msgActiveQuery == null)
 				throw new RuntimeException("Control message without ungknown query: " + message);
 
 			// Check superstep
-			if (message.getSuperstepNo() != msgActiveQuery.SuperstepNo) {
+			if (controlMsg.getSuperstepNo() != msgActiveQuery.SuperstepNo) {
 				logger.error("Message for wrong superstep. not " + msgActiveQuery.SuperstepNo + ": " + message);
 				return;
 			}
@@ -234,10 +244,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			msgActiveQuery.workersWaitingFor.remove(srcMachine);
 
 			// Query intersects on machine
-			Map<Integer, Integer> queryIntersects = message.getQueryIntersections().getIntersectionsMap();
+			Map<Integer, Integer> queryIntersects = controlMsg.getQueryIntersections().getIntersectionsMap();
 			actQueryWorkerIntersects.get(msgQueryOnWorker.QueryId).put(srcMachine, queryIntersects);
 
-			if (message.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
+			if (controlMsg.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
 				if (!msgActiveQuery.IsComputing) {
 					logger.error(
 							"Query " + msgQueryOnWorker.QueryId + " not computing, wrong message: " + msgQueryOnWorker);
@@ -252,12 +262,12 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				if (enableQueryStats) {
 					List<SortedMap<Integer, Q>> queryStepList = queryStatsStepMachines.get(msgQueryOnWorker.QueryId);
 					SortedMap<Integer, Q> queryStepWorkerMap;
-					if (queryStepList.size() <= message.getSuperstepNo()) {
+					if (queryStepList.size() <= controlMsg.getSuperstepNo()) {
 						queryStepWorkerMap = new TreeMap<>();
 						queryStepList.add(queryStepWorkerMap);
 					}
 					else {
-						queryStepWorkerMap = queryStepList.get(message.getSuperstepNo());
+						queryStepWorkerMap = queryStepList.get(controlMsg.getSuperstepNo());
 					}
 					queryStepWorkerMap.put(srcMachine, msgQueryOnWorker);
 				}
@@ -474,9 +484,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					intersectSum += intersect;
 				}
 				workerIntersectsSum.put(wIntersects.getKey(), intersectSum);
-				//				if (intersectSum > 0) { // TODO Testcode
-				//					System.err.println("INTERSECT " + wIntersects.getKey() + " " + wIntersects);
-				//				}
+				if (intersectSum > 0) { // TODO Testcode
+					System.err.println("INTERSECT " + wIntersects.getKey() + " " + wIntersects);
+				}
 			}
 
 			// TODO Just a simple test algorithm: Move all other vertices to worker with most active vertices
@@ -494,8 +504,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 
 			//			System.out.println(workerActiveVerts);
-			//			System.out.println("receivingWorker " + receivingWorker + " sendingWorkers " + sendingWorkers
-			//					+ " notSendingWorkers " + notSendingWorkers);
+
+			//			if (!sendingWorkers.isEmpty())
+			//				System.out.println(query.QueryId + ":" + superstepNo + " receivingWorker " + receivingWorker
+			//						+ " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
 
 			messaging.sendControlMessageUnicast(receivingWorker,
 					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertReceive(superstepNo, ownId, query, sendingWorkers), true);
@@ -525,27 +537,5 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private void signalWorkersShutdown() {
 		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_Shutdown(ownId),
 				true);
-	}
-
-
-	@Override
-	public void onIncomingVertexMessage(VertexMessage<NullWritable, NullWritable, NullWritable, Q> message) {
-		throw new RuntimeException("Master cannot handle VertexMessage");
-	}
-
-	@Override
-	public void onIncomingGetToKnowMessage(GetToKnowMessage message) {
-		throw new RuntimeException("Master cannot handle GetToKnowMessage");
-	}
-
-	@Override
-	public void onIncomingMoveVerticesMessage(
-			MoveVerticesMessage<NullWritable, NullWritable, NullWritable, Q> message) {
-		throw new RuntimeException("Master cannot handle MoveVerticesMessage");
-	}
-
-	@Override
-	public void onIncomingInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message) {
-		throw new RuntimeException("Master cannot handle InvalidateRegisteredVerticesMessage");
 	}
 }

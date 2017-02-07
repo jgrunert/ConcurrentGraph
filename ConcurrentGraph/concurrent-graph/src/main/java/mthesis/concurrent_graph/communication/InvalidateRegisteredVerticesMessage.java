@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class InvalidateRegisteredVerticesMessage implements SendableMessage {
+public class InvalidateRegisteredVerticesMessage implements ChannelMessage {
 
 	private final int srcMachine;
 	private final int queryId;

@@ -2,7 +2,13 @@ package mthesis.concurrent_graph.communication;
 
 import java.nio.ByteBuffer;
 
-interface SendableMessage {
+/**
+ * Message for transfer in channels between machines.
+ *
+ * @author Jonas Grunert
+ *
+ */
+public interface ChannelMessage {
 
 	boolean hasContent();
 

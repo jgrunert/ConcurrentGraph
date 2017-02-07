@@ -20,11 +20,14 @@ import mthesis.concurrent_graph.BaseQueryGlobalValues.QueryStats;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.GetToKnowMessage;
 import mthesis.concurrent_graph.communication.InvalidateRegisteredVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
+import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.communication.VertexMessageBucket;
 import mthesis.concurrent_graph.util.MiscUtil;
@@ -75,11 +78,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private final VertexMessageBucket<M> vertexMessageBroadcastBucket = new VertexMessageBucket<>();
 	private final Map<Integer, VertexMessageBucket<M>> vertexMessageMachineBuckets = new HashMap<>();
 
-	private final ConcurrentLinkedQueue<ControlMessage> receivedControlMessages = new ConcurrentLinkedQueue<>();
-	private final ConcurrentLinkedQueue<VertexMessage<V, E, M, Q>> receivedVertexMessages = new ConcurrentLinkedQueue<>();
-	private final ConcurrentLinkedQueue<GetToKnowMessage> receivedGetToKnowMessages = new ConcurrentLinkedQueue<>();
-	private final ConcurrentLinkedQueue<MoveVerticesMessage<V, E, M, Q>> receivedMoveVerticesMessages = new ConcurrentLinkedQueue<>();
-	private final ConcurrentLinkedQueue<InvalidateRegisteredVerticesMessage> receivedInvVertsMessages = new ConcurrentLinkedQueue<>();
+	private final ConcurrentLinkedQueue<ChannelMessage> receivedMessages = new ConcurrentLinkedQueue<>();
 
 
 
@@ -221,17 +220,33 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	/**
 	 * Handles all messages in received queues.
 	 */
+	@SuppressWarnings("unchecked")
 	private void handleReceivedMessages() {
-		while (!receivedControlMessages.isEmpty())
-			handleControlMessage(receivedControlMessages.poll());
-		while (!receivedVertexMessages.isEmpty())
-			handleVertexMessage(receivedVertexMessages.poll());
-		while (!receivedGetToKnowMessages.isEmpty())
-			handleGetToKnowMessage(receivedGetToKnowMessages.poll());
-		while (!receivedMoveVerticesMessages.isEmpty())
-			handleMoveVerticesMessage(receivedMoveVerticesMessages.poll());
-		while (!receivedInvVertsMessages.isEmpty())
-			handleInvalidateRegisteredVerticesMessage(receivedInvVertsMessages.poll());
+		ChannelMessage message;
+		while ((message = receivedMessages.poll()) != null) {
+			switch (message.getTypeCode()) {
+				case 0:
+					handleVertexMessage((VertexMessage<V, E, M, Q>) message);
+					break;
+				case 1:
+					MessageEnvelope msgEnvelope = ((ProtoEnvelopeMessage) message).message;
+					if (msgEnvelope.hasControlMessage()) handleControlMessage(msgEnvelope.getControlMessage());
+					break;
+				case 2:
+					handleGetToKnowMessage((GetToKnowMessage) message);
+					break;
+				case 3:
+					handleMoveVerticesMessage((MoveVerticesMessage<V, E, M, Q>) message);
+					break;
+				case 4:
+					handleInvalidateRegisteredVerticesMessage((InvalidateRegisteredVerticesMessage) message);
+					break;
+
+				default:
+					logger.warn("Unknown incoming message id: " + message.getTypeCode());
+					break;
+			}
+		}
 	}
 
 
@@ -342,14 +357,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		return msgList;
 	}
 
-	// TODO Flush all channels at end of frame
-
-
 
 	@Override
-	public void onIncomingControlMessage(ControlMessage message) {
-		receivedControlMessages.add(message);
+	public void onIncomingMessage(ChannelMessage message) {
+		receivedMessages.add(message);
 	}
+
 
 	public void handleControlMessage(ControlMessage message) {
 		try {
@@ -582,11 +595,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	}
 
 
-	@Override
-	public void onIncomingVertexMessage(VertexMessage<V, E, M, Q> message) {
-		receivedVertexMessages.add(message);
-	}
-
 	public void handleVertexMessage(VertexMessage<V, E, M, Q> message) {
 		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
 		int superstepNo = activeQuery.getCalculatedSuperstepNo();
@@ -644,10 +652,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 	}
 
-	@Override
-	public void onIncomingGetToKnowMessage(GetToKnowMessage message) {
-		receivedGetToKnowMessages.add(message);
-	}
 
 	public void handleGetToKnowMessage(GetToKnowMessage message) {
 		for (final Integer srcVertex : message.vertices) {
@@ -656,10 +660,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 	}
 
-	@Override
-	public void onIncomingMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
-		receivedMoveVerticesMessages.add(message);
-	}
 
 	public void handleMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
 		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
@@ -686,10 +686,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 	}
 
-	@Override
-	public void onIncomingInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message) {
-		receivedInvVertsMessages.add(message);
-	}
 
 	public void handleInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message) {
 		// TODO

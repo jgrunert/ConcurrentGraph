@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class GetToKnowMessage implements SendableMessage {
+public class GetToKnowMessage implements ChannelMessage {
 
 	public final int srcMachine;
 	public final int queryId;

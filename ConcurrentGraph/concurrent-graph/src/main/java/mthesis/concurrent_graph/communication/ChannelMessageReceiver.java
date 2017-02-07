@@ -92,20 +92,20 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 						switch (msgType) {
 							case 0:
 								inMsgHandler
-								.onIncomingVertexMessage(new VertexMessage<>(inBuffer, vertexMessageFactory));
+										.onIncomingMessage(new VertexMessage<>(inBuffer, vertexMessageFactory));
 								break;
 							case 1:
 								readIncomingMessageEnvelope(1, msgContentLength - 1);
 								break;
 							case 2:
-								inMsgHandler.onIncomingGetToKnowMessage(new GetToKnowMessage(inBuffer));
+								inMsgHandler.onIncomingMessage(new GetToKnowMessage(inBuffer));
 								break;
 							case 3:
-								inMsgHandler.onIncomingMoveVerticesMessage(
+								inMsgHandler.onIncomingMessage(
 										new MoveVerticesMessage<>(inBuffer, worker, jobConfig, vertexFactory));
 								break;
 							case 4:
-								inMsgHandler.onIncomingInvalidateRegisteredVerticesMessage(
+								inMsgHandler.onIncomingMessage(
 										new InvalidateRegisteredVerticesMessage(inBuffer));
 								break;
 
@@ -140,7 +140,7 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 
 	private void readIncomingMessageEnvelope(int offset, int size) throws InvalidProtocolBufferException {
 		final MessageEnvelope messageEnv = MessageEnvelope.parseFrom(ByteString.copyFrom(inBytes, offset, size));
-		if (messageEnv.hasControlMessage()) inMsgHandler.onIncomingControlMessage(messageEnv.getControlMessage());
+		inMsgHandler.onIncomingMessage(new ProtoEnvelopeMessage(messageEnv, false));
 	}
 
 

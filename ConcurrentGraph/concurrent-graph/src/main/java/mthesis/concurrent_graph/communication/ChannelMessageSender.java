@@ -33,7 +33,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 	private final OutputStream writer;
 	private final byte[] outBytes = new byte[Settings.MAX_MESSAGE_SIZE];
 	private final ByteBuffer outBuffer = ByteBuffer.wrap(outBytes);
-	private final BlockingQueue<SendableMessage> outMessages = new LinkedBlockingQueue<>();
+	private final BlockingQueue<ChannelMessage> outMessages = new LinkedBlockingQueue<>();
 	private Thread senderThread;
 
 
@@ -50,7 +50,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 			public void run() {
 				try {
 					while (!Thread.interrupted() && !socket.isClosed()) {
-						final SendableMessage message = outMessages.take();
+						final ChannelMessage message = outMessages.take();
 
 						// Format: short MsgLength, byte MsgType, byte[] MsgContent
 						if (message.hasContent()) {
@@ -103,7 +103,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 
 
 	public void sendMessageEnvelope(MessageEnvelope message, boolean flush) {
-		outMessages.add(new MessageEnvelopeToSend(message, flush)); // TODO Object pooling?
+		outMessages.add(new ProtoEnvelopeMessage(message, flush)); // TODO Object pooling?
 	}
 
 	public void sendVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
@@ -129,41 +129,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 
 
 
-	private class MessageEnvelopeToSend implements SendableMessage {
-
-		private final MessageEnvelope message;
-		private final boolean flushAfter;
-
-		public MessageEnvelopeToSend(MessageEnvelope message, boolean flushAfter) {
-			this.message = message;
-			this.flushAfter = flushAfter;
-		}
-
-		@Override
-		public byte getTypeCode() {
-			return 1;
-		}
-
-		@Override
-		public void writeMessageToBuffer(ByteBuffer buffer) {
-			buffer.put(message.toByteArray());
-		}
-
-
-		@Override
-		public boolean hasContent() {
-			return true;
-		}
-
-		@Override
-		public boolean flushAfter() {
-			return flushAfter;
-		}
-	}
-
-
-
-	private class FlushDummyMessage implements SendableMessage {
+	private class FlushDummyMessage implements ChannelMessage {
 
 		@Override
 		public boolean hasContent() {

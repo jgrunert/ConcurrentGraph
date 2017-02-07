@@ -12,7 +12,7 @@ import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class MoveVerticesMessage<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-implements SendableMessage {
+implements ChannelMessage {
 
 	public final int srcMachine;
 	public final int queryId;
