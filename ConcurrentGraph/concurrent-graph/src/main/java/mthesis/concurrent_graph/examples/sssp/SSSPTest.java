@@ -62,7 +62,7 @@ public class SSSPTest {
 			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
 
 			// Very short Meersburg->Pfullendorf. Test query "1"
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
 
 			// Short Heidelberg->Heilbronn. Test query "2"
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
