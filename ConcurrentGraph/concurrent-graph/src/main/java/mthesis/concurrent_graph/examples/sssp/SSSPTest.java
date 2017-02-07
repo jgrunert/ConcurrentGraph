@@ -41,8 +41,8 @@ public class SSSPTest {
 		final List<WorkerMachine<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
 			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i))) workers
-					.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
-							new RoadNetVertexInputReader()));
+			.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
+					new RoadNetVertexInputReader()));
 		}
 
 		// Start query
@@ -64,7 +64,7 @@ public class SSSPTest {
 			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
 
 			// Short Heidelberg->Heilbronn. Test query "2"
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
 
 			// Short Heidelberg->Heilbronn. Test query "3"
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));

@@ -266,7 +266,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					// Wrong message count should match broadcast message count, therwise there might be communication errors.
 					if (workerIds.size() > 1
 							&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
-									/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
+							/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
 						// TODO Investigate why happening
 						//						logger.warn(String.format(
 						//								"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
@@ -460,6 +460,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	 * Let workers start next superstep of a query. Make decisions about vertices to move.
 	 */
 	private void startWorkersQueryNextSuperstep(Q query, int superstepNo) {
+
+		//		System.out.println("/////");
+
 		if (Settings.VERTEX_MOVE_ENABLED) {
 			// Evaluate intersections, decide if move vertices
 			Map<Integer, Integer> workerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
@@ -470,9 +473,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					intersectSum += intersect;
 				}
 				workerIntersectsSum.put(wIntersects.getKey(), intersectSum);
-				if (intersectSum > 0) { // TODO Testcode
-					System.err.println("INTERSECT " + wIntersects);
-				}
+				//				if (intersectSum > 0) { // TODO Testcode
+				//					System.err.println("INTERSECT " + wIntersects.getKey() + " " + wIntersects);
+				//				}
 			}
 
 			// TODO Just a simple test algorithm: Move all other vertices to worker with most active vertices
@@ -489,10 +492,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					notSendingWorkers.add(workerId);
 			}
 
-			//		System.out.println("/////");
-			//		System.out.println(workerActiveVerts);
-			//		System.out.println(
-			//				"receivingWorker " + receivingWorker + " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
+			//			System.out.println(workerActiveVerts);
+			//			System.out.println("receivingWorker " + receivingWorker + " sendingWorkers " + sendingWorkers
+			//					+ " notSendingWorkers " + notSendingWorkers);
 
 			messaging.sendControlMessageUnicast(receivingWorker,
 					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertReceive(superstepNo, ownId, query, sendingWorkers), true);
