@@ -120,7 +120,6 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			}
 		}
 
-		System.out.println(queryMessagesThisSuperstep + " " + queryMessagesNextSuperstep);
 		for (List<M> qMsgs : queryMessagesNextSuperstep.values()) {
 			if (!qMsgs.isEmpty())
 				throw new RuntimeException("Cant send vertex with messages for next superstep");

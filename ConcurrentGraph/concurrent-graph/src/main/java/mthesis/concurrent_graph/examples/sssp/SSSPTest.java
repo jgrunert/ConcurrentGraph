@@ -68,8 +68,12 @@ public class SSSPTest {
 			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
 
 			// Short Heidelberg->Heilbronn. Test query "3"
-			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
 
+
+			Thread.sleep(20000);
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
 
 			// Short RT->ST
 			// Ca ?s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
