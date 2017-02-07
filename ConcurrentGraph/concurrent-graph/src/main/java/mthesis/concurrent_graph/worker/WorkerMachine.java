@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
@@ -84,6 +85,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	//	private final int[] outVertexMsgDstIdBuffer = new int[Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES];
 	//	private final List<M> outVertexMsgContentBuffer = new ArrayList<>(Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES);
 
+	private final ConcurrentLinkedQueue<ControlMessage> receivedControlMessages = new ConcurrentLinkedQueue<>();
+	private final ConcurrentLinkedQueue<VertexMessage<V, E, M, Q>> receivedVertexMessages = new ConcurrentLinkedQueue<>();
+	private final ConcurrentLinkedQueue<GetToKnowMessage> receivedGetToKnowMessages = new ConcurrentLinkedQueue<>();
+	private final ConcurrentLinkedQueue<MoveVerticesMessage<V, E, M, Q>> receivedMoveVerticesMessages = new ConcurrentLinkedQueue<>();
+	private final ConcurrentLinkedQueue<InvalidateRegisteredVerticesMessage> receivedInvVertsMessages = new ConcurrentLinkedQueue<>();
+
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -121,6 +128,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		try {
 			while (!started) {
 				Thread.sleep(100);
+				handleReceivedMessages();
 			}
 
 			// Initialize, load assigned partitions
@@ -132,11 +140,14 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				// Wait for queries
 				while (activeQueries.isEmpty()) {
 					Thread.sleep(1);
+					handleReceivedMessages();
 				}
 
 				// Wait for ready queries
 				activeQueriesThisSuperstep.clear();
 				while (true) {
+					handleReceivedMessages();
+
 					synchronized (activeQueries) {
 						for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 							if ((activeQuery.getStartedSuperstepNo() > activeQuery.getCalculatedSuperstepNo()))
@@ -147,6 +158,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						break;
 					Thread.sleep(1);
 				}
+
 
 				// Compute active queries
 				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisSuperstep) {
@@ -199,6 +211,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					if (!otherWorkerIds.isEmpty()) {
 						checkSuperstepBarrierFinished(activeQuery);
 					}
+
+					// Handle received messages after each query
+					handleReceivedMessages();
 				}
 			}
 		}
@@ -219,6 +234,22 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			}
 			stop();
 		}
+	}
+
+	/**
+	 * Handles all messages in received queues.
+	 */
+	private void handleReceivedMessages() {
+		while (!receivedControlMessages.isEmpty())
+			handleControlMessage(receivedControlMessages.poll());
+		while (!receivedVertexMessages.isEmpty())
+			handleVertexMessage(receivedVertexMessages.poll());
+		while (!receivedGetToKnowMessages.isEmpty())
+			handleGetToKnowMessage(receivedGetToKnowMessages.poll());
+		while (!receivedMoveVerticesMessages.isEmpty())
+			handleMoveVerticesMessage(receivedMoveVerticesMessages.poll());
+		while (!receivedInvVertsMessages.isEmpty())
+			handleInvalidateRegisteredVerticesMessage(receivedInvVertsMessages.poll());
 	}
 
 
@@ -336,7 +367,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 
 	@Override
-	public synchronized void onIncomingControlMessage(ControlMessage message) {
+	public void onIncomingControlMessage(ControlMessage message) {
+		receivedControlMessages.add(message);
+	}
+
+	public void handleControlMessage(ControlMessage message) {
 		try {
 			if (message != null) {
 				switch (message.getType()) {
@@ -585,6 +620,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	@Override
 	public void onIncomingVertexMessage(VertexMessage<V, E, M, Q> message) {
+		receivedVertexMessages.add(message);
+	}
+
+	public void handleVertexMessage(VertexMessage<V, E, M, Q> message) {
 		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
 		int superstepNo = activeQuery.getCalculatedSuperstepNo();
 
@@ -643,6 +682,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	@Override
 	public void onIncomingGetToKnowMessage(GetToKnowMessage message) {
+		receivedGetToKnowMessages.add(message);
+	}
+
+	public void handleGetToKnowMessage(GetToKnowMessage message) {
 		for (final Integer srcVertex : message.vertices) {
 			if (remoteVertexMachineRegistry.addEntry(srcVertex, message.srcMachine))
 				activeQueries.get(message.queryId).QueryLocal.Stats.DiscoveredNewVertexMachines++;
@@ -651,6 +694,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	@Override
 	public void onIncomingMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
+		receivedMoveVerticesMessages.add(message);
+	}
+
+	public void handleMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
 		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
 
 		synchronized (activeQuery) {
@@ -677,6 +724,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	@Override
 	public void onIncomingInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message) {
+		receivedInvVertsMessages.add(message);
+	}
+
+	public void handleInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message) {
 		// TODO
 		System.out.println("TODO onIncomingInvalidateRegisteredVerticesMessage");
 	}

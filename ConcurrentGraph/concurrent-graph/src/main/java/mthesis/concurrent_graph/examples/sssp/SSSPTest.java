@@ -73,7 +73,7 @@ public class SSSPTest {
 
 			// Short RT->ST
 			// Ca ?s for local4, no vertexmove, without sysout, on PC and 13s on laptop
-			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 
 			//			// Big query through BW, Ludwigshafen->Heilbronn
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2942985, 6663036));
@@ -81,9 +81,9 @@ public class SSSPTest {
 			//			// Short Mengen->Saulgau
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3080719, 609074));
 
-			//			// Medium PF->HB
+			// Medium PF->HB
 			// Ca ?s for local4, no vertexmove, without sysout, on PC and 34s on laptop
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
 
 			//			// Short TU->RT
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4982624, 3627927));
