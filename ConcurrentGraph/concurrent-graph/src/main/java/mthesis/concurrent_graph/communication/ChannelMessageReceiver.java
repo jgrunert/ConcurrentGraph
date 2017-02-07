@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,12 +11,11 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
-import mthesis.concurrent_graph.util.Pair;
-import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -38,7 +35,7 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 	private final InputStream reader;
 	private final byte[] inBytes = new byte[Settings.MAX_MESSAGE_SIZE];
 	private final ByteBuffer inBuffer = ByteBuffer.wrap(inBytes);
-	private final MessageSenderAndReceiver<V, E, M, Q> inMsgHandler;
+	private final AbstractMachine<V, E, M, Q> inMsgHandler;
 	private Thread thread;
 	private volatile boolean readyForClose;
 	private final VertexWorkerInterface<V, E, M, Q> worker;
@@ -47,7 +44,7 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 
 	public ChannelMessageReceiver(Socket socket, InputStream reader, int ownId,
-			MessageSenderAndReceiver<V, E, M, Q> inMsgHandler,
+			AbstractMachine<V, E, M, Q> inMsgHandler,
 			VertexWorkerInterface<V, E, M, Q> worker, JobConfiguration<V, E, M, Q> jobConfig) {
 		this.ownId = ownId;
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
@@ -94,19 +91,22 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 						final byte msgType = inBuffer.get();
 						switch (msgType) {
 							case 0:
-								onIncomingVertexMessage();
+								inMsgHandler
+								.onIncomingVertexMessage(new VertexMessage<>(inBuffer, vertexMessageFactory));
 								break;
 							case 1:
-								onIncomingControlMessage(1, msgContentLength - 1);
+								readIncomingMessageEnvelope(1, msgContentLength - 1);
 								break;
 							case 2:
-								onIncomingGetToKnowMessage();
+								inMsgHandler.onIncomingGetToKnowMessage(new GetToKnowMessage(inBuffer));
 								break;
 							case 3:
-								onIncomingMoveVerticesMessage();
+								inMsgHandler.onIncomingMoveVerticesMessage(
+										new MoveVerticesMessage<>(inBuffer, worker, jobConfig, vertexFactory));
 								break;
 							case 4:
-								onIncomingInvalidateRegisteredVerticesMessage();
+								inMsgHandler.onIncomingInvalidateRegisteredVerticesMessage(
+										new InvalidateRegisteredVerticesMessage(inBuffer));
 								break;
 
 							default:
@@ -138,58 +138,9 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 		thread.start();
 	}
 
-	private void onIncomingVertexMessage() {
-		final int msgSuperstepNo = inBuffer.getInt();
-		final int srcMachine = inBuffer.getInt();
-		final boolean broadcastFlag = inBuffer.get() == 0;
-		final int queryId = inBuffer.getInt();
-		final int vertexMessagesCount = inBuffer.getInt();
-		final List<Pair<Integer, M>> vertexMessages = new ArrayList<>(vertexMessagesCount); // TODO
-																							// Pool
-																							// instances?
-		for (int i = 0; i < vertexMessagesCount; i++) {
-			vertexMessages.add(new Pair<Integer, M>(inBuffer.getInt(), vertexMessageFactory.createFromBytes(inBuffer)));
-		}
-		inMsgHandler.onIncomingVertexMessage(msgSuperstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
-	}
-
-	private void onIncomingControlMessage(int offset, int size) throws InvalidProtocolBufferException {
+	private void readIncomingMessageEnvelope(int offset, int size) throws InvalidProtocolBufferException {
 		final MessageEnvelope messageEnv = MessageEnvelope.parseFrom(ByteString.copyFrom(inBytes, offset, size));
 		if (messageEnv.hasControlMessage()) inMsgHandler.onIncomingControlMessage(messageEnv.getControlMessage());
-	}
-
-	private void onIncomingGetToKnowMessage() {
-		final int srcMachine = inBuffer.getInt();
-		final int queryId = inBuffer.getInt();
-		final int vertCount = inBuffer.getInt();
-		final List<Integer> srcVertices = new ArrayList<>(vertCount);
-		for (int i = 0; i < vertCount; i++) {
-			srcVertices.add(inBuffer.getInt());
-		}
-		inMsgHandler.onIncomingGetToKnowMessage(srcMachine, srcVertices, queryId);
-	}
-
-	private void onIncomingMoveVerticesMessage() {
-		final int srcMachine = inBuffer.getInt();
-		final int queryId = inBuffer.getInt();
-		final boolean lastSegment = inBuffer.get() == 0;
-		final int vertCount = inBuffer.getInt();
-		final List<AbstractVertex<V, E, M, Q>> srcVertices = new ArrayList<>(vertCount);
-		for (int i = 0; i < vertCount; i++) {
-			srcVertices.add(vertexFactory.newInstance(inBuffer, worker, jobConfig));
-		}
-		inMsgHandler.onIncomingMoveVerticesMessage(srcMachine, srcVertices, queryId, lastSegment);
-	}
-
-	private void onIncomingInvalidateRegisteredVerticesMessage() {
-		final int srcMachine = inBuffer.getInt();
-		final int queryId = inBuffer.getInt();
-		final int vertCount = inBuffer.getInt();
-		final List<Integer> srcVertices = new ArrayList<>(vertCount);
-		for (int i = 0; i < vertCount; i++) {
-			srcVertices.add(inBuffer.getInt());
-		}
-		inMsgHandler.onIncomingInvalidateRegisteredVerticesMessage(srcMachine, srcVertices, queryId);
 	}
 
 

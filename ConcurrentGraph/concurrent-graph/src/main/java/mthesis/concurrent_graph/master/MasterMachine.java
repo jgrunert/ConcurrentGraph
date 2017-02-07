@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,14 +21,16 @@ import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFacto
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
+import mthesis.concurrent_graph.communication.GetToKnowMessage;
+import mthesis.concurrent_graph.communication.InvalidateRegisteredVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
+import mthesis.concurrent_graph.communication.MoveVerticesMessage;
+import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.MiscUtil;
-import mthesis.concurrent_graph.util.Pair;
-import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.NullWritable;
 
 /**
@@ -527,26 +528,24 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	}
 
 
-
 	@Override
-	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
-			List<Pair<Integer, NullWritable>> vertexMessages) {
-		throw new RuntimeException("Master cannot handle vertex messages");
+	public void onIncomingVertexMessage(VertexMessage<NullWritable, NullWritable, NullWritable, Q> message) {
+		throw new RuntimeException("Master cannot handle VertexMessage");
 	}
 
 	@Override
-	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> vertices, int queryId) {
-		throw new RuntimeException("Master cannot handle GetToKnow messages");
+	public void onIncomingGetToKnowMessage(GetToKnowMessage message) {
+		throw new RuntimeException("Master cannot handle GetToKnowMessage");
 	}
 
 	@Override
-	public void onIncomingMoveVerticesMessage(int srcMachine,
-			Collection<AbstractVertex<NullWritable, NullWritable, NullWritable, Q>> srcVertices, int queryId, boolean lastSegment) {
-		throw new RuntimeException("Master cannot handle");
+	public void onIncomingMoveVerticesMessage(
+			MoveVerticesMessage<NullWritable, NullWritable, NullWritable, Q> message) {
+		throw new RuntimeException("Master cannot handle MoveVerticesMessage");
 	}
 
 	@Override
-	public void onIncomingInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> srcVertices, int queryId) {
-		throw new RuntimeException("Master cannot handle");
+	public void onIncomingInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message) {
+		throw new RuntimeException("Master cannot handle InvalidateRegisteredVerticesMessage");
 	}
 }

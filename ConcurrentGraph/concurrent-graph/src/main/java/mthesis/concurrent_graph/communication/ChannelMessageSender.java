@@ -33,7 +33,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 	private final OutputStream writer;
 	private final byte[] outBytes = new byte[Settings.MAX_MESSAGE_SIZE];
 	private final ByteBuffer outBuffer = ByteBuffer.wrap(outBytes);
-	private final BlockingQueue<MessageToSend> outMessages = new LinkedBlockingQueue<>();
+	private final BlockingQueue<SendableMessage> outMessages = new LinkedBlockingQueue<>();
 	private Thread senderThread;
 
 
@@ -50,7 +50,7 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 			public void run() {
 				try {
 					while (!Thread.interrupted() && !socket.isClosed()) {
-						final MessageToSend message = outMessages.take();
+						final SendableMessage message = outMessages.take();
 
 						// Format: short MsgLength, byte MsgType, byte[] MsgContent
 						if (message.hasContent()) {
@@ -108,19 +108,19 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 
 	public void sendVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
 			List<Pair<Integer, M>> vertexMessages) {
-		outMessages.add(new VertexMessageToSend(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages)); // TODO Object pooling?
+		outMessages.add(new VertexMessage<>(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages)); // TODO Object pooling?
 	}
 
 	public void sendGetToKnownMessage(int srcMachine, Collection<Integer> vertices, int queryId) {
-		outMessages.add(new GetToKnowMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
+		outMessages.add(new GetToKnowMessage(srcMachine, queryId, vertices)); // TODO Object pooling?
 	}
 
 	public void sendMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> vertices, int queryId, boolean lastSegment) {
-		outMessages.add(new MoveVerticesMessageToSend(srcMachine, queryId, vertices, lastSegment)); // TODO Object pooling?
+		outMessages.add(new MoveVerticesMessage<>(srcMachine, queryId, vertices, lastSegment)); // TODO Object pooling?
 	}
 
 	public void sendInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> vertices, int queryId) {
-		outMessages.add(new InvalidateRegisteredVerticesMessageToSend(srcMachine, queryId, vertices)); // TODO Object pooling?
+		outMessages.add(new InvalidateRegisteredVerticesMessage(srcMachine, queryId, vertices)); // TODO Object pooling?
 	}
 
 	public void flush() {
@@ -128,64 +128,8 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 	}
 
 
-	private interface MessageToSend {
 
-		boolean hasContent();
-
-		boolean flushAfter();
-
-		byte getTypeCode();
-
-		void writeMessageToBuffer(ByteBuffer buffer);
-	}
-
-	private class VertexMessageToSend implements MessageToSend {
-
-		private final int superstepNo;
-		private final int srcMachine;
-		private final boolean broadcastFlag;
-		private final int queryId;
-		private final List<Pair<Integer, M>> vertexMessages;
-
-		public VertexMessageToSend(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
-				List<Pair<Integer, M>> vertexMessages) {
-			this.srcMachine = srcMachine;
-			this.superstepNo = superstepNo;
-			this.broadcastFlag = broadcastFlag;
-			this.queryId = queryId;
-			this.vertexMessages = vertexMessages;
-		}
-
-		@Override
-		public byte getTypeCode() {
-			return 0;
-		}
-
-		@Override
-		public void writeMessageToBuffer(ByteBuffer buffer) {
-			buffer.putInt(superstepNo);
-			buffer.putInt(srcMachine);
-			buffer.put(broadcastFlag ? (byte) 0 : (byte) 1);
-			buffer.putInt(queryId);
-			buffer.putInt(vertexMessages.size());
-			for (final Pair<Integer, M> msg : vertexMessages) {
-				buffer.putInt(msg.first);
-				msg.second.writeToBuffer(buffer);
-			}
-		}
-
-		@Override
-		public boolean hasContent() {
-			return true;
-		}
-
-		@Override
-		public boolean flushAfter() {
-			return false;
-		}
-	}
-
-	private class MessageEnvelopeToSend implements MessageToSend {
+	private class MessageEnvelopeToSend implements SendableMessage {
 
 		private final MessageEnvelope message;
 		private final boolean flushAfter;
@@ -217,128 +161,9 @@ public class ChannelMessageSender<V extends BaseWritable, E extends BaseWritable
 		}
 	}
 
-	private class GetToKnowMessageToSend implements MessageToSend {
 
-		private final int srcMachine;
-		private final int queryId;
-		private final Collection<Integer> vertices;
 
-		public GetToKnowMessageToSend(int srcMachine, int queryId, Collection<Integer> vertices) {
-			super();
-			this.srcMachine = srcMachine;
-			this.vertices = vertices;
-			this.queryId = queryId;
-		}
-
-		@Override
-		public boolean hasContent() {
-			return true;
-		}
-
-		@Override
-		public boolean flushAfter() {
-			return false;
-		}
-
-		@Override
-		public byte getTypeCode() {
-			return 2;
-		}
-
-		@Override
-		public void writeMessageToBuffer(ByteBuffer buffer) {
-			buffer.putInt(srcMachine);
-			buffer.putInt(queryId);
-			buffer.putInt(vertices.size());
-			for (final Integer vert : vertices) {
-				buffer.putInt(vert);
-			}
-		}
-	}
-
-	private class MoveVerticesMessageToSend implements MessageToSend {
-
-		private final int srcMachine;
-		private final int queryId;
-		private final Collection<AbstractVertex<V, E, M, Q>> vertices;
-		private final boolean lastSegment;
-
-		public MoveVerticesMessageToSend(int srcMachine, int queryId, Collection<AbstractVertex<V, E, M, Q>> vertices,
-				boolean lastSegment) {
-			super();
-			this.srcMachine = srcMachine;
-			this.vertices = vertices;
-			this.queryId = queryId;
-			this.lastSegment = lastSegment;
-		}
-
-		@Override
-		public boolean hasContent() {
-			return true;
-		}
-
-		@Override
-		public boolean flushAfter() {
-			return lastSegment;
-		}
-
-		@Override
-		public byte getTypeCode() {
-			return 3;
-		}
-
-		@Override
-		public void writeMessageToBuffer(ByteBuffer buffer) {
-			buffer.putInt(srcMachine);
-			buffer.putInt(queryId);
-			buffer.put(lastSegment ? (byte) 0 : (byte) 1);
-			buffer.putInt(vertices.size());
-			for (final AbstractVertex<V, E, M, Q> vert : vertices) {
-				vert.writeToBuffer(buffer);
-			}
-		}
-	}
-
-	private class InvalidateRegisteredVerticesMessageToSend implements MessageToSend {
-
-		private final int srcMachine;
-		private final int queryId;
-		private final Collection<Integer> vertices;
-
-		public InvalidateRegisteredVerticesMessageToSend(int srcMachine, int queryId, Collection<Integer> vertices) {
-			super();
-			this.srcMachine = srcMachine;
-			this.vertices = vertices;
-			this.queryId = queryId;
-		}
-
-		@Override
-		public boolean hasContent() {
-			return true;
-		}
-
-		@Override
-		public boolean flushAfter() {
-			return false;
-		}
-
-		@Override
-		public byte getTypeCode() {
-			return 4;
-		}
-
-		@Override
-		public void writeMessageToBuffer(ByteBuffer buffer) {
-			buffer.putInt(srcMachine);
-			buffer.putInt(queryId);
-			buffer.putInt(vertices.size());
-			for (final Integer vert : vertices) {
-				buffer.putInt(vert);
-			}
-		}
-	}
-
-	private class FlushDummyMessage implements MessageToSend {
+	private class FlushDummyMessage implements SendableMessage {
 
 		@Override
 		public boolean hasContent() {

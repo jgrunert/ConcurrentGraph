@@ -24,7 +24,6 @@ import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.Settings;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
@@ -47,8 +46,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	private final Map<Integer, MachineConfig> machineConfigs;
 	private final ConcurrentHashMap<Integer, ChannelMessageSender<V, E, M, Q>> channelSenders = new ConcurrentHashMap<>();
 	private final List<ChannelMessageReceiver<V, E, M, Q>> channelReceivers = new LinkedList<>();
-	private final AbstractMachine<V, E, M, Q> messageListener;
-	private final VertexWorkerInterface<V, E, M, Q> worker;
+	private final AbstractMachine<V, E, M, Q> machine;
+	private final VertexWorkerInterface<V, E, M, Q> workerMachine;
 	private final JobConfiguration<V, E, M, Q> jobConfiguration;
 	private Thread serverThread;
 	private ServerSocket serverSocket;
@@ -57,13 +56,13 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 
 	public MessageSenderAndReceiver(Map<Integer, MachineConfig> machines, int ownId,
-			VertexWorkerInterface<V, E, M, Q> worker,
-			AbstractMachine<V, E, M, Q> listener, JobConfiguration<V, E, M, Q> jobConfiguration) {
+			VertexWorkerInterface<V, E, M, Q> workerMachine, AbstractMachine<V, E, M, Q> machine,
+			JobConfiguration<V, E, M, Q> jobConfiguration) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.ownId = ownId;
 		this.machineConfigs = machines;
-		this.messageListener = listener;
-		this.worker = worker;
+		this.machine = machine;
+		this.workerMachine = workerMachine;
 		this.jobConfiguration = jobConfiguration;
 	}
 
@@ -206,28 +205,6 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 
 
-	public void onIncomingControlMessage(ControlMessage message) {
-		messageListener.onIncomingControlMessage(message);
-	}
-
-	public void onIncomingVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
-			List<Pair<Integer, M>> vertexMessages) {
-		messageListener.onIncomingVertexMessage(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
-	}
-
-	public void onIncomingGetToKnowMessage(int srcMachine, Collection<Integer> srcVertices, int queryId) {
-		messageListener.onIncomingGetToKnowMessage(srcMachine, srcVertices, queryId);
-	}
-
-	public void onIncomingMoveVerticesMessage(int srcMachine, Collection<AbstractVertex<V, E, M, Q>> srcVertices, int queryId,
-			boolean lastSegment) {
-		messageListener.onIncomingMoveVerticesMessage(srcMachine, srcVertices, queryId, lastSegment);
-	}
-
-	public void onIncomingInvalidateRegisteredVerticesMessage(int srcMachine, Collection<Integer> srcVertices, int queryId) {
-		messageListener.onIncomingInvalidateRegisteredVerticesMessage(srcMachine, srcVertices, queryId);
-	}
-
 	private void connectToMachine(String host, int port, int machineId) throws Exception {
 		final Socket socket = new Socket(host, port);
 		logger.debug("Connected to: " + host + ":" + port + " for machine channel " + machineId);
@@ -272,8 +249,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		catch (final SocketException e) {
 			logger.error("set socket configs", e);
 		}
-		final ChannelMessageReceiver<V, E, M, Q> receiver = new ChannelMessageReceiver<>(socket, reader, ownId, this,
-				worker, jobConfiguration);
+		final ChannelMessageReceiver<V, E, M, Q> receiver = new ChannelMessageReceiver<>(socket, reader, ownId,
+				machine, workerMachine, jobConfiguration);
 		receiver.startReceiver(machineId);
 		channelReceivers.add(receiver);
 		final ChannelMessageSender<V, E, M, Q> sender = new ChannelMessageSender<>(socket, writer, ownId);
