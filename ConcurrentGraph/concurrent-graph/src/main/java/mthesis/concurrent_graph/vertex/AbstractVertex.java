@@ -66,7 +66,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		int queryValuesCount = bufferToRead.getInt();
 		for (int i = 0; i < queryValuesCount; i++) {
 			int key = bufferToRead.getInt();
-			V value = vertexValueFactory.createFromBytes(bufferToRead);
+			V value;
+			if (bufferToRead.get() == 0)
+				value = vertexValueFactory.createFromBytes(bufferToRead);
+			else
+				value = null;
 			queryValues.put(key, value);
 		}
 
@@ -103,7 +107,13 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		buffer.putInt(queryValues.size());
 		for (Entry<Integer, V> qv : queryValues.entrySet()) {
 			buffer.putInt(qv.getKey());
-			qv.getValue().writeToBuffer(buffer);
+			V value = qv.getValue();
+			if (qv.getValue() != null) {
+				buffer.put((byte) 0);
+				value.writeToBuffer(buffer);
+			}
+			else
+				buffer.put((byte) 1);
 		}
 
 		buffer.putInt(queriesVertexInactive.size());
