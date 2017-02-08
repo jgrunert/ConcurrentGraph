@@ -51,7 +51,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -380,13 +380,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					case Master_Query_Next_Superstep: {
 						prepareNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -414,16 +414,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						else {
 							// Completely wrong superstep
 							logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-									+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
+							+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
 						}
 					}
-						break;
+					break;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -485,7 +485,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			if (activeQuery.VertexMovesWaitingFor.isEmpty()
 					|| activeQuery.VertexMovesReceived.size() == activeQuery.VertexMovesWaitingFor.size()) {
 				assert activeQuery.VertexMovesWaitingFor.isEmpty()
-						|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
+				|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
 				startNextSuperstep(activeQuery);
 			}
 		}
@@ -540,7 +540,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		// TODO Add redirection
 
 		// TODO Broadcast vertex invalidate message
-		List<Integer> vertexMoveIds = verticesMoving.mapToInt(v -> v.ID);
+		List<Integer> vertexMoveIds = verticesMoving.stream().map(v -> v.ID)
+				.collect(Collectors.toCollection(ArrayList::new));
 		for (int otherWorker : otherWorkerIds) {
 			messaging.sendInvalidateRegisteredVerticesMessage(otherWorker, vertexMoveIds, queryId);
 		}
