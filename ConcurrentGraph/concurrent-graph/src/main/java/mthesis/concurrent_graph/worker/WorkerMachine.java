@@ -709,8 +709,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 
 	public void handleInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message) {
-		// TODO
-		System.out.println("TODO onIncomingInvalidateRegisteredVerticesMessage");
+		// TODO count removed
+		WorkerQuery<V, E, M, Q> query = activeQueries.get(message.queryId);
+		assert (query != null);
+		int removed = remoteVertexMachineRegistry.removeEntries(message.vertices);
+		query.QueryLocal.Stats.ComputeTime
+		//		System.out.println(message.vertices.size() + "/" + remoteVertexMachineRegistry.removeEntries(message.vertices));
 	}
 
 

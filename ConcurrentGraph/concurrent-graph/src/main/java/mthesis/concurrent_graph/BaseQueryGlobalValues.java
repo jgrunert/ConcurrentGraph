@@ -1,6 +1,8 @@
 package mthesis.concurrent_graph;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import mthesis.concurrent_graph.writable.BaseWritable;
 
@@ -113,6 +115,7 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 	public static class QueryStats {
 
+		// Direct variables for quick access of frequently changed variables
 		public long MessagesTransmittedLocal;
 		public long MessagesSentUnicast;
 		public long MessagesSentBroadcast;
@@ -121,18 +124,24 @@ public class BaseQueryGlobalValues extends BaseWritable {
 		public long MessagesReceivedWrongVertex;
 		public long MessagesReceivedCorrectVertex;
 		public long DiscoveredNewVertexMachines;
-		public long ComputeTime;
-		public long StepFinishTime;
-		public long IntersectCalcTime;
+
+		// Other stats which are less frequently changed
+		public final Map<Integer, Long> OtherStats;
+		public static final Integer ComputeTimeKey = 0;
+		public static final Integer StepFinishTimeKey = 1;
+		public static final Integer IntersectCalcTimeKey = 2;
+		public static final Integer InvalidatedVertexRegistersKey = 3;
+
 
 		public QueryStats() {
+			OtherStats = new HashMap<>();
 		}
 
 		public QueryStats(long messagesTransmittedLocal, long messagesSentUnicast, long messagesSentBroadcast,
 				long messageBucketsSentUnicast,
 				long messageBucketsSentBroadcast, long messagesReceivedWrongVertex, long messagesReceivedCorrectVertex,
 				long discoveredNewVertexMachines,
-				long computeTime, long barrierTime, long intersectCalcTime) {
+				Map<Integer, Long> otherStats) {
 			super();
 			MessagesTransmittedLocal = messagesTransmittedLocal;
 			MessagesSentUnicast = messagesSentUnicast;
@@ -142,9 +151,7 @@ public class BaseQueryGlobalValues extends BaseWritable {
 			MessagesReceivedWrongVertex = messagesReceivedWrongVertex;
 			MessagesReceivedCorrectVertex = messagesReceivedCorrectVertex;
 			DiscoveredNewVertexMachines = discoveredNewVertexMachines;
-			ComputeTime = computeTime;
-			StepFinishTime = barrierTime;
-			IntersectCalcTime = intersectCalcTime;
+			OtherStats = otherStats;
 		}
 
 		public QueryStats(ByteBuffer bytes) {
@@ -157,9 +164,12 @@ public class BaseQueryGlobalValues extends BaseWritable {
 			MessagesReceivedWrongVertex = bytes.getLong();
 			MessagesReceivedCorrectVertex = bytes.getLong();
 			DiscoveredNewVertexMachines = bytes.getLong();
-			ComputeTime = bytes.getLong();
-			StepFinishTime = bytes.getLong();
-			IntersectCalcTime = bytes.getLong();
+
+			int numOtherStats = bytes.getInt();
+			OtherStats = new HashMap<>(numOtherStats);
+			for(int i = 0; i < numOtherStats; i++) {
+				OtherStats.put(bytes.getInt(), bytes.getLong())
+			}
 		}
 
 		public void combine(QueryStats v) {

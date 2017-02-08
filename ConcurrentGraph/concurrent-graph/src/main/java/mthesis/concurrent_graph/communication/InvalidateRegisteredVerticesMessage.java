@@ -6,9 +6,9 @@ import java.util.Collection;
 
 public class InvalidateRegisteredVerticesMessage implements ChannelMessage {
 
-	private final int srcMachine;
-	private final int queryId;
-	private final Collection<Integer> vertices;
+	public final int srcMachine;
+	public final int queryId;
+	public final Collection<Integer> vertices;
 
 	public InvalidateRegisteredVerticesMessage(int srcMachine, int queryId, Collection<Integer> vertices) {
 		super();
