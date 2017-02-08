@@ -3,6 +3,8 @@ package mthesis.concurrent_graph.examples.sssp;
 import java.nio.ByteBuffer;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.QueryStats;
+
 
 public class SSSPQueryValues extends BaseQueryGlobalValues {
 

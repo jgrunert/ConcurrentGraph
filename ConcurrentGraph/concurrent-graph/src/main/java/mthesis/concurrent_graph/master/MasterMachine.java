@@ -19,6 +19,7 @@ import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.MachineConfig;
+import mthesis.concurrent_graph.QueryStats;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
@@ -277,7 +278,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					// Wrong message count should match broadcast message count, therwise there might be communication errors.
 					if (workerIds.size() > 1
 							&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
-							/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
+									/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
 						// TODO Investigate why happening
 						//						logger.warn(String.format(
 						//								"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
@@ -341,9 +342,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					actQueryWorkerActiveVerts.remove(msgActiveQuery.BaseQuery.QueryId);
 					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
 							+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms, "
-							+ " ComputeTime " + msgActiveQuery.QueryTotalAggregator.Stats.ComputeTime
-							+ " StepFinishTime " + msgActiveQuery.QueryTotalAggregator.Stats.StepFinishTime
-							+ " IntersectCalcTime " + msgActiveQuery.QueryTotalAggregator.Stats.IntersectCalcTime);
+							+ msgActiveQuery.QueryTotalAggregator.Stats.getOtherStatsString());
 				}
 			}
 		}
@@ -406,15 +405,19 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 				for (int i = 0; i < querySteps.getValue().size(); i++) {
 					Q step = querySteps.getValue().get(i);
+					long compTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.ComputeTimeKey));
+					long intersCalcTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.IntersectCalcTimeKey));
+					long stepFinishTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.StepFinishTimeKey));
+
 					sb.append(queryStatsStepTimes.get(querySteps.getKey()).get(i));
 					sb.append(';');
-					sb.append(step.Stats.ComputeTime + step.Stats.IntersectCalcTime + step.Stats.IntersectCalcTime);
+					sb.append(compTime + intersCalcTime + stepFinishTime);
 					sb.append(';');
-					sb.append(step.Stats.ComputeTime);
+					sb.append(compTime);
 					sb.append(';');
-					sb.append(step.Stats.StepFinishTime);
+					sb.append(intersCalcTime);
 					sb.append(';');
-					sb.append(step.Stats.IntersectCalcTime);
+					sb.append(stepFinishTime);
 					sb.append(';');
 					writer.println(sb.toString());
 					sb.setLength(0);

@@ -16,9 +16,9 @@ import com.google.protobuf.ByteString;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
-import mthesis.concurrent_graph.BaseQueryGlobalValues.QueryStats;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
+import mthesis.concurrent_graph.QueryStats;
 import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
@@ -51,7 +51,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -79,6 +79,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private final Map<Integer, VertexMessageBucket<M>> vertexMessageMachineBuckets = new HashMap<>();
 
 	private final ConcurrentLinkedQueue<ChannelMessage> receivedMessages = new ConcurrentLinkedQueue<>();
+
+	// TODO clear after superstep
+	private final Map<Integer, Integer> movedVerticesRedirections = new HashMap<>();
+	private final Map<Integer, List<Integer>> movedQueryVertices = new HashMap<>();
 
 
 
@@ -152,7 +156,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						int superstepNo = activeQuery.getStartedSuperstepNo();
 
 						// Next superstep. Compute and Messaging (done by vertices)
-						logger.debug("Worker start query " + queryId + " superstep compute " + superstepNo);
+						logger.trace("Worker start query " + queryId + " superstep compute " + superstepNo);
 
 						if (!activeQuery.MovedVertices.isEmpty()) {
 							for (AbstractVertex<V, E, M, Q> v : activeQuery.MovedVertices) {
@@ -174,7 +178,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							}
 						}
 						activeQuery.calculatedSuperstep();
-						activeQuery.QueryLocal.Stats.ComputeTime = System.currentTimeMillis() - startTime;
+						activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.ComputeTimeKey, System.currentTimeMillis() - startTime);
 
 
 						// Barrier sync with other workers;
@@ -185,7 +189,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						else {
 							checkSuperstepBarrierFinished(activeQuery);
 						}
-						logger.debug("Worker finished compute " + queryId + ":" + superstepNo);
+						logger.trace("Worker finished compute " + queryId + ":" + superstepNo);
 					}
 
 					// Finish barrier sync if received all barrier syncs from other workers
@@ -380,13 +384,13 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					case Master_Query_Next_Superstep: {
 						prepareNextSuperstep(message);
 					}
-					break;
+						break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-					break;
+						break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -414,16 +418,16 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						else {
 							// Completely wrong superstep
 							logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-							+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
+									+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
 						}
 					}
-					break;
+						break;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stop();
 					}
-					break;
+						break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -485,7 +489,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			if (activeQuery.VertexMovesWaitingFor.isEmpty()
 					|| activeQuery.VertexMovesReceived.size() == activeQuery.VertexMovesWaitingFor.size()) {
 				assert activeQuery.VertexMovesWaitingFor.isEmpty()
-				|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
+						|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
 				startNextSuperstep(activeQuery);
 			}
 		}
@@ -520,28 +524,33 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			verticesToMove.add(activeVertex);
 			// Send vertices if bucket full
 			if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
-				verticesMoving(verticesToMove, query.QueryId);
+				verticesMoving(verticesToMove, query.QueryId, sendToWorker);
 				messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
 				verticesToMove = new ArrayList<>();
 			}
 		}
 		query.ActiveVerticesThis.clear();
 		// Send remaining vertices
-		verticesMoving(verticesToMove, query.QueryId);
+		verticesMoving(verticesToMove, query.QueryId, sendToWorker);
 		messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, true);
 	}
+
 
 	/**
 	 * Handling for vertices which are moved
 	 */
-	private void verticesMoving(List<AbstractVertex<V, E, M, Q>> verticesMoving, int queryId) {
+	private void verticesMoving(List<AbstractVertex<V, E, M, Q>> verticesMoving, int queryId, int movedTo) {
 		if (verticesMoving.isEmpty()) return;
-
-		// TODO Add redirection
-
-		// TODO Broadcast vertex invalidate message
 		List<Integer> vertexMoveIds = verticesMoving.stream().map(v -> v.ID)
 				.collect(Collectors.toCollection(ArrayList::new));
+
+		// Add vertex redirections
+		movedQueryVertices.put(queryId, vertexMoveIds);
+		for (Integer movedVert : vertexMoveIds) {
+			movedVerticesRedirections.put(movedVert, movedTo);
+		}
+
+		// Broadcast vertex invalidate message
 		for (int otherWorker : otherWorkerIds) {
 			messaging.sendInvalidateRegisteredVerticesMessage(otherWorker, vertexMoveIds, queryId);
 		}
@@ -593,7 +602,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				// Reset active vertices
 				activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVerticesThis.size());
 				activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
-				activeQuery.QueryLocal.Stats.StepFinishTime = System.currentTimeMillis() - startTime;
+				activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.StepFinishTimeKey, System.currentTimeMillis() - startTime);
 
 				// Overlap test
 				long startTime2 = System.currentTimeMillis();
@@ -604,12 +613,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							otherQuery.ActiveVerticesThis.keySet());
 					queryIntersects.put(otherQuery.QueryId, intersects);
 				}
-				activeQuery.QueryLocal.Stats.IntersectCalcTime = System.currentTimeMillis() - startTime2;
+				activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.IntersectCalcTimeKey, System.currentTimeMillis() - startTime2);
 			}
 
 			sendMasterSuperstepFinished(activeQuery, queryIntersects);
 			activeQuery.finishedBarrierSync();
-			logger.debug(
+			logger.trace(
 					"Worker finished barrier " + activeQuery.Query.QueryId + ":" + activeQuery.getCalculatedSuperstepNo() + ". Active: "
 							+ activeQuery.QueryLocal.getActiveVertices());
 		}
@@ -663,9 +672,18 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						activeQuery.ActiveVerticesNext.put(msgVert.ID, msgVert);
 					}
 					else {
-						if (!message.broadcastFlag)
-							logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from "
-									+ message.srcMachine);
+						if (!message.broadcastFlag) {
+							Integer redirectMachine = movedVerticesRedirections.get(msg.first);
+							if (redirectMachine != null) {
+								logger.info("Redirect to " + redirectMachine);
+								activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.RedirectedMessagesKey, 1);
+								sendVertexMessageToMachine(redirectMachine, msg.first, activeQuery, msg.second);
+							}
+							else {
+								logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from "
+										+ message.srcMachine + " with no redirection");
+							}
+						}
 						activeQuery.QueryLocal.Stats.MessagesReceivedWrongVertex++;
 					}
 				}
@@ -709,12 +727,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 
 	public void handleInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message) {
-		// TODO count removed
 		WorkerQuery<V, E, M, Q> query = activeQueries.get(message.queryId);
 		assert (query != null);
-		int removed = remoteVertexMachineRegistry.removeEntries(message.vertices);
-		query.QueryLocal.Stats.ComputeTime
-		//		System.out.println(message.vertices.size() + "/" + remoteVertexMachineRegistry.removeEntries(message.vertices));
+		int removedEntries = remoteVertexMachineRegistry.removeEntries(message.vertices);
+		query.QueryLocal.Stats.addToOtherStat(QueryStats.InvalidatedVertexRegistersKey, removedEntries);
 	}
 
 

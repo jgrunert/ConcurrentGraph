@@ -27,7 +27,7 @@ public class VertexMachineRegistry {
 	 * Remove a vertex->machine mapping
 	 * @return the previous value associated with key, or null if there was no mapping for key.
 	 */
-	public synchronized int removeEntry(int vertexId) {
+	public synchronized Integer removeEntry(int vertexId) {
 		return vertexMachineRegistry.remove(vertexId);
 	}
 

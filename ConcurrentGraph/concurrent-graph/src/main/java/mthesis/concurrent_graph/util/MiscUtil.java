@@ -68,4 +68,9 @@ public class MiscUtil {
 		}
 		return result;
 	}
+
+
+	public static long defaultLong(Long value) {
+		return (value != null) ? (long) value : 0;
+	}
 }
