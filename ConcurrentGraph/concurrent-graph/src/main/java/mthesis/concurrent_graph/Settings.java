@@ -11,9 +11,7 @@ public class Settings {
 	/** Maximum number of vertices per vertex-move message. Must ensure that messages not >MAX_MESSAGE_SIZE/VertSize. */
 	public static final int VERTEX_MOVE_BUCKET_MAX_VERTICES = 128; // TODO Could be not constant, depending on message content size
 
-	//	public static final boolean KEEPALIVE = true;
 	public static final boolean TCP_NODELAY = true;
-	//	public static final boolean SSL = System.getProperty("ssl") != null;
 	public static final int CONNECT_TIMEOUT = 10000;
 	public static final int MESSAGE_TIMEOUT = 6000;
 

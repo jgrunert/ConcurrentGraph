@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.worker;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +21,21 @@ public class VertexMachineRegistry {
 	 */
 	public synchronized boolean addEntry(int vertexId, int machineId) {
 		return vertexMachineRegistry.put(vertexId, machineId) == null;
+	}
+
+	/**
+	 * Remove a vertex->machine mapping
+	 */
+	public synchronized int removeEntry(int vertexId) {
+		return vertexMachineRegistry.remove(vertexId);
+	}
+
+	/**
+	 * Removes multiple vertex->machine mappings
+	 */
+	public synchronized void removeEntries(Collection<Integer> vertexIds) {
+		for (Integer vertexId : vertexIds)
+			vertexMachineRegistry.remove(vertexId);
 	}
 
 	/**
