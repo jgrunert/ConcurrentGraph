@@ -41,8 +41,8 @@ public class SSSPTest {
 		final List<WorkerMachine<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
 			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i))) workers
-			.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
-					new RoadNetVertexInputReader()));
+					.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
+							new RoadNetVertexInputReader()));
 		}
 
 		// Start query
@@ -58,25 +58,25 @@ public class SSSPTest {
 			int queryIndex = 0;
 
 			// Very short ST-HBF->ST-Airport. Test query "0".
-			// Ca ?3.5?s, no vertexmove, without sysout, on PC+local4 and 6s on laptop+local8
-			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
+			// Ca 5s, no vertexmove, without sysout, on PC+local4 and 6s on laptop+local8
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
 
 			// Very short Meersburg->Pfullendorf. Test query "1"
-			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
 
 			// Short Heidelberg->Heilbronn. Test query "2"
-			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
 
 			// Short Heidelberg->Heilbronn. Test query "3"
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
 
 
-			Thread.sleep(20000);
+			//			Thread.sleep(20000);
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
 
 			// Short RT->ST
-			// Ca ?s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
+			// Ca 6.5s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 
 			//			// Big query through BW, Ludwigshafen->Heilbronn
@@ -86,8 +86,8 @@ public class SSSPTest {
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3080719, 609074));
 
 			// Medium PF->HB
-			// Ca ?s, no vertexmove, without sysout, on PC+local4 and 27s on laptop+local8
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			// Ca 19s, no vertexmove, without sysout, on PC+local4 and 27s on laptop+local8
+			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
 
 			//			// Short TU->RT
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4982624, 3627927));
