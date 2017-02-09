@@ -24,11 +24,11 @@ import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.GetToKnowMessage;
-import mthesis.concurrent_graph.communication.InvalidateRegisteredVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
+import mthesis.concurrent_graph.communication.UpdateRegisteredVerticesMessage;
 import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.communication.VertexMessageBucket;
 import mthesis.concurrent_graph.util.MiscUtil;
@@ -84,7 +84,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	// Most recent calculated query intersections
 	private Map<Integer, Map<Integer, Integer>> currentQueryIntersects = new HashMap<>();
 
-	// TODO clear after superstep
+	// Vertex redirections for vertex moved away from this machine
 	private final Map<Integer, Integer> movedVerticesRedirections = new HashMap<>();
 	private final Map<Integer, List<Integer>> movedQueryVertices = new HashMap<>();
 
@@ -161,13 +161,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						// Next superstep. Compute and Messaging (done by vertices)
 						logger.trace("Worker start query " + queryId + " superstep compute " + superstepNo);
-
-						if (!activeQuery.MovedVertices.isEmpty()) {
-							for (AbstractVertex<V, E, M, Q> v : activeQuery.MovedVertices) {
-								localVertices.put(v.ID, v);
-							}
-							activeQuery.MovedVertices.clear();
-						}
 
 						// First frame: Call all vertices, second frame only active vertices
 						long startTime = System.currentTimeMillis();
@@ -247,7 +240,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					handleMoveVerticesMessage((MoveVerticesMessage<V, E, M, Q>) message);
 					break;
 				case 4:
-					handleInvalidateRegisteredVerticesMessage((InvalidateRegisteredVerticesMessage) message);
+					handleUpdateRegisteredVerticesMessage((UpdateRegisteredVerticesMessage) message);
 					break;
 
 				default:
@@ -339,6 +332,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 */
 	public void sendVertexMessageToMachine(int dstMachine, int dstVertex, WorkerQuery<V, E, M, Q> query, M messageContent) {
 		final VertexMessageBucket<M> msgBucket = vertexMessageMachineBuckets.get(dstMachine);
+		if (msgBucket == null)
+			logger.error("WTF, no machine " + dstMachine);
 		msgBucket.addMessage(dstVertex, messageContent);
 		if (msgBucket.messages.size() > Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
 			sendUnicastVertexMessageBucket(msgBucket, dstMachine, query, query.getStartedSuperstepNo());
@@ -524,6 +519,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		int queryId = query.QueryId;
 		List<AbstractVertex<V, E, M, Q>> verticesToMove = new ArrayList<>();
 
+		if (movedQueryVertices.containsKey(queryId))
+			logger.error("movedVerticesRedirections not cleaned up after last superstep");
+
 		if (getQueryIntersectionCount(query.QueryId) == 0) { // Only move vertices if no intersection
 			for (AbstractVertex<V, E, M, Q> vertex : query.ActiveVerticesThis.values()) {
 				localVertices.remove(vertex.ID);
@@ -564,7 +562,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		// Broadcast vertex invalidate message
 		for (int otherWorker : otherWorkerIds) {
-			messaging.sendInvalidateRegisteredVerticesMessage(otherWorker, vertexMoveIds, queryId);
+			messaging.sendInvalidateRegisteredVerticesMessage(otherWorker, vertexMoveIds, movedTo, queryId);
 		}
 
 		// Remove vertices registry entries
@@ -637,6 +635,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					currentQueryIntersects.put(intersection.getKey(), otherIntersects);
 				}
 				otherIntersects.put(activeQuery.QueryId, intersection.getValue());
+			}
+
+
+			// Clean up redirections
+			List<Integer> redirections = movedQueryVertices.get(activeQuery.QueryId);
+			if (redirections != null) {
+				for (Integer redir : redirections) {
+					movedVerticesRedirections.remove(redir);
+				}
+				movedQueryVertices.remove(activeQuery.QueryId);
 			}
 
 
@@ -742,8 +750,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		{
 			for (AbstractVertex<V, E, M, Q> movedVert : message.vertices) {
 				activeQuery.ActiveVerticesThis.put(movedVert.ID, movedVert);
-				activeQuery.MovedVertices.add(movedVert);
+				localVertices.put(movedVert.ID, movedVert);
 			}
+
+			// Testcode
+			//			StringBuilder movedSb = new StringBuilder();
+			//			for (AbstractVertex<V, E, M, Q> movedVert : message.vertices) {
+			//				movedSb.append(movedVert.ID);
+			//				movedSb.append(",");
+			//			}
+			//			System.out.println(ownId + " rec " + movedSb.toString());
 
 			if (message.lastSegment) {
 				// Mark that received all vertices from machine. Start next superstep if ready
@@ -762,11 +778,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 
-	public void handleInvalidateRegisteredVerticesMessage(InvalidateRegisteredVerticesMessage message) {
+	public void handleUpdateRegisteredVerticesMessage(UpdateRegisteredVerticesMessage message) {
 		WorkerQuery<V, E, M, Q> query = activeQueries.get(message.queryId);
 		assert (query != null);
-		int removedEntries = remoteVertexMachineRegistry.removeEntries(message.vertices);
-		query.QueryLocal.Stats.addToOtherStat(QueryStats.InvalidatedVertexRegistersKey, removedEntries);
+		int updatedEntries;
+		if (message.movedTo != ownId)
+			updatedEntries = remoteVertexMachineRegistry.updateEntries(message.vertices, message.movedTo);
+		else
+			updatedEntries = remoteVertexMachineRegistry.removeEntries(message.vertices);
+		query.QueryLocal.Stats.addToOtherStat(QueryStats.UpdateVertexRegistersKey, updatedEntries);
 	}
 
 
@@ -791,6 +811,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 		logger.info("Worker finished query " + activeQuery.Query.QueryId);
 		activeQueries.remove(activeQuery.Query.QueryId);
+
+		if (movedQueryVertices.containsKey(activeQuery.QueryId))
+			logger.error("movedVerticesRedirections not cleaned up after last superstep");
 	}
 
 

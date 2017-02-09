@@ -206,8 +206,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		sendUnicastMessageAsync(dstMachine, new MoveVerticesMessage<>(ownId, queryId, vertices, lastSegment));
 	}
 
-	public void sendInvalidateRegisteredVerticesMessage(int dstMachine, Collection<Integer> vertices, int queryId) {
-		sendUnicastMessageAsync(dstMachine, new InvalidateRegisteredVerticesMessage(ownId, queryId, vertices));
+	public void sendInvalidateRegisteredVerticesMessage(int dstMachine, Collection<Integer> vertices, int movedTo, int queryId) {
+		sendUnicastMessageAsync(dstMachine, new UpdateRegisteredVerticesMessage(ownId, queryId, movedTo, vertices));
 	}
 
 

@@ -1,9 +1,7 @@
 package mthesis.concurrent_graph.worker;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -43,8 +41,6 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> ActiveVerticesThis = new ConcurrentHashMap<>();
 	//	public IntSet ActiveVertices = new IntOpenHashSet();
 
-	// Vertices of this query, moved to this machine, for the current superstep. Apply before beginning superstep.
-	public List<AbstractVertex<V, E, M, Q>> MovedVertices = new ArrayList<>();
 	// Set of machines to wait for to move vertices here, for the current superstep.
 	public Set<Integer> VertexMovesWaitingFor = new HashSet<>();
 	// Machine received vertices from, for the current superstep.

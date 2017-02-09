@@ -44,6 +44,22 @@ public class VertexMachineRegistry {
 	}
 
 	/**
+	 * Updates multiple vertex->machine mappings.
+	 * If vertex registered, changes mapping to new machine
+	 * @return Number of update vertices
+	 */
+	public synchronized int updateEntries(Collection<Integer> vertexIds, int updateToMachine) {
+		int updated = 0;
+		for (Integer vertexId : vertexIds) {
+			if (vertexMachineRegistry.remove(vertexId) != null) {
+				vertexMachineRegistry.put(vertexId, updateToMachine);
+				updated++;
+			}
+		}
+		return updated;
+	}
+
+	/**
 	 * Looks up a verte/machine entry. Returns it or NULL if no entry for this vertex.
 	 */
 	public synchronized Integer lookupEntry(int vertexId) {

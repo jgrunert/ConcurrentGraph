@@ -487,9 +487,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					intersectSum += intersect;
 				}
 				workerIntersectsSum.put(wIntersects.getKey(), intersectSum);
-				if (intersectSum > 0) { // TODO Testcode
-					System.err.println("INTERSECT " + wIntersects.getKey() + " " + wIntersects);
-				}
+				// TODO Testcode
+				//				if (intersectSum > 0) {
+				//					System.err.println("INTERSECT " + wIntersects.getKey() + " " + wIntersects);
+				//				}
 			}
 
 			// TODO Just a simple test algorithm: Move all other vertices to worker with most active vertices
@@ -508,9 +509,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 			//			System.out.println(workerActiveVerts);
 
-			if (!sendingWorkers.isEmpty())
-				System.out.println(query.QueryId + ":" + superstepNo + " receivingWorker " + receivingWorker
-						+ " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
+			// TODO Testcode
+			//			if (!sendingWorkers.isEmpty())
+			//				System.out.println(query.QueryId + ":" + superstepNo + " receivingWorker " + receivingWorker
+			//						+ " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
 
 			messaging.sendControlMessageUnicast(receivingWorker,
 					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertReceive(superstepNo, ownId, query, sendingWorkers), true);

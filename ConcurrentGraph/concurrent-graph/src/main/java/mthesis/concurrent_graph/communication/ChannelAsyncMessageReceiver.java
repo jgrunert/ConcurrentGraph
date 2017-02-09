@@ -106,7 +106,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 								break;
 							case 4:
 								inMsgHandler.onIncomingMessage(
-										new InvalidateRegisteredVerticesMessage(inBuffer));
+										new UpdateRegisteredVerticesMessage(inBuffer));
 								break;
 
 							default:
