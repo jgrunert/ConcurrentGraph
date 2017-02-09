@@ -538,7 +538,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			query.ActiveVerticesThis.clear();
 		}
 		else {
-			logger.error(query.QueryId + " should move vertices but has intersection now: "
+			logger.info(query.QueryId + " not moved because has intersection now: "
 					+ currentQueryIntersects.get(query.QueryId));
 		}
 
@@ -714,7 +714,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							}
 							else {
 								logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from "
-										+ message.srcMachine + " with no redirection");
+										+ message.srcMachine + " query " + activeQuery.QueryId + ":" + superstepNo
+										+ " with no redirection");
+								//								Integer machineMb = remoteVertexMachineRegistry.lookupEntry(msg.first);
+								//								System.err.println(machineMb);
 							}
 						}
 						activeQuery.QueryLocal.Stats.MessagesReceivedWrongVertex++;

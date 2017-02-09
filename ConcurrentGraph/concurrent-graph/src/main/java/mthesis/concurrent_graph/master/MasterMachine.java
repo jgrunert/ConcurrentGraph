@@ -508,9 +508,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 			//			System.out.println(workerActiveVerts);
 
-			//			if (!sendingWorkers.isEmpty())
-			//				System.out.println(query.QueryId + ":" + superstepNo + " receivingWorker " + receivingWorker
-			//						+ " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
+			if (!sendingWorkers.isEmpty())
+				System.out.println(query.QueryId + ":" + superstepNo + " receivingWorker " + receivingWorker
+						+ " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
 
 			messaging.sendControlMessageUnicast(receivingWorker,
 					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertReceive(superstepNo, ownId, query, sendingWorkers), true);
