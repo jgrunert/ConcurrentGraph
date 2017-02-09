@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -79,6 +80,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private final Map<Integer, VertexMessageBucket<M>> vertexMessageMachineBuckets = new HashMap<>();
 
 	private final ConcurrentLinkedQueue<ChannelMessage> receivedMessages = new ConcurrentLinkedQueue<>();
+
+	// Most recent calculated query intersections
+	private Map<Integer, Map<Integer, Integer>> currentQueryIntersects = new HashMap<>();
 
 	// TODO clear after superstep
 	private final Map<Integer, Integer> movedVerticesRedirections = new HashMap<>();
@@ -519,9 +523,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void sendQueryVertices(WorkerQuery<V, E, M, Q> query, int sendToWorker) {
 		int queryId = query.QueryId;
 		List<AbstractVertex<V, E, M, Q>> verticesToMove = new ArrayList<>();
-		for (AbstractVertex<V, E, M, Q> activeVertex : query.ActiveVerticesThis.values()) {
-			localVertices.remove(activeVertex.ID);
-			verticesToMove.add(activeVertex);
+		for (AbstractVertex<V, E, M, Q> vertex : query.ActiveVerticesThis.values()) {
+			// TODO Test for moves while running queries
+			if (!(vertex.queryValues.isEmpty() || (vertex.queryValues.size() == 1 && vertex.queryValues.containsKey(query.QueryId))))
+				System.err.println("Test");
+
+			localVertices.remove(vertex.ID);
+			verticesToMove.add(vertex);
 			// Send vertices if bucket full
 			if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
 				verticesMoving(verticesToMove, query.QueryId, sendToWorker);
@@ -587,34 +595,46 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 			// Flush active vertices
 			long startTime = System.currentTimeMillis();
-			Map<Integer, Integer> queryIntersects = new HashMap<>();
-			{
-				ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> swap = activeQuery.ActiveVerticesThis;
-				activeQuery.ActiveVerticesThis = activeQuery.ActiveVerticesNext;
-				activeQuery.ActiveVerticesNext = swap;
-				activeQuery.ActiveVerticesNext.clear();
 
-				// Prepare active vertices
-				for (AbstractVertex<V, E, M, Q> vert : activeQuery.ActiveVerticesThis.values()) {
-					vert.prepareForNextSuperstep(activeQuery.Query.QueryId);
-				}
+			ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> swap = activeQuery.ActiveVerticesThis;
+			activeQuery.ActiveVerticesThis = activeQuery.ActiveVerticesNext;
+			activeQuery.ActiveVerticesNext = swap;
+			activeQuery.ActiveVerticesNext.clear();
 
-				// Reset active vertices
-				activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVerticesThis.size());
-				activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
-				activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.StepFinishTimeKey, System.currentTimeMillis() - startTime);
-
-				// Overlap test
-				long startTime2 = System.currentTimeMillis();
-				for (WorkerQuery<V, E, M, Q> otherQuery : activeQueries.values()) {
-					if (otherQuery.QueryId == activeQuery.QueryId) continue;
-					int intersects;
-					intersects = MiscUtil.getIntersectCount(activeQuery.ActiveVerticesThis.keySet(),
-							otherQuery.ActiveVerticesThis.keySet());
-					queryIntersects.put(otherQuery.QueryId, intersects);
-				}
-				activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.IntersectCalcTimeKey, System.currentTimeMillis() - startTime2);
+			// Prepare active vertices
+			for (AbstractVertex<V, E, M, Q> vert : activeQuery.ActiveVerticesThis.values()) {
+				vert.prepareForNextSuperstep(activeQuery.Query.QueryId);
 			}
+
+			// Reset active vertices
+			activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVerticesThis.size());
+			activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
+			activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.StepFinishTimeKey, System.currentTimeMillis() - startTime);
+
+
+			// Calculate query intersections
+			Map<Integer, Integer> queryIntersects = new HashMap<>();
+			long startTime2 = System.currentTimeMillis();
+			for (WorkerQuery<V, E, M, Q> otherQuery : activeQueries.values()) {
+				if (otherQuery.QueryId == activeQuery.QueryId) continue;
+				int intersects;
+				intersects = MiscUtil.getIntersectCount(activeQuery.ActiveVerticesThis.keySet(),
+						otherQuery.ActiveVerticesThis.keySet());
+				queryIntersects.put(otherQuery.QueryId, intersects);
+			}
+			activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.IntersectCalcTimeKey, System.currentTimeMillis() - startTime2);
+
+			// Update currentQueryIntersects
+			currentQueryIntersects.put(activeQuery.QueryId, queryIntersects);
+			for (Entry<Integer, Integer> intersection : queryIntersects.entrySet()) {
+				Map<Integer, Integer> otherIntersects = currentQueryIntersects.get(intersection.getKey());
+				if (otherIntersects == null) {
+					otherIntersects = new HashMap<>();
+					currentQueryIntersects.put(intersection.getKey(), otherIntersects);
+				}
+				otherIntersects.put(activeQuery.QueryId, intersection.getValue());
+			}
+
 
 			sendMasterSuperstepFinished(activeQuery, queryIntersects);
 			activeQuery.finishedBarrierSync();
@@ -628,6 +648,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	public void handleVertexMessage(VertexMessage<V, E, M, Q> message) {
 		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
 		int superstepNo = activeQuery.getCalculatedSuperstepNo();
+		int barrierSuperstepNo = activeQuery.getBarrierFinishedSuperstepNo();
 
 		// Discover vertices if enabled. Only discover for broadcast messages as they are a sign that vertices are unknown.
 		if (message.broadcastFlag && Settings.VERTEX_MACHINE_DISCOVERY) {
@@ -652,8 +673,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 
 		// If message for correct superstep: Find vertices for them
-		if (message.superstepNo < superstepNo) {
-			logger.error("Message from past superstep in superstep " + superstepNo + " from " + message.srcMachine);
+
+		if (message.superstepNo != superstepNo && message.superstepNo != (superstepNo + 1)) {
+			logger.error(
+					"VertexMessage not from this or next calc superstepNo: " + message.superstepNo + " during " + superstepNo + " from "
+							+ message.srcMachine);
+		}
+		else if (message.superstepNo != (barrierSuperstepNo + 1)) {
+			logger.error(
+					"VertexMessage from wrong barrier superstepNo: " + message.superstepNo + " should be " + (barrierSuperstepNo + 1)
+							+ " from " + message.srcMachine);
 		}
 		else {
 			{
@@ -675,7 +704,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						if (!message.broadcastFlag) {
 							Integer redirectMachine = movedVerticesRedirections.get(msg.first);
 							if (redirectMachine != null) {
-								logger.info("Redirect to " + redirectMachine);
+								//								logger.info("Redirect to " + redirectMachine);
 								activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.RedirectedMessagesKey, 1);
 								sendVertexMessageToMachine(redirectMachine, msg.first, activeQuery, msg.second);
 							}
