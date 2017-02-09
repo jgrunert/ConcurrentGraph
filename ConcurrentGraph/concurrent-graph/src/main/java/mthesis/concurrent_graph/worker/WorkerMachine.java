@@ -163,7 +163,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						logger.trace("Worker start query " + queryId + " superstep compute " + superstepNo);
 
 						// First frame: Call all vertices, second frame only active vertices
-						long startTime = System.currentTimeMillis();
+						long startTime = System.nanoTime();
 						if (superstepNo == 0) {
 							for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
 								vertex.superstep(superstepNo, activeQuery);
@@ -175,7 +175,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							}
 						}
 						activeQuery.calculatedSuperstep();
-						activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.ComputeTimeKey, System.currentTimeMillis() - startTime);
+						activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.ComputeTimeKey, System.nanoTime() - startTime);
 
 
 						// Barrier sync with other workers;
@@ -596,7 +596,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 
 			// Flush active vertices
-			long startTime = System.currentTimeMillis();
+			long startTime = System.nanoTime();
 
 			ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> swap = activeQuery.ActiveVerticesThis;
 			activeQuery.ActiveVerticesThis = activeQuery.ActiveVerticesNext;
@@ -611,12 +611,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Reset active vertices
 			activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVerticesThis.size());
 			activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
-			activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.StepFinishTimeKey, System.currentTimeMillis() - startTime);
+			activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.StepFinishTimeKey, System.nanoTime() - startTime);
 
 
 			// Calculate query intersections
 			Map<Integer, Integer> queryIntersects = new HashMap<>();
-			long startTime2 = System.currentTimeMillis();
+			long startTime2 = System.nanoTime();
 			for (WorkerQuery<V, E, M, Q> otherQuery : activeQueries.values()) {
 				if (otherQuery.QueryId == activeQuery.QueryId) continue;
 				int intersects;
@@ -624,7 +624,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						otherQuery.ActiveVerticesThis.keySet());
 				queryIntersects.put(otherQuery.QueryId, intersects);
 			}
-			activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.IntersectCalcTimeKey, System.currentTimeMillis() - startTime2);
+			activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.IntersectCalcTimeKey, System.nanoTime() - startTime2);
 
 			// Update currentQueryIntersects
 			currentQueryIntersects.put(activeQuery.QueryId, queryIntersects);

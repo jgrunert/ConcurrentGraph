@@ -11,9 +11,12 @@ public class QueryStats {
 	public static final Integer ComputeTimeKey = 0;
 	public static final Integer StepFinishTimeKey = 1;
 	public static final Integer IntersectCalcTimeKey = 2;
-	public static final Integer MovedVerticsKey = 3;
-	public static final Integer UpdateVertexRegistersKey = 4;
-	public static final Integer RedirectedMessagesKey = 5;
+	public static final Integer UpdateVertexRegistersKey = 3;
+	public static final Integer RedirectedMessagesKey = 4;
+	public static final Integer MoveSendVerticsKey = 5;
+	public static final Integer MoveRecvVerticsKey = 6;
+	public static final Integer MoveSendVerticsTimeKey = 7;
+	public static final Integer MoveRecvVerticsTimeKey = 8;
 
 	public static final Map<Integer, String> OtherStatsNames;
 	static {
@@ -21,9 +24,12 @@ public class QueryStats {
 		OtherStatsNames.put(ComputeTimeKey, "ComputeTime");
 		OtherStatsNames.put(StepFinishTimeKey, "StepFinishTime");
 		OtherStatsNames.put(IntersectCalcTimeKey, "IntersectCalcTime");
-		OtherStatsNames.put(MovedVerticsKey, "MovedVertics");
 		OtherStatsNames.put(UpdateVertexRegistersKey, "UpdateVertexRegisters");
 		OtherStatsNames.put(RedirectedMessagesKey, "RedirectedMessages");
+		OtherStatsNames.put(MoveSendVerticsKey, "MoveSendVertics");
+		OtherStatsNames.put(MoveRecvVerticsKey, "MoveRecvVertics");
+		OtherStatsNames.put(MoveSendVerticsTimeKey, "MoveSendVerticsTime");
+		OtherStatsNames.put(MoveRecvVerticsTimeKey, "MoveRecvVerticsTime");
 	}
 
 	// Direct variables for quick access of frequently changed variables

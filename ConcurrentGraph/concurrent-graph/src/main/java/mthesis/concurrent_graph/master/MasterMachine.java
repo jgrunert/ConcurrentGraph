@@ -90,12 +90,12 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 	@Override
 	public void start() {
-		masterStartTime = System.currentTimeMillis();
+		masterStartTime = System.nanoTime();
 		super.start();
 		// Initialize workers
 		initializeWorkersAssignPartitions(); // Signal workers to initialize
 		logger.info("Workers partitions assigned and initialize starting after "
-				+ (System.currentTimeMillis() - masterStartTime) + "ms");
+				+ ((System.nanoTime() - masterStartTime) / 1000000) + "ms");
 	}
 
 
@@ -211,7 +211,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 			if (workersToInitialize.isEmpty()) {
 				logger.info("All workers initialized, " + workerIds.size() + " workers, " + vertexCount
-						+ " vertices after " + (System.currentTimeMillis() - masterStartTime) + "ms");
+						+ " vertices after " + ((System.nanoTime() - masterStartTime) / 1000000) + "ms");
 			}
 		}
 		else if (controlMsg.getType() == ControlMessageType.Worker_Query_Superstep_Finished
@@ -291,7 +291,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					// Log query superstep stats
 					if (enableQueryStats) {
 						queryStatsSteps.get(msgQueryOnWorker.QueryId).add(msgActiveQuery.QueryStepAggregator);
-						queryStatsStepTimes.get(msgQueryOnWorker.QueryId).add((System.currentTimeMillis() - msgActiveQuery.LastStepTime));
+						queryStatsStepTimes.get(msgQueryOnWorker.QueryId).add((System.nanoTime() - msgActiveQuery.LastStepTime));
 					}
 
 					// All workers have superstep finished
@@ -300,11 +300,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						msgActiveQuery.nextSuperstep(workerIds);
 						startWorkersQueryNextSuperstep(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
 						msgActiveQuery.resetValueAggregator(queryValueFactory);
-						msgActiveQuery.LastStepTime = System.currentTimeMillis();
+						msgActiveQuery.LastStepTime = System.nanoTime();
 						logger.debug("Workers finished superstep " + msgActiveQuery.BaseQuery.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
-								+ (System.currentTimeMillis() - msgActiveQuery.LastStepTime) + "ms. Total "
-								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms. Active: "
+								+ ((System.nanoTime() - msgActiveQuery.LastStepTime) / 1000000) + "ms. Total "
+								+ ((System.nanoTime() - msgActiveQuery.StartTime) / 1000000) + "ms. Active: "
 								+ msgActiveQuery.QueryStepAggregator.getActiveVertices());
 						logger.trace("Next master superstep query " + msgActiveQuery.BaseQuery.QueryId + ": "
 								+ msgActiveQuery.SuperstepNo);
@@ -315,7 +315,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						signalWorkersQueryFinish(msgActiveQuery.BaseQuery);
 						logger.info("All workers no more active for query " + msgActiveQuery.BaseQuery.QueryId + ":"
 								+ msgActiveQuery.SuperstepNo + " after "
-								+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms");
+								+ (System.nanoTime() - msgActiveQuery.StartTime) / 1000000 + "ms");
 
 						// Log query total stats
 						if (enableQueryStats) {
@@ -341,7 +341,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					activeQueries.remove(msgActiveQuery.BaseQuery.QueryId);
 					actQueryWorkerActiveVerts.remove(msgActiveQuery.BaseQuery.QueryId);
 					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
-							+ (System.currentTimeMillis() - msgActiveQuery.StartTime) + "ms, "
+							+ ((System.nanoTime() - msgActiveQuery.StartTime) / 1000000) + "ms, "
 							+ msgActiveQuery.QueryTotalAggregator.Stats.getOtherStatsString());
 				}
 			}

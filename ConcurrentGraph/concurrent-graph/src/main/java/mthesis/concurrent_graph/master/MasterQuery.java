@@ -31,7 +31,7 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 		super();
 		BaseQuery = query;
 		SuperstepNo = -1;
-		StartTime = System.currentTimeMillis();
+		StartTime = System.nanoTime();
 		LastStepTime = StartTime;
 		workersWaitingFor = new HashSet<>(workersToWait.size());
 		nextSuperstep(workersToWait);

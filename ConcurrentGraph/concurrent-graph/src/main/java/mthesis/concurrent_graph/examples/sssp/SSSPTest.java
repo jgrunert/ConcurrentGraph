@@ -59,7 +59,13 @@ public class SSSPTest {
 
 			// Very short ST-HBF->ST-Airport. Test query "0".
 			// Ca 5.5s, no vertexmove, without sysout, on PC+local4 and 6s on laptop+local8
-			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
 
 			// Very short Meersburg->Pfullendorf. Test query "1"
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
@@ -76,6 +82,12 @@ public class SSSPTest {
 
 			// Short RT->ST
 			// Ca 7.5s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
+			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForQueryFinish((queryIndex - 1));
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 
 			//			// Big query through BW, Ludwigshafen->Heilbronn
@@ -86,6 +98,12 @@ public class SSSPTest {
 
 			// Medium PF->HB
 			// Ca 21s, no vertexmove, without sysout, on PC+local4 and 27s on laptop+local8
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.waitForQueryFinish((queryIndex - 1));
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
 
 			//			// Short TU->RT
