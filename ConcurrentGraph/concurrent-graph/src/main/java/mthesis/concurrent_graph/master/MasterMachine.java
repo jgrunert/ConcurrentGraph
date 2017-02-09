@@ -373,9 +373,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		if (!enableQueryStats) return;
 		StringBuilder sb = new StringBuilder();
 
+		// Query active vertices
 		for (Entry<Integer, List<SortedMap<Integer, Q>>> querySteps : queryStatsStepMachines.entrySet()) {
 			try (PrintWriter writer = new PrintWriter(
-					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_av_steps.csv"))) {
+					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_quert_actverts.csv"))) {
 				for (Integer workerId : workerIds) {
 					sb.append("Worker " + workerId);
 					sb.append(';');
@@ -398,9 +399,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		}
 
 
+		// Query times in milliseconds
 		for (Entry<Integer, List<Q>> querySteps : queryStatsSteps.entrySet()) {
 			try (PrintWriter writer = new PrintWriter(
-					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_times_steps.csv"))) {
+					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_times_ms.csv"))) {
 				writer.println("StepTime;TotalTimes;ComputeTime;StepFinishTime;IntersectCalcTime;");
 
 				for (int i = 0; i < querySteps.getValue().size(); i++) {
@@ -411,13 +413,13 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 					sb.append(queryStatsStepTimes.get(querySteps.getKey()).get(i));
 					sb.append(';');
-					sb.append(compTime + intersCalcTime + stepFinishTime);
+					sb.append((compTime + intersCalcTime + stepFinishTime) / 1000000);
 					sb.append(';');
-					sb.append(compTime);
+					sb.append(compTime / 1000000);
 					sb.append(';');
-					sb.append(intersCalcTime);
+					sb.append(intersCalcTime / 1000000);
 					sb.append(';');
-					sb.append(stepFinishTime);
+					sb.append(stepFinishTime / 1000000);
 					sb.append(';');
 					writer.println(sb.toString());
 					sb.setLength(0);
@@ -425,6 +427,39 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 			catch (Exception e) {
 				logger.error("Exception when saveQueryStats", e);
+			}
+		}
+
+
+		// All stats for all workers
+		for (Entry<Integer, List<SortedMap<Integer, Q>>> querySteps : queryStatsStepMachines.entrySet()) {
+			for (Integer workerId : workerIds) {
+				try (PrintWriter writer = new PrintWriter(
+						new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_" + workerId + "_all.csv"))) {
+					writer.println("StepTime;TotalTimes;ComputeTime;StepFinishTime;IntersectCalcTime;");
+
+					// Write first line
+					for (String colName : QueryStats.AllStatsNames) {
+						sb.append(colName);
+						sb.append(';');
+					}
+					writer.println(sb.toString());
+					sb.setLength(0);
+
+					for (int i = 0; i < querySteps.getValue().size(); i++) {
+						Q step = querySteps.getValue().get(i).get(workerId);
+
+						for (String colName : QueryStats.AllStatsNames) {
+							sb.append(step.Stats.getStatValue(colName));
+							sb.append(';');
+						}
+						writer.println(sb.toString());
+						sb.setLength(0);
+					}
+				}
+				catch (Exception e) {
+					logger.error("Exception when saveQueryStats", e);
+				}
 			}
 		}
 	}

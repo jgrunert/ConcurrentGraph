@@ -2,12 +2,26 @@ package mthesis.concurrent_graph;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 
 public class QueryStats {
 
+
+	// Direct variables for quick access of frequently changed variables
+	public long MessagesTransmittedLocal;
+	public long MessagesSentUnicast;
+	public long MessagesSentBroadcast;
+	public long MessageBucketsSentUnicast;
+	public long MessageBucketsSentBroadcast;
+	public long MessagesReceivedWrongVertex;
+	public long MessagesReceivedCorrectVertex;
+	public long DiscoveredNewVertexMachines;
+
+	// Other stats values. Map to integers for better performance
 	public static final Integer ComputeTimeKey = 0;
 	public static final Integer StepFinishTimeKey = 1;
 	public static final Integer IntersectCalcTimeKey = 2;
@@ -18,7 +32,9 @@ public class QueryStats {
 	public static final Integer MoveSendVerticsTimeKey = 7;
 	public static final Integer MoveRecvVerticsTimeKey = 8;
 
+	public static final Set<String> AllStatsNames;
 	public static final Map<Integer, String> OtherStatsNames;
+	public static final Map<String, Integer> OtherStatsIndices;
 	static {
 		OtherStatsNames = new HashMap<Integer, String>();
 		OtherStatsNames.put(ComputeTimeKey, "ComputeTime");
@@ -30,17 +46,22 @@ public class QueryStats {
 		OtherStatsNames.put(MoveRecvVerticsKey, "MoveRecvVertics");
 		OtherStatsNames.put(MoveSendVerticsTimeKey, "MoveSendVerticsTime");
 		OtherStatsNames.put(MoveRecvVerticsTimeKey, "MoveRecvVerticsTime");
-	}
 
-	// Direct variables for quick access of frequently changed variables
-	public long MessagesTransmittedLocal;
-	public long MessagesSentUnicast;
-	public long MessagesSentBroadcast;
-	public long MessageBucketsSentUnicast;
-	public long MessageBucketsSentBroadcast;
-	public long MessagesReceivedWrongVertex;
-	public long MessagesReceivedCorrectVertex;
-	public long DiscoveredNewVertexMachines;
+		OtherStatsIndices = new HashMap<>();
+		for (Entry<Integer, String> stat : OtherStatsNames.entrySet()) {
+			OtherStatsIndices.put(stat.getValue(), stat.getKey());
+		}
+
+		AllStatsNames = new HashSet<String>(OtherStatsNames.values());
+		AllStatsNames.add("MessagesTransmittedLocal");
+		AllStatsNames.add("MessagesSentUnicast");
+		AllStatsNames.add("MessagesSentBroadcast");
+		AllStatsNames.add("MessageBucketsSentUnicast");
+		AllStatsNames.add("MessageBucketsSentBroadcast");
+		AllStatsNames.add("MessagesReceivedWrongVertex");
+		AllStatsNames.add("MessagesReceivedCorrectVertex");
+		AllStatsNames.add("DiscoveredNewVertexMachines");
+	}
 
 	// Other stats which are less frequently changed
 	public final Map<Integer, Long> OtherStats;
@@ -148,6 +169,7 @@ public class QueryStats {
 				+ ":" + getOtherStatsString();
 	}
 
+
 	public String getOtherStatsString() {
 		StringBuilder sb = new StringBuilder();
 		for (Entry<Integer, Long> stat : OtherStats.entrySet()) {
@@ -157,5 +179,37 @@ public class QueryStats {
 			sb.append(", ");
 		}
 		return sb.toString();
+	}
+
+
+	/**
+	 * @return Value of a stat if existing, 0 by default.
+	 */
+	public long getStatValue(String statName) {
+		switch (statName) {
+			case "MessagesTransmittedLocal":
+				return MessagesTransmittedLocal;
+			case "MessagesSentUnicast":
+				return MessagesSentUnicast;
+			case "MessagesSentBroadcast":
+				return MessagesSentBroadcast;
+			case "MessageBucketsSentUnicast":
+				return MessageBucketsSentUnicast;
+			case "MessageBucketsSentBroadcast":
+				return MessageBucketsSentBroadcast;
+			case "MessagesReceivedWrongVertex":
+				return MessagesReceivedWrongVertex;
+			case "MessagesReceivedCorrectVertex":
+				return MessagesReceivedCorrectVertex;
+			case "DiscoveredNewVertexMachines":
+				return DiscoveredNewVertexMachines;
+
+			default:
+				Integer otherStatIndex = OtherStatsIndices.get(statName);
+				if (otherStatIndex == null) return 0;
+				Long otherVal = OtherStats.get(otherStatIndex);
+				if (otherVal == null) return 0;
+				return otherVal;
+		}
 	}
 }
