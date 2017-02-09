@@ -16,7 +16,7 @@ public class Settings {
 	public static final int MESSAGE_TIMEOUT = 6000;
 
 
-	public static final boolean VERTEX_MOVE_ENABLED = true;
+	public static final boolean VERTEX_MOVE_ENABLED = false;
 
 	/**
 	 * When enabled, machines will discover and store mappings VertexId->Machine.
