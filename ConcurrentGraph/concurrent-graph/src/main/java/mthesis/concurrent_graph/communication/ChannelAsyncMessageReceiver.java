@@ -22,12 +22,12 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 
 /**
- * Receives messages on a channel from another machine. Runs a receive thread.
+ * Receives asynchronous messages on a channel from another machine. Runs a receive thread.
  *
  * @author Jonas Grunert
  *
  */
-public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
+public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
 	private final Logger logger;
 	private final int ownId;
@@ -43,7 +43,7 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 	private final VertexFactory<V, E, M, Q> vertexFactory;
 	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 
-	public ChannelMessageReceiver(Socket socket, InputStream reader, int ownId,
+	public ChannelAsyncMessageReceiver(Socket socket, InputStream reader, int ownId,
 			AbstractMachine<V, E, M, Q> inMsgHandler,
 			VertexWorkerInterface<V, E, M, Q> worker, JobConfiguration<V, E, M, Q> jobConfig) {
 		this.ownId = ownId;
@@ -134,7 +134,7 @@ public class ChannelMessageReceiver<V extends BaseWritable, E extends BaseWritab
 			}
 		});
 		thread.setDaemon(true);
-		thread.setName("ChannelReceiver_" + ownId + "_" + connectedMachineId);
+		thread.setName("ChannelAsyncReceiver_" + ownId + "_" + connectedMachineId);
 		thread.start();
 	}
 

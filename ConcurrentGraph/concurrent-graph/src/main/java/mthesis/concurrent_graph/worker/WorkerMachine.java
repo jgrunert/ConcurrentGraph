@@ -264,7 +264,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			final VertexMessageBucket<M> msgBucket = vertexMessageMachineBuckets.get(otherWorkerId);
 			if (!msgBucket.messages.isEmpty())
 				sendUnicastVertexMessageBucket(msgBucket, otherWorkerId, query, query.getStartedSuperstepNo());
-			messaging.flushChannel(otherWorkerId);
+			messaging.flushAsyncChannel(otherWorkerId);
 		}
 	}
 

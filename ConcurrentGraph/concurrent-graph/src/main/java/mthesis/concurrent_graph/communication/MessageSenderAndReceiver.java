@@ -33,7 +33,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 /**
  * Class to handle messaging between nodes.
- * Based on java sockets.
+ * Communicatino is based on java sockets.
  *
  * @author Jonas Grunert
  *
@@ -44,8 +44,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 	private final int ownId;
 	private final Map<Integer, MachineConfig> machineConfigs;
-	private final ConcurrentHashMap<Integer, ChannelMessageSender<V, E, M, Q>> channelSenders = new ConcurrentHashMap<>();
-	private final List<ChannelMessageReceiver<V, E, M, Q>> channelReceivers = new LinkedList<>();
+	private final ConcurrentHashMap<Integer, ChannelAsyncMessageSender<V, E, M, Q>> channelAsyncSenders = new ConcurrentHashMap<>();
+	private final List<ChannelAsyncMessageReceiver<V, E, M, Q>> channelAsyncReceivers = new LinkedList<>();
 	private final AbstractMachine<V, E, M, Q> machine;
 	private final VertexWorkerInterface<V, E, M, Q> workerMachine;
 	private final JobConfiguration<V, E, M, Q> jobConfiguration;
@@ -115,7 +115,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	public boolean waitUntilConnected() {
 		final long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
 		while (System.currentTimeMillis() <= timeoutTime &&
-				!(channelReceivers.size() == (machineConfigs.size() - 1) && channelSenders.size() == (machineConfigs.size() - 1))) {
+				!(channelAsyncReceivers.size() == (machineConfigs.size() - 1)
+						&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
 			try {
 				Thread.sleep(1);
 			}
@@ -123,7 +124,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 				break;
 			}
 		}
-		if (channelReceivers.size() == (machineConfigs.size() - 1) && channelSenders.size() == (machineConfigs.size() - 1)) {
+		if (channelAsyncReceivers.size() == (machineConfigs.size() - 1) && channelAsyncSenders.size() == (machineConfigs.size() - 1)) {
 			logger.info("Established all connections");
 			return true;
 		}
@@ -134,17 +135,17 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	}
 
 	public void getReadyForClose() {
-		for (final ChannelMessageReceiver<V, E, M, Q> channel : channelReceivers) {
+		for (final ChannelAsyncMessageReceiver<V, E, M, Q> channel : channelAsyncReceivers) {
 			channel.getReadyForClose();
 		}
 	}
 
 	public void stop() {
 		closingServer = true;
-		for (final ChannelMessageSender<V, E, M, Q> channel : channelSenders.values()) {
+		for (final ChannelAsyncMessageSender<V, E, M, Q> channel : channelAsyncSenders.values()) {
 			channel.close();
 		}
-		for (final ChannelMessageReceiver<V, E, M, Q> channel : channelReceivers) {
+		for (final ChannelAsyncMessageReceiver<V, E, M, Q> channel : channelAsyncReceivers) {
 			channel.close();
 		}
 		try {
@@ -157,50 +158,64 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	}
 
 
-	public void sendControlMessageUnicast(int dstId, MessageEnvelope message, boolean flush) {
-		final ChannelMessageSender<V, E, M, Q> ch = channelSenders.get(dstId);
-		ch.sendMessageEnvelope(message, flush);
+	/**
+	 * Sends a message through the channel asynchronously, without acknowledgement
+	 */
+	public void sendUnicastMessageAsync(int dstMachine, ChannelMessage message) {
+		final ChannelAsyncMessageSender<V, E, M, Q> ch = channelAsyncSenders.get(dstMachine);
+		ch.sendMessageAsync(message);
 	}
 
-	public void sendControlMessageMulticast(List<Integer> dstIds, MessageEnvelope message, boolean flush) {
-		for (final Integer machineId : dstIds) {
-			sendControlMessageUnicast(machineId, message, flush);
+	/**
+	 * Sends a message through the channel asynchronously, without acknowledgement
+	 */
+	public void sendMulticastMessageAsync(List<Integer> dstMachines, ChannelMessage message) {
+		for (final Integer machineId : dstMachines) {
+			final ChannelAsyncMessageSender<V, E, M, Q> ch = channelAsyncSenders.get(machineId);
+			ch.sendMessageAsync(message);
 		}
+	}
+
+
+	public void sendControlMessageUnicast(int dstMachine, MessageEnvelope message, boolean flush) {
+		sendUnicastMessageAsync(dstMachine, new ProtoEnvelopeMessage(message, flush));
+	}
+
+	public void sendControlMessageMulticast(List<Integer> dstMachines, MessageEnvelope message, boolean flush) {
+		sendMulticastMessageAsync(dstMachines, new ProtoEnvelopeMessage(message, flush));
 	}
 
 	public void sendVertexMessageUnicast(int dstMachine, int superstepNo, int srcMachine, int queryId,
 			List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
-		final ChannelMessageSender<V, E, M, Q> ch = channelSenders.get(dstMachine);
-		ch.sendVertexMessage(superstepNo, srcMachine, false, queryId, vertexMessages);
+		sendUnicastMessageAsync(dstMachine, new VertexMessage<>(superstepNo, ownId, false, queryId, vertexMessages)); // TODO Object pooling?
 	}
 
-	public void sendVertexMessageBroadcast(List<Integer> otherWorkerIds, int superstepNo, int srcMachine,
+	public void sendVertexMessageBroadcast(List<Integer> otherWorkers, int superstepNo, int srcMachine,
 			int queryId, List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
-		for (final Integer machineId : otherWorkerIds) {
-			final ChannelMessageSender<V, E, M, Q> ch = channelSenders.get(machineId);
-			ch.sendVertexMessage(superstepNo, srcMachine, true, queryId, vertexMessages);
-		}
+		sendMulticastMessageAsync(otherWorkers, new VertexMessage<>(superstepNo, ownId, true, queryId, vertexMessages)); // TODO Object pooling?
 	}
 
 	public void sendGetToKnownMessage(int dstMachine, Collection<Integer> vertices, int queryId) {
-		final ChannelMessageSender<V, E, M, Q> ch = channelSenders.get(dstMachine);
-		ch.sendGetToKnownMessage(ownId, vertices, queryId);
+		sendUnicastMessageAsync(dstMachine, new GetToKnowMessage(ownId, queryId, vertices));
 	}
 
-	public void sendMoveVerticesMessage(int dstMachine, Collection<AbstractVertex<V, E, M, Q>> vertices, int queryId, boolean lastSegment) {
-		final ChannelMessageSender<V, E, M, Q> ch = channelSenders.get(dstMachine);
-		ch.sendMoveVerticesMessage(ownId, vertices, queryId, lastSegment);
+	public void sendMoveVerticesMessage(int dstMachine, Collection<AbstractVertex<V, E, M, Q>> vertices, int queryId,
+			boolean lastSegment) {
+		sendUnicastMessageAsync(dstMachine, new MoveVerticesMessage<>(ownId, queryId, vertices, lastSegment));
 	}
 
 	public void sendInvalidateRegisteredVerticesMessage(int dstMachine, Collection<Integer> vertices, int queryId) {
-		final ChannelMessageSender<V, E, M, Q> ch = channelSenders.get(dstMachine);
-		ch.sendInvalidateRegisteredVerticesMessage(ownId, vertices, queryId);
+		sendUnicastMessageAsync(dstMachine, new InvalidateRegisteredVerticesMessage(ownId, queryId, vertices));
 	}
 
-	public void flushChannel(int machineId) {
-		channelSenders.get(machineId).flush();
+
+	/**
+	 * Flushes the async channel to a given machine
+	 */
+	public void flushAsyncChannel(int machineId) {
+		channelAsyncSenders.get(machineId).flush();
 	}
 
 
@@ -249,12 +264,12 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		catch (final SocketException e) {
 			logger.error("set socket configs", e);
 		}
-		final ChannelMessageReceiver<V, E, M, Q> receiver = new ChannelMessageReceiver<>(socket, reader, ownId,
+		final ChannelAsyncMessageReceiver<V, E, M, Q> receiver = new ChannelAsyncMessageReceiver<>(socket, reader, ownId,
 				machine, workerMachine, jobConfiguration);
 		receiver.startReceiver(machineId);
-		channelReceivers.add(receiver);
-		final ChannelMessageSender<V, E, M, Q> sender = new ChannelMessageSender<>(socket, writer, ownId);
+		channelAsyncReceivers.add(receiver);
+		final ChannelAsyncMessageSender<V, E, M, Q> sender = new ChannelAsyncMessageSender<>(socket, writer, ownId);
 		sender.startSender(ownId, machineId);
-		channelSenders.put(machineId, sender);
+		channelAsyncSenders.put(machineId, sender);
 	}
 }
