@@ -523,22 +523,26 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void sendQueryVertices(WorkerQuery<V, E, M, Q> query, int sendToWorker) {
 		int queryId = query.QueryId;
 		List<AbstractVertex<V, E, M, Q>> verticesToMove = new ArrayList<>();
-		for (AbstractVertex<V, E, M, Q> vertex : query.ActiveVerticesThis.values()) {
-			// TODO Test for moves while running queries
-			if (!(vertex.queryValues.isEmpty() || (vertex.queryValues.size() == 1 && vertex.queryValues.containsKey(query.QueryId))))
-				System.err.println("Test");
 
-			localVertices.remove(vertex.ID);
-			verticesToMove.add(vertex);
-			// Send vertices if bucket full
-			if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
-				verticesMoving(verticesToMove, query.QueryId, sendToWorker);
-				messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
-				verticesToMove = new ArrayList<>();
+		if (getQueryIntersectionCount(query.QueryId) == 0) { // Only move vertices if no intersection
+			for (AbstractVertex<V, E, M, Q> vertex : query.ActiveVerticesThis.values()) {
+				localVertices.remove(vertex.ID);
+				verticesToMove.add(vertex);
+				// Send vertices now if bucket full
+				if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
+					verticesMoving(verticesToMove, query.QueryId, sendToWorker);
+					messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
+					verticesToMove = new ArrayList<>();
+				}
 			}
+			query.ActiveVerticesThis.clear();
 		}
-		query.ActiveVerticesThis.clear();
-		// Send remaining vertices
+		else {
+			logger.error(query.QueryId + " should move vertices but has intersection now: "
+					+ currentQueryIntersects.get(query.QueryId));
+		}
+
+		// Send remaining vertices (or empty message if none)
 		verticesMoving(verticesToMove, query.QueryId, sendToWorker);
 		messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, true);
 	}
@@ -794,5 +798,20 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private Q deserializeQuery(ByteString bytes) {
 		return globalValueFactory.createFromBytes(ByteBuffer.wrap(bytes.toByteArray()));
+	}
+
+
+	/**
+	 * @return number of active vertices of this query intersecting with other queries.
+	 */
+	private int getQueryIntersectionCount(int queryId) {
+		int totalIntersects = 0;
+		Map<Integer, Integer> intersects = currentQueryIntersects.get(queryId);
+		if (intersects != null) {
+			for (Integer qInters : intersects.values()) {
+				totalIntersects += qInters;
+			}
+		}
+		return totalIntersects;
 	}
 }
