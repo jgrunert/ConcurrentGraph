@@ -38,7 +38,8 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
 /**
- * Concurrent graph processing worker main
+ * Concurrent graph processing worker main class.
+ * Processes active queries. Receives messages and processes the message queue.
  *
  * @author Jonas Grunert
  *
@@ -471,7 +472,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			if (message.hasSendQueryVertices()) {
 				// Send query vertices to other worker
 				int sendTo = message.getSendQueryVertices().getSendToMachine();
-				sendQueryVertices(activeQuery, sendTo);
+				sendQueryVerticesToMove(activeQuery, sendTo);
 			}
 			else if (message.hasReceiveQueryVertices()) {
 				List<Integer> recvFrom = message.getReceiveQueryVertices().getRecvFromMachineList();
@@ -515,7 +516,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 * Sends all active vertices of a query if they are only active at this query.
 	 * Used for incremental vertex migration.
 	 */
-	private void sendQueryVertices(WorkerQuery<V, E, M, Q> query, int sendToWorker) {
+	private void sendQueryVerticesToMove(WorkerQuery<V, E, M, Q> query, int sendToWorker) {
+		long startTime = System.nanoTime();
+		int verticesSent = 0;
 		int queryId = query.QueryId;
 		List<AbstractVertex<V, E, M, Q>> verticesToMove = new ArrayList<>();
 
@@ -530,6 +533,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
 					verticesMoving(verticesToMove, query.QueryId, sendToWorker);
 					messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
+					verticesSent += verticesToMove.size();
 					verticesToMove = new ArrayList<>();
 				}
 			}
@@ -543,6 +547,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		// Send remaining vertices (or empty message if none)
 		verticesMoving(verticesToMove, query.QueryId, sendToWorker);
 		messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, true);
+		verticesSent += verticesToMove.size();
+
+		query.QueryLocal.Stats.addToOtherStat(QueryStats.MoveSendVerticsKey, verticesSent);
+		query.QueryLocal.Stats.addToOtherStat(QueryStats.MoveSendVerticsTimeKey, (System.nanoTime() - startTime));
 	}
 
 
@@ -745,36 +753,38 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 	public void handleMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
+		long startTime = System.nanoTime();
 		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
 
-		{
-			for (AbstractVertex<V, E, M, Q> movedVert : message.vertices) {
-				activeQuery.ActiveVerticesThis.put(movedVert.ID, movedVert);
-				localVertices.put(movedVert.ID, movedVert);
-			}
+		for (AbstractVertex<V, E, M, Q> movedVert : message.vertices) {
+			activeQuery.ActiveVerticesThis.put(movedVert.ID, movedVert);
+			localVertices.put(movedVert.ID, movedVert);
+		}
 
-			// Testcode
-			//			StringBuilder movedSb = new StringBuilder();
-			//			for (AbstractVertex<V, E, M, Q> movedVert : message.vertices) {
-			//				movedSb.append(movedVert.ID);
-			//				movedSb.append(",");
-			//			}
-			//			System.out.println(ownId + " rec " + movedSb.toString());
+		// Testcode
+		//			StringBuilder movedSb = new StringBuilder();
+		//			for (AbstractVertex<V, E, M, Q> movedVert : message.vertices) {
+		//				movedSb.append(movedVert.ID);
+		//				movedSb.append(",");
+		//			}
+		//			System.out.println(ownId + " rec " + movedSb.toString());
 
-			if (message.lastSegment) {
-				// Mark that received all vertices from machine. Start next superstep if ready
-				assert !activeQuery.VertexMovesReceived.contains(message.srcMachine);
-				activeQuery.VertexMovesReceived.add(message.srcMachine);
+		if (message.lastSegment) {
+			// Mark that received all vertices from machine. Start next superstep if ready
+			assert !activeQuery.VertexMovesReceived.contains(message.srcMachine);
+			activeQuery.VertexMovesReceived.add(message.srcMachine);
 
-				// Start superstep if already received master start next superstep and all vertices received
-				if (activeQuery.VertexMovesReceived.size() >= activeQuery.VertexMovesWaitingFor.size() &&
-						activeQuery.getPreparedSuperstepNo() == (activeQuery.getCalculatedSuperstepNo() + 1)) {
-					// All vertex moves received - start superstep
-					assert activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
-					startNextSuperstep(activeQuery);
-				}
+			// Start superstep if already received master start next superstep and all vertices received
+			if (activeQuery.VertexMovesReceived.size() >= activeQuery.VertexMovesWaitingFor.size() &&
+					activeQuery.getPreparedSuperstepNo() == (activeQuery.getCalculatedSuperstepNo() + 1)) {
+				// All vertex moves received - start superstep
+				assert activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
+				startNextSuperstep(activeQuery);
 			}
 		}
+
+		activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.MoveRecvVerticsKey, message.vertices.size());
+		activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.MoveRecvVerticsTimeKey, (System.nanoTime() - startTime));
 	}
 
 

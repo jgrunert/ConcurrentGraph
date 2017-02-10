@@ -2,10 +2,10 @@ package mthesis.concurrent_graph;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 
 public class QueryStats {
@@ -32,7 +32,7 @@ public class QueryStats {
 	public static final Integer MoveSendVerticsTimeKey = 7;
 	public static final Integer MoveRecvVerticsTimeKey = 8;
 
-	public static final Set<String> AllStatsNames;
+	public static final SortedSet<String> AllStatsNames;
 	public static final Map<Integer, String> OtherStatsNames;
 	public static final Map<String, Integer> OtherStatsIndices;
 	static {
@@ -52,7 +52,7 @@ public class QueryStats {
 			OtherStatsIndices.put(stat.getValue(), stat.getKey());
 		}
 
-		AllStatsNames = new HashSet<String>(OtherStatsNames.values());
+		AllStatsNames = new TreeSet<String>(OtherStatsNames.values());
 		AllStatsNames.add("MessagesTransmittedLocal");
 		AllStatsNames.add("MessagesSentUnicast");
 		AllStatsNames.add("MessagesSentBroadcast");
