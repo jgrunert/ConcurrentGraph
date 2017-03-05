@@ -471,6 +471,21 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				}
 			}
 		}
+
+
+		// Query summary
+		try (PrintWriter writer = new PrintWriter(
+				new FileWriter(queryStatsDir + File.separator + "queries.csv"))) {
+			writer.println("Query;QueryHash;ComputeTime (ms);");
+			for (Entry<Integer, Q> query : queryStatsTotals.entrySet()) {
+				writer.println(
+						query.getKey() + ";" + query.getValue().GetQueryHash() + ";"
+								+ query.getValue().Stats.getStatValue(("ComputeTime")) / 1000000 + ";");
+			}
+		}
+		catch (Exception e) {
+			logger.error("Exception when saveQueryStats", e);
+		}
 	}
 
 

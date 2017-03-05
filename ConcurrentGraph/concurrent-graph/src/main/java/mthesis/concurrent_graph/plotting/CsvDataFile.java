@@ -46,19 +46,23 @@ public class CsvDataFile {
 	/**
 	 * @return A JFreeChart dataset for this csv files with all columns. X value incremented per line.
 	 */
-	public XYDataset getColumnDatasets() {
+	public XYDataset getTableDatasets() {
 		final XYSeriesCollection dataset = new XYSeriesCollection();
 
 		for (int iCol = 0; iCol < NumDataColumns; iCol++) {
-			final XYSeries series = new XYSeries(Captions[iCol]);
-			for (int iRow = 0; iRow < NumDataRows; iRow++) {
-				series.add(iRow, Data[iRow][iCol]);
-				System.out.println(iRow + "," + Data[iRow][iCol]);
-			}
-			dataset.addSeries(series);
+			dataset.addSeries(getColumnDataset(iCol, null));
 		}
 
 		return dataset;
+	}
 
+	public XYSeries getColumnDataset(int columnIndex, String optionalName) {
+		if (optionalName == null)
+			optionalName = Captions[columnIndex];
+		final XYSeries series = new XYSeries(optionalName);
+		for (int iRow = 0; iRow < NumDataRows; iRow++) {
+			series.add(iRow, Data[iRow][columnIndex]);
+		}
+		return series;
 	}
 }

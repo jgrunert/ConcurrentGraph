@@ -84,6 +84,10 @@ public class BaseQueryGlobalValues extends BaseWritable {
 		VertexCount = vertexCount;
 	}
 
+	public int GetQueryHash() {
+		return 0;
+	}
+
 
 
 	public static abstract class BaseQueryGlobalValuesFactory<T extends BaseQueryGlobalValues> extends BaseWritableFactory<T> {

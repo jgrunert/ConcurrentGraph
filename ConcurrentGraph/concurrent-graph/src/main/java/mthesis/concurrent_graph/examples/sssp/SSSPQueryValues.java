@@ -56,6 +56,15 @@ public class SSSPQueryValues extends BaseQueryGlobalValues {
 	}
 
 	@Override
+	public int GetQueryHash() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + From;
+		result = prime * result + To;
+		return result;
+	}
+
+	@Override
 	public void combine(BaseQueryGlobalValues v) {
 		SSSPQueryValues other = (SSSPQueryValues) v;
 		MaxDist = Math.min(MaxDist, other.MaxDist);
