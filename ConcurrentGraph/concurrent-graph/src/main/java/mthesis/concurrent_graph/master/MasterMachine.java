@@ -495,7 +495,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		// Plotting
 		if (Configuration.getPropertyBool("OutputPlots")) {
 			try {
-				JFreeChartPlotter.plotStats(queryStatsDir);
+				JFreeChartPlotter.plotStats(outputDir);
 			}
 			catch (Exception e) {
 				logger.error("Exception when plot stats", e);
@@ -522,7 +522,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			writer.println("MasterID: " + ownId);
 			writer.println("Machines: ");
 			for (Entry<Integer, MachineConfig> machine : machines.entrySet()) {
-				writer.println("\t" + machine.getKey() + " " + machine.getValue().HostName + ":" + machine.getValue().MessagePort);
+				writer.println("\t" + machine.getKey() + "\t" + machine.getValue().HostName + ":" + machine.getValue().MessagePort);
 			}
 		}
 		catch (Exception e) {

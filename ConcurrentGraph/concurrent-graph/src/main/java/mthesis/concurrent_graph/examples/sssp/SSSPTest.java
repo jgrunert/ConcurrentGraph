@@ -74,6 +74,9 @@ public class SSSPTest {
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
 			master.startQuery(new SSSPQueryValues(queryIndex++, 115011, 8272129));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 115011, 8272129));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 115011, 8272129));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 115011, 8272129));
 
 
 			//			Thread.sleep(20000);
@@ -82,6 +85,8 @@ public class SSSPTest {
 
 			// Short RT->ST
 			// Ca 7.5s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
+			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			//			master.waitForQueryFinish((queryIndex - 1));

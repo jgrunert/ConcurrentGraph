@@ -1,9 +1,15 @@
 package mthesis.concurrent_graph.plotting;
 
 import java.awt.Color;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartRenderingInfo;
@@ -15,45 +21,113 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 public class JFreeChartPlotter {
 
-	public static void plotStats(String statsFolder) throws Exception {
-		int queryId = 0;
+	public static void plotStats(String outputFolder) throws Exception {
+		String statsFolder = outputFolder + File.separator + "stats";
 
-		CsvDataFile times = new CsvDataFile(statsFolder + File.separator + queryId + "_times_ms.csv");
-		CsvDataFile all0 = new CsvDataFile(statsFolder + File.separator + queryId + "_0_all.csv");
-		CsvDataFile all1 = new CsvDataFile(statsFolder + File.separator + queryId + "_1_all.csv");
-		CsvDataFile all2 = new CsvDataFile(statsFolder + File.separator + queryId + "_2_all.csv");
-		CsvDataFile all3 = new CsvDataFile(statsFolder + File.separator + queryId + "_3_all.csv");
+		List<Integer> workers = new ArrayList<>();
+		List<Integer> queries = new ArrayList<>();
+		Map<Integer, Double> queriesTimes = new HashMap<>();
+		Map<Integer, Integer> queriesHashes = new HashMap<>();
+		Map<Integer, List<Integer>> queriesByHash = new HashMap<>();
 
-		plotCsvAllColumns(statsFolder, queryId + "_SuperstepTimes", "Superstep", "Time (ms)", times);
-
-		plotCsvColumns(statsFolder, queryId + "_ActiveVerts", "Superstep", "ActiveVertices",
-				new ColumnToPlot[] {
-						new ColumnToPlot("Machine 0", all0, 0),
-						new ColumnToPlot("Machine 1", all1, 0),
-						new ColumnToPlot("Machine 2", all2, 0),
-						new ColumnToPlot("Machine 3", all3, 0)
-				});
-	}
-
-
-	public static void plotCsvColumns(String outputFolder, String name, String axisTitleX, String axisTitleY, ColumnToPlot[] columns)
-			throws IOException {
-		final XYSeriesCollection dataset = new XYSeriesCollection();
-		for (ColumnToPlot col : columns) {
-			dataset.addSeries(col.Table.getColumnDataset(col.ColumnIndex, col.OptionalName));
+		// Load setup file
+		BufferedReader setupReader = new BufferedReader(new FileReader(outputFolder + File.separator + "setup.txt"));
+		int masterId = Integer.parseInt(setupReader.readLine().substring(10));
+		setupReader.readLine();
+		String line;
+		while ((line = setupReader.readLine()) != null) {
+			int idTmp = Integer.parseInt(line.split("\t")[1]);
+			if (idTmp != masterId)
+				workers.add(idTmp);
 		}
-		plotDataset(outputFolder, name, axisTitleX, axisTitleY, dataset);
+		setupReader.close();
+
+		// Load queries file
+		CsvDataFile queriesCsv = new CsvDataFile(statsFolder + File.separator + "queries.csv");
+		for (int i = 0; i < queriesCsv.NumDataRows; i++) {
+			int queryId = (int) queriesCsv.Data[i][0];
+			int queryHash = (int) queriesCsv.Data[i][1];
+			queries.add(queryId);
+			queriesTimes.put(queryId, queriesCsv.Data[i][2]);
+			queriesHashes.put(queryId, queryHash);
+
+			List<Integer> hashQs = queriesByHash.get(queryHash);
+			if (hashQs == null) {
+				hashQs = new ArrayList<>();
+				queriesByHash.put(queryHash, hashQs);
+			}
+			hashQs.add(queryId);
+		}
+
+
+		// Plot single queries
+		for (Integer queryId : queries) {
+			int queryHash = queriesHashes.get(queryId);
+			String queryName = queryId + "_" + queryHash;
+
+			CsvDataFile timesCsv = new CsvDataFile(statsFolder + File.separator + queryId + "_times_ms.csv");
+
+			Map<Integer, CsvDataFile> workerCsvs = new HashMap<>();
+			for (Integer worker : workers) {
+				workerCsvs.put(worker, new CsvDataFile(statsFolder + File.separator + queryId + "_" + worker + "_all.csv"));
+			}
+
+			plotCsvAllColumns(statsFolder, "SuperstepDurations_" + queryName, "Superstep", "Time (ms)", timesCsv);
+
+
+			plotWorkerStats(statsFolder, "ActiveVertices_" + queryName, "ActiveVertices", workerCsvs, 0, 1);
+			plotWorkerStats(statsFolder, "WorkerTimes_" + queryName, "WorkerTimes", workerCsvs, 0, 1);
+		}
+
+		// Plot query compares
+		plotQueryComparisons(statsFolder, "all", queries, queriesTimes);
+		for (Entry<Integer, List<Integer>> hashQueries : queriesByHash.entrySet()) {
+			plotQueryComparisons(statsFolder, "hash" + hashQueries.getKey(), hashQueries.getValue(), queriesTimes);
+		}
 	}
 
-	public static void plotCsvColumns(String outputFolder, String name, String axisTitleX, String axisTitleY, List<ColumnToPlot> columns)
+	private static void plotWorkerStats(String outputFolder, String name, String axisTitleY,
+			Map<Integer, CsvDataFile> workerCsvs, int columnIndex, double factor) throws IOException {
+		List<ColumnToPlot> columns = new ArrayList<>(workerCsvs.size());
+		for (Entry<Integer, CsvDataFile> wCsv : workerCsvs.entrySet()) {
+			columns.add(new ColumnToPlot("Worker " + wCsv.getKey(), wCsv.getValue(), columnIndex));
+		}
+		plotCsvColumns(outputFolder, name, "Superstep", axisTitleY, factor, columns);
+	}
+
+	private static void plotQueryComparisons(String statsFolder, String name, List<Integer> queriesToPlot,
+			Map<Integer, Double> queriesTimes) throws IOException {
+		plotQueryComparisonTotalTimes(statsFolder, name, queriesToPlot, queriesTimes);
+	}
+
+	private static void plotQueryComparisonTotalTimes(String statsFolder, String name, List<Integer> queriesToPlot,
+			Map<Integer, Double> queriesTimes) throws IOException {
+		String plotName = "TotalTimes_" + name;
+		final XYSeriesCollection dataset = new XYSeriesCollection();
+		final XYSeries series = new XYSeries("Query times");
+		for (int iQ = 0; iQ < queriesToPlot.size(); iQ++) {
+			series.add(iQ, queriesTimes.get(queriesToPlot.get(iQ)));
+		}
+		dataset.addSeries(series);
+		plotDataset(statsFolder, plotName, "Query", "Time (ms)", dataset);
+	}
+
+	private static void plotQueryComparisonSuperstepTimes(String statsFolder, String name, List<Integer> queriesToPlot) throws IOException {
+
+	}
+
+
+	public static void plotCsvColumns(String outputFolder, String name, String axisTitleX, String axisTitleY,
+			double factor, List<ColumnToPlot> columns)
 			throws IOException {
 		final XYSeriesCollection dataset = new XYSeriesCollection();
 		for (ColumnToPlot col : columns) {
-			dataset.addSeries(col.Table.getColumnDataset(col.ColumnIndex, col.OptionalName));
+			dataset.addSeries(col.Table.getColumnDataset(col.ColumnIndex, factor, col.OptionalName));
 		}
 		plotDataset(outputFolder, name, axisTitleX, axisTitleY, dataset);
 	}
@@ -126,7 +200,7 @@ public class JFreeChartPlotter {
 
 	public static void main(String[] args) {
 		try {
-			plotStats("output" + File.separator + "stats");
+			plotStats("output");
 			System.out.println("Plot finished");
 		}
 		catch (Exception e) {

@@ -50,18 +50,18 @@ public class CsvDataFile {
 		final XYSeriesCollection dataset = new XYSeriesCollection();
 
 		for (int iCol = 0; iCol < NumDataColumns; iCol++) {
-			dataset.addSeries(getColumnDataset(iCol, null));
+			dataset.addSeries(getColumnDataset(iCol, 1.0, null));
 		}
 
 		return dataset;
 	}
 
-	public XYSeries getColumnDataset(int columnIndex, String optionalName) {
+	public XYSeries getColumnDataset(int columnIndex, double factor, String optionalName) {
 		if (optionalName == null)
 			optionalName = Captions[columnIndex];
 		final XYSeries series = new XYSeries(optionalName);
 		for (int iRow = 0; iRow < NumDataRows; iRow++) {
-			series.add(iRow, Data[iRow][columnIndex]);
+			series.add(iRow, Data[iRow][columnIndex] * factor);
 		}
 		return series;
 	}
