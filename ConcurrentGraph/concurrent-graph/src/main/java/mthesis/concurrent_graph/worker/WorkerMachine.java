@@ -20,7 +20,7 @@ import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFacto
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.QueryStats;
-import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.GetToKnowMessage;
@@ -321,7 +321,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				// Broadcast remote message
 				query.QueryLocal.Stats.MessagesSentBroadcast += otherWorkerIds.size();
 				vertexMessageBroadcastBucket.addMessage(dstVertex, messageContent);
-				if (vertexMessageBroadcastBucket.messages.size() > Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
+				if (vertexMessageBroadcastBucket.messages.size() > Configuration.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
 					sendBroadcastVertexMessageBucket(query, query.getStartedSuperstepNo());
 				}
 			}
@@ -336,7 +336,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (msgBucket == null)
 			logger.error("WTF, no machine " + dstMachine);
 		msgBucket.addMessage(dstVertex, messageContent);
-		if (msgBucket.messages.size() > Settings.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
+		if (msgBucket.messages.size() > Configuration.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
 			sendUnicastVertexMessageBucket(msgBucket, dstMachine, query, query.getStartedSuperstepNo());
 		}
 		query.QueryLocal.Stats.MessagesSentUnicast++;
@@ -530,7 +530,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				localVertices.remove(vertex.ID);
 				verticesToMove.add(vertex);
 				// Send vertices now if bucket full
-				if (verticesToMove.size() >= Settings.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
+				if (verticesToMove.size() >= Configuration.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
 					verticesMoving(verticesToMove, query.QueryId, sendToWorker);
 					messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
 					verticesSent += verticesToMove.size();
@@ -671,7 +671,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		int barrierSuperstepNo = activeQuery.getBarrierFinishedSuperstepNo();
 
 		// Discover vertices if enabled. Only discover for broadcast messages as they are a sign that vertices are unknown.
-		if (message.broadcastFlag && Settings.VERTEX_MACHINE_DISCOVERY) {
+		if (message.broadcastFlag && Configuration.VERTEX_MACHINE_DISCOVERY) {
 			// Collect all vertices from this broadcast message on this machine
 			final HashSet<Integer> srcVertices = new HashSet<>();
 			for (final Pair<Integer, M> msg : message.vertexMessages) {
@@ -680,7 +680,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 			}
 			// Also discover all source vertices from this incoming broadcast message, if enabled.
-			if (Settings.VERTEX_MACHINE_DISCOVERY_INCOMING) {
+			if (Configuration.VERTEX_MACHINE_DISCOVERY_INCOMING) {
 				for (final Integer srcVertId : srcVertices) {
 					if (remoteVertexMachineRegistry.addEntry(srcVertId, message.srcMachine))
 						activeQuery.QueryLocal.Stats.DiscoveredNewVertexMachines++;

@@ -12,7 +12,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;
-import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -27,13 +27,13 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	// value = (V[]) new Object[n + 1];
 	private List<Edge<E>> edges;
 	private V vertexDefaultValue = null;
-	public final Int2ObjectMap<V> queryValues = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
+	public final Int2ObjectMap<V> queryValues = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
 	// Queries this vertex is inactive for
-	private IntSet queriesVertexInactive = new IntOpenHashSet(Settings.DEFAULT_QUERY_SLOTS);
+	private IntSet queriesVertexInactive = new IntOpenHashSet(Configuration.DEFAULT_QUERY_SLOTS);
 
 	// Message double buffer
-	public Int2ObjectMap<List<M>> queryMessagesThisSuperstep = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
-	public Int2ObjectMap<List<M>> queryMessagesNextSuperstep = new Int2ObjectOpenHashMap<>(Settings.DEFAULT_QUERY_SLOTS);
+	public Int2ObjectMap<List<M>> queryMessagesThisSuperstep = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
+	public Int2ObjectMap<List<M>> queryMessagesNextSuperstep = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
 
 	private final VertexWorkerInterface<V, E, M, Q> worker;
 

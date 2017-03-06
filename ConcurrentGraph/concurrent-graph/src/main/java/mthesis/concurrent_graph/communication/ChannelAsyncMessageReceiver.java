@@ -14,7 +14,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;
-import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
@@ -33,7 +33,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 	private final int ownId;
 	private final Socket socket;
 	private final InputStream reader;
-	private final byte[] inBytes = new byte[Settings.MAX_MESSAGE_SIZE];
+	private final byte[] inBytes = new byte[Configuration.MAX_MESSAGE_SIZE];
 	private final ByteBuffer inBuffer = ByteBuffer.wrap(inBytes);
 	private final AbstractMachine<V, E, M, Q> inMsgHandler;
 	private Thread thread;

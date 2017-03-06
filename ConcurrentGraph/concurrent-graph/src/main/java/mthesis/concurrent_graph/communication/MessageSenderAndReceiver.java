@@ -23,7 +23,7 @@ import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
-import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
@@ -113,7 +113,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	}
 
 	public boolean waitUntilConnected() {
-		final long timeoutTime = System.currentTimeMillis() + Settings.CONNECT_TIMEOUT;
+		final long timeoutTime = System.currentTimeMillis() + Configuration.CONNECT_TIMEOUT;
 		while (System.currentTimeMillis() <= timeoutTime &&
 				!(channelAsyncReceivers.size() == (machineConfigs.size() - 1)
 						&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
@@ -259,7 +259,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	private void startConnection(int machineId, final Socket socket, final OutputStream writer,
 			final InputStream reader) {
 		try {
-			socket.setTcpNoDelay(Settings.TCP_NODELAY);
+			socket.setTcpNoDelay(Configuration.TCP_NODELAY);
 		}
 		catch (final SocketException e) {
 			logger.error("set socket configs", e);

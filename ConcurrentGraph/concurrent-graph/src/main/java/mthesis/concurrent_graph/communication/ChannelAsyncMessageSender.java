@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
-import mthesis.concurrent_graph.Settings;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 
@@ -26,7 +26,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	private final Logger logger;
 	private final Socket socket;
 	private final OutputStream writer;
-	private final byte[] outBytes = new byte[Settings.MAX_MESSAGE_SIZE];
+	private final byte[] outBytes = new byte[Configuration.MAX_MESSAGE_SIZE];
 	private final ByteBuffer outBuffer = ByteBuffer.wrap(outBytes);
 	private final BlockingQueue<ChannelMessage> outMessages = new LinkedBlockingQueue<>();
 	private Thread senderThread;

@@ -19,9 +19,9 @@ import java.util.TreeMap;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.QueryStats;
-import mthesis.concurrent_graph.Settings;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
@@ -30,6 +30,7 @@ import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
+import mthesis.concurrent_graph.plotting.JFreeChartPlotter;
 import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.MiscUtil;
 import mthesis.concurrent_graph.writable.NullWritable;
@@ -127,7 +128,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			queryStatsStepTimes.put(query.QueryId, new ArrayList<>());
 		}
 
-		while (activeQueries.size() >= Settings.MAX_PARALLEL_QUERIES) {
+		while (activeQueries.size() >= Configuration.MAX_PARALLEL_QUERIES) {
 			logger.info("Wait for activeQueries<MAX_PARALLEL_QUERIES before starting query: " + query.QueryId);
 			try {
 				Thread.sleep(1000);
@@ -489,12 +490,24 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		catch (Exception e) {
 			logger.error("Exception when saveQueryStats", e);
 		}
+
+
+		// Plotting
+		if (Configuration.getPropertyBool("OutputPlots")) {
+			try {
+				JFreeChartPlotter.plotStats(queryStatsDir);
+			}
+			catch (Exception e) {
+				logger.error("Exception when plot stats", e);
+			}
+		}
 	}
 
 	private void saveConfigSummary() {
 		// Copy configuration
 		try {
-			Files.copy(new File(Settings.CONFIG_FILE).toPath(), new File(outputDir + File.separator + "configuration.properties").toPath());
+			Files.copy(new File(Configuration.CONFIG_FILE).toPath(),
+					new File(outputDir + File.separator + "configuration.properties").toPath());
 		}
 		catch (Exception e) {
 			logger.error("Exception when copy config", e);
@@ -565,7 +578,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 		//		System.out.println("/////");
 
-		if (Settings.VERTEX_MOVE_ENABLED) {
+		if (Configuration.VERTEX_MOVE_ENABLED) {
 			// Evaluate intersections, decide if move vertices
 			Map<Integer, Integer> workerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
 			Map<Integer, Integer> workerIntersectsSum = new HashMap<>(workerActiveVerts.size());

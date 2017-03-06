@@ -19,8 +19,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 public class JFreeChartPlotter {
 
-	public static void plotStats(String outputFolder, int queryId) throws Exception {
-		String statsFolder = outputFolder + File.separator + "stats";
+	public static void plotStats(String statsFolder) throws Exception {
+		int queryId = 0;
 
 		CsvDataFile times = new CsvDataFile(statsFolder + File.separator + queryId + "_times_ms.csv");
 		CsvDataFile all0 = new CsvDataFile(statsFolder + File.separator + queryId + "_0_all.csv");
@@ -126,7 +126,7 @@ public class JFreeChartPlotter {
 
 	public static void main(String[] args) {
 		try {
-			plotStats("output", 0);
+			plotStats("output" + File.separator + "stats");
 			System.out.println("Plot finished");
 		}
 		catch (Exception e) {

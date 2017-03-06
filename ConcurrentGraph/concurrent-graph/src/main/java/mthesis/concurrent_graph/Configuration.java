@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 
-public class Settings {
+public class Configuration {
 
-	private static final Logger logger = LoggerFactory.getLogger(Settings.class);
+	private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
 	public static final String CONFIG_FILE = "configs/configuration.properties";
 	public static final Properties Properties = new Properties();
@@ -82,5 +82,14 @@ public class Settings {
 			logger.error("", e);
 			throw new RuntimeException("Failure while loading configuration file " + CONFIG_FILE, e);
 		}
+	}
+
+
+	public static boolean getPropertyBool(String propName) {
+		return Boolean.parseBoolean(Properties.getProperty(propName));
+	}
+
+	public static int getPropertyInt(String propName) {
+		return Integer.parseInt(Properties.getProperty(propName));
 	}
 }
