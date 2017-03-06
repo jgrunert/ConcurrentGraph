@@ -25,13 +25,14 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 	protected final int ownId;
 
 	protected final MessageSenderAndReceiver<V, E, M, Q> messaging;
-
 	private Thread runThread;
+
 
 
 	protected AbstractMachine(Map<Integer, MachineConfig> machines, int ownId,
 			JobConfiguration<V, E, M, Q> jobConfig) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
+
 		//this.machines = machines;
 		this.ownId = ownId;
 		// Hack to get worker interface

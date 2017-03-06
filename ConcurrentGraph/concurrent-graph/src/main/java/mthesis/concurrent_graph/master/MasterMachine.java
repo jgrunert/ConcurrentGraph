@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,6 +87,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		this.queryValueFactory = globalValueFactory;
 		FileUtil.makeCleanDirectory(outputDir);
 		FileUtil.makeCleanDirectory(queryStatsDir);
+		saveSetupSummary(machines, ownId);
+		saveConfigSummary();
 	}
 
 	@Override
@@ -475,7 +478,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 		// Query summary
 		try (PrintWriter writer = new PrintWriter(
-				new FileWriter(queryStatsDir + File.separator + "queries.csv"))) {
+				new FileWriter(outputDir + File.separator + "queries.csv"))) {
 			writer.println("Query;QueryHash;ComputeTime (ms);");
 			for (Entry<Integer, Q> query : queryStatsTotals.entrySet()) {
 				writer.println(
@@ -485,6 +488,32 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		}
 		catch (Exception e) {
 			logger.error("Exception when saveQueryStats", e);
+		}
+	}
+
+	private void saveConfigSummary() {
+		// Copy configuration
+		try {
+			Files.copy(new File(Settings.CONFIG_FILE).toPath(), new File(outputDir + File.separator + "configuration.properties").toPath());
+		}
+		catch (Exception e) {
+			logger.error("Exception when copy config", e);
+		}
+	}
+
+	private void saveSetupSummary(Map<Integer, MachineConfig> machines, int ownId) {
+
+		// Setup summary
+		try (PrintWriter writer = new PrintWriter(
+				new FileWriter(outputDir + File.separator + "setup.txt"))) {
+			writer.println("MasterID: " + ownId);
+			writer.println("Machines: ");
+			for (Entry<Integer, MachineConfig> machine : machines.entrySet()) {
+				writer.println("\t" + machine.getKey() + " " + machine.getValue().HostName + ":" + machine.getValue().MessagePort);
+			}
+		}
+		catch (Exception e) {
+			logger.error("Exception when save setup stats", e);
 		}
 	}
 
