@@ -478,7 +478,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 		// Query summary
 		try (PrintWriter writer = new PrintWriter(
-				new FileWriter(outputDir + File.separator + "queries.csv"))) {
+				new FileWriter(queryStatsDir + File.separator + "queries.csv"))) {
 			writer.println("Query;QueryHash;ComputeTime (ms);");
 			for (Entry<Integer, Q> query : queryStatsTotals.entrySet()) {
 				writer.println(
