@@ -53,7 +53,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	private ServerSocket serverSocket;
 	private boolean closingServer;
 
-	private final VertexMessagePool<V, E, M, Q> vertexMessagePool = new VertexMessagePool<>();
+	private final VertexMessagePool<V, E, M, Q> vertexMessagePool;
 
 
 
@@ -66,6 +66,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		this.machine = machine;
 		this.workerMachine = workerMachine;
 		this.jobConfiguration = jobConfiguration;
+		this.vertexMessagePool = new VertexMessagePool<>(jobConfiguration);
 	}
 
 	//	public void setMessageListner(AbstractNode listener) {
@@ -191,7 +192,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	public void sendVertexMessageUnicast(int dstMachine, int superstepNo, int srcMachine, int queryId,
 			List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
-		sendUnicastMessageAsync(dstMachine, vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, false, queryId, vertexMessages));
+		sendUnicastMessageAsync(dstMachine,
+				vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, false, queryId, vertexMessages, 1));
 	}
 
 	public void sendVertexMessageBroadcast(List<Integer> otherWorkers, int superstepNo, int srcMachine,
@@ -200,8 +202,10 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		// Dont use message multiple times to allow free/reuse
 		for (final Integer dstMachine : otherWorkers) {
 			sendUnicastMessageAsync(dstMachine,
-					vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages));
+					vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages, 1));
 		}
+		//		sendMulticastMessageAsync(otherWorkers,
+		//				vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, false, queryId, vertexMessages, otherWorkers.size()));
 	}
 
 

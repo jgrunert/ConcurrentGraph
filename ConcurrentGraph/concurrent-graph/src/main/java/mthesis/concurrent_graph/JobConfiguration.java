@@ -52,14 +52,24 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 
 
 	public M getPooledMessageValue() {
-		M message = messageValuePool.poll();
-		//		System.out.println((message == null) ? "new" : "reuse");
+		M message;
+		synchronized (messageValuePool) {
+			message = messageValuePool.poll();
+		}
+
+		if (message == null)
+			System.out.println("new");
+		else
+			System.out.println("old");
+
 		if (message == null)
 			message = messageValueFactory.createDefault();
 		return message;
 	}
 
 	public void freePooledMessageValue(M message) {
-		messageValuePool.add(message);
+		synchronized (messageValuePool) {
+			messageValuePool.add(message);
+		}
 	}
 }

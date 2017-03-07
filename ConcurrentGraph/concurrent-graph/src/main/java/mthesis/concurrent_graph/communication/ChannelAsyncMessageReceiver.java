@@ -43,7 +43,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 	private final VertexFactory<V, E, M, Q> vertexFactory;
 	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 
-	private final VertexMessagePool<V, E, M, Q> vertexMessagePool = new VertexMessagePool<>();
+	private final VertexMessagePool<V, E, M, Q> vertexMessagePool;
 
 
 	public ChannelAsyncMessageReceiver(Socket socket, InputStream reader, int ownId,
@@ -56,6 +56,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 		this.inMsgHandler = inMsgHandler;
 		this.worker = worker;
 		this.jobConfig = jobConfig;
+		this.vertexMessagePool = new VertexMessagePool<>(jobConfig);
 		this.vertexFactory = jobConfig != null ? jobConfig.getVertexFactory() : null;
 		this.vertexMessageFactory = jobConfig != null ? jobConfig.getMessageValueFactory() : null;
 	}
@@ -94,8 +95,10 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 						final byte msgType = inBuffer.get();
 						switch (msgType) {
 							case 0:
+								//								inMsgHandler
+								//										.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, vertexMessageFactory, 1));
 								inMsgHandler
-										.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, vertexMessageFactory)); // TODO Pool
+										.onIncomingMessage(new VertexMessage<>(inBuffer, vertexMessageFactory, null));
 								break;
 							case 1:
 								readIncomingMessageEnvelope(1, msgContentLength - 1);
