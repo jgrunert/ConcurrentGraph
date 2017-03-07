@@ -95,10 +95,8 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 						final byte msgType = inBuffer.get();
 						switch (msgType) {
 							case 0:
-								//								inMsgHandler
-								//										.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, vertexMessageFactory, 1));
 								inMsgHandler
-										.onIncomingMessage(new VertexMessage<>(inBuffer, vertexMessageFactory, null));
+										.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, vertexMessageFactory, 1));
 								break;
 							case 1:
 								readIncomingMessageEnvelope(1, msgContentLength - 1);

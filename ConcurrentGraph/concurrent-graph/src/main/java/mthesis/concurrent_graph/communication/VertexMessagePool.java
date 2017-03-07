@@ -14,6 +14,7 @@ public class VertexMessagePool<V extends BaseWritable, E extends BaseWritable, M
 	private final LinkedList<VertexMessage<V, E, M, Q>> pool = new LinkedList<>();
 	private final JobConfiguration<V, E, M, Q> jobConfig;
 
+
 	public VertexMessagePool(JobConfiguration<V, E, M, Q> jobConfig) {
 		this.jobConfig = jobConfig;
 	}
@@ -51,6 +52,9 @@ public class VertexMessagePool<V extends BaseWritable, E extends BaseWritable, M
 
 
 	public void freeVertexMessage(VertexMessage<V, E, M, Q> message) {
+		for (Pair<Integer, M> vMsg : message.vertexMessages) {
+			jobConfig.freePooledMessageValue(vMsg.second);
+		}
 		synchronized (pool) {
 			pool.add(message);
 		}
