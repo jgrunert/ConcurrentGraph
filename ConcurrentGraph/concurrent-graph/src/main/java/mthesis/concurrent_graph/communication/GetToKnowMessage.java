@@ -39,6 +39,10 @@ public class GetToKnowMessage implements ChannelMessage {
 	}
 
 	@Override
+	public void free() {
+	}
+
+	@Override
 	public boolean hasContent() {
 		return true;
 	}

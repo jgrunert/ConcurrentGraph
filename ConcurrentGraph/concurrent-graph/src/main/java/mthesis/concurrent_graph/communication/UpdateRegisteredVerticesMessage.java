@@ -32,6 +32,10 @@ public class UpdateRegisteredVerticesMessage implements ChannelMessage {
 	}
 
 	@Override
+	public void free() {
+	}
+
+	@Override
 	public void writeMessageToBuffer(ByteBuffer buffer) {
 		buffer.putInt(srcMachine);
 		buffer.putInt(queryId);

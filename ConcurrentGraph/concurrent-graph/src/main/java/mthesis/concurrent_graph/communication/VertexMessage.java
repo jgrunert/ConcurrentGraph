@@ -2,6 +2,7 @@ package mthesis.concurrent_graph.communication;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
@@ -11,13 +12,21 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
 		implements ChannelMessage {
 
-	public final int superstepNo;
-	public final int srcMachine;
-	public final boolean broadcastFlag;
-	public final int queryId;
-	public final List<Pair<Integer, M>> vertexMessages;
+	public int superstepNo;
+	public int srcMachine;
+	public boolean broadcastFlag;
+	public int queryId;
+	public List<Pair<Integer, M>> vertexMessages;
+
+	private final LinkedList<VertexMessage<V, E, M, Q>> messagePool;
 
 	public VertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
+			List<Pair<Integer, M>> vertexMessages, LinkedList<VertexMessage<V, E, M, Q>> messagePool) {
+		this.messagePool = messagePool;
+		setup(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
+	}
+
+	public void setup(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
 			List<Pair<Integer, M>> vertexMessages) {
 		this.srcMachine = srcMachine;
 		this.superstepNo = superstepNo;
@@ -26,8 +35,10 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 		this.vertexMessages = vertexMessages;
 	}
 
-	public VertexMessage(ByteBuffer buffer, BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
+	public VertexMessage(ByteBuffer buffer, BaseWritable.BaseWritableFactory<M> vertexMessageFactory,
+			LinkedList<VertexMessage<V, E, M, Q>> messagePool) {
 		super();
+		this.messagePool = messagePool;
 		this.superstepNo = buffer.getInt();
 		this.srcMachine = buffer.getInt();
 		this.broadcastFlag = (buffer.get() == 0);
@@ -36,6 +47,15 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 		vertexMessages = new ArrayList<>(numVertices);
 		for (int i = 0; i < numVertices; i++) {
 			vertexMessages.add(new Pair<Integer, M>(buffer.getInt(), vertexMessageFactory.createFromBytes(buffer)));
+		}
+	}
+
+	@Override
+	public void free() {
+		if (messagePool != null) {
+			synchronized (messagePool) {
+				messagePool.add(this);
+			}
 		}
 	}
 

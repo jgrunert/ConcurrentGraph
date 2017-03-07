@@ -312,6 +312,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 								+ msgActiveQuery.QueryStepAggregator.getActiveVertices());
 						logger.trace("Next master superstep query " + msgActiveQuery.BaseQuery.QueryId + ": "
 								+ msgActiveQuery.SuperstepNo);
+
+						// TODO Testcode
+						// Time: 6623ms/5900ms
+						//						System.out.println(msgActiveQuery.SuperstepNo);
 					}
 					else {
 						// All workers finished, finish query

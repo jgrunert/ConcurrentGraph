@@ -24,6 +24,10 @@ public class ProtoEnvelopeMessage implements ChannelMessage {
 		buffer.put(message.toByteArray());
 	}
 
+	@Override
+	public void free() {
+	}
+
 
 	@Override
 	public boolean hasContent() {

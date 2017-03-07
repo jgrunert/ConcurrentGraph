@@ -8,5 +8,10 @@ public interface VertexWorkerInterface<V extends BaseWritable, E extends BaseWri
 
 	void sendVertexMessage(int dstVertex, M content, WorkerQuery<V, E, M, Q> query);
 
-	public abstract BaseWritableFactory<V> getVertexValueFactory();
+	BaseWritableFactory<V> getVertexValueFactory();
+
+
+	M getPooledMessageValue();
+
+	void freePooledMessageValue(M message);
 }

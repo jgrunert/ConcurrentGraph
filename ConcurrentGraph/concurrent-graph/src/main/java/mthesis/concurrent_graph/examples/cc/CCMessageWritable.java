@@ -6,6 +6,10 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class CCMessageWritable extends BaseWritable {
 
+	public CCMessageWritable() {
+		super();
+	}
+
 	public CCMessageWritable(int srcVertex, int value) {
 		super();
 		SrcVertex = srcVertex;
@@ -34,6 +38,11 @@ public class CCMessageWritable extends BaseWritable {
 
 
 	public static class Factory extends BaseWritable.BaseWritableFactory<CCMessageWritable> {
+
+		@Override
+		public CCMessageWritable createDefault() {
+			return new CCMessageWritable();
+		}
 
 		@Override
 		public CCMessageWritable createFromString(String str) {

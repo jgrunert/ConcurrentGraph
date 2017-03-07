@@ -11,8 +11,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
-import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.Configuration;
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -208,6 +208,14 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	protected abstract void compute(int superstepNo, List<M> messages, WorkerQuery<V, E, M, Q> query);
 
+
+	protected M getPooledMessageValue() {
+		return worker.getPooledMessageValue();
+	}
+
+	protected void freePooledMessageValue(M message) {
+		worker.freePooledMessageValue(message);
+	}
 
 	protected void sendMessageToAllOutgoingEdges(M message, WorkerQuery<V, E, M, Q> query) {
 		for (final Edge<E> edge : edges) {

@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
-import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
@@ -52,6 +52,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	private Thread serverThread;
 	private ServerSocket serverSocket;
 	private boolean closingServer;
+
+	private final LinkedList<VertexMessage<V, E, M, Q>> vertexMessagePool = new LinkedList<>();
 
 
 
@@ -185,17 +187,43 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		sendMulticastMessageAsync(dstMachines, new ProtoEnvelopeMessage(message, flush));
 	}
 
+
 	public void sendVertexMessageUnicast(int dstMachine, int superstepNo, int srcMachine, int queryId,
 			List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
-		sendUnicastMessageAsync(dstMachine, new VertexMessage<>(superstepNo, ownId, false, queryId, vertexMessages)); // TODO Object pooling?
+		sendUnicastMessageAsync(dstMachine, getPooledVertexMessage(superstepNo, ownId, false, queryId, vertexMessages));
 	}
 
 	public void sendVertexMessageBroadcast(List<Integer> otherWorkers, int superstepNo, int srcMachine,
 			int queryId, List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
-		sendMulticastMessageAsync(otherWorkers, new VertexMessage<>(superstepNo, ownId, true, queryId, vertexMessages)); // TODO Object pooling?
+		// Dont use message multiple times to allow free/reuse
+		for (final Integer dstMachine : otherWorkers) {
+			sendUnicastMessageAsync(dstMachine, getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages));
+		}
 	}
+
+	private VertexMessage<V, E, M, Q> getPooledVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
+			List<Pair<Integer, M>> vertexMessages) {
+		VertexMessage<V, E, M, Q> message;
+		synchronized (vertexMessagePool) {
+			message = vertexMessagePool.poll();
+		}
+		if (message == null) {
+			message = new VertexMessage<>(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages, vertexMessagePool);
+		}
+		else {
+			message.setup(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
+		}
+		return message;
+	}
+
+	public void freeVertexMessage(VertexMessage<V, E, M, Q> message) {
+		synchronized (vertexMessagePool) {
+			vertexMessagePool.add(message);
+		}
+	}
+
 
 	public void sendGetToKnownMessage(int dstMachine, Collection<Integer> vertices, int queryId) {
 		sendUnicastMessageAsync(dstMachine, new GetToKnowMessage(ownId, queryId, vertices));

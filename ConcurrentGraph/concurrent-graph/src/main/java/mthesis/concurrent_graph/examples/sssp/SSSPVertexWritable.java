@@ -12,6 +12,10 @@ public class SSSPVertexWritable extends BaseWritable {
 	public boolean SendMsgsLater;
 
 
+	public SSSPVertexWritable() {
+		super();
+	}
+
 	public SSSPVertexWritable(int pre, double dist, boolean sendMsgsLater) {
 		super();
 		Pre = pre;
@@ -39,6 +43,11 @@ public class SSSPVertexWritable extends BaseWritable {
 
 
 	public static class Factory extends BaseWritable.BaseWritableFactory<SSSPVertexWritable> {
+
+		@Override
+		public SSSPVertexWritable createDefault() {
+			return new SSSPVertexWritable();
+		}
 
 		@Override
 		public SSSPVertexWritable createFromString(String str) {

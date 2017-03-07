@@ -47,6 +47,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 					while (!Thread.interrupted() && !socket.isClosed()) {
 						final ChannelMessage message = outMessages.take();
 						sendMessageViaStream(message);
+						message.free();
 					}
 				}
 				catch (final InterruptedException e2) {
@@ -66,7 +67,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 		senderThread.start();
 	}
 
-	// Sends message via stream
+	// Sends message via stream.
 	// THREADING NOTE: Not threadsafe
 	// Format: short MsgLength, byte MsgType, byte[] MsgContent
 	private void sendMessageViaStream(final ChannelMessage message) throws IOException {
@@ -134,6 +135,10 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 		@Override
 		public void writeMessageToBuffer(ByteBuffer buffer) {
 			throw new RuntimeException("Not supported for FlushDummyMessage");
+		}
+
+		@Override
+		public void free() {
 		}
 	}
 }

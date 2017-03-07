@@ -12,7 +12,7 @@ import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class MoveVerticesMessage<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-implements ChannelMessage {
+		implements ChannelMessage {
 
 	public final int srcMachine;
 	public final int queryId;
@@ -39,6 +39,10 @@ implements ChannelMessage {
 		for (int i = 0; i < numVertices; i++) {
 			vertices.add(vertexFactory.newInstance(buffer, worker, jobConfig));
 		}
+	}
+
+	@Override
+	public void free() {
 	}
 
 	@Override

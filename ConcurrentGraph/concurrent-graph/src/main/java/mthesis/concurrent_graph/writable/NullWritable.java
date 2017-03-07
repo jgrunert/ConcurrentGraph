@@ -27,6 +27,11 @@ public class NullWritable extends BaseWritable {
 	public static class Factory extends BaseWritableFactory<NullWritable> {
 
 		@Override
+		public NullWritable createDefault() {
+			return new NullWritable();
+		}
+
+		@Override
 		public NullWritable createFromString(String str) {
 			return new NullWritable();
 		}

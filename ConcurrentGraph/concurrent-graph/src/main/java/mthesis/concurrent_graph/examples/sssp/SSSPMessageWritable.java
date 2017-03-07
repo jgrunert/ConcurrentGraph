@@ -10,10 +10,20 @@ public class SSSPMessageWritable extends BaseWritable {
 	public double Dist;
 
 
+	public SSSPMessageWritable() {
+		super();
+	}
+
 	public SSSPMessageWritable(int srcVertex, double dist) {
 		super();
 		SrcVertex = srcVertex;
 		Dist = dist;
+	}
+
+	public SSSPMessageWritable setup(int srcVertex, double dist) {
+		SrcVertex = srcVertex;
+		Dist = dist;
+		return this;
 	}
 
 
@@ -35,6 +45,11 @@ public class SSSPMessageWritable extends BaseWritable {
 
 
 	public static class Factory extends BaseWritable.BaseWritableFactory<SSSPMessageWritable> {
+
+		@Override
+		public SSSPMessageWritable createDefault() {
+			return new SSSPMessageWritable();
+		}
 
 		@Override
 		public SSSPMessageWritable createFromString(String str) {

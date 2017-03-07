@@ -13,8 +13,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
-import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.Configuration;
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
@@ -92,7 +92,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 						switch (msgType) {
 							case 0:
 								inMsgHandler
-										.onIncomingMessage(new VertexMessage<>(inBuffer, vertexMessageFactory));
+										.onIncomingMessage(new VertexMessage<>(inBuffer, vertexMessageFactory, null)); // TODO Pool
 								break;
 							case 1:
 								readIncomingMessageEnvelope(1, msgContentLength - 1);

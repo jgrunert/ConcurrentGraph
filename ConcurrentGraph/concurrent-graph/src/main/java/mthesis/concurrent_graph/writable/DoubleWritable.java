@@ -31,6 +31,11 @@ public class DoubleWritable extends BaseWritable {
 	public static class Factory extends BaseWritableFactory<DoubleWritable> {
 
 		@Override
+		public DoubleWritable createDefault() {
+			return new DoubleWritable(0);
+		}
+
+		@Override
 		public DoubleWritable createFromString(String str) {
 			return new DoubleWritable(Double.parseDouble(str));
 		}

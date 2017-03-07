@@ -98,6 +98,11 @@ public class BaseQueryGlobalValues extends BaseWritable {
 	public static class Factory extends BaseQueryGlobalValuesFactory<BaseQueryGlobalValues> {
 
 		@Override
+		public BaseQueryGlobalValues createDefault() {
+			throw new RuntimeException("Not supported");
+		}
+
+		@Override
 		public BaseQueryGlobalValues createDefault(int queryId) {
 			return new BaseQueryGlobalValues(queryId);
 		}

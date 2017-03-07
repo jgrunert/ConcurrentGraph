@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Base class for writable objects. Used for fast serialization.
- * 
+ *
  * @author Jonas Grunert
  *
  */
@@ -26,6 +26,8 @@ public abstract class BaseWritable {
 
 
 	public static abstract class BaseWritableFactory<T extends BaseWritable> {
+
+		public abstract T createDefault();
 
 		public abstract T createFromString(String str);
 

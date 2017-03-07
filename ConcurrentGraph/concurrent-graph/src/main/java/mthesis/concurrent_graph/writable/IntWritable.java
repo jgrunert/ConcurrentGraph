@@ -31,6 +31,11 @@ public class IntWritable extends BaseWritable {
 	public static class Factory extends BaseWritableFactory<IntWritable> {
 
 		@Override
+		public IntWritable createDefault() {
+			return new IntWritable(0);
+		}
+
+		@Override
 		public IntWritable createFromString(String str) {
 			return new IntWritable(Integer.parseInt(str));
 		}

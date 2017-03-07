@@ -1,5 +1,7 @@
 package mthesis.concurrent_graph;
 
+import java.util.LinkedList;
+
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -12,6 +14,8 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 	private final BaseWritableFactory<E> edgeValueFactory;
 	private final BaseWritableFactory<M> messageValueFactory;
 	private final BaseQueryGlobalValuesFactory<Q> globalValuesFactory;
+
+	private LinkedList<M> messageValuePool = new LinkedList<>();
 
 
 	public JobConfiguration(VertexFactory<V, E, M, Q> vertexFactory, BaseWritableFactory<V> vertexValueFactory,
@@ -44,5 +48,18 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 
 	public BaseQueryGlobalValuesFactory<Q> getGlobalValuesFactory() {
 		return globalValuesFactory;
+	}
+
+
+	public M getPooledMessageValue() {
+		M message = messageValuePool.poll();
+		//		System.out.println((message == null) ? "new" : "reuse");
+		if (message == null)
+			message = messageValueFactory.createDefault();
+		return message;
+	}
+
+	public void freePooledMessageValue(M message) {
+		messageValuePool.add(message);
 	}
 }

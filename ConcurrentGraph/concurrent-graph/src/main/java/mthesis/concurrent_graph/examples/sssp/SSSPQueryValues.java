@@ -77,6 +77,11 @@ public class SSSPQueryValues extends BaseQueryGlobalValues {
 	public static class Factory extends BaseQueryGlobalValuesFactory<SSSPQueryValues> {
 
 		@Override
+		public SSSPQueryValues createDefault() {
+			throw new RuntimeException("Not supported");
+		}
+
+		@Override
 		public SSSPQueryValues createDefault(int queryId) {
 			return new SSSPQueryValues(queryId, 0, 0);
 		}

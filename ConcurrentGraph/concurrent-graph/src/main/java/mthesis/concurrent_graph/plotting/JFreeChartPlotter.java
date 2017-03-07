@@ -134,9 +134,9 @@ public class JFreeChartPlotter {
 		plotDataset(statsFolder, plotName, "Query", "Time (ms)", dataset);
 	}
 
-	private static void plotQueryComparisonSuperstepTimes(String statsFolder, String name, List<Integer> queriesToPlot) throws IOException {
-		// TODO
-	}
+	//	private static void plotQueryComparisonSuperstepTimes(String statsFolder, String name, List<Integer> queriesToPlot) throws IOException {
+	//
+	//	}
 
 
 	public static void plotCsvColumns(String outputFolder, String name, String axisTitleX, String axisTitleY,
@@ -200,7 +200,7 @@ public class JFreeChartPlotter {
 		// OPTIONAL CUSTOMISATION COMPLETED.
 
 		ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
-		ChartUtilities.saveChartAsPNG(new File(outputFolder + File.separator + name + ".png"), chart, 1200, 800, info);
+		ChartUtilities.saveChartAsPNG(new File(outputFolder + File.separator + name + ".png"), chart, 1600, 1200, info);
 	}
 
 

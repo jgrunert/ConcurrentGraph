@@ -17,10 +17,10 @@ import com.google.protobuf.ByteString;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.QueryStats;
-import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.GetToKnowMessage;
@@ -129,6 +129,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 			// Initialize, load assigned partitions
 			loadVertices(assignedPartitions);
+			logger.debug("Worker loaded partitions");
+			System.gc();
+			logger.debug("Worker pre-partition-load GC finished");
 			sendMasterInitialized();
 
 			// Execution loop
@@ -289,6 +292,18 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		messaging.sendControlMessageUnicast(masterId,
 				ControlMessageBuildUtil.Build_Worker_QueryFinished(workerQuery.getStartedSuperstepNo(), ownId, workerQuery.QueryLocal),
 				true);
+	}
+
+
+
+	@Override
+	public M getPooledMessageValue() {
+		return jobConfig.getPooledMessageValue();
+	}
+
+	@Override
+	public void freePooledMessageValue(M message) {
+		jobConfig.freePooledMessageValue(message);
 	}
 
 	/**

@@ -17,4 +17,6 @@ public interface ChannelMessage {
 	byte getTypeCode();
 
 	void writeMessageToBuffer(ByteBuffer buffer);
+
+	void free();
 }
