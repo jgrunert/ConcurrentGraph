@@ -41,7 +41,6 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 	private final VertexWorkerInterface<V, E, M, Q> worker;
 	private final JobConfiguration<V, E, M, Q> jobConfig;
 	private final VertexFactory<V, E, M, Q> vertexFactory;
-	private final BaseWritable.BaseWritableFactory<M> vertexMessageFactory;
 
 	private final VertexMessagePool<V, E, M, Q> vertexMessagePool;
 
@@ -58,7 +57,6 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 		this.jobConfig = jobConfig;
 		this.vertexMessagePool = new VertexMessagePool<>(jobConfig);
 		this.vertexFactory = jobConfig != null ? jobConfig.getVertexFactory() : null;
-		this.vertexMessageFactory = jobConfig != null ? jobConfig.getMessageValueFactory() : null;
 	}
 
 	public void startReceiver(int connectedMachineId) {
@@ -96,7 +94,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 						switch (msgType) {
 							case 0:
 								inMsgHandler
-										.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, vertexMessageFactory, 1));
+										.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, 1));
 								break;
 							case 1:
 								readIncomingMessageEnvelope(1, msgContentLength - 1);

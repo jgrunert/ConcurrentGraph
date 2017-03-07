@@ -14,11 +14,15 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  */
 public class BaseQueryGlobalValues extends BaseWritable {
 
-	public final int QueryId;
+	public int QueryId;
 	protected int ActiveVertices;
 	protected int VertexCount;
 	public QueryStats Stats;
 
+
+	public BaseQueryGlobalValues() {
+		super();
+	}
 
 	public BaseQueryGlobalValues(int queryId) {
 		super();
@@ -41,6 +45,15 @@ public class BaseQueryGlobalValues extends BaseWritable {
 		ActiveVertices += v.ActiveVertices;
 		VertexCount += v.VertexCount;
 		Stats.combine(v.Stats);
+	}
+
+
+	@Override
+	public void readFromBuffer(ByteBuffer buffer) {
+		QueryId = buffer.getInt();
+		ActiveVertices = buffer.getInt();
+		VertexCount = buffer.getInt();
+		Stats = new QueryStats(buffer);
 	}
 
 	@Override
@@ -99,7 +112,7 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 		@Override
 		public BaseQueryGlobalValues createDefault() {
-			throw new RuntimeException("Not supported");
+			return new BaseQueryGlobalValues();
 		}
 
 		@Override
@@ -111,12 +124,5 @@ public class BaseQueryGlobalValues extends BaseWritable {
 		public BaseQueryGlobalValues createFromString(String str) {
 			throw new RuntimeException("createFromString not implemented for BaseQueryGlobalValues");
 		}
-
-		@Override
-		public BaseQueryGlobalValues createFromBytes(ByteBuffer bytes) {
-			return new BaseQueryGlobalValues(bytes.getInt(), bytes.getInt(), bytes.getInt(),
-					new QueryStats(bytes));
-		}
 	}
-
 }

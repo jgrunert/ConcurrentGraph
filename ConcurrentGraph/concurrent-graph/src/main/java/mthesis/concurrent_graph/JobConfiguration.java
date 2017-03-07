@@ -15,7 +15,8 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 	private final BaseWritableFactory<M> messageValueFactory;
 	private final BaseQueryGlobalValuesFactory<Q> globalValuesFactory;
 
-	private LinkedList<M> messageValuePool = new LinkedList<>();
+	private static final int MessageValuePoolMaxSize = 1000000;
+	private final LinkedList<M> messageValuePool = new LinkedList<>();
 
 
 	public JobConfiguration(VertexFactory<V, E, M, Q> vertexFactory, BaseWritableFactory<V> vertexValueFactory,
@@ -51,16 +52,25 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 	}
 
 
+
+	int newM = 0;
+	int newO = 0;
+
 	public M getPooledMessageValue() {
 		M message;
 		synchronized (messageValuePool) {
 			message = messageValuePool.poll();
 		}
 
-		//		if (message == null)
-		//			System.out.println("new");
-		//		else
-		//			System.out.println("old");
+		if (message == null) {
+			newM++;
+			System.out.println("new " + (newM));
+		}
+		else {
+			newO++;
+			//			if ((newO % 1000) == 0)
+			System.out.println("old " + (newO));
+		}
 
 		if (message == null)
 			message = messageValueFactory.createDefault();
@@ -69,7 +79,10 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 
 	public void freePooledMessageValue(M message) {
 		synchronized (messageValuePool) {
-			messageValuePool.add(message);
+			if (messageValuePool.size() < MessageValuePoolMaxSize)
+				messageValuePool.add(message);
 		}
+		//		if ((messageValuePool.size() % 100) == 0)
+		System.out.println("pool " + messageValuePool.size());
 	}
 }

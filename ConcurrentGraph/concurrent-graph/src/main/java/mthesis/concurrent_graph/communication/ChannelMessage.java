@@ -18,5 +18,5 @@ public interface ChannelMessage {
 
 	void writeMessageToBuffer(ByteBuffer buffer);
 
-	void free();
+	void free(boolean freeMembers);
 }

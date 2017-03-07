@@ -6,6 +6,10 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class CCMessageWritable extends BaseWritable {
 
+	public int SrcVertex;
+	public int Value;
+
+
 	public CCMessageWritable() {
 		super();
 	}
@@ -16,8 +20,12 @@ public class CCMessageWritable extends BaseWritable {
 		Value = value;
 	}
 
-	public int SrcVertex;
-	public int Value;
+
+	@Override
+	public void readFromBuffer(ByteBuffer buffer) {
+		SrcVertex = buffer.getInt();
+		Value = buffer.getInt();
+	}
 
 
 	@Override
@@ -48,11 +56,6 @@ public class CCMessageWritable extends BaseWritable {
 		public CCMessageWritable createFromString(String str) {
 			final String[] sSplit = str.split(":");
 			return new CCMessageWritable(Integer.parseInt(sSplit[0]), Integer.parseInt(sSplit[1]));
-		}
-
-		@Override
-		public CCMessageWritable createFromBytes(ByteBuffer bytes) {
-			return new CCMessageWritable(bytes.getInt(), bytes.getInt());
 		}
 	}
 }

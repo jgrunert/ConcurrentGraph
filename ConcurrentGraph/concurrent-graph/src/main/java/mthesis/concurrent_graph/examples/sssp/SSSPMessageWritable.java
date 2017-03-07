@@ -26,6 +26,12 @@ public class SSSPMessageWritable extends BaseWritable {
 		return this;
 	}
 
+	@Override
+	public void readFromBuffer(ByteBuffer buffer) {
+		SrcVertex = buffer.getInt();
+		Dist = buffer.getInt();
+	}
+
 
 	@Override
 	public void writeToBuffer(ByteBuffer buffer) {
@@ -55,11 +61,6 @@ public class SSSPMessageWritable extends BaseWritable {
 		public SSSPMessageWritable createFromString(String str) {
 			final String[] sSplit = str.split(":");
 			return new SSSPMessageWritable(Integer.parseInt(sSplit[0]), Double.parseDouble(sSplit[1]));
-		}
-
-		@Override
-		public SSSPMessageWritable createFromBytes(ByteBuffer bytes) {
-			return new SSSPMessageWritable(bytes.getInt(), bytes.getDouble());
 		}
 	}
 }

@@ -47,7 +47,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 					while (!Thread.interrupted() && !socket.isClosed()) {
 						final ChannelMessage message = outMessages.take();
 						sendMessageViaStream(message);
-						message.free();
+						message.free(true);
 					}
 				}
 				catch (final InterruptedException e2) {
@@ -138,7 +138,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 		}
 
 		@Override
-		public void free() {
+		public void free(boolean freeMembers) {
 		}
 	}
 }

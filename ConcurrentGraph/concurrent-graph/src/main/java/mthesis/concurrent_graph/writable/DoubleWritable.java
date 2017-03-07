@@ -13,6 +13,11 @@ public class DoubleWritable extends BaseWritable {
 
 
 	@Override
+	public void readFromBuffer(ByteBuffer buffer) {
+		Value = buffer.getDouble();
+	}
+
+	@Override
 	public void writeToBuffer(ByteBuffer buffer) {
 		buffer.putDouble(Value);
 	}

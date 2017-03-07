@@ -10,6 +10,8 @@ import java.nio.ByteBuffer;
  */
 public abstract class BaseWritable {
 
+	public abstract void readFromBuffer(ByteBuffer buffer);
+
 	public abstract void writeToBuffer(ByteBuffer buffer);
 
 	public abstract int getBytesLength();
@@ -31,7 +33,11 @@ public abstract class BaseWritable {
 
 		public abstract T createFromString(String str);
 
-		public abstract T createFromBytes(ByteBuffer bytes);
+		public T createFromBytes(ByteBuffer bytes) {
+			T created = createDefault();
+			created.readFromBuffer(bytes);
+			return created;
+		}
 
 		public T createClone(T toClone) {
 			return createFromBytes(ByteBuffer.wrap(toClone.getBytes()));

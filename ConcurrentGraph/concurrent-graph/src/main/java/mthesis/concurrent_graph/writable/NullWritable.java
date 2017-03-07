@@ -9,6 +9,11 @@ public class NullWritable extends BaseWritable {
 	}
 
 
+
+	@Override
+	public void readFromBuffer(ByteBuffer buffer) {
+	}
+
 	@Override
 	public void writeToBuffer(ByteBuffer buffer) {
 	}

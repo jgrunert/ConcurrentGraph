@@ -32,7 +32,7 @@ public class UpdateRegisteredVerticesMessage implements ChannelMessage {
 	}
 
 	@Override
-	public void free() {
+	public void free(boolean freeMembers) {
 	}
 
 	@Override

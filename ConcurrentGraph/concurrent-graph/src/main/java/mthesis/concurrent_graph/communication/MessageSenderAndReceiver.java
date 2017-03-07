@@ -200,12 +200,12 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 			int queryId, List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
 		// Dont use message multiple times to allow free/reuse
-		for (final Integer dstMachine : otherWorkers) {
-			sendUnicastMessageAsync(dstMachine,
-					vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages, 1));
-		}
-		//		sendMulticastMessageAsync(otherWorkers,
-		//				vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, false, queryId, vertexMessages, otherWorkers.size()));
+		//		for (final Integer dstMachine : otherWorkers) {
+		//			sendUnicastMessageAsync(dstMachine,
+		//					vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages, 1));
+		//		}
+		sendMulticastMessageAsync(otherWorkers,
+				vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages, otherWorkers.size()));
 	}
 
 

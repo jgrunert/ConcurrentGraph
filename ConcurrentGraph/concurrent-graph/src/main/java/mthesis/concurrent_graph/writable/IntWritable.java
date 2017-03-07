@@ -13,6 +13,11 @@ public class IntWritable extends BaseWritable {
 
 
 	@Override
+	public void readFromBuffer(ByteBuffer buffer) {
+		Value = buffer.getInt();
+	}
+
+	@Override
 	public void writeToBuffer(ByteBuffer buffer) {
 		buffer.putInt(Value);
 	}

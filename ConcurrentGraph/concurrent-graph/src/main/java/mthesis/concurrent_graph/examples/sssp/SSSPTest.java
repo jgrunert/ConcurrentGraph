@@ -90,8 +90,8 @@ public class SSSPTest {
 			// Short RT->ST
 			// Ca 7.5s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
 			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			//			master.waitForAllQueriesFinish();
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			master.waitForAllQueriesFinish();
+			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			//			master.waitForAllQueriesFinish();
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			//			master.waitForAllQueriesFinish();

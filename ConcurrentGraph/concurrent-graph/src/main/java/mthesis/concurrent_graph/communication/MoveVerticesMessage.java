@@ -42,7 +42,7 @@ public class MoveVerticesMessage<V extends BaseWritable, E extends BaseWritable,
 	}
 
 	@Override
-	public void free() {
+	public void free(boolean freeMembers) {
 	}
 
 	@Override

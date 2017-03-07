@@ -35,25 +35,26 @@ public class VertexMessagePool<V extends BaseWritable, E extends BaseWritable, M
 		return message;
 	}
 
-	public VertexMessage<V, E, M, Q> getPooledVertexMessage(ByteBuffer buffer, BaseWritable.BaseWritableFactory<M> vertexMessageFactory,
-			int referenceCounter) {
+	public VertexMessage<V, E, M, Q> getPooledVertexMessage(ByteBuffer buffer, int referenceCounter) {
 		VertexMessage<V, E, M, Q> message;
 		synchronized (pool) {
 			message = pool.poll();
 		}
 		if (message == null) {
-			message = new VertexMessage<>(buffer, vertexMessageFactory, this, referenceCounter);
+			message = new VertexMessage<>(buffer, jobConfig, this, referenceCounter);
 		}
 		else {
-			message.setup(buffer, vertexMessageFactory, referenceCounter);
+			message.setup(buffer, jobConfig, referenceCounter);
 		}
 		return message;
 	}
 
 
-	public void freeVertexMessage(VertexMessage<V, E, M, Q> message) {
-		for (Pair<Integer, M> vMsg : message.vertexMessages) {
-			jobConfig.freePooledMessageValue(vMsg.second);
+	public void freeVertexMessage(VertexMessage<V, E, M, Q> message, boolean freeMembers) {
+		if (freeMembers) {
+			for (Pair<Integer, M> vMsg : message.vertexMessages) {
+				jobConfig.freePooledMessageValue(vMsg.second);
+			}
 		}
 		synchronized (pool) {
 			pool.add(message);

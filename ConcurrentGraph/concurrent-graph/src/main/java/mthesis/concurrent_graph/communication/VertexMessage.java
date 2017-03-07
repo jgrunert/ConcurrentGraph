@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
@@ -37,14 +38,14 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 		this.referenceCounter = referenceCounter;
 	}
 
-	public VertexMessage(ByteBuffer buffer, BaseWritable.BaseWritableFactory<M> vertexMessageFactory,
+	public VertexMessage(ByteBuffer buffer, JobConfiguration<V, E, M, Q> jobConfig,
 			VertexMessagePool<V, E, M, Q> messagePool, int referenceCounter) {
 		super();
 		this.messagePool = messagePool;
-		setup(buffer, vertexMessageFactory, referenceCounter);
+		setup(buffer, jobConfig, referenceCounter);
 	}
 
-	public void setup(ByteBuffer buffer, BaseWritable.BaseWritableFactory<M> vertexMessageFactory, int referenceCounter) {
+	public void setup(ByteBuffer buffer, JobConfiguration<V, E, M, Q> jobConfig, int referenceCounter) {
 		this.superstepNo = buffer.getInt();
 		this.srcMachine = buffer.getInt();
 		this.broadcastFlag = (buffer.get() == 0);
@@ -52,17 +53,23 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 		int numVertices = buffer.getInt();
 		vertexMessages = new ArrayList<>(numVertices);
 		for (int i = 0; i < numVertices; i++) {
-			vertexMessages.add(new Pair<Integer, M>(buffer.getInt(), vertexMessageFactory.createFromBytes(buffer)));
+			M msg = jobConfig.getPooledMessageValue();
+			msg.readFromBuffer(buffer);
+			vertexMessages.add(new Pair<Integer, M>(buffer.getInt(), msg));
 		}
 		this.referenceCounter = referenceCounter;
 	}
 
+	/**
+	 * Puts this message instance into the object pool
+	 * @param freeMembers If true, members of this instance will be freed too (eg. vertex messages)
+	 */
 	@Override
-	public void free() {
+	public void free(boolean freeMembers) {
 		referenceCounter--;
 		if (referenceCounter <= 0) {
 			if (messagePool != null) {
-				messagePool.freeVertexMessage(this);
+				messagePool.freeVertexMessage(this, freeMembers);
 			}
 		}
 	}

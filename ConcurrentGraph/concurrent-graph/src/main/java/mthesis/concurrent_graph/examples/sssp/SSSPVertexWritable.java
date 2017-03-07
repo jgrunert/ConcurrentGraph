@@ -23,6 +23,13 @@ public class SSSPVertexWritable extends BaseWritable {
 		SendMsgsLater = sendMsgsLater;
 	}
 
+	@Override
+	public void readFromBuffer(ByteBuffer buffer) {
+		Pre = buffer.getInt();
+		Dist = buffer.getDouble();
+		SendMsgsLater = (buffer.get() == 0);
+	}
+
 
 	@Override
 	public void writeToBuffer(ByteBuffer buffer) {
@@ -53,11 +60,6 @@ public class SSSPVertexWritable extends BaseWritable {
 		public SSSPVertexWritable createFromString(String str) {
 			final String[] sSplit = str.split(":");
 			return new SSSPVertexWritable(Integer.parseInt(sSplit[0]), Double.parseDouble(sSplit[1]), Boolean.parseBoolean(sSplit[2]));
-		}
-
-		@Override
-		public SSSPVertexWritable createFromBytes(ByteBuffer bytes) {
-			return new SSSPVertexWritable(bytes.getInt(), bytes.getDouble(), bytes.get() == 0);
 		}
 
 		@Override

@@ -25,7 +25,7 @@ public class ProtoEnvelopeMessage implements ChannelMessage {
 	}
 
 	@Override
-	public void free() {
+	public void free(boolean freeMembers) {
 	}
 
 

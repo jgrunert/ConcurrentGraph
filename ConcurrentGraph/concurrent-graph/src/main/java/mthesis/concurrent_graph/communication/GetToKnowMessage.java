@@ -39,7 +39,7 @@ public class GetToKnowMessage implements ChannelMessage {
 	}
 
 	@Override
-	public void free() {
+	public void free(boolean freeMembers) {
 	}
 
 	@Override

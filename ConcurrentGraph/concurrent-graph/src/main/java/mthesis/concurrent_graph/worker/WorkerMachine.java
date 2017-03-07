@@ -720,43 +720,45 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							+ " from " + message.srcMachine);
 		}
 		else {
-			{
-				for (final Pair<Integer, M> msg : message.vertexMessages) {
-					final AbstractVertex<V, E, M, Q> msgVert = localVertices.get(msg.first);
-					if (msgVert != null) {
-						activeQuery.QueryLocal.Stats.MessagesReceivedCorrectVertex++;
-						List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(message.queryId);
-						if (queryInMsgs == null) {
-							// Add queue if not already added
-							queryInMsgs = new ArrayList<>();
-							msgVert.queryMessagesNextSuperstep.put(message.queryId, queryInMsgs);
+			for (final Pair<Integer, M> msg : message.vertexMessages) {
+				final AbstractVertex<V, E, M, Q> msgVert = localVertices.get(msg.first);
+				if (msgVert != null) {
+					activeQuery.QueryLocal.Stats.MessagesReceivedCorrectVertex++;
+					List<M> queryInMsgs = msgVert.queryMessagesNextSuperstep.get(message.queryId);
+					if (queryInMsgs == null) {
+						// Add queue if not already added
+						queryInMsgs = new ArrayList<>();
+						msgVert.queryMessagesNextSuperstep.put(message.queryId, queryInMsgs);
+					}
+					queryInMsgs.add(msg.second);
+					// Activate vertex
+					activeQuery.ActiveVerticesNext.put(msgVert.ID, msgVert);
+				}
+				else {
+					if (!message.broadcastFlag) {
+						Integer redirectMachine = movedVerticesRedirections.get(msg.first);
+						if (redirectMachine != null) {
+							//								logger.info("Redirect to " + redirectMachine);
+							activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.RedirectedMessagesKey, 1);
+							sendVertexMessageToMachine(redirectMachine, msg.first, activeQuery, msg.second);
 						}
-						queryInMsgs.add(msg.second);
-						// Activate vertex
-						activeQuery.ActiveVerticesNext.put(msgVert.ID, msgVert);
+						else {
+							logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from "
+									+ message.srcMachine + " query " + activeQuery.QueryId + ":" + superstepNo
+									+ " with no redirection");
+							//								Integer machineMb = remoteVertexMachineRegistry.lookupEntry(msg.first);
+							//								System.err.println(machineMb);
+							freePooledMessageValue(msg.second);
+						}
 					}
 					else {
-						if (!message.broadcastFlag) {
-							Integer redirectMachine = movedVerticesRedirections.get(msg.first);
-							if (redirectMachine != null) {
-								//								logger.info("Redirect to " + redirectMachine);
-								activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.RedirectedMessagesKey, 1);
-								sendVertexMessageToMachine(redirectMachine, msg.first, activeQuery, msg.second);
-							}
-							else {
-								logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from "
-										+ message.srcMachine + " query " + activeQuery.QueryId + ":" + superstepNo
-										+ " with no redirection");
-								//								Integer machineMb = remoteVertexMachineRegistry.lookupEntry(msg.first);
-								//								System.err.println(machineMb);
-							}
-						}
-						activeQuery.QueryLocal.Stats.MessagesReceivedWrongVertex++;
+						freePooledMessageValue(msg.second);
 					}
+					activeQuery.QueryLocal.Stats.MessagesReceivedWrongVertex++;
 				}
 			}
 		}
-		message.free();
+		message.free(false);
 	}
 
 

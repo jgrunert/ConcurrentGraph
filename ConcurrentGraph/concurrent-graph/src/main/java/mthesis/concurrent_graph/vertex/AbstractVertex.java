@@ -166,6 +166,8 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public void prepareForNextSuperstep(int queryId) {
 		List<M> messagesLast = queryMessagesThisSuperstep.get(queryId);
 		List<M> messagesNext = queryMessagesNextSuperstep.get(queryId);
+
+		// Swapping/clearing
 		if (messagesNext != null && !messagesNext.isEmpty()) {
 			// Swap last and next lists, recycle as much as possible
 			queryMessagesThisSuperstep.put(queryId, messagesNext);
@@ -197,8 +199,13 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 			// Compute vertex
 			compute(superstepNo, messagesThisSuperstep, query);
-			if (messagesThisSuperstep != null)
+			if (messagesThisSuperstep != null) {
+				// Free and clear messages
+				for (M msg : messagesThisSuperstep) {
+					worker.freePooledMessageValue(msg);
+				}
 				messagesThisSuperstep.clear();
+			}
 
 			// Activate vertex for next superstep
 			if (!(queriesVertexInactive.contains(queryId)))
