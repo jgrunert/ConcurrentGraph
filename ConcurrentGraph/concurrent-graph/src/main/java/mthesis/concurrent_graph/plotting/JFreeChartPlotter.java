@@ -74,12 +74,12 @@ public class JFreeChartPlotter {
 			CsvDataFile timesCsv = new CsvDataFile(statsFolder + File.separator + queryId + "_times_ms.csv");
 			plotCsvColumns(statsFolder, "AllStepTimes_" + queryName, "Superstep", "Time (ms)", 1,
 					new ColumnToPlot[] {
-							new ColumnToPlot(null, timesCsv, 0),
-							new ColumnToPlot(null, timesCsv, 1)
+							new ColumnToPlot(null, timesCsv, 0, 1),
+							new ColumnToPlot(null, timesCsv, 1, 1)
 					});
 			List<ColumnToPlot> timeColumns = new ArrayList<>();
 			for (int i = 2; i < timesCsv.Captions.length; i++) {
-				timeColumns.add(new ColumnToPlot(null, timesCsv, i));
+				timeColumns.add(new ColumnToPlot(null, timesCsv, i, 1));
 			}
 			plotCsvColumns(statsFolder, "AllWorkerTimes_" + queryName, "Superstep", "Time (ms)", 1, timeColumns);
 
@@ -112,7 +112,7 @@ public class JFreeChartPlotter {
 			Map<Integer, CsvDataFile> workerCsvs, int columnIndex, double factor) throws IOException {
 		List<ColumnToPlot> columns = new ArrayList<>(workerCsvs.size());
 		for (Entry<Integer, CsvDataFile> wCsv : workerCsvs.entrySet()) {
-			columns.add(new ColumnToPlot("Worker " + wCsv.getKey(), wCsv.getValue(), columnIndex));
+			columns.add(new ColumnToPlot("Worker " + wCsv.getKey(), wCsv.getValue(), columnIndex, 0));
 		}
 		plotCsvColumns(outputFolder, name, "Superstep", axisTitleY, factor, columns);
 	}
@@ -150,7 +150,7 @@ public class JFreeChartPlotter {
 			throws IOException {
 		final XYSeriesCollection dataset = new XYSeriesCollection();
 		for (ColumnToPlot col : columns) {
-			dataset.addSeries(col.Table.getColumnDataset(col.ColumnIndex, factor, col.OptionalName));
+			dataset.addSeries(col.Table.getColumnDataset(col.ColumnIndex, factor, col.OptionalName, col.StartRow));
 		}
 		plotDataset(outputFolder, name, axisTitleX, axisTitleY, dataset);
 	}
@@ -209,13 +209,15 @@ public class JFreeChartPlotter {
 		public final String OptionalName;
 		public final CsvDataFile Table;
 		public final int ColumnIndex;
+		public final int StartRow;
 
 
-		public ColumnToPlot(String optionalName, CsvDataFile table, int columnIndex) {
+		public ColumnToPlot(String optionalName, CsvDataFile table, int columnIndex, int startRow) {
 			super();
 			OptionalName = optionalName;
 			Table = table;
 			ColumnIndex = columnIndex;
+			StartRow = startRow;
 		}
 	}
 

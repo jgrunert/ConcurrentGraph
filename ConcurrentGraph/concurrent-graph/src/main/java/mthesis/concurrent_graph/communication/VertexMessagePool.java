@@ -27,10 +27,10 @@ public class VertexMessagePool<V extends BaseWritable, E extends BaseWritable, M
 			message = pool.poll();
 		}
 		if (message == null) {
-			message = new VertexMessage<>(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages, this);
+			message = new VertexMessage<>(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages, this, referenceCounter);
 		}
 		else {
-			message.setup(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
+			message.setup(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages, referenceCounter);
 		}
 		return message;
 	}
@@ -42,10 +42,10 @@ public class VertexMessagePool<V extends BaseWritable, E extends BaseWritable, M
 			message = pool.poll();
 		}
 		if (message == null) {
-			message = new VertexMessage<>(buffer, vertexMessageFactory, this);
+			message = new VertexMessage<>(buffer, vertexMessageFactory, this, referenceCounter);
 		}
 		else {
-			message.setup(buffer, vertexMessageFactory);
+			message.setup(buffer, vertexMessageFactory, referenceCounter);
 		}
 		return message;
 	}

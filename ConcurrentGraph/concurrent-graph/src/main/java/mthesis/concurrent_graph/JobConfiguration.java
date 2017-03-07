@@ -57,10 +57,10 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 			message = messageValuePool.poll();
 		}
 
-		if (message == null)
-			System.out.println("new");
-		else
-			System.out.println("old");
+		//		if (message == null)
+		//			System.out.println("new");
+		//		else
+		//			System.out.println("old");
 
 		if (message == null)
 			message = messageValueFactory.createDefault();
