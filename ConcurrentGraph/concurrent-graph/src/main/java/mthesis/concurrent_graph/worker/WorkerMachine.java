@@ -756,6 +756,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 			}
 		}
+		message.free();
 	}
 
 

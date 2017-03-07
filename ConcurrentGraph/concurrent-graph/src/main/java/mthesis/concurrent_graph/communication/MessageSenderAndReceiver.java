@@ -53,7 +53,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	private ServerSocket serverSocket;
 	private boolean closingServer;
 
-	private final LinkedList<VertexMessage<V, E, M, Q>> vertexMessagePool = new LinkedList<>();
+	private final VertexMessagePool<V, E, M, Q> vertexMessagePool = new VertexMessagePool<>();
 
 
 
@@ -191,7 +191,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	public void sendVertexMessageUnicast(int dstMachine, int superstepNo, int srcMachine, int queryId,
 			List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
-		sendUnicastMessageAsync(dstMachine, getPooledVertexMessage(superstepNo, ownId, false, queryId, vertexMessages));
+		sendUnicastMessageAsync(dstMachine, vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, false, queryId, vertexMessages));
 	}
 
 	public void sendVertexMessageBroadcast(List<Integer> otherWorkers, int superstepNo, int srcMachine,
@@ -199,28 +199,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		if (vertexMessages.isEmpty()) return;
 		// Dont use message multiple times to allow free/reuse
 		for (final Integer dstMachine : otherWorkers) {
-			sendUnicastMessageAsync(dstMachine, getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages));
-		}
-	}
-
-	private VertexMessage<V, E, M, Q> getPooledVertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
-			List<Pair<Integer, M>> vertexMessages) {
-		VertexMessage<V, E, M, Q> message;
-		synchronized (vertexMessagePool) {
-			message = vertexMessagePool.poll();
-		}
-		if (message == null) {
-			message = new VertexMessage<>(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages, vertexMessagePool);
-		}
-		else {
-			message.setup(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
-		}
-		return message;
-	}
-
-	public void freeVertexMessage(VertexMessage<V, E, M, Q> message) {
-		synchronized (vertexMessagePool) {
-			vertexMessagePool.add(message);
+			sendUnicastMessageAsync(dstMachine,
+					vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages));
 		}
 	}
 

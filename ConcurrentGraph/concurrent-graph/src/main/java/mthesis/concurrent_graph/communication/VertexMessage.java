@@ -2,7 +2,6 @@ package mthesis.concurrent_graph.communication;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
@@ -18,10 +17,10 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 	public int queryId;
 	public List<Pair<Integer, M>> vertexMessages;
 
-	private final LinkedList<VertexMessage<V, E, M, Q>> messagePool;
+	private final VertexMessagePool<V, E, M, Q> messagePool;
 
 	public VertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
-			List<Pair<Integer, M>> vertexMessages, LinkedList<VertexMessage<V, E, M, Q>> messagePool) {
+			List<Pair<Integer, M>> vertexMessages, VertexMessagePool<V, E, M, Q> messagePool) {
 		this.messagePool = messagePool;
 		setup(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
 	}
@@ -36,9 +35,13 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 	public VertexMessage(ByteBuffer buffer, BaseWritable.BaseWritableFactory<M> vertexMessageFactory,
-			LinkedList<VertexMessage<V, E, M, Q>> messagePool) {
+			VertexMessagePool<V, E, M, Q> messagePool) {
 		super();
 		this.messagePool = messagePool;
+		setup(buffer, vertexMessageFactory);
+	}
+
+	public void setup(ByteBuffer buffer, BaseWritable.BaseWritableFactory<M> vertexMessageFactory) {
 		this.superstepNo = buffer.getInt();
 		this.srcMachine = buffer.getInt();
 		this.broadcastFlag = (buffer.get() == 0);
@@ -53,9 +56,7 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 	@Override
 	public void free() {
 		if (messagePool != null) {
-			synchronized (messagePool) {
-				messagePool.add(this);
-			}
+			messagePool.freeVertexMessage(this);
 		}
 	}
 
