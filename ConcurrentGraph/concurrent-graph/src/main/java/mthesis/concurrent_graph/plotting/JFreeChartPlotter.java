@@ -31,7 +31,7 @@ public class JFreeChartPlotter {
 
 		List<Integer> workers = new ArrayList<>();
 		List<Integer> queries = new ArrayList<>();
-		Map<Integer, Double> queriesTimes = new HashMap<>();
+		Map<Integer, Double[]> queriesStats = new HashMap<>();
 		Map<Integer, Integer> queriesHashes = new HashMap<>();
 		Map<Integer, List<Integer>> queriesByHash = new HashMap<>();
 
@@ -53,7 +53,7 @@ public class JFreeChartPlotter {
 			int queryId = (int) queriesCsv.Data[i][0];
 			int queryHash = (int) queriesCsv.Data[i][1];
 			queries.add(queryId);
-			queriesTimes.put(queryId, queriesCsv.Data[i][2]);
+			queriesStats.put(queryId, new Double[] { queriesCsv.Data[i][2], queriesCsv.Data[i][3] });
 			queriesHashes.put(queryId, queryHash);
 
 			List<Integer> hashQs = queriesByHash.get(queryHash);
@@ -102,9 +102,9 @@ public class JFreeChartPlotter {
 		}
 
 		// Plot query compares
-		plotQueryComparisons(statsFolder, "all", queries, queriesTimes);
+		plotQueryComparisons(statsFolder, "all", queries, queriesStats);
 		for (Entry<Integer, List<Integer>> hashQueries : queriesByHash.entrySet()) {
-			plotQueryComparisons(statsFolder, "hash" + hashQueries.getKey(), hashQueries.getValue(), queriesTimes);
+			plotQueryComparisons(statsFolder, "hash" + hashQueries.getKey(), hashQueries.getValue(), queriesStats);
 		}
 	}
 
@@ -118,17 +118,17 @@ public class JFreeChartPlotter {
 	}
 
 	private static void plotQueryComparisons(String statsFolder, String name, List<Integer> queriesToPlot,
-			Map<Integer, Double> queriesTimes) throws IOException {
-		plotQueryComparisonTotalTimes(statsFolder, name, queriesToPlot, queriesTimes);
+			Map<Integer, Double[]> queriesStats) throws IOException {
+		plotQueryTimeComparison(statsFolder, "QueriesDurations_" + name, queriesToPlot, queriesStats, 0);
+		plotQueryTimeComparison(statsFolder, "QueriesComputeTimes_" + name, queriesToPlot, queriesStats, 1);
 	}
 
-	private static void plotQueryComparisonTotalTimes(String statsFolder, String name, List<Integer> queriesToPlot,
-			Map<Integer, Double> queriesTimes) throws IOException {
-		String plotName = "QueriesDurations_" + name;
+	private static void plotQueryTimeComparison(String statsFolder, String plotName, List<Integer> queriesToPlot,
+			Map<Integer, Double[]> queriesTimes, int column) throws IOException {
 		final XYSeriesCollection dataset = new XYSeriesCollection();
 		final XYSeries series = new XYSeries("Query times");
 		for (int iQ = 0; iQ < queriesToPlot.size(); iQ++) {
-			series.add(iQ, queriesTimes.get(queriesToPlot.get(iQ)));
+			series.add(iQ, queriesTimes.get(queriesToPlot.get(iQ))[column]);
 		}
 		dataset.addSeries(series);
 		plotDataset(statsFolder, plotName, "Query", "Time (ms)", dataset);

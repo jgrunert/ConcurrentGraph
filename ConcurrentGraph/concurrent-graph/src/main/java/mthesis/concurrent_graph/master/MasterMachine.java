@@ -62,6 +62,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private final Map<Integer, List<Q>> queryStatsSteps = new HashMap<>();
 	private final Map<Integer, List<Long>> queryStatsStepTimes = new HashMap<>();
 	private final Map<Integer, Q> queryStatsTotals = new HashMap<>();
+	private final Map<Integer, Long> queryDurations = new HashMap<>();
 
 	private final String inputFile;
 	private final String inputPartitionDir;
@@ -348,8 +349,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					evaluateQueryResult(msgActiveQuery);
 					activeQueries.remove(msgActiveQuery.BaseQuery.QueryId);
 					actQueryWorkerActiveVerts.remove(msgActiveQuery.BaseQuery.QueryId);
+					long duration = System.nanoTime() - msgActiveQuery.StartTime;
+					queryDurations.put(msgActiveQuery.BaseQuery.QueryId, duration);
 					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
-							+ ((System.nanoTime() - msgActiveQuery.StartTime) / 1000000) + "ms, "
+							+ (duration / 1000000) + "ms, "
 							+ msgActiveQuery.QueryTotalAggregator.Stats.getOtherStatsString());
 				}
 			}
@@ -485,10 +488,11 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		// Query summary
 		try (PrintWriter writer = new PrintWriter(
 				new FileWriter(queryStatsDir + File.separator + "queries.csv"))) {
-			writer.println("Query;QueryHash;ComputeTime (ms);");
+			writer.println("Query;QueryHash;Duration (ms);ComputeTime (ms);");
 			for (Entry<Integer, Q> query : queryStatsTotals.entrySet()) {
 				writer.println(
 						query.getKey() + ";" + query.getValue().GetQueryHash() + ";"
+								+ queryDurations.get(query.getKey()) / 1000000 + ";"
 								+ query.getValue().Stats.getStatValue(("ComputeTime")) / 1000000 + ";");
 			}
 		}
