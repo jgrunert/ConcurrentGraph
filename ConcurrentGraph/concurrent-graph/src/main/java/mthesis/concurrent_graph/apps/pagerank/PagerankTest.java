@@ -5,7 +5,7 @@ import java.util.List;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
-import mthesis.concurrent_graph.apputils.RunUtil;
+import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
@@ -36,7 +36,7 @@ public class PagerankTest {
 
 		System.out.println("Starting machines");
 		MasterMachine<BaseQueryGlobalValues> master = null;
-		final RunUtil<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> testUtils = new RunUtil<>();
+		final RunUtils<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> testUtils = new RunUtils<>();
 		if (config.StartOnThisMachine.get(config.masterId)) master = testUtils.startMaster(config.AllMachineConfigs, config.masterId,
 				config.AllWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
 

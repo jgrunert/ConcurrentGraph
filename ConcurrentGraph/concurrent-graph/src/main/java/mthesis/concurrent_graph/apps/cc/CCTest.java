@@ -7,7 +7,7 @@ import java.util.Map;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.MachineConfig;
-import mthesis.concurrent_graph.apputils.RunUtil;
+import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.ContinousBlockInputPartitioner;
@@ -44,7 +44,7 @@ public class CCTest {
 
 		System.out.println("Starting machines");
 		MasterMachine<BaseQueryGlobalValues> master = null;
-		final RunUtil<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> testUtils = new RunUtil<>();
+		final RunUtils<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> testUtils = new RunUtils<>();
 		master = testUtils.startMaster(allCfg, -1, allWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir,
 				jobConfig);
 

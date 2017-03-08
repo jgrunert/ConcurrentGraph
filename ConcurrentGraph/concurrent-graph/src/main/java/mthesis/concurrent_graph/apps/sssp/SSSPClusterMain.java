@@ -1,13 +1,13 @@
 package mthesis.concurrent_graph.apps.sssp;
 
 import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
-import mthesis.concurrent_graph.apputils.RunUtil;
+import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
-public class SSSPTest {
+public class SSSPClusterMain {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length < 3) {
@@ -21,14 +21,12 @@ public class SSSPTest {
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
 		final SSSPJobConfiguration jobConfig = new SSSPJobConfiguration();
-		// final MasterInputPartitioner inputPartitioner = new
-		// ContinousBlockInputPartitioner(partitionSize);
 		final MasterInputPartitioner inputPartitioner = new RoadNetInputPartitioner(partitionPerWorker);
 		final MasterOutputEvaluator<SSSPQueryValues> outputCombiner = new SSSPOutputEvaluator();
 
 		// Start machines
 		System.out.println("Starting machines");
-		final RunUtil<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtil<>();
+		final RunUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtils<>();
 		MasterMachine<SSSPQueryValues> master = testUtils.startSetup(config, inputFile,
 				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig, new RoadNetVertexInputReader());
 
