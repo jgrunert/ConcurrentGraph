@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import mthesis.concurrent_graph.util.MiscUtil;
+
 
 public class QueryStats {
 
@@ -211,5 +213,13 @@ public class QueryStats {
 				if (otherVal == null) return 0;
 				return otherVal;
 		}
+	}
+
+	public long getWorkersTime() {
+		return MiscUtil.defaultLong(OtherStats.get(QueryStats.ComputeTimeKey))
+				+ MiscUtil.defaultLong(OtherStats.get(QueryStats.IntersectCalcTimeKey))
+				+ MiscUtil.defaultLong(OtherStats.get(QueryStats.StepFinishTimeKey))
+				+ MiscUtil.defaultLong(OtherStats.get(QueryStats.MoveSendVerticsTimeKey))
+				+ MiscUtil.defaultLong(OtherStats.get(QueryStats.MoveRecvVerticsTimeKey));
 	}
 }

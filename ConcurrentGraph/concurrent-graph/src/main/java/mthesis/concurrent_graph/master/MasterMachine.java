@@ -419,6 +419,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 				for (int i = 0; i < querySteps.getValue().size(); i++) {
 					Q step = querySteps.getValue().get(i);
+					long workersTime = step.Stats.getWorkersTime();
 					long compTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.ComputeTimeKey));
 					long intersCalcTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.IntersectCalcTimeKey));
 					long stepFinishTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.StepFinishTimeKey));
@@ -427,7 +428,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 					sb.append(queryStatsStepTimes.get(querySteps.getKey()).get(i) / 1000000);
 					sb.append(';');
-					sb.append((compTime + intersCalcTime + stepFinishTime + moveSendTime + moveRecvTime) / 1000000);
+					sb.append(workersTime / 1000000);
 					sb.append(';');
 					sb.append(compTime / 1000000);
 					sb.append(';');
@@ -488,11 +489,12 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		// Query summary
 		try (PrintWriter writer = new PrintWriter(
 				new FileWriter(queryStatsDir + File.separator + "queries.csv"))) {
-			writer.println("Query;QueryHash;Duration (ms);ComputeTime (ms);");
+			writer.println("Query;QueryHash;Duration (ms);WorkerTime (ms);ComputeTime (ms);");
 			for (Entry<Integer, Q> query : queryStatsTotals.entrySet()) {
 				writer.println(
 						query.getKey() + ";" + query.getValue().GetQueryHash() + ";"
 								+ queryDurations.get(query.getKey()) / 1000000 + ";"
+								+ query.getValue().Stats.getWorkersTime() / 1000000 + ";"
 								+ query.getValue().Stats.getStatValue(("ComputeTime")) / 1000000 + ";");
 			}
 		}

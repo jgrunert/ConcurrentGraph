@@ -120,7 +120,9 @@ public class JFreeChartPlotter {
 	private static void plotQueryComparisons(String statsFolder, String name, List<Integer> queriesToPlot,
 			Map<Integer, Double[]> queriesStats) throws IOException {
 		plotQueryTimeComparison(statsFolder, "QueriesDurations_" + name, queriesToPlot, queriesStats, 0);
-		plotQueryTimeComparison(statsFolder, "QueriesComputeTimes_" + name, queriesToPlot, queriesStats, 1);
+		plotQueryTimeComparison(statsFolder, "QueriesWorkerTimes_" + name, queriesToPlot, queriesStats, 1);
+		plotQueryComparisonSuperstepTimes(statsFolder, "QueriesStepDurations_" + name, queriesToPlot, 1);
+		plotQueryComparisonSuperstepTimes(statsFolder, "QueriesStepWorkerTimes_" + name, queriesToPlot, 2);
 	}
 
 	private static void plotQueryTimeComparison(String statsFolder, String plotName, List<Integer> queriesToPlot,
@@ -134,9 +136,16 @@ public class JFreeChartPlotter {
 		plotDataset(statsFolder, plotName, "Query", "Time (ms)", dataset);
 	}
 
-	//	private static void plotQueryComparisonSuperstepTimes(String statsFolder, String name, List<Integer> queriesToPlot) throws IOException {
-	//
-	//	}
+	private static void plotQueryComparisonSuperstepTimes(String statsFolder, String plotName, List<Integer> queriesToPlot,
+			int columnIndex)
+			throws IOException {
+		final XYSeriesCollection dataset = new XYSeriesCollection();
+		for (Integer queryId : queriesToPlot) {
+			CsvDataFile timesCsv = new CsvDataFile(statsFolder + File.separator + queryId + "_times_ms.csv");
+			dataset.addSeries(timesCsv.getColumnDataset(0, 1, "Query " + queryId, columnIndex));
+		}
+		plotDataset(statsFolder, plotName, "Superstep", "Time (ms)", dataset);
+	}
 
 
 	public static void plotCsvColumns(String outputFolder, String name, String axisTitleX, String axisTitleY,

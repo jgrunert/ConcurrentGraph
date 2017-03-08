@@ -40,6 +40,26 @@ public class SSSPClusterMain {
 
 			int queryIndex = 0;
 
+			// Warm up queries
+			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
+			master.waitForAllQueriesFinish();
+
+
+			// Test sequence
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
+			//			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
+			//			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
+			//			master.waitForAllQueriesFinish();
+
 			// Very short ST-HBF->ST-Airport. Test query "0".
 			// Ca 5.5s, no vertexmove, without sysout, on PC+local4 and 6s on laptop+local8
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
