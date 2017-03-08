@@ -1,6 +1,5 @@
 package mthesis.concurrent_graph.apps.sssp;
 
-import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
 import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
@@ -14,7 +13,6 @@ public class SSSPClusterMain {
 			System.out.println("Usage: [configFile] [inputFile] [partitionPerWorker]");
 			return;
 		}
-		MachineClusterConfiguration config = new MachineClusterConfiguration(args[0]);
 		final String inputFile = args[1];
 		final int partitionPerWorker = Integer.parseInt(args[2]);
 
@@ -27,7 +25,7 @@ public class SSSPClusterMain {
 		// Start machines
 		System.out.println("Starting machines");
 		final RunUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtils<>();
-		MasterMachine<SSSPQueryValues> master = testUtils.startSetup(config, inputFile,
+		MasterMachine<SSSPQueryValues> master = testUtils.startSetup(args[0], inputFile,
 				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig, new RoadNetVertexInputReader());
 
 		// Start query
@@ -74,9 +72,9 @@ public class SSSPClusterMain {
 			//			Thread.sleep(5000);
 			// Short RT->ST
 			// Ca 7.5s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
-			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			master.waitForAllQueriesFinish();
-			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			//			master.waitForAllQueriesFinish();
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			//			master.waitForAllQueriesFinish();
@@ -96,13 +94,13 @@ public class SSSPClusterMain {
 
 			// Medium PF->HB
 			// Ca 21s, no vertexmove, without sysout, on PC+local4 and 27s on laptop+local8
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			//			master.waitForQueryFinish((queryIndex - 1));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			//			master.waitForQueryFinish((queryIndex - 1));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			//			master.waitForQueryFinish((queryIndex - 1));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			master.waitForQueryFinish((queryIndex - 1));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			master.waitForQueryFinish((queryIndex - 1));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			master.waitForQueryFinish((queryIndex - 1));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
 
 			//			// Short TU->RT
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4982624, 3627927));

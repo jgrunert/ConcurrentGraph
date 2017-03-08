@@ -1,5 +1,9 @@
 package mthesis.concurrent_graph.apputils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +20,11 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class RunUtils<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
-	public MasterMachine<Q> startSetup(MachineClusterConfiguration config,
+	public MasterMachine<Q> startSetup(String configFile,
 			String inputFile, String inputPartitionDir, MasterInputPartitioner inputPartitioner,
 			MasterOutputEvaluator<Q> outputCombiner, String outputDir,
 			JobConfiguration<V, E, M, Q> jobConfig, BaseVertexInputReader<V, E, M, Q> vertexReader) {
+		MachineClusterConfiguration config = new MachineClusterConfiguration(configFile);
 		MasterMachine<Q> master = null;
 		if (config.StartOnThisMachine.get(config.masterId))
 			master = this.startMaster(config.AllMachineConfigs, config.masterId, config.AllWorkerIds, inputFile,
@@ -27,9 +32,28 @@ public class RunUtils<V extends BaseWritable, E extends BaseWritable, M extends 
 
 		final List<WorkerMachine<V, E, M, Q>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
-			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i))) workers
-					.add(this.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
+			int workerId = config.AllWorkerIds.get(i);
+			if (config.StartOnThisMachine.get(workerId)) {
+				MachineConfig workerConfig = config.AllMachineConfigs.get(workerId);
+				if (workerConfig.ExtraVm) {
+					try {
+						Process proc = Runtime.getRuntime().exec("java -jar single_worker.jar " + configFile + " " + workerId);
+						//						InputStream in = proc.getInputStream();
+						//						InputStream err = proc.getErrorStream();
+						StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream());
+						StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream());
+						errorGobbler.start();
+						outputGobbler.start();
+					}
+					catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				else {
+					workers.add(this.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
 							vertexReader));
+				}
+			}
 		}
 
 		return master;
@@ -65,5 +89,30 @@ public class RunUtils<V extends BaseWritable, E extends BaseWritable, M extends 
 		masterStartThread.setName("masterStartThread");
 		masterStartThread.start();
 		return node;
+	}
+
+
+	private static class StreamGobbler extends Thread {
+
+		InputStream is;
+
+		// reads everything from is until empty.
+		StreamGobbler(InputStream is) {
+			this.is = is;
+		}
+
+		@Override
+		public void run() {
+			try {
+				InputStreamReader isr = new InputStreamReader(is);
+				BufferedReader br = new BufferedReader(isr);
+				String line = null;
+				while ((line = br.readLine()) != null)
+					System.out.println(line);
+			}
+			catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
+		}
 	}
 }

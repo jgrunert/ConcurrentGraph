@@ -5,7 +5,7 @@ public class MachineConfig {
 
 	public final String HostName;
 	public final int MessagePort;
-	// Indicates if run in a separate VM. By default true.
+	// Indicates if run in a separate VM. By default false.
 	public final boolean ExtraVm;
 
 	public MachineConfig(String hostName, int messagePort, boolean extraVm) {

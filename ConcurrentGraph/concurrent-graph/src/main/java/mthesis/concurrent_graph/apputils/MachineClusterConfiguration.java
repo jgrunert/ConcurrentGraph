@@ -34,7 +34,7 @@ public class MachineClusterConfiguration {
 
 	private void AddMachineConfig(int id, String cfg) {
 		String[] sSplit = cfg.split("\t");
-		boolean extraVm = (sSplit.length >= 4) ? Boolean.parseBoolean(sSplit[3]) : true;
+		boolean extraVm = (sSplit.length >= 4) ? Boolean.parseBoolean(sSplit[3]) : false;
 		AllMachineConfigs.put(id, new MachineConfig(sSplit[0], Integer.parseInt(sSplit[1]), extraVm));
 		StartOnThisMachine.put(id, Boolean.parseBoolean(sSplit[2]));
 	}
