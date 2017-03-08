@@ -1,6 +1,6 @@
 package mthesis.concurrent_graph;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.vertex.VertexFactory;
@@ -15,8 +15,7 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 	private final BaseWritableFactory<M> messageValueFactory;
 	private final BaseQueryGlobalValuesFactory<Q> globalValuesFactory;
 
-	private static final int MessageValuePoolMaxSize = 1000000;
-	private final LinkedList<M> messageValuePool = new LinkedList<>();
+	private final ArrayList<M> messageValuePool;
 
 
 	public JobConfiguration(VertexFactory<V, E, M, Q> vertexFactory, BaseWritableFactory<V> vertexValueFactory,
@@ -28,6 +27,10 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 		this.edgeValueFactory = edgeValueFactory;
 		this.messageValueFactory = messageValueFactory;
 		this.globalValuesFactory = globalValuesFactory;
+		if (Configuration.VERTEX_MESSAGE_POOLING)
+			messageValuePool = new ArrayList<>(Configuration.VERTEX_MESSAGE_POOL_SIZE);
+		else
+			messageValuePool = null;
 	}
 
 
@@ -53,36 +56,40 @@ public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWri
 
 
 
-	int newM = 0;
-	int newO = 0;
-
+	//	int newM = 0;
+	//	int newO = 0;
 	public M getPooledMessageValue() {
-		M message;
-		synchronized (messageValuePool) {
-			message = messageValuePool.poll();
-		}
+		if (Configuration.VERTEX_MESSAGE_POOLING) {
+			synchronized (messageValuePool) {
+				if (!messageValuePool.isEmpty())
+					return messageValuePool.remove(messageValuePool.size() - 1);
+				else
+					return messageValueFactory.createDefault();
+			}
 
-		if (message == null) {
-			newM++;
-			System.out.println("new " + (newM));
+			//		if (message == null) {
+			//			newM++;
+			//			System.out.println("new " + (newM));
+			//		}
+			//		else {
+			//			newO++;
+			//			if ((newO % 1000) == 0)
+			//				System.out.println("old " + (newO));
+			//		}
 		}
 		else {
-			newO++;
-			//			if ((newO % 1000) == 0)
-			System.out.println("old " + (newO));
+			return messageValueFactory.createDefault();
 		}
-
-		if (message == null)
-			message = messageValueFactory.createDefault();
-		return message;
 	}
 
 	public void freePooledMessageValue(M message) {
-		synchronized (messageValuePool) {
-			if (messageValuePool.size() < MessageValuePoolMaxSize)
-				messageValuePool.add(message);
+		if (Configuration.VERTEX_MESSAGE_POOLING) {
+			synchronized (messageValuePool) {
+				if (messageValuePool.size() < Configuration.VERTEX_MESSAGE_POOL_SIZE)
+					messageValuePool.add(message);
+			}
+			//		if ((messageValuePool.size() % 1000) == 0)
+			//			System.out.println("pool " + messageValuePool.size() + " / " + newM);
 		}
-		//		if ((messageValuePool.size() % 100) == 0)
-		System.out.println("pool " + messageValuePool.size());
 	}
 }

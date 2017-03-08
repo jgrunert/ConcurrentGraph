@@ -163,7 +163,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	 * Prepares received messages for next superstep, swaps double buffer.
 	 * @return isActive
 	 */
-	public void prepareForNextSuperstep(int queryId) {
+	public void prepareForNextSuperstep(Integer queryId) {
 		List<M> messagesLast = queryMessagesThisSuperstep.get(queryId);
 		List<M> messagesNext = queryMessagesNextSuperstep.get(queryId);
 

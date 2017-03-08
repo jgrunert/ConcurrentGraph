@@ -53,6 +53,10 @@ public class Configuration {
 	public static final int MAX_PARALLEL_QUERIES;
 
 
+	public static final boolean VERTEX_MESSAGE_POOLING;
+	public static final int VERTEX_MESSAGE_POOL_SIZE;
+
+
 
 	static {
 		// Load configuration
@@ -75,6 +79,8 @@ public class Configuration {
 			LOG_LEVEL_Main = Level.valueOf(Properties.getProperty("LOG_LEVEL_Main")).levelInt;
 			DEFAULT_QUERY_SLOTS = Integer.parseInt(Properties.getProperty("DEFAULT_QUERY_SLOTS"));
 			MAX_PARALLEL_QUERIES = Integer.parseInt(Properties.getProperty("MAX_PARALLEL_QUERIES"));
+			VERTEX_MESSAGE_POOLING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MESSAGE_POOLING"));
+			VERTEX_MESSAGE_POOL_SIZE = Integer.parseInt(Properties.getProperty("VERTEX_MESSAGE_POOL_SIZE"));
 
 			logger.debug("Configuration loaded from " + CONFIG_FILE);
 		}

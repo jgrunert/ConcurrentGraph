@@ -29,7 +29,7 @@ public class SSSPMessageWritable extends BaseWritable {
 	@Override
 	public void readFromBuffer(ByteBuffer buffer) {
 		SrcVertex = buffer.getInt();
-		Dist = buffer.getInt();
+		Dist = buffer.getDouble();
 	}
 
 

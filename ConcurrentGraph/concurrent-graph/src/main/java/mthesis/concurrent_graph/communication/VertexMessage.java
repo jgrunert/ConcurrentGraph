@@ -53,9 +53,10 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 		int numVertices = buffer.getInt();
 		vertexMessages = new ArrayList<>(numVertices);
 		for (int i = 0; i < numVertices; i++) {
+			int msgId = buffer.getInt();
 			M msg = jobConfig.getPooledMessageValue();
 			msg.readFromBuffer(buffer);
-			vertexMessages.add(new Pair<Integer, M>(buffer.getInt(), msg));
+			vertexMessages.add(new Pair<Integer, M>(msgId, msg));
 		}
 		this.referenceCounter = referenceCounter;
 	}

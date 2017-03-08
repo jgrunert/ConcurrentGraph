@@ -627,8 +627,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			activeQuery.ActiveVerticesNext.clear();
 
 			// Prepare active vertices
+			Integer queryId = activeQuery.Query.QueryId;
 			for (AbstractVertex<V, E, M, Q> vert : activeQuery.ActiveVerticesThis.values()) {
-				vert.prepareForNextSuperstep(activeQuery.Query.QueryId);
+				vert.prepareForNextSuperstep(queryId);
 			}
 
 			// Reset active vertices
