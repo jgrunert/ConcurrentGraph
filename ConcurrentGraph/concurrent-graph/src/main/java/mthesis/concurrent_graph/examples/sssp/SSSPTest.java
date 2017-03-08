@@ -1,14 +1,10 @@
 package mthesis.concurrent_graph.examples.sssp;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import mthesis.concurrent_graph.examples.common.ExampleTestUtils;
 import mthesis.concurrent_graph.examples.common.MachineClusterConfiguration;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
-import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
 public class SSSPTest {
@@ -33,17 +29,8 @@ public class SSSPTest {
 		// Start machines
 		System.out.println("Starting machines");
 		final ExampleTestUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new ExampleTestUtils<>();
-		MasterMachine<SSSPQueryValues> master = null;
-		if (config.StartOnThisMachine.get(config.masterId))
-			master = testUtils.startMaster(config.AllMachineConfigs, config.masterId, config.AllWorkerIds, inputFile,
-					inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
-
-		final List<WorkerMachine<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues>> workers = new ArrayList<>();
-		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
-			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i))) workers
-					.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
-							new RoadNetVertexInputReader()));
-		}
+		MasterMachine<SSSPQueryValues> master = testUtils.startSetup(config, inputFile,
+				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig, new RoadNetVertexInputReader());
 
 		// Start query
 		if (master != null) {
@@ -83,15 +70,15 @@ public class SSSPTest {
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 7653486));
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
 
-			Thread.sleep(5000);
-			Thread.sleep(5000);
-			Thread.sleep(5000);
-			Thread.sleep(5000);
+			//			Thread.sleep(5000);
+			//			Thread.sleep(5000);
+			//			Thread.sleep(5000);
+			//			Thread.sleep(5000);
 			// Short RT->ST
 			// Ca 7.5s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			//			master.waitForAllQueriesFinish();
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			master.waitForAllQueriesFinish();
+			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			//			master.waitForAllQueriesFinish();
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
 			//			master.waitForAllQueriesFinish();
@@ -111,13 +98,13 @@ public class SSSPTest {
 
 			// Medium PF->HB
 			// Ca 21s, no vertexmove, without sysout, on PC+local4 and 27s on laptop+local8
-			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			master.waitForQueryFinish((queryIndex - 1));
-			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			master.waitForQueryFinish((queryIndex - 1));
-			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			master.waitForQueryFinish((queryIndex - 1));
-			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
 
 			//			// Short TU->RT
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4982624, 3627927));

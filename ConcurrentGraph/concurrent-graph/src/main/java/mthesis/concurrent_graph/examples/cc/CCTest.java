@@ -33,12 +33,13 @@ public class CCTest {
 		final MasterInputPartitioner inputPartitioner = new ContinousBlockInputPartitioner(Integer.parseInt(args[1]));
 		final MasterOutputEvaluator<BaseQueryGlobalValues> outputCombiner = new CCOutputWriter();
 
+		// TODO Replace with MachineClusterConfiguration
 		final Map<Integer, MachineConfig> allCfg = new HashMap<>();
 		final List<Integer> allWorkerIds = new ArrayList<>();
-		allCfg.put(-1, new MachineConfig(host, baseControlMsgPort));
+		allCfg.put(-1, new MachineConfig(host, baseControlMsgPort, false));
 		for (int i = 0; i < numWorkers; i++) {
 			allWorkerIds.add(i);
-			allCfg.put(i, new MachineConfig(host, baseControlMsgPort + 1 + i));
+			allCfg.put(i, new MachineConfig(host, baseControlMsgPort + 1 + i, false));
 		}
 
 		System.out.println("Starting machines");
