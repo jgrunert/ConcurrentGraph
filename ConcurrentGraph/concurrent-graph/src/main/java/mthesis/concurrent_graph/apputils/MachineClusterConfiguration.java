@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples.common;
+package mthesis.concurrent_graph.apputils;
 
 import java.nio.charset.Charset;
 import java.nio.file.Files;

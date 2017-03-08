@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples.sssp;
+package mthesis.concurrent_graph.apps.sssp;
 
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.writable.DoubleWritable;

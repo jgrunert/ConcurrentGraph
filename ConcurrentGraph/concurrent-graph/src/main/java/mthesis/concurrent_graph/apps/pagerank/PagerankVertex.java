@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples.pagerank;
+package mthesis.concurrent_graph.apps.pagerank;
 
 import java.nio.ByteBuffer;
 import java.util.List;

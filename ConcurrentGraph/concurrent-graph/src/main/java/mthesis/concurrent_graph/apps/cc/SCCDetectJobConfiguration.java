@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples.cc;
+package mthesis.concurrent_graph.apps.cc;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;

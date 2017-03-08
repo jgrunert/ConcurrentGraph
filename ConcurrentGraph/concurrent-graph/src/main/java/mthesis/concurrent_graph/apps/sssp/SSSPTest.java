@@ -1,7 +1,7 @@
-package mthesis.concurrent_graph.examples.sssp;
+package mthesis.concurrent_graph.apps.sssp;
 
-import mthesis.concurrent_graph.examples.common.ExampleTestUtils;
-import mthesis.concurrent_graph.examples.common.MachineClusterConfiguration;
+import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
+import mthesis.concurrent_graph.apputils.RunUtil;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
@@ -28,7 +28,7 @@ public class SSSPTest {
 
 		// Start machines
 		System.out.println("Starting machines");
-		final ExampleTestUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new ExampleTestUtils<>();
+		final RunUtil<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtil<>();
 		MasterMachine<SSSPQueryValues> master = testUtils.startSetup(config, inputFile,
 				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig, new RoadNetVertexInputReader());
 

@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples.cc;
+package mthesis.concurrent_graph.apps.cc;
 
 import java.nio.ByteBuffer;
 import java.util.HashSet;

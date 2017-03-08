@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples.pagerank;
+package mthesis.concurrent_graph.apps.pagerank;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;

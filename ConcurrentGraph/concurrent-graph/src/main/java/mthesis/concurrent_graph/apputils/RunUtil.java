@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples.common;
+package mthesis.concurrent_graph.apputils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import mthesis.concurrent_graph.worker.BaseVertexInputReader;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
-public class ExampleTestUtils<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
+public class RunUtil<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
 	public MasterMachine<Q> startSetup(MachineClusterConfiguration config,
 			String inputFile, String inputPartitionDir, MasterInputPartitioner inputPartitioner,

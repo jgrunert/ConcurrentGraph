@@ -1,11 +1,11 @@
-package mthesis.concurrent_graph.examples.pagerank;
+package mthesis.concurrent_graph.apps.pagerank;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
-import mthesis.concurrent_graph.examples.common.ExampleTestUtils;
-import mthesis.concurrent_graph.examples.common.MachineClusterConfiguration;
+import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
+import mthesis.concurrent_graph.apputils.RunUtil;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
@@ -36,7 +36,7 @@ public class PagerankTest {
 
 		System.out.println("Starting machines");
 		MasterMachine<BaseQueryGlobalValues> master = null;
-		final ExampleTestUtils<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> testUtils = new ExampleTestUtils<>();
+		final RunUtil<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> testUtils = new RunUtil<>();
 		if (config.StartOnThisMachine.get(config.masterId)) master = testUtils.startMaster(config.AllMachineConfigs, config.masterId,
 				config.AllWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
 

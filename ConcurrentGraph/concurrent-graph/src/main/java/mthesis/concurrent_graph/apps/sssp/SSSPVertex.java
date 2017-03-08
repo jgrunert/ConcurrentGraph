@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.examples.sssp;
+package mthesis.concurrent_graph.apps.sssp;
 
 import java.nio.ByteBuffer;
 import java.util.List;
