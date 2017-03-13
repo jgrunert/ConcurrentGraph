@@ -1,24 +1,29 @@
-package mthesis.concurrent_graph.vertex;
+package mthesis.concurrent_graph.graph;
 
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class Edge<E extends BaseWritable> {
-	public final int TargetVertexId;
+
+	public int NeighborId;
 	public E Value;
+
+	public Edge() {
+
+	}
 
 	public Edge(int neighborId, E value) {
 		super();
-		TargetVertexId = neighborId;
+		NeighborId = neighborId;
 		Value = value;
 	}
 
 	@Override
 	public String toString() {
-		return TargetVertexId + "(" + valueToString() + ")";
+		return NeighborId + "(" + valueToString() + ")";
 	}
 
 	private String valueToString() {
-		if(Value == null)
+		if (Value == null)
 			return "";
 		return Value.getString();
 	}

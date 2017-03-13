@@ -70,6 +70,10 @@ public class MiscUtil {
 	}
 
 
+	public static int defaultInt(Integer value) {
+		return (value != null) ? (int) value : 0;
+	}
+
 	public static long defaultLong(Long value) {
 		return (value != null) ? (long) value : 0;
 	}

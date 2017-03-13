@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
-import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.worker.BaseVertexInputReader;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.DoubleWritable;
@@ -40,12 +39,15 @@ public class RoadNetVertexInputReader
 					int vertexId = reader.readInt();
 					SSSPVertex vertex = new SSSPVertex(vertexId, vertexWorkerInterface);
 
-					final List<Edge<DoubleWritable>> edges = new ArrayList<>();
-					int numEdges = reader.readInt();
-					for (int iEdge = 0; iEdge < numEdges; iEdge++) {
-						edges.add(new Edge<DoubleWritable>(reader.readInt(), new DoubleWritable(reader.readDouble())));
+					int edgeCount = reader.readInt();
+					int[] edgeTargets = new int[edgeCount];
+					DoubleWritable[] edgeValues = new DoubleWritable[edgeCount];
+					for (int i = 0; i < edgeCount; i++) {
+						edgeTargets[i] = reader.readInt();
+						edgeValues[i] = new DoubleWritable(reader.readDouble());
 					}
-					vertex.setEdges(edges);
+					vertex.setEdges(edgeTargets, edgeValues);
+
 					vertices.add(vertex);
 				}
 			}

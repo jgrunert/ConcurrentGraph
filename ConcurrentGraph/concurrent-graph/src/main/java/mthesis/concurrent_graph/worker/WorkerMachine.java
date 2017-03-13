@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
@@ -65,7 +67,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private final BaseVertexInputReader<V, E, M, Q> vertexReader;
 
 	//private List<AbstractVertex<V, E, M, Q>> localVerticesList;
-	private final Map<Integer, AbstractVertex<V, E, M, Q>> localVertices = new HashMap<>();
+	private final Int2ObjectMap<AbstractVertex<V, E, M, Q>> localVertices = new Int2ObjectOpenHashMap<>();
 
 	private final BaseWritableFactory<V> vertexValueFactory;
 	private final BaseQueryGlobalValuesFactory<Q> globalValueFactory;

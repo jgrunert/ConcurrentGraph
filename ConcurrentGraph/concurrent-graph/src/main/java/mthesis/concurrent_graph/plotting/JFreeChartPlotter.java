@@ -104,7 +104,7 @@ public class JFreeChartPlotter {
 		// Plot query compares
 		plotQueryComparisons(statsFolder, "all", queries, queriesStats);
 		for (Entry<Integer, List<Integer>> hashQueries : queriesByHash.entrySet()) {
-			plotQueryComparisons(statsFolder, "hash" + hashQueries.getKey(), hashQueries.getValue(), queriesStats);
+			plotQueryComparisons(statsFolder, "" + hashQueries.getKey(), hashQueries.getValue(), queriesStats);
 		}
 	}
 

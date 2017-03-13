@@ -5,7 +5,6 @@ import java.util.List;
 
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
-import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.worker.WorkerQuery;
@@ -42,8 +41,8 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 				System.out.println("GO " + ID + " in " + query.QueryId);
 				SSSPVertexWritable mutableValue = new SSSPVertexWritable(-1, 0, false);
 				setValue(mutableValue, query.QueryId);
-				for (Edge<DoubleWritable> edge : getEdges()) {
-					sendMessageToVertex(getPooledMessageValue().setup(ID, edge.Value.Value), edge.TargetVertexId, query);
+				for (int i = 0; i < edgeTargets.length; i++) {
+					sendMessageToVertex(getPooledMessageValue().setup(ID, edgeValues[i].Value), edgeTargets[i], query);
 				}
 				voteVertexHalt(query.QueryId);
 				return;
@@ -96,8 +95,8 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			sendMessages = true;
 		}
 		if (sendMessages) {
-			for (Edge<DoubleWritable> edge : getEdges()) {
-				sendMessageToVertex(getPooledMessageValue().setup(ID, mutableValue.Dist + edge.Value.Value), edge.TargetVertexId, query);
+			for (int i = 0; i < edgeTargets.length; i++) {
+				sendMessageToVertex(getPooledMessageValue().setup(ID, mutableValue.Dist + edgeValues[i].Value), edgeTargets[i], query);
 			}
 			mutableValue.SendMsgsLater = false;
 		}

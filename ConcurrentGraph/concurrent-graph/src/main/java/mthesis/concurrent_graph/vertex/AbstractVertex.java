@@ -2,6 +2,7 @@ package mthesis.concurrent_graph.vertex;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
@@ -25,7 +26,9 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	// TODO More efficient datastructure? Arrays, re-use objects etc
 	// value = (V[]) new Object[n + 1];
-	private List<Edge<E>> edges;
+	protected int[] edgeTargets;
+	protected E[] edgeValues;
+
 	private V vertexDefaultValue = null;
 	public final Int2ObjectMap<V> queryValues = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
 	// Queries this vertex is inactive for
@@ -44,6 +47,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		this.worker = worker;
 	}
 
+	@SuppressWarnings("unchecked")
 	public AbstractVertex(ByteBuffer bufferToRead, VertexWorkerInterface<V, E, M, Q> worker,
 			JobConfiguration<V, E, M, Q> jobConfig) {
 		super();
@@ -55,9 +59,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		this.ID = bufferToRead.getInt();
 
 		int edgeCount = bufferToRead.getInt();
-		edges = new ArrayList<>(edgeCount);
+		edgeTargets = new int[edgeCount];
+		edgeValues = (E[]) new Object[edgeCount];
 		for (int i = 0; i < edgeCount; i++) {
-			edges.add(new Edge<>(bufferToRead.getInt(), edgeValueFactory.createFromBytes(bufferToRead)));
+			edgeTargets[i] = bufferToRead.getInt();
+			edgeValues[i] = edgeValueFactory.createFromBytes(bufferToRead);
 		}
 
 		if (bufferToRead.get() == 0)
@@ -105,10 +111,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public void writeToBuffer(ByteBuffer buffer) {
 		buffer.putInt(ID);
 
-		buffer.putInt(edges.size());
-		for (Edge<E> e : edges) {
-			buffer.putInt(e.TargetVertexId);
-			e.Value.writeToBuffer(buffer);
+		buffer.putInt(edgeTargets.length);
+		for (int i = 0; i < edgeTargets.length; i++) {
+			buffer.putInt(edgeTargets[i]);
+			edgeValues[i].writeToBuffer(buffer);
 		}
 
 		buffer.put(vertexDefaultValue != null ? (byte) 0 : (byte) 1);
@@ -225,8 +231,8 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 	protected void sendMessageToAllOutgoingEdges(M message, WorkerQuery<V, E, M, Q> query) {
-		for (final Edge<E> edge : edges) {
-			worker.sendVertexMessage(edge.TargetVertexId, message, query);
+		for (int edgeTarg : edgeTargets) {
+			worker.sendVertexMessage(edgeTarg, message, query);
 		}
 	}
 
@@ -265,19 +271,23 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	public List<Edge<E>> getEdges() {
-		return edges;
+	public int[] getEdgeTargets() {
+		return edgeTargets;
 	}
 
+	public E[] getEdgeValues() {
+		return edgeValues;
+	}
 
-	public void setEdges(List<Edge<E>> edges) {
-		this.edges = edges;
+	public void setEdges(int[] targets, E[] values) {
+		this.edgeTargets = targets;
+		this.edgeValues = values;
 	}
 
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "_" + ID + "(" + queryValues + ")," + edges;
+		return this.getClass().getSimpleName() + "_" + ID + "(" + queryValues + ")," + Arrays.toString(edgeTargets);
 	}
 
 	@SuppressWarnings("rawtypes")

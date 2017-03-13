@@ -52,7 +52,7 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 		}
 
 		if (superstepNo < 30) {
-			final double n = mutableValue.Value / getEdges().size();
+			final double n = mutableValue.Value / edgeTargets.length;
 			sendMessageToAllOutgoingEdges(new DoubleWritable(n), query);
 		}
 		else {

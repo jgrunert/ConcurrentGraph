@@ -8,7 +8,6 @@ import java.util.Set;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
-import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.worker.WorkerQuery;
@@ -44,9 +43,8 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 			IntWritable value = new IntWritable(ID);
 			setValue(value, query.QueryId);
 
-			final List<Edge<NullWritable>> edges = getEdges();
-			for (final Edge<NullWritable> edge : edges) {
-				allNeighbors.add(edge.TargetVertexId);
+			for (int i = 0; i < edgeTargets.length; i++) {
+				allNeighbors.add(edgeTargets[i]);
 			}
 
 			sendMessageToAllOutgoingEdges(new CCMessageWritable(ID, ID), query);

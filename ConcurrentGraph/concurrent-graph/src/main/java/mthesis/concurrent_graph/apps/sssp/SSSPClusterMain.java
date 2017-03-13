@@ -41,24 +41,59 @@ public class SSSPClusterMain {
 			int queryIndex = 0;
 
 			// Warm up queries
-			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337));
-			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164)); // Very short ST-Echterdingen->ST-HBF
+			//			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 7031164, 4304982));
+			//			master.waitForAllQueriesFinish();
+			//
+			//
+			//			// Test sequence
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821)); // Medium PF->HB
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832)); // Short RT->ST
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624)); // Short ST-HBF->TU
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337)); // Very short Meersburg->Pfullendorf
+			//			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821)); // Medium PF->HB
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832)); // Short RT->ST
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624)); // Short ST-HBF->TU
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337)); // Very short Meersburg->Pfullendorf
+			//			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821)); // Medium PF->HB
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832)); // Short RT->ST
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624)); // Short ST-HBF->TU
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337)); // Very short Meersburg->Pfullendorf
+			//			master.waitForAllQueriesFinish();
+
+			// Short RT->ST
+			// Ca 7.5s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForAllQueriesFinish();
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
+
+			// Medium PF->HB
+			// Ca 21s, no vertexmove, without sysout, on PC+local4 and 27s on laptop+local8
+			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			master.waitForQueryFinish((queryIndex - 1));
+			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
+			//			master.waitForQueryFinish((queryIndex - 1));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
 
 
-			// Test sequence
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
-			//			master.waitForAllQueriesFinish();
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
-			//			master.waitForAllQueriesFinish();
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011));
-			//			master.waitForAllQueriesFinish();
 
 			// Very short ST-HBF->ST-Airport. Test query "0".
 			// Ca 5.5s, no vertexmove, without sysout, on PC+local4 and 6s on laptop+local8
@@ -90,37 +125,11 @@ public class SSSPClusterMain {
 			//			Thread.sleep(5000);
 			//			Thread.sleep(5000);
 			//			Thread.sleep(5000);
-			// Short RT->ST
-			// Ca 7.5s, no vertexmove, without sysout, on PC+local4 and 8s on laptop+local8
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			//			master.waitForAllQueriesFinish();
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			//			master.waitForAllQueriesFinish();
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			//			master.waitForAllQueriesFinish();
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			//			master.waitForQueryFinish((queryIndex - 1));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			//			master.waitForQueryFinish((queryIndex - 1));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-			//			master.waitForQueryFinish((queryIndex - 1));
-			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832));
-
 			//			// Big query through BW, Ludwigshafen->Heilbronn
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2942985, 6663036));
 			//
 			//			// Short Mengen->Saulgau
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3080719, 609074));
-
-			// Medium PF->HB
-			// Ca 21s, no vertexmove, without sysout, on PC+local4 and 27s on laptop+local8
-			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			master.waitForQueryFinish((queryIndex - 1));
-			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			master.waitForQueryFinish((queryIndex - 1));
-			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
-			master.waitForQueryFinish((queryIndex - 1));
-			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821));
 
 			//			// Short TU->RT
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4982624, 3627927));
