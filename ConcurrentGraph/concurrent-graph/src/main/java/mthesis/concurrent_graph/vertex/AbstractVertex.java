@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.vertex;
 
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
+import mthesis.concurrent_graph.graph.Edge;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -26,8 +28,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	// TODO More efficient datastructure? Arrays, re-use objects etc
 	// value = (V[]) new Object[n + 1];
-	protected int[] edgeTargets;
-	protected E[] edgeValues;
+	protected Edge<E>[] edgeTargets;
 
 	private V vertexDefaultValue = null;
 	public final Int2ObjectMap<V> queryValues = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
@@ -60,11 +61,12 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 		int edgeCount = bufferToRead.getInt();
 		edgeTargets = new int[edgeCount];
-		edgeValues = (E[]) new Object[edgeCount];
+		List<E> edgeValuesTmp = new ArrayList<>(edgeCount);
 		for (int i = 0; i < edgeCount; i++) {
 			edgeTargets[i] = bufferToRead.getInt();
-			edgeValues[i] = edgeValueFactory.createFromBytes(bufferToRead);
+			edgeValuesTmp.add(edgeValueFactory.createFromBytes(bufferToRead));
 		}
+		edgeValues = edgeValuesTmp.toArray((E[]) new Object[0]);
 
 		if (bufferToRead.get() == 0)
 			vertexDefaultValue = vertexValueFactory.createFromBytes(bufferToRead);
@@ -106,6 +108,13 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			}
 			queryMessagesNextSuperstep.put(key, msgs);
 		}
+	}
+
+	private static <E> E[] getArray(Class<E> clazz, int size) {
+		@SuppressWarnings("unchecked")
+		E[] arr = (E[]) Array.newInstance(clazz, size);
+
+		return arr;
 	}
 
 	public void writeToBuffer(ByteBuffer buffer) {
