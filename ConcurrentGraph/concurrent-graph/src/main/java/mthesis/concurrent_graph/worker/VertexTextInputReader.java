@@ -54,9 +54,9 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 					}
 
 					// Vertex edges
-					final List<Edge<E>> edges = new ArrayList<>();
 					if (split0.length > 1) {
 						final String[] splitEdges = split0[1].split(";");
+						final List<Edge<E>> edges = new ArrayList<>(splitEdges.length);
 						for (final String edgeStr : splitEdges) {
 							final String[] splitEdgeStr = edgeStr.split(",");
 							// Optional edge value
@@ -69,8 +69,11 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 							}
 							edges.add(new Edge<E>(Integer.parseInt(splitEdgeStr[0]), edgeValue));
 						}
+						vertex.setEdges(edges);
 					}
-					vertex.setEdges(edges);
+					else {
+						vertex.setEdges(new ArrayList<>(0));
+					}
 
 					vertices.add(vertex);
 				}

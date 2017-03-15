@@ -23,8 +23,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	public final int ID;
 
-	// TODO More efficient datastructure? Arrays, re-use objects etc
-	// value = (V[]) new Object[n + 1];
+	// TODO More efficient datastructure? Arrays or fastutil map
 	private List<Edge<E>> edges;
 	private V vertexDefaultValue = null;
 	public final Int2ObjectMap<V> queryValues = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);

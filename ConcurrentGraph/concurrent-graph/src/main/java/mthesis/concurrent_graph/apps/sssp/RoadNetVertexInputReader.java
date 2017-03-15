@@ -40,8 +40,8 @@ public class RoadNetVertexInputReader
 					int vertexId = reader.readInt();
 					SSSPVertex vertex = new SSSPVertex(vertexId, vertexWorkerInterface);
 
-					final List<Edge<DoubleWritable>> edges = new ArrayList<>();
 					int numEdges = reader.readInt();
+					final List<Edge<DoubleWritable>> edges = new ArrayList<>(numEdges);
 					for (int iEdge = 0; iEdge < numEdges; iEdge++) {
 						edges.add(new Edge<DoubleWritable>(reader.readInt(), new DoubleWritable(reader.readDouble())));
 					}
