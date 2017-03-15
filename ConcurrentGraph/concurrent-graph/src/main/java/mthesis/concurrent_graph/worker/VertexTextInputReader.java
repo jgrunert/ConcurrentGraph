@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;
-import mthesis.concurrent_graph.graph.Edge;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
+import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
@@ -26,7 +26,6 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<AbstractVertex<V, E, M, Q>> getVertices(List<String> partitions, JobConfiguration<V, E, M, Q> jobConfig,
 			VertexWorkerInterface<V, E, M, Q> vertexMessageSender) {
@@ -71,7 +70,7 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 							edges.add(new Edge<E>(Integer.parseInt(splitEdgeStr[0]), edgeValue));
 						}
 					}
-					vertex.setEdges(edges.toArray((Edge<E>[]) new Object[0]));
+					vertex.setEdges(edges);
 
 					vertices.add(vertex);
 				}

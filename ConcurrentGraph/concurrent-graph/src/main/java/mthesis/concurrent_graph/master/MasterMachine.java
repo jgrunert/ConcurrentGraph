@@ -658,8 +658,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			//						+ " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
 
 
-			if (!sendingWorkers.isEmpty()) {
-				//			if (notSendingWorkers.isEmpty()) {
+			//			if (!sendingWorkers.isEmpty()) {
+			if (notSendingWorkers.isEmpty()) {
 				System.out.println(
 						"YES !!!!!!! " + workersActiveVerts + " " + workerActVertAvg + " " + sendingWorkers + " " + notSendingWorkers);
 
