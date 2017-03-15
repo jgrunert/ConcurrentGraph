@@ -8,9 +8,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import mthesis.concurrent_graph.BaseQueryGlobalValues;
 import mthesis.concurrent_graph.JobConfiguration;
+import mthesis.concurrent_graph.graph.Edge;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -55,8 +55,7 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 					}
 
 					// Vertex edges
-					final IntArrayList edgeTargets = new IntArrayList();
-					final List<E> edgeValues = new ArrayList<>();
+					final List<Edge<E>> edges = new ArrayList<>();
 					if (split0.length > 1) {
 						final String[] splitEdges = split0[1].split(";");
 						for (final String edgeStr : splitEdges) {
@@ -69,11 +68,10 @@ public class VertexTextInputReader<V extends BaseWritable, E extends BaseWritabl
 							else {
 								edgeValue = null;
 							}
-							edgeTargets.add(Integer.parseInt(splitEdgeStr[0]));
-							edgeValues.add(edgeValue);
+							edges.add(new Edge<E>(Integer.parseInt(splitEdgeStr[0]), edgeValue));
 						}
 					}
-					vertex.setEdges(edgeTargets.toArray(new int[0]), edgeValues.toArray((E[]) new Object[0]));
+					vertex.setEdges(edges.toArray((Edge<E>[]) new Object[0]));
 
 					vertices.add(vertex);
 				}

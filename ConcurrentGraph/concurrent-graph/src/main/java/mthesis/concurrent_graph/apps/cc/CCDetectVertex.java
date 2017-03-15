@@ -43,8 +43,8 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 			IntWritable value = new IntWritable(ID);
 			setValue(value, query.QueryId);
 
-			for (int i = 0; i < edgeTargets.length; i++) {
-				allNeighbors.add(edgeTargets[i]);
+			for (int i = 0; i < edges.length; i++) {
+				allNeighbors.add(edges[i].NeighborId);
 			}
 
 			sendMessageToAllOutgoingEdges(new CCMessageWritable(ID, ID), query);

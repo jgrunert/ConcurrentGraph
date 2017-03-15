@@ -28,7 +28,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	// TODO More efficient datastructure? Arrays, re-use objects etc
 	// value = (V[]) new Object[n + 1];
-	protected Edge<E>[] edgeTargets;
+	protected Edge<E>[] edges;
 
 	private V vertexDefaultValue = null;
 	public final Int2ObjectMap<V> queryValues = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
@@ -60,13 +60,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		this.ID = bufferToRead.getInt();
 
 		int edgeCount = bufferToRead.getInt();
-		edgeTargets = new int[edgeCount];
+		edges = (Edge<E>[]) new Object[edgeCount];
 		List<E> edgeValuesTmp = new ArrayList<>(edgeCount);
 		for (int i = 0; i < edgeCount; i++) {
-			edgeTargets[i] = bufferToRead.getInt();
-			edgeValuesTmp.add(edgeValueFactory.createFromBytes(bufferToRead));
+			edges[i] = new Edge<>(bufferToRead.getInt(), edgeValueFactory.createFromBytes(bufferToRead));
 		}
-		edgeValues = edgeValuesTmp.toArray((E[]) new Object[0]);
 
 		if (bufferToRead.get() == 0)
 			vertexDefaultValue = vertexValueFactory.createFromBytes(bufferToRead);
@@ -120,10 +118,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public void writeToBuffer(ByteBuffer buffer) {
 		buffer.putInt(ID);
 
-		buffer.putInt(edgeTargets.length);
-		for (int i = 0; i < edgeTargets.length; i++) {
-			buffer.putInt(edgeTargets[i]);
-			edgeValues[i].writeToBuffer(buffer);
+		buffer.putInt(edges.length);
+		for (int i = 0; i < edges.length; i++) {
+			buffer.putInt(edges[i].NeighborId);
+			edges[i].Value.writeToBuffer(buffer);
 		}
 
 		buffer.put(vertexDefaultValue != null ? (byte) 0 : (byte) 1);
@@ -240,8 +238,8 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 	protected void sendMessageToAllOutgoingEdges(M message, WorkerQuery<V, E, M, Q> query) {
-		for (int edgeTarg : edgeTargets) {
-			worker.sendVertexMessage(edgeTarg, message, query);
+		for (Edge<E> edge : edges) {
+			worker.sendVertexMessage(edge.NeighborId, message, query);
 		}
 	}
 
@@ -280,23 +278,19 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	public int[] getEdgeTargets() {
-		return edgeTargets;
+	public Edge<E>[] getEdgesTargets() {
+		return edges;
 	}
 
-	public E[] getEdgeValues() {
-		return edgeValues;
-	}
 
-	public void setEdges(int[] targets, E[] values) {
-		this.edgeTargets = targets;
-		this.edgeValues = values;
+	public void setEdges(Edge<E>[] setEdges) {
+		this.edges = setEdges;
 	}
 
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "_" + ID + "(" + queryValues + ")," + Arrays.toString(edgeTargets);
+		return this.getClass().getSimpleName() + "_" + ID + "(" + queryValues + ")," + Arrays.toString(edges);
 	}
 
 	@SuppressWarnings("rawtypes")
