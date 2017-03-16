@@ -285,12 +285,13 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 							&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
 									/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
 						// TODO Investigate why happening
-						//						logger.warn(String.format(
-						//								"Unexpected wrong vertex message count %d does not match broadcast message count %d. Should be %d. Possible communication errors.",
-						//								msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex,
-						//								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast,
-						//								msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast / (workerIds.size() - 1) *
-						//										(workerIds.size() - 2)));
+						logger.warn(msgActiveQuery.BaseQuery.QueryId + ":" + msgActiveQuery.SuperstepNo + " " +
+								String.format(
+										"Unexpected wrong vertex message count is %d but should be %d. Does not match broadcast message count %d. Possible communication errors.",
+										msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex,
+										msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast / (workerIds.size() - 1) *
+												(workerIds.size() - 2),
+										msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast));
 					}
 
 					// Log query superstep stats
