@@ -42,9 +42,9 @@ public class SSSPClusterMain {
 
 			// Warm up queries
 			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164)); // Very short ST-Echterdingen->ST-HBF
-			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164));
 			//			master.waitForAllQueriesFinish();
-			master.startQuery(new SSSPQueryValues(queryIndex++, 7031164, 4304982));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 7031164, 4304982));
 			//			master.waitForAllQueriesFinish();
 
 			//			// Test sequence

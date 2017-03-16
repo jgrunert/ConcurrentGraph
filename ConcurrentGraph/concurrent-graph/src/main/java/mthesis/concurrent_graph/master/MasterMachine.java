@@ -280,18 +280,27 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 				// Check if all workers finished superstep
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
-					// Wrong message count should match broadcast message count, therwise there might be communication errors.
-					if (workerIds.size() > 1
-							&& msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex != msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
-									/ (workerIds.size() - 1) * (workerIds.size() - 2)) {
+					// Correct/wrong message count should match unicast+broadcast message count, otherwise there might be communication errors.
+					long msgsReceivedWrong = msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex;
+					long msgsReceivedCorrect = msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedCorrectVertex;
+					long msgsSentBroadcast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast;
+					long msgsSentUnicast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentUnicast;
+					long msgsExpectedWrongBroadcast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
+							/ (workerIds.size() - 1) * (workerIds.size() - 2);
+					long msgsExpectedCorrect = msgsSentUnicast + msgsSentBroadcast - msgsExpectedWrongBroadcast;
+					if (workerIds.size() > 1 && msgsReceivedWrong != msgsExpectedWrongBroadcast) {
 						// TODO Investigate why happening
 						logger.warn(msgActiveQuery.BaseQuery.QueryId + ":" + msgActiveQuery.SuperstepNo + " " +
 								String.format(
 										"Unexpected wrong vertex message count is %d but should be %d. Does not match broadcast message count %d. Possible communication errors.",
-										msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex,
-										msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast / (workerIds.size() - 1) *
-												(workerIds.size() - 2),
-										msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast));
+										msgsReceivedWrong, msgsExpectedWrongBroadcast, msgsSentBroadcast));
+					}
+					if (workerIds.size() > 1 && msgsReceivedCorrect != msgsExpectedCorrect) {
+						// TODO Investigate why happening
+						logger.warn(msgActiveQuery.BaseQuery.QueryId + ":" + msgActiveQuery.SuperstepNo + " " +
+								String.format(
+										"Unexpected correct vertex message count is %d but should be %d. Possible communication errors.",
+										msgsReceivedCorrect, msgsExpectedCorrect));
 					}
 
 					// Log query superstep stats
