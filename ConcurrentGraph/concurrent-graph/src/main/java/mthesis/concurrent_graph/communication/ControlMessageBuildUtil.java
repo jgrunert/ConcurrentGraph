@@ -11,6 +11,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPart
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryIntersectionsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
@@ -99,6 +100,15 @@ public class ControlMessageBuildUtil {
 	public static MessageEnvelope Build_Master_Shutdown(int srcMachineId) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Master_Shutdown)
+				.setSrcMachine(srcMachineId).build()).build();
+	}
+
+	public static MessageEnvelope Build_Master_StartBarrier_VertexMove(int srcMachineId,
+			List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> sendVerts,
+			List<Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> recvVerts) {
+		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
+				.setType(ControlMessageType.Master_Start_Barrier)
+				.setStartBarrier(StartBarrierMessage.newBuilder().addAllSendQueryVertices(sendVerts).addAllReceiveQueryVertices(recvVerts))
 				.setSrcMachine(srcMachineId).build()).build();
 	}
 

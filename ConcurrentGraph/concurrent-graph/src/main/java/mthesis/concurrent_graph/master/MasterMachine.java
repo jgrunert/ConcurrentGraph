@@ -24,6 +24,7 @@ import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.QueryStats;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
+import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
@@ -71,6 +72,12 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private final MasterInputPartitioner inputPartitioner;
 	private final MasterOutputEvaluator<Q> outputCombiner;
 	private final BaseQueryGlobalValuesFactory<Q> queryValueFactory;
+
+
+	// TODO Configuration
+	private boolean vertexBarrierMoveEnabled = true;
+	private long vertexBarrierMoveLastTime = 0;
+	private long vertexBarrierMoveInterval = 10000;
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
@@ -597,7 +604,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	/**
 	 * Let workers start next superstep of a query. Make decisions about vertices to move.
 	 */
-	private void startWorkersQueryNextSuperstep(Q query, int superstepNo) {
+	private void startWorkersQueryNextSuperstep(Q queryToStart, int superstepNo) {
 
 		// Total worker load
 		// TODO Diagram output
@@ -617,94 +624,170 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		}
 		workerActVertAvg /= workersActiveVerts.size();
 
-		if (Configuration.VERTEX_LIVE_MOVE_ENABLED) {
-			// Evaluate intersections, decide if move vertices
-			Map<Integer, Integer> queriesWorkerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
-			Map<Integer, Integer> queriesWorkerIntersectsSum = new HashMap<>(queriesWorkerActiveVerts.size());
-			for (Entry<Integer, Map<Integer, Integer>> wIntersects : actQueryWorkerIntersects.get(query.QueryId).entrySet()) {
-				int intersectSum = 0;
-				for (Integer intersect : wIntersects.getValue().values()) {
-					intersectSum += intersect;
+		if (vertexBarrierMoveEnabled && (System.currentTimeMillis() - vertexBarrierMoveLastTime) > vertexBarrierMoveInterval) {
+			boolean anyMoves = false;
+			Map<Integer, List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage>> workerVertSendMsgs = new HashMap<>();
+			Map<Integer, List<Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage>> workerVertRecvMsgs = new HashMap<>();
+			for (int workerId : workerIds) {
+				workerVertSendMsgs.put(workerId, new ArrayList<>());
+				workerVertRecvMsgs.put(workerId, new ArrayList<>());
+			}
+
+			// Calculate query moves
+			for (MasterQuery<Q> activeQuery : activeQueries.values()) {
+				Map<Integer, Integer> queriesWorkerActiveVerts = actQueryWorkerActiveVerts.get(activeQuery.BaseQuery.QueryId);
+				Map<Integer, Integer> queriesWorkerIntersectsSum = new HashMap<>(queriesWorkerActiveVerts.size());
+				for (Entry<Integer, Map<Integer, Integer>> wIntersects : actQueryWorkerIntersects.get(activeQuery.BaseQuery.QueryId)
+						.entrySet()) {
+					int intersectSum = 0;
+					for (Integer intersect : wIntersects.getValue().values()) {
+						intersectSum += intersect;
+					}
+					queriesWorkerIntersectsSum.put(wIntersects.getKey(), intersectSum);
+					// TODO Testcode
+					//				if (intersectSum > 0) {
+					//					System.err.println("INTERSECT " + wIntersects.getKey() + " " + wIntersects);
+					//				}
 				}
-				queriesWorkerIntersectsSum.put(wIntersects.getKey(), intersectSum);
-				// TODO Testcode
-				//				if (intersectSum > 0) {
-				//					System.err.println("INTERSECT " + wIntersects.getKey() + " " + wIntersects);
-				//				}
+
+				// TODO Just a simple test algorithm:
+				// Move all other vertices to worker with most active vertices and sub-average active vertices
+				List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(queriesWorkerActiveVerts).keySet());
+				int recvWorkerIndexTmp = 0;
+				while (workersActiveVerts.get(sortedWorkers.get(recvWorkerIndexTmp)) > workerActVertAvg) {
+					recvWorkerIndexTmp++;
+				}
+				int receivingWorker = sortedWorkers.get(recvWorkerIndexTmp);
+				sortedWorkers.remove(recvWorkerIndexTmp);
+
+				for (int i = 0; i < sortedWorkers.size(); i++) {
+					int workerId = sortedWorkers.get(i);
+					double workerVaDiff = workerActVertAvg > 0
+							? (double) (workersActiveVerts.get(workerId) - workerActVertAvg) / workerActVertAvg
+							: 0;
+					// Only move vertices from workers with active, query-exclusive vertices and enough active vertices
+					if (queriesWorkerActiveVerts.get(workerId) > 0 && queriesWorkerIntersectsSum.get(workerId) == 0 &&
+							workerVaDiff > -tolerableAvVariance) {
+						// TODO Modify queriesWorkerActiveVerts according to movement
+						anyMoves = true;
+						workerVertSendMsgs.get(workerId).add(
+								Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
+										.setMoveToMachine(receivingWorker).setMaxMoveCount(Integer.MAX_VALUE)
+										.build());
+						workerVertRecvMsgs.get(receivingWorker).add(
+								Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
+										.setReceiveFromMachine(workerId).build());
+					}
+				}
 			}
 
-			// TODO Just a simple test algorithm:
-			// Move all other vertices to worker with most active vertices and sub-average active vertices
-			List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(queriesWorkerActiveVerts).keySet());
-			int recvWorkerIndex = 0;
-			//			while (workersActiveVerts.get(sortedWorkers.get(recvWorkerIndex)) > workerActVertAvg) {
-			//				recvWorkerIndex++;
-			//			}
-			int receivingWorker = sortedWorkers.get(recvWorkerIndex);
-			sortedWorkers.remove(recvWorkerIndex);
-
-			List<Integer> sendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
-			List<Integer> notSendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
-			for (int i = 0; i < sortedWorkers.size(); i++) {
-				int workerId = sortedWorkers.get(i);
-				double workerVaDiff = workerActVertAvg > 0
-						? (double) (workersActiveVerts.get(workerId) - workerActVertAvg) / workerActVertAvg
-						: 0;
-				// Only move vertices from workers with active, query-exclusive vertices and enough active vertices
-				if (queriesWorkerActiveVerts.get(workerId) > 0 && queriesWorkerIntersectsSum.get(workerId) == 0 &&
-						workerVaDiff > -tolerableAvVariance)
-					sendingWorkers.add(workerId);
-				else
-					notSendingWorkers.add(workerId);
-			}
-
-			//			else
-			//				System.out.println("" + workersActiveVerts + " " + workerActVertAvg);
-
-
-			//			System.out.println(workerActiveVerts);
-
-			// TODO Testcode
-			//			if (!sendingWorkers.isEmpty())
-			//				System.out.println(query.QueryId + ":" + superstepNo + " receivingWorker " + receivingWorker
-			//						+ " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
-
-
-			if (!sendingWorkers.isEmpty()) {
-				//			if (notSendingWorkers.isEmpty()) {
-				System.out.println(
-						"YES !!!!!!! " + workersActiveVerts + " " + workerActVertAvg + " " + sendingWorkers + " " + notSendingWorkers);
-
-				// Vertex sending
-				messaging.sendControlMessageUnicast(receivingWorker,
-						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertReceive(superstepNo, ownId, query, sendingWorkers),
-						true);
-				for (Integer otherWorkerId : sendingWorkers) {
-					messaging.sendControlMessageUnicast(otherWorkerId,
-							ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertSend(superstepNo, ownId, query, receivingWorker),
+			// Send barrier move messages
+			if (anyMoves) {
+				for (int workerId : workerIds) {
+					messaging.sendControlMessageUnicast(workerId,
+							ControlMessageBuildUtil.Build_Master_StartBarrier_VertexMove(ownId,
+									workerVertSendMsgs.get(workerId), workerVertRecvMsgs.get(workerId)),
 							true);
-				}
-				for (Integer otherWorkerId : notSendingWorkers) {
-					messaging.sendControlMessageUnicast(otherWorkerId,
-							ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
+					logger.info("Starting barrier with vertex move");
 				}
 			}
 			else {
-				// No vertex senders
-				for (Integer otherWorkerId : workerIds) {
-					messaging.sendControlMessageUnicast(otherWorkerId,
-							ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
-				}
+				logger.info("No vertices to move, no barrier");
 			}
+			vertexBarrierMoveLastTime = System.currentTimeMillis();
 		}
-		else {
+
+		//		if (Configuration.VERTEX_LIVE_MOVE_ENABLED) {
+		//			// Evaluate intersections, decide if move vertices
+		//			Map<Integer, Integer> queriesWorkerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
+		//			Map<Integer, Integer> queriesWorkerIntersectsSum = new HashMap<>(queriesWorkerActiveVerts.size());
+		//			for (Entry<Integer, Map<Integer, Integer>> wIntersects : actQueryWorkerIntersects.get(query.QueryId).entrySet()) {
+		//				int intersectSum = 0;
+		//				for (Integer intersect : wIntersects.getValue().values()) {
+		//					intersectSum += intersect;
+		//				}
+		//				queriesWorkerIntersectsSum.put(wIntersects.getKey(), intersectSum);
+		//				// TODO Testcode
+		//				//				if (intersectSum > 0) {
+		//				//					System.err.println("INTERSECT " + wIntersects.getKey() + " " + wIntersects);
+		//				//				}
+		//			}
+		//
+		//			// TODO Just a simple test algorithm:
+		//			// Move all other vertices to worker with most active vertices and sub-average active vertices
+		//			List<Integer> sortedWorkers = new ArrayList<>(MiscUtil.sortByValueInverse(queriesWorkerActiveVerts).keySet());
+		//			int recvWorkerIndex = 0;
+		//			//			while (workersActiveVerts.get(sortedWorkers.get(recvWorkerIndex)) > workerActVertAvg) {
+		//			//				recvWorkerIndex++;
+		//			//			}
+		//			int receivingWorker = sortedWorkers.get(recvWorkerIndex);
+		//			sortedWorkers.remove(recvWorkerIndex);
+		//
+		//			List<Integer> sendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
+		//			List<Integer> notSendingWorkers = new ArrayList<>(sortedWorkers.size() - 1);
+		//			for (int i = 0; i < sortedWorkers.size(); i++) {
+		//				int workerId = sortedWorkers.get(i);
+		//				double workerVaDiff = workerActVertAvg > 0
+		//						? (double) (workersActiveVerts.get(workerId) - workerActVertAvg) / workerActVertAvg
+		//						: 0;
+		//				// Only move vertices from workers with active, query-exclusive vertices and enough active vertices
+		//				if (queriesWorkerActiveVerts.get(workerId) > 0 && queriesWorkerIntersectsSum.get(workerId) == 0 &&
+		//						workerVaDiff > -tolerableAvVariance)
+		//					sendingWorkers.add(workerId);
+		//				else
+		//					notSendingWorkers.add(workerId);
+		//			}
+		//
+		//			//			else
+		//			//				System.out.println("" + workersActiveVerts + " " + workerActVertAvg);
+		//
+		//
+		//			//			System.out.println(workerActiveVerts);
+		//
+		//			// TODO Testcode
+		//			//			if (!sendingWorkers.isEmpty())
+		//			//				System.out.println(query.QueryId + ":" + superstepNo + " receivingWorker " + receivingWorker
+		//			//						+ " sendingWorkers " + sendingWorkers + " notSendingWorkers " + notSendingWorkers);
+		//
+		//
+		//			if (!sendingWorkers.isEmpty()) {
+		//				//			if (notSendingWorkers.isEmpty()) {
+		//				System.out.println(
+		//						"YES !!!!!!! " + workersActiveVerts + " " + workerActVertAvg + " " + sendingWorkers + " " + notSendingWorkers);
+		//
+		//				// Vertex sending
+		//				messaging.sendControlMessageUnicast(receivingWorker,
+		//						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertReceive(superstepNo, ownId, query, sendingWorkers),
+		//						true);
+		//				for (Integer otherWorkerId : sendingWorkers) {
+		//					messaging.sendControlMessageUnicast(otherWorkerId,
+		//							ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_VertSend(superstepNo, ownId, query, receivingWorker),
+		//							true);
+		//				}
+		//				for (Integer otherWorkerId : notSendingWorkers) {
+		//					messaging.sendControlMessageUnicast(otherWorkerId,
+		//							ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
+		//				}
+		//			}
+		//			else {
+		//				// No vertex senders
+		//				for (Integer otherWorkerId : workerIds) {
+		//					messaging.sendControlMessageUnicast(otherWorkerId,
+		//							ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
+		//				}
+		//			}
+		//		}
+		//		else
+		{
 			// No vertex move
 			for (Integer otherWorkerId : workerIds) {
 				messaging.sendControlMessageUnicast(otherWorkerId,
-						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, query), true);
+						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, queryToStart), true);
 			}
 		}
 	}
+
+
 
 	private void signalWorkersQueryFinish(Q query) {
 		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryFinish(ownId, query),
