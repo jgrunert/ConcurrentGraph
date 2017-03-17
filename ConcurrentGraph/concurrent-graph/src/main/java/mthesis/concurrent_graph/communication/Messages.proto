@@ -21,6 +21,10 @@ message MessageEnvelope {
 		Worker_Query_Superstep_Finished = 4;
 		// Message from workers to signal master that a query is finished
 		Worker_Query_Finished = 5;
+		// Message from workers to other workers to signal barrier started
+		Worker_Barrier_Started = 12;
+		// Message from workers to other workers to signal barrier finished
+		Worker_Barrier_Finished  = 13;
 	
 		// Message from master to workers to initialize, assigning partition
 		Master_Worker_Initialize = 6;
@@ -32,6 +36,8 @@ message MessageEnvelope {
 		Master_Query_Finished = 9;
 		// Message to signal the system to shutdown
 		Master_Shutdown = 10;
+		// Message to signal workers to make a system wide barrier to perform tasks
+		Master_Start_Barrier = 11;
 	}
 	  
 	message ControlMessage {
@@ -45,6 +51,7 @@ message MessageEnvelope {
 		optional QueryIntersectionsMessage QueryIntersections = 8;
 		optional SendQueryVerticesMessage SendQueryVertices = 9;
 		optional ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;
+		optional MoveVerticesMessage MoveVertices = 11;
 		
 		message AssignPartitionsMessage {	
 			repeated string PartitionFiles = 1;
@@ -76,5 +83,24 @@ message MessageEnvelope {
 		
 		message ReceiveQueryVerticesMessage {
 			repeated int32 RecvFromMachine = 1;
+		}
+		
+		message MoveVerticesMessage {
+			repeated SendQueryVerticesMessage SendQueryVertices = 1;
+			repeated ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;
+			
+			// Message to signal workers to make a system wide barrier to perform tasks
+			message SendQueryVerticesMessage {
+				// Target machine to send vertices to
+				optional int32 MoveToMachine = 1;
+				// Max. number of vertices to move
+				optional int32 MaxMoveCount = 2;
+			}
+			
+			// Message to signal workers to make a system wide barrier to perform tasks
+			message ReceiveQueryVerticesMessage {
+				// Machine to receive vertices from
+				optional int32 ReceiveFromMachine = 1;
+			}
 		}
 	}

@@ -29,7 +29,11 @@ public class Configuration {
 	public static final int MESSAGE_TIMEOUT;
 
 
-	public static final boolean VERTEX_MOVE_ENABLED;
+	/**
+	 * Enables moving of vertices while queries are running, without barrier.
+	 * TODO Broken
+	 */
+	public static final boolean VERTEX_LIVE_MOVE_ENABLED;
 
 	/**
 	 * When enabled, machines will discover and store mappings VertexId->Machine.
@@ -73,7 +77,7 @@ public class Configuration {
 			TCP_NODELAY = Boolean.parseBoolean(Properties.getProperty("TCP_NODELAY"));
 			CONNECT_TIMEOUT = Integer.parseInt(Properties.getProperty("CONNECT_TIMEOUT"));
 			MESSAGE_TIMEOUT = Integer.parseInt(Properties.getProperty("MESSAGE_TIMEOUT"));
-			VERTEX_MOVE_ENABLED = Boolean.parseBoolean(Properties.getProperty("VERTEX_MOVE_ENABLED"));
+			VERTEX_LIVE_MOVE_ENABLED = Boolean.parseBoolean(Properties.getProperty("VERTEX_LIVE_MOVE_ENABLED"));
 			VERTEX_MACHINE_DISCOVERY = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY"));
 			VERTEX_MACHINE_DISCOVERY_INCOMING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY_INCOMING"));
 			LOG_LEVEL_Main = Level.valueOf(Properties.getProperty("LOG_LEVEL_Main")).levelInt;
