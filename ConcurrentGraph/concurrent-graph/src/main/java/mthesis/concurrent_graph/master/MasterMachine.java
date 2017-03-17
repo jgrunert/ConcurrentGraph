@@ -287,7 +287,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					long msgsSentUnicast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentUnicast;
 					long msgsExpectedWrongBroadcast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
 							/ (workerIds.size() - 1) * (workerIds.size() - 2);
-					long msgsExpectedCorrect = msgsSentUnicast + msgsSentBroadcast - msgsExpectedWrongBroadcast;
+					long msgsExpectedCorrectBroadcast = msgsSentBroadcast - msgsExpectedWrongBroadcast;
+					long msgsExpectedCorrect = msgsSentUnicast + msgsExpectedCorrectBroadcast;
 					if (workerIds.size() > 1 && msgsReceivedWrong != msgsExpectedWrongBroadcast) {
 						// TODO Investigate why happening
 						logger.warn(msgActiveQuery.BaseQuery.QueryId + ":" + msgActiveQuery.SuperstepNo + " " +
@@ -299,8 +300,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						// TODO Investigate why happening
 						logger.warn(msgActiveQuery.BaseQuery.QueryId + ":" + msgActiveQuery.SuperstepNo + " " +
 								String.format(
-										"Unexpected correct vertex message count is %d but should be %d. Possible communication errors.",
-										msgsReceivedCorrect, msgsExpectedCorrect));
+										"Unexpected correct vertex message count is %d but should be %d (%d+%d). Possible communication errors.",
+										msgsReceivedCorrect, msgsExpectedCorrect,
+										msgsSentUnicast, msgsExpectedCorrectBroadcast));
 					}
 
 					// Log query superstep stats
@@ -615,7 +617,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		}
 		workerActVertAvg /= workersActiveVerts.size();
 
-		if (Configuration.VERTEX_MOVE_ENABLED) {
+		if (Configuration.VERTEX_LIVE_MOVE_ENABLED) {
 			// Evaluate intersections, decide if move vertices
 			Map<Integer, Integer> queriesWorkerActiveVerts = actQueryWorkerActiveVerts.get(query.QueryId);
 			Map<Integer, Integer> queriesWorkerIntersectsSum = new HashMap<>(queriesWorkerActiveVerts.size());

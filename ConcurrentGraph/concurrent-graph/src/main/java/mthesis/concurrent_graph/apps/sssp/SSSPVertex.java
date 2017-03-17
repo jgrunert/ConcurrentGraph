@@ -106,7 +106,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 
 		// TODO Better, faster termination
 		if (ID == query.Query.To) {
-			System.out.println("Target dist " + minDist + " max " + query.QueryLocal.MaxDist);
+			//			System.out.println("Target dist " + minDist + " max " + query.QueryLocal.MaxDist);
 			query.QueryLocal.TargetFound = true;
 			query.QueryLocal.MaxDist = minDist;
 		}

@@ -332,7 +332,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			final Integer remoteMachine = remoteVertexMachineRegistry.lookupEntry(dstVertex);
 			if (remoteMachine != null) {
 				// Unicast remote message
-				sendVertexMessageToMachine(remoteMachine, dstVertex, query, messageContent);
+				sendVertexMessageToMachine(remoteMachine, dstVertex, query, query.getStartedSuperstepNo(), messageContent);
 			}
 			else {
 				// Broadcast remote message
@@ -348,13 +348,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	/**
 	 * Sends a vertex message directly to a remote machine, no lookup.
 	 */
-	public void sendVertexMessageToMachine(int dstMachine, int dstVertex, WorkerQuery<V, E, M, Q> query, M messageContent) {
+	public void sendVertexMessageToMachine(int dstMachine, int dstVertex, WorkerQuery<V, E, M, Q> query, int superstepNo,
+			M messageContent) {
 		final VertexMessageBucket<M> msgBucket = vertexMessageMachineBuckets.get(dstMachine);
 		if (msgBucket == null)
 			logger.error("WTF, no machine " + dstMachine);
 		msgBucket.addMessage(dstVertex, messageContent);
 		if (msgBucket.messages.size() > Configuration.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
-			sendUnicastVertexMessageBucket(msgBucket, dstMachine, query, query.getStartedSuperstepNo());
+			sendUnicastVertexMessageBucket(msgBucket, dstMachine, query, superstepNo);
 		}
 		query.QueryLocal.Stats.MessagesSentUnicast++;
 	}
@@ -373,7 +374,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 	private List<Pair<Integer, M>> packVertexMessage(VertexMessageBucket<M> msgBucket) {
-		final List<Pair<Integer, M>> msgList = new ArrayList<>(msgBucket.messages); // TODO Pool instance
+		final List<Pair<Integer, M>> msgList = new ArrayList<>(msgBucket.messages); // Could Pool instance
 		msgBucket.messages.clear();
 		return msgList;
 	}
@@ -743,7 +744,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						if (redirectMachine != null) {
 							//								logger.info("Redirect to " + redirectMachine);
 							activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.RedirectedMessagesKey, 1);
-							sendVertexMessageToMachine(redirectMachine, msg.first, activeQuery, msg.second);
+							sendVertexMessageToMachine(redirectMachine, msg.first, activeQuery, message.superstepNo, msg.second);
 						}
 						else {
 							logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from "

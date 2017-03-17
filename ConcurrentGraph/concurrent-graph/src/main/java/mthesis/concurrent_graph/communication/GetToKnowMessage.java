@@ -4,6 +4,14 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * Message sent by a worker as a reply on a broadcast message.
+ * If a broadcast contains vertices on a worker machine, the worker will respond,
+ * indicating that the vertices are on this machine.
+ *
+ * @author Jonas Grunert
+ *
+ */
 public class GetToKnowMessage implements ChannelMessage {
 
 	public final int srcMachine;

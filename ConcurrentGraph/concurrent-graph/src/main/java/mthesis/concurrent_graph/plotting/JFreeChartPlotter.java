@@ -23,10 +23,16 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JFreeChartPlotter {
 
+	private static final Logger logger = LoggerFactory.getLogger(JFreeChartPlotter.class);
+
 	public static void plotStats(String outputFolder) throws Exception {
+		logger.info("Start plotting");
+
 		String statsFolder = outputFolder + File.separator + "stats";
 
 		List<Integer> workers = new ArrayList<>();
@@ -100,12 +106,15 @@ public class JFreeChartPlotter {
 						iCol, 1);
 			}
 		}
+		logger.info("Finished plotting single queries");
 
 		// Plot query compares
 		plotQueryComparisons(statsFolder, "all", queries, queriesStats);
 		for (Entry<Integer, List<Integer>> hashQueries : queriesByHash.entrySet()) {
 			plotQueryComparisons(statsFolder, "" + hashQueries.getKey(), hashQueries.getValue(), queriesStats);
 		}
+
+		logger.info("Finished plotting query comparisons");
 	}
 
 	private static void plotWorkerStats(String outputFolder, String name, String axisTitleY,
