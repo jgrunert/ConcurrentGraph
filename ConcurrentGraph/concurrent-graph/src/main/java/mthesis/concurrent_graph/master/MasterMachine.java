@@ -688,8 +688,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 							ControlMessageBuildUtil.Build_Master_StartBarrier_VertexMove(ownId,
 									workerVertSendMsgs.get(workerId), workerVertRecvMsgs.get(workerId)),
 							true);
-					logger.info("Starting barrier with vertex move");
 				}
+				logger.info("Starting barrier with vertex move");
 			}
 			else {
 				logger.info("No vertices to move, no barrier");

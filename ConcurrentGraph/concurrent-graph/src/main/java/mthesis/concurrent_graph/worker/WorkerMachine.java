@@ -410,6 +410,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					}
 						break;
 
+					case Master_Start_Barrier: {
+						logger.warn("Master_Start_Barrier");
+					}
+						break;
+
 
 					case Worker_Query_Superstep_Barrier: {
 						Q query = deserializeQuery(message.getQueryValues());
