@@ -151,4 +151,16 @@ public class ControlMessageBuildUtil {
 						.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build())
 				.build();
 	}
+
+	public static MessageEnvelope Build_Worker_Worker_Barrier_Started(int srcMachineId) {
+		return MessageEnvelope.newBuilder()
+				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Barrier_Started)
+						.setSrcMachine(srcMachineId))
+				.build();
+	}
+
+	public static MessageEnvelope Build_Worker_Worker_Barrier_Finished(int srcMachineId) {
+		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
+				.setType(ControlMessageType.Worker_Barrier_Finished).setSrcMachine(srcMachineId)).build();
+	}
 }

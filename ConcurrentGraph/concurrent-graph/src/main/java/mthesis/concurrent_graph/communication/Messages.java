@@ -3482,10 +3482,9 @@ public final class Messages {
                   mutable_bitField0_ |= 0x00000001;
                 }
                 com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-                intersections__ = input.readMessage(
+                intersections = input.readMessage(
                     IntersectionsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-                intersections_.getMutableMap().put(
-                    intersections__.getKey(), intersections__.getValue());
+                intersections_.getMutableMap().put(intersections.getKey(), intersections.getValue());
                 break;
               }
             }
@@ -3611,12 +3610,15 @@ public final class Messages {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        com.google.protobuf.GeneratedMessageV3
-          .serializeIntegerMapTo(
-            output,
-            internalGetIntersections(),
-            IntersectionsDefaultEntryHolder.defaultEntry,
-            1);
+        for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
+             : internalGetIntersections().getMap().entrySet()) {
+          com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
+          intersections = IntersectionsDefaultEntryHolder.defaultEntry.newBuilderForType()
+              .setKey(entry.getKey())
+              .setValue(entry.getValue())
+              .build();
+          output.writeMessage(1, intersections);
+        }
         unknownFields.writeTo(output);
       }
 
@@ -3628,12 +3630,12 @@ public final class Messages {
         for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
              : internalGetIntersections().getMap().entrySet()) {
           com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-          intersections__ = IntersectionsDefaultEntryHolder.defaultEntry.newBuilderForType()
+          intersections = IntersectionsDefaultEntryHolder.defaultEntry.newBuilderForType()
               .setKey(entry.getKey())
               .setValue(entry.getValue())
               .build();
           size += com.google.protobuf.CodedOutputStream
-              .computeMessageSize(1, intersections__);
+              .computeMessageSize(1, intersections);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import mthesis.concurrent_graph.QueryStats;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.GetToKnowMessage;
+import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
@@ -91,6 +93,14 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private final Map<Integer, Integer> movedVerticesRedirections = new HashMap<>();
 	private final Map<Integer, List<Integer>> movedQueryVertices = new HashMap<>();
 
+	// Global barrier coordination/control
+	private boolean globalBarrierRequested = false;// TODO Enum?
+	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
+	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>();
+	// Global barrier commands to perform while barrier
+	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
+	private List<Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> globalBarrierRecvVerts;
+
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -140,8 +150,42 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			while (!Thread.interrupted()) {
 				// Wait for queries
 				while (activeQueries.isEmpty()) {
-					Thread.sleep(1);
+					Thread.sleep(1); // TODO sleep?
 					handleReceivedMessages();
+				}
+
+				// Global barrier if requested
+				if (globalBarrierRequested) {
+					// Start barrier, notify other workers
+					logger.debug("Barrier started, waiting for other workers to start");
+					messaging.sendControlMessageMulticast(otherWorkerIds,
+							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
+							true);
+					// wait for other workers barriers
+					long startTime = System.nanoTime();
+					while (!globalBarrierStartWaitSet.isEmpty()) {
+						//Thread.sleep(1);  // TODO sleep?
+						handleReceivedMessages();
+					}
+					long barrierStartWaitTime = System.nanoTime() - startTime;
+
+					// TODO Barrier tasks
+
+					// Start barrier, notify other workers
+					logger.debug("Barrier tasks done, waiting for other workers to finish");
+					messaging.sendControlMessageMulticast(otherWorkerIds,
+							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Finished(ownId), true);
+					startTime = System.nanoTime();
+					while (!globalBarrierFinishWaitSet.isEmpty()) {
+						//Thread.sleep(1);  // TODO sleep?
+						handleReceivedMessages();
+					}
+					long barrierFinishWaitTime = System.nanoTime() - startTime;
+
+					logger.debug("Barrier finished");
+					System.out.println(
+							(double) barrierStartWaitTime / 1000000 + " " + (double) barrierFinishWaitTime / 1000000);
+					globalBarrierRequested = false;
 				}
 
 				// Wait for ready queries
@@ -230,14 +274,17 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	@SuppressWarnings("unchecked")
 	private void handleReceivedMessages() {
 		ChannelMessage message;
-		while ((message = receivedMessages.poll()) != null) {
+		boolean interruptedMsgHandling = false;
+		while (!interruptedMsgHandling && (message = receivedMessages.poll()) != null) {
 			switch (message.getTypeCode()) {
 				case 0:
 					handleVertexMessage((VertexMessage<V, E, M, Q>) message);
 					break;
 				case 1:
 					MessageEnvelope msgEnvelope = ((ProtoEnvelopeMessage) message).message;
-					if (msgEnvelope.hasControlMessage()) handleControlMessage(msgEnvelope.getControlMessage());
+					if (msgEnvelope.hasControlMessage()) {
+						interruptedMsgHandling = handleControlMessage(msgEnvelope.getControlMessage());
+					}
 					break;
 				case 2:
 					handleGetToKnowMessage((GetToKnowMessage) message);
@@ -386,7 +433,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	}
 
 
-	public void handleControlMessage(ControlMessage message) {
+	/**
+	 * Handles an incoming control message
+	 * @param message
+	 * @return Returns true if message handling should be interrupted after this message
+	 */
+	public boolean handleControlMessage(ControlMessage message) {
 		try {
 			if (message != null) {
 				switch (message.getType()) {
@@ -411,7 +463,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					break;
 
 					case Master_Start_Barrier: {
-						System.out.println("Master_Start_Barrier");
+						globalBarrierStartWaitSet.addAll(otherWorkerIds);
+						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
+						globalBarrierRequested = true;
 					}
 					break;
 
@@ -444,7 +498,23 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
 						}
 					}
-					break;
+					return true;
+
+					case Worker_Barrier_Started: {
+						System.out.println("Worker_Barrier_Started");
+						int srcWorker = message.getSrcMachine();
+						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
+						else logger.warn("Worker_Barrier_Started message from worker not waiting for: " + message);
+					}
+					return true;
+					case Worker_Barrier_Finished: {
+						System.out.println("Worker_Barrier_Finished");
+						int srcWorker = message.getSrcMachine();
+						if (globalBarrierFinishWaitSet.contains(srcWorker))
+							globalBarrierFinishWaitSet.remove(srcWorker);
+						else logger.warn("Worker_Barrier_Started message from worker not waiting for: " + message);
+					}
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
@@ -459,11 +529,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			}
 		}
 		catch (InterruptedException e) {
-			return;
+			return false;
 		}
 		catch (Exception e) {
 			logger.error("exception at incomingControlMessage", e);
 		}
+		return false;
 	}
 
 	/**
