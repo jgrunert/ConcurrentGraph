@@ -43,13 +43,15 @@ public class SSSPClusterMain {
 			// Warm up queries
 			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164)); // Very short ST-Echterdingen->ST-HBF
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164));
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 4304982, 7031164));
 			//			master.waitForAllQueriesFinish();
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 7031164, 4304982));
 			//			master.waitForAllQueriesFinish();
 
 			//			// Test sequence
-			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821)); // Medium PF->HB
-			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821)); // Medium PF->HB
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832)); // Short RT->ST
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624)); // Short ST-HBF->TU
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337)); // Very short Meersburg->Pfullendorf

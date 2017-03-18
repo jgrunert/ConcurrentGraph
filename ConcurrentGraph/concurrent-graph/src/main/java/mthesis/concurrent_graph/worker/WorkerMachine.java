@@ -55,7 +55,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -354,10 +354,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (msgBucket == null)
 			logger.error("WTF, no machine " + dstMachine);
 		msgBucket.addMessage(dstVertex, messageContent);
+		query.QueryLocal.Stats.MessagesSentUnicast++;
 		if (msgBucket.messages.size() > Configuration.VERTEX_MESSAGE_BUCKET_MAX_MESSAGES - 1) {
 			sendUnicastVertexMessageBucket(msgBucket, dstMachine, query, superstepNo);
 		}
-		query.QueryLocal.Stats.MessagesSentUnicast++;
 	}
 
 	private void sendUnicastVertexMessageBucket(VertexMessageBucket<M> msgBucket, int dstMachine, WorkerQuery<V, E, M, Q> query,
@@ -402,18 +402,18 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					case Master_Query_Next_Superstep: {
 						prepareNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: {
-						logger.warn("Master_Start_Barrier");
+						System.out.println("Master_Start_Barrier");
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -441,16 +441,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						else {
 							// Completely wrong superstep
 							logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-									+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
+							+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
 						}
 					}
-						break;
+					break;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -512,7 +512,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			if (activeQuery.VertexMovesWaitingFor.isEmpty()
 					|| activeQuery.VertexMovesReceived.size() == activeQuery.VertexMovesWaitingFor.size()) {
 				assert activeQuery.VertexMovesWaitingFor.isEmpty()
-						|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
+				|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
 				startNextSuperstep(activeQuery);
 			}
 		}
@@ -726,7 +726,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		else if (message.superstepNo != (barrierSuperstepNo + 1)) {
 			logger.error(
 					"VertexMessage from wrong barrier superstepNo: " + message.superstepNo + " should be " + (barrierSuperstepNo + 1)
-							+ " from " + message.srcMachine);
+					+ " from " + message.srcMachine);
 		}
 		else {
 			for (final Pair<Integer, M> msg : message.vertexMessages) {

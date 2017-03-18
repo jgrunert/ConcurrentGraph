@@ -19,6 +19,11 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
  */
 public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> {
 
+	//	private final Map<Integer, Integer> visits = new HashMap<>(4);
+	//	private static int firstVisits = 0;
+	//	private static int reVisits = 0;
+	//	private static int maxVisits = 0;
+
 	public SSSPVertex(int id,
 			VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> messageSender) {
 		super(id, messageSender);
@@ -33,6 +38,16 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 	@Override
 	protected void compute(int superstepNo, List<SSSPMessageWritable> messages,
 			WorkerQuery<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> query) {
+		//		int vis = MiscUtil.defaultInt(visits.get(query.QueryId));
+		//		visits.put(query.QueryId, vis + 1);
+		//		if (vis >= 1) {
+		//			if (vis > 1) reVisits++;
+		//			else firstVisits++;
+		//			maxVisits = Math.max(maxVisits, vis);
+		//			if (reVisits % 100000 == 1 || firstVisits % 100000 == 1)
+		//				System.out.println(reVisits + "/" + firstVisits + " " + vis + " " + maxVisits);
+		//		}
+
 		if (superstepNo == 0) {
 			if (ID != query.Query.From) {
 				voteVertexHalt(query.QueryId);
@@ -43,7 +58,8 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 				SSSPVertexWritable mutableValue = new SSSPVertexWritable(-1, 0, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
-					sendMessageToVertex(getPooledMessageValue().setup(ID, edge.Value.Value), edge.TargetVertexId, query);
+					sendMessageToVertex(getPooledMessageValue().setup(ID, edge.Value.Value), edge.TargetVertexId,
+							query);
 				}
 				voteVertexHalt(query.QueryId);
 				return;
@@ -106,7 +122,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 
 		// TODO Better, faster termination
 		if (ID == query.Query.To) {
-			//			System.out.println("Target dist " + minDist + " max " + query.QueryLocal.MaxDist);
+			System.out.println("Target dist " + minDist + " max " + query.QueryLocal.MaxDist);
 			query.QueryLocal.TargetFound = true;
 			query.QueryLocal.MaxDist = minDist;
 		}

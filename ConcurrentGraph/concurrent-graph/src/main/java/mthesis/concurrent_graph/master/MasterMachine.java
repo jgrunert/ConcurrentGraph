@@ -288,29 +288,28 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				// Check if all workers finished superstep
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
 					// Correct/wrong message count should match unicast+broadcast message count, otherwise there might be communication errors.
-					long msgsReceivedWrong = msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex;
-					long msgsReceivedCorrect = msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedCorrectVertex;
-					long msgsSentBroadcast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast;
-					long msgsSentUnicast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentUnicast;
-					long msgsExpectedWrongBroadcast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
-							/ (workerIds.size() - 1) * (workerIds.size() - 2);
-					long msgsExpectedCorrectBroadcast = msgsSentBroadcast - msgsExpectedWrongBroadcast;
-					long msgsExpectedCorrect = msgsSentUnicast + msgsExpectedCorrectBroadcast;
-					if (workerIds.size() > 1 && msgsReceivedWrong != msgsExpectedWrongBroadcast) {
-						// TODO Investigate why happening
-						logger.warn(msgActiveQuery.BaseQuery.QueryId + ":" + msgActiveQuery.SuperstepNo + " " +
-								String.format(
-										"Unexpected wrong vertex message count is %d but should be %d. Does not match broadcast message count %d. Possible communication errors.",
-										msgsReceivedWrong, msgsExpectedWrongBroadcast, msgsSentBroadcast));
-					}
-					if (workerIds.size() > 1 && msgsReceivedCorrect != msgsExpectedCorrect) {
-						// TODO Investigate why happening
-						logger.warn(msgActiveQuery.BaseQuery.QueryId + ":" + msgActiveQuery.SuperstepNo + " " +
-								String.format(
-										"Unexpected correct vertex message count is %d but should be %d (%d+%d). Possible communication errors.",
-										msgsReceivedCorrect, msgsExpectedCorrect,
-										msgsSentUnicast, msgsExpectedCorrectBroadcast));
-					}
+					// TODO Investigate why metrics are wrong. Results are correct but metrics falsely indicate errors
+					//					long msgsReceivedWrong = msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedWrongVertex;
+					//					long msgsReceivedCorrect = msgActiveQuery.QueryStepAggregator.Stats.MessagesReceivedCorrectVertex;
+					//					long msgsSentBroadcast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast;
+					//					long msgsSentUnicast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentUnicast;
+					//					long msgsExpectedWrongBroadcast = msgActiveQuery.QueryStepAggregator.Stats.MessagesSentBroadcast
+					//							/ (workerIds.size() - 1) * (workerIds.size() - 2);
+					//					long msgsExpectedCorrectBroadcast = msgsSentBroadcast - msgsExpectedWrongBroadcast;
+					//					long msgsExpectedCorrect = msgsSentUnicast + msgsExpectedCorrectBroadcast;
+					//					if (workerIds.size() > 1 && msgsReceivedWrong != msgsExpectedWrongBroadcast) {
+					//						logger.warn(msgActiveQuery.BaseQuery.QueryId + ":" + msgActiveQuery.SuperstepNo + " " +
+					//								String.format(
+					//										"Unexpected wrong vertex message count is %d but should be %d. Does not match broadcast message count %d. Possible communication errors.",
+					//										msgsReceivedWrong, msgsExpectedWrongBroadcast, msgsSentBroadcast));
+					//					}
+					//					if (workerIds.size() > 1 && msgsReceivedCorrect != msgsExpectedCorrect) {
+					//						logger.warn(msgActiveQuery.BaseQuery.QueryId + ":" + msgActiveQuery.SuperstepNo + " " +
+					//								String.format(
+					//										"Unexpected correct vertex message count is %d but should be %d (%d+%d). Possible communication errors.",
+					//										msgsReceivedCorrect, msgsExpectedCorrect,
+					//										msgsSentUnicast, msgsExpectedCorrectBroadcast));
+					//					}
 
 					// Log query superstep stats
 					if (enableQueryStats) {
@@ -664,20 +663,20 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					int workerId = sortedWorkers.get(i);
 					double workerVaDiff = workerActVertAvg > 0
 							? (double) (workersActiveVerts.get(workerId) - workerActVertAvg) / workerActVertAvg
-							: 0;
-					// Only move vertices from workers with active, query-exclusive vertices and enough active vertices
-					if (queriesWorkerActiveVerts.get(workerId) > 0 && queriesWorkerIntersectsSum.get(workerId) == 0 &&
-							workerVaDiff > -tolerableAvVariance) {
-						// TODO Modify queriesWorkerActiveVerts according to movement
-						anyMoves = true;
-						workerVertSendMsgs.get(workerId).add(
-								Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
+									: 0;
+							// Only move vertices from workers with active, query-exclusive vertices and enough active vertices
+							if (queriesWorkerActiveVerts.get(workerId) > 0 && queriesWorkerIntersectsSum.get(workerId) == 0 &&
+									workerVaDiff > -tolerableAvVariance) {
+								// TODO Modify queriesWorkerActiveVerts according to movement
+								anyMoves = true;
+								workerVertSendMsgs.get(workerId).add(
+										Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
 										.setMoveToMachine(receivingWorker).setMaxMoveCount(Integer.MAX_VALUE)
 										.build());
-						workerVertRecvMsgs.get(receivingWorker).add(
-								Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
+								workerVertRecvMsgs.get(receivingWorker).add(
+										Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
 										.setReceiveFromMachine(workerId).build());
-					}
+							}
 				}
 			}
 
