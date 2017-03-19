@@ -31,9 +31,12 @@ public class Configuration {
 
 	/**
 	 * Enables moving of vertices while queries are running, without barrier.
-	 * TODO Broken
+	 * TODO Broken/NotImplemented
 	 */
 	public static final boolean VERTEX_LIVE_MOVE_ENABLED;
+
+	public static final boolean VERTEX_BARRIER_MOVE_ENABLED;
+	public static final long VERTEX_BARRIER_MOVE_INTERVAL;
 
 	/**
 	 * When enabled, machines will discover and store mappings VertexId->Machine.
@@ -78,6 +81,8 @@ public class Configuration {
 			CONNECT_TIMEOUT = Integer.parseInt(Properties.getProperty("CONNECT_TIMEOUT"));
 			MESSAGE_TIMEOUT = Integer.parseInt(Properties.getProperty("MESSAGE_TIMEOUT"));
 			VERTEX_LIVE_MOVE_ENABLED = Boolean.parseBoolean(Properties.getProperty("VERTEX_LIVE_MOVE_ENABLED"));
+			VERTEX_BARRIER_MOVE_ENABLED = Boolean.parseBoolean(Properties.getProperty("VERTEX_BARRIER_MOVE_ENABLED"));
+			VERTEX_BARRIER_MOVE_INTERVAL = Long.parseLong(Properties.getProperty("VERTEX_BARRIER_MOVE_INTERVAL"));
 			VERTEX_MACHINE_DISCOVERY = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY"));
 			VERTEX_MACHINE_DISCOVERY_INCOMING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY_INCOMING"));
 			LOG_LEVEL_Main = Level.valueOf(Properties.getProperty("LOG_LEVEL_Main")).levelInt;

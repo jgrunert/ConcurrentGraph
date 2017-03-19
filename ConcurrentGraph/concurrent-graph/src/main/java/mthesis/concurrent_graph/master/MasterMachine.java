@@ -73,11 +73,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private final MasterOutputEvaluator<Q> outputCombiner;
 	private final BaseQueryGlobalValuesFactory<Q> queryValueFactory;
 
-
-	// TODO Configuration
-	private boolean vertexBarrierMoveEnabled = true;
 	private long vertexBarrierMoveLastTime = 0;
-	private long vertexBarrierMoveInterval = 10000;
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
@@ -623,7 +619,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		}
 		workerActVertAvg /= workersActiveVerts.size();
 
-		if (vertexBarrierMoveEnabled && (System.currentTimeMillis() - vertexBarrierMoveLastTime) > vertexBarrierMoveInterval) {
+		if (Configuration.VERTEX_BARRIER_MOVE_ENABLED && (System.currentTimeMillis()
+				- vertexBarrierMoveLastTime) > Configuration.VERTEX_BARRIER_MOVE_INTERVAL) {
 			boolean anyMoves = false;
 			Map<Integer, List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage>> workerVertSendMsgs = new HashMap<>();
 			Map<Integer, List<Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage>> workerVertRecvMsgs = new HashMap<>();

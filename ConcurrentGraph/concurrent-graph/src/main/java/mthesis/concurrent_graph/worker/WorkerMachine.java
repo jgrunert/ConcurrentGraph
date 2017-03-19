@@ -29,6 +29,8 @@ import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.GetToKnowMessage;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
@@ -99,7 +101,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>();
 	// Global barrier commands to perform while barrier
 	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
-	private List<Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> globalBarrierRecvVerts;
+	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
 
 
 
@@ -169,7 +171,17 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					}
 					long barrierStartWaitTime = System.nanoTime() - startTime;
 
-					// TODO Barrier tasks
+					// Barrier tasks
+					// TODO Send vertices
+					for (SendQueryVerticesMessage sendVert : globalBarrierSendVerts) {
+						sendQueryVerticesToMove(activeQueries.get(sendVert.getQueryId()), sendVert.getMoveToMachine(),
+								sendVert.getMaxMoveCount());
+					}
+					// Receive vertices
+					while (!globalBarrierRecvVerts.isEmpty()) {
+						//Thread.sleep(1);  // TODO sleep?
+						handleReceivedMessages();
+					}
 
 					// Start barrier, notify other workers
 					logger.debug("Barrier tasks done, waiting for other workers to finish");
@@ -183,7 +195,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					long barrierFinishWaitTime = System.nanoTime() - startTime;
 
 					logger.debug("Barrier finished");
-					System.out.println(
+					// TODO Remove sysout, barrier times as worker stats
+					System.out.println(ownId + " " +
 							(double) barrierStartWaitTime / 1000000 + " " + (double) barrierFinishWaitTime / 1000000);
 					globalBarrierRequested = false;
 				}
@@ -465,6 +478,13 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					case Master_Start_Barrier: {
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
 						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
+						globalBarrierSendVerts = message.getStartBarrier().getSendQueryVerticesList();
+						List<ReceiveQueryVerticesMessage> recvVerts = message.getStartBarrier().getReceiveQueryVerticesList();
+						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
+						for(ReceiveQueryVerticesMessage rvMsg : recvVerts) {
+							globalBarrierRecvVerts
+							.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
+						}
 						globalBarrierRequested = true;
 					}
 					break;
@@ -564,17 +584,21 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		{
 			// Handle vertex moving if master tells us to do so
 			if (message.hasSendQueryVertices()) {
-				// Send query vertices to other worker
-				int sendTo = message.getSendQueryVertices().getSendToMachine();
-				sendQueryVerticesToMove(activeQuery, sendTo);
+				// TODO Live move will not work anymore
+				throw new RuntimeException("LiveMove not implemented");
+				//				// Send query vertices to other worker
+				//				int sendTo = message.getSendQueryVertices().getSendToMachine();
+				//				sendQueryVerticesToMove(activeQuery, sendTo);
 			}
 			else if (message.hasReceiveQueryVertices()) {
-				List<Integer> recvFrom = message.getReceiveQueryVertices().getRecvFromMachineList();
-				if (!recvFrom.isEmpty()) {
-					// Wait for receiving vertices from other worker
-					assert activeQuery.VertexMovesWaitingFor.isEmpty();
-					activeQuery.VertexMovesWaitingFor.addAll(recvFrom);
-				}
+				// TODO Live move will not work anymore
+				throw new RuntimeException("LiveMove not implemented");
+				//				List<Integer> recvFrom = message.getReceiveQueryVertices().getRecvFromMachineList();
+				//				if (!recvFrom.isEmpty()) {
+				//					// Wait for receiving vertices from other worker
+				//					assert activeQuery.VertexMovesWaitingFor.isEmpty();
+				//					activeQuery.VertexMovesWaitingFor.addAll(recvFrom);
+				//				}
 			}
 
 			// Start next superstep if waiting for no vertices to move
@@ -610,7 +634,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	 * Sends all active vertices of a query if they are only active at this query.
 	 * Used for incremental vertex migration.
 	 */
-	private void sendQueryVerticesToMove(WorkerQuery<V, E, M, Q> query, int sendToWorker) {
+	private void sendQueryVerticesToMove(WorkerQuery<V, E, M, Q> query, int sendToWorker, int maxVertices) {
 		long startTime = System.nanoTime();
 		int verticesSent = 0;
 		int queryId = query.QueryId;
@@ -872,13 +896,17 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			assert !activeQuery.VertexMovesReceived.contains(message.srcMachine);
 			activeQuery.VertexMovesReceived.add(message.srcMachine);
 
-			// Start superstep if already received master start next superstep and all vertices received
-			if (activeQuery.VertexMovesReceived.size() >= activeQuery.VertexMovesWaitingFor.size() &&
-					activeQuery.getPreparedSuperstepNo() == (activeQuery.getCalculatedSuperstepNo() + 1)) {
-				// All vertex moves received - start superstep
-				assert activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
-				startNextSuperstep(activeQuery);
-			}
+			// Remove from globalBarrierRecvVerts if received all vertices
+			globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine));
+
+			// TODO Live vertex move will not work anymore
+			//			// Start superstep if already received master start next superstep and all vertices received
+			//			if (activeQuery.VertexMovesReceived.size() >= activeQuery.VertexMovesWaitingFor.size() &&
+			//					activeQuery.getPreparedSuperstepNo() == (activeQuery.getCalculatedSuperstepNo() + 1)) {
+			//				// All vertex moves received - start superstep
+			//				assert activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
+			//				startNextSuperstep(activeQuery);
+			//			}
 		}
 
 		activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.MoveRecvVerticsKey, message.vertices.size());

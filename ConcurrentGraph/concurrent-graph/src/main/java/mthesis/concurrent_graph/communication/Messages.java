@@ -5228,10 +5228,27 @@ public final class Messages {
 
         /**
          * <pre>
+         * Query to send vertices for
+         * </pre>
+         *
+         * <code>optional int32 QueryId = 1;</code>
+         */
+        boolean hasQueryId();
+        /**
+         * <pre>
+         * Query to send vertices for
+         * </pre>
+         *
+         * <code>optional int32 QueryId = 1;</code>
+         */
+        int getQueryId();
+
+        /**
+         * <pre>
          * Target machine to send vertices to
          * </pre>
          *
-         * <code>optional int32 MoveToMachine = 1;</code>
+         * <code>optional int32 MoveToMachine = 2;</code>
          */
         boolean hasMoveToMachine();
         /**
@@ -5239,7 +5256,7 @@ public final class Messages {
          * Target machine to send vertices to
          * </pre>
          *
-         * <code>optional int32 MoveToMachine = 1;</code>
+         * <code>optional int32 MoveToMachine = 2;</code>
          */
         int getMoveToMachine();
 
@@ -5248,7 +5265,7 @@ public final class Messages {
          * Max. number of vertices to move
          * </pre>
          *
-         * <code>optional int32 MaxMoveCount = 2;</code>
+         * <code>optional int32 MaxMoveCount = 3;</code>
          */
         boolean hasMaxMoveCount();
         /**
@@ -5256,7 +5273,7 @@ public final class Messages {
          * Max. number of vertices to move
          * </pre>
          *
-         * <code>optional int32 MaxMoveCount = 2;</code>
+         * <code>optional int32 MaxMoveCount = 3;</code>
          */
         int getMaxMoveCount();
       }
@@ -5276,6 +5293,7 @@ public final class Messages {
           super(builder);
         }
         private SendQueryVerticesMessage() {
+          queryId_ = 0;
           moveToMachine_ = 0;
           maxMoveCount_ = 0;
         }
@@ -5310,11 +5328,16 @@ public final class Messages {
                 }
                 case 8: {
                   bitField0_ |= 0x00000001;
-                  moveToMachine_ = input.readInt32();
+                  queryId_ = input.readInt32();
                   break;
                 }
                 case 16: {
                   bitField0_ |= 0x00000002;
+                  moveToMachine_ = input.readInt32();
+                  break;
+                }
+                case 24: {
+                  bitField0_ |= 0x00000004;
                   maxMoveCount_ = input.readInt32();
                   break;
                 }
@@ -5343,47 +5366,70 @@ public final class Messages {
         }
 
         private int bitField0_;
-        public static final int MOVETOMACHINE_FIELD_NUMBER = 1;
+        public static final int QUERYID_FIELD_NUMBER = 1;
+        private int queryId_;
+        /**
+         * <pre>
+         * Query to send vertices for
+         * </pre>
+         *
+         * <code>optional int32 QueryId = 1;</code>
+         */
+        public boolean hasQueryId() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <pre>
+         * Query to send vertices for
+         * </pre>
+         *
+         * <code>optional int32 QueryId = 1;</code>
+         */
+        public int getQueryId() {
+          return queryId_;
+        }
+
+        public static final int MOVETOMACHINE_FIELD_NUMBER = 2;
         private int moveToMachine_;
         /**
          * <pre>
          * Target machine to send vertices to
          * </pre>
          *
-         * <code>optional int32 MoveToMachine = 1;</code>
+         * <code>optional int32 MoveToMachine = 2;</code>
          */
         public boolean hasMoveToMachine() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
+          return ((bitField0_ & 0x00000002) == 0x00000002);
         }
         /**
          * <pre>
          * Target machine to send vertices to
          * </pre>
          *
-         * <code>optional int32 MoveToMachine = 1;</code>
+         * <code>optional int32 MoveToMachine = 2;</code>
          */
         public int getMoveToMachine() {
           return moveToMachine_;
         }
 
-        public static final int MAXMOVECOUNT_FIELD_NUMBER = 2;
+        public static final int MAXMOVECOUNT_FIELD_NUMBER = 3;
         private int maxMoveCount_;
         /**
          * <pre>
          * Max. number of vertices to move
          * </pre>
          *
-         * <code>optional int32 MaxMoveCount = 2;</code>
+         * <code>optional int32 MaxMoveCount = 3;</code>
          */
         public boolean hasMaxMoveCount() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
+          return ((bitField0_ & 0x00000004) == 0x00000004);
         }
         /**
          * <pre>
          * Max. number of vertices to move
          * </pre>
          *
-         * <code>optional int32 MaxMoveCount = 2;</code>
+         * <code>optional int32 MaxMoveCount = 3;</code>
          */
         public int getMaxMoveCount() {
           return maxMoveCount_;
@@ -5402,10 +5448,13 @@ public final class Messages {
         public void writeTo(com.google.protobuf.CodedOutputStream output)
                             throws java.io.IOException {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            output.writeInt32(1, moveToMachine_);
+            output.writeInt32(1, queryId_);
           }
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
-            output.writeInt32(2, maxMoveCount_);
+            output.writeInt32(2, moveToMachine_);
+          }
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            output.writeInt32(3, maxMoveCount_);
           }
           unknownFields.writeTo(output);
         }
@@ -5417,11 +5466,15 @@ public final class Messages {
           size = 0;
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
             size += com.google.protobuf.CodedOutputStream
-              .computeInt32Size(1, moveToMachine_);
+              .computeInt32Size(1, queryId_);
           }
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
             size += com.google.protobuf.CodedOutputStream
-              .computeInt32Size(2, maxMoveCount_);
+              .computeInt32Size(2, moveToMachine_);
+          }
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeInt32Size(3, maxMoveCount_);
           }
           size += unknownFields.getSerializedSize();
           memoizedSize = size;
@@ -5440,6 +5493,11 @@ public final class Messages {
           mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage) obj;
 
           boolean result = true;
+          result = result && (hasQueryId() == other.hasQueryId());
+          if (hasQueryId()) {
+            result = result && (getQueryId()
+                == other.getQueryId());
+          }
           result = result && (hasMoveToMachine() == other.hasMoveToMachine());
           if (hasMoveToMachine()) {
             result = result && (getMoveToMachine()
@@ -5461,6 +5519,10 @@ public final class Messages {
           }
           int hash = 41;
           hash = (19 * hash) + getDescriptorForType().hashCode();
+          if (hasQueryId()) {
+            hash = (37 * hash) + QUERYID_FIELD_NUMBER;
+            hash = (53 * hash) + getQueryId();
+          }
           if (hasMoveToMachine()) {
             hash = (37 * hash) + MOVETOMACHINE_FIELD_NUMBER;
             hash = (53 * hash) + getMoveToMachine();
@@ -5591,10 +5653,12 @@ public final class Messages {
           }
           public Builder clear() {
             super.clear();
-            moveToMachine_ = 0;
+            queryId_ = 0;
             bitField0_ = (bitField0_ & ~0x00000001);
-            maxMoveCount_ = 0;
+            moveToMachine_ = 0;
             bitField0_ = (bitField0_ & ~0x00000002);
+            maxMoveCount_ = 0;
+            bitField0_ = (bitField0_ & ~0x00000004);
             return this;
           }
 
@@ -5622,9 +5686,13 @@ public final class Messages {
             if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
               to_bitField0_ |= 0x00000001;
             }
-            result.moveToMachine_ = moveToMachine_;
+            result.queryId_ = queryId_;
             if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
               to_bitField0_ |= 0x00000002;
+            }
+            result.moveToMachine_ = moveToMachine_;
+            if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+              to_bitField0_ |= 0x00000004;
             }
             result.maxMoveCount_ = maxMoveCount_;
             result.bitField0_ = to_bitField0_;
@@ -5669,6 +5737,9 @@ public final class Messages {
 
           public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage other) {
             if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.getDefaultInstance()) return this;
+            if (other.hasQueryId()) {
+              setQueryId(other.getQueryId());
+            }
             if (other.hasMoveToMachine()) {
               setMoveToMachine(other.getMoveToMachine());
             }
@@ -5703,23 +5774,71 @@ public final class Messages {
           }
           private int bitField0_;
 
+          private int queryId_ ;
+          /**
+           * <pre>
+           * Query to send vertices for
+           * </pre>
+           *
+           * <code>optional int32 QueryId = 1;</code>
+           */
+          public boolean hasQueryId() {
+            return ((bitField0_ & 0x00000001) == 0x00000001);
+          }
+          /**
+           * <pre>
+           * Query to send vertices for
+           * </pre>
+           *
+           * <code>optional int32 QueryId = 1;</code>
+           */
+          public int getQueryId() {
+            return queryId_;
+          }
+          /**
+           * <pre>
+           * Query to send vertices for
+           * </pre>
+           *
+           * <code>optional int32 QueryId = 1;</code>
+           */
+          public Builder setQueryId(int value) {
+            bitField0_ |= 0x00000001;
+            queryId_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <pre>
+           * Query to send vertices for
+           * </pre>
+           *
+           * <code>optional int32 QueryId = 1;</code>
+           */
+          public Builder clearQueryId() {
+            bitField0_ = (bitField0_ & ~0x00000001);
+            queryId_ = 0;
+            onChanged();
+            return this;
+          }
+
           private int moveToMachine_ ;
           /**
            * <pre>
            * Target machine to send vertices to
            * </pre>
            *
-           * <code>optional int32 MoveToMachine = 1;</code>
+           * <code>optional int32 MoveToMachine = 2;</code>
            */
           public boolean hasMoveToMachine() {
-            return ((bitField0_ & 0x00000001) == 0x00000001);
+            return ((bitField0_ & 0x00000002) == 0x00000002);
           }
           /**
            * <pre>
            * Target machine to send vertices to
            * </pre>
            *
-           * <code>optional int32 MoveToMachine = 1;</code>
+           * <code>optional int32 MoveToMachine = 2;</code>
            */
           public int getMoveToMachine() {
             return moveToMachine_;
@@ -5729,10 +5848,10 @@ public final class Messages {
            * Target machine to send vertices to
            * </pre>
            *
-           * <code>optional int32 MoveToMachine = 1;</code>
+           * <code>optional int32 MoveToMachine = 2;</code>
            */
           public Builder setMoveToMachine(int value) {
-            bitField0_ |= 0x00000001;
+            bitField0_ |= 0x00000002;
             moveToMachine_ = value;
             onChanged();
             return this;
@@ -5742,10 +5861,10 @@ public final class Messages {
            * Target machine to send vertices to
            * </pre>
            *
-           * <code>optional int32 MoveToMachine = 1;</code>
+           * <code>optional int32 MoveToMachine = 2;</code>
            */
           public Builder clearMoveToMachine() {
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
             moveToMachine_ = 0;
             onChanged();
             return this;
@@ -5757,17 +5876,17 @@ public final class Messages {
            * Max. number of vertices to move
            * </pre>
            *
-           * <code>optional int32 MaxMoveCount = 2;</code>
+           * <code>optional int32 MaxMoveCount = 3;</code>
            */
           public boolean hasMaxMoveCount() {
-            return ((bitField0_ & 0x00000002) == 0x00000002);
+            return ((bitField0_ & 0x00000004) == 0x00000004);
           }
           /**
            * <pre>
            * Max. number of vertices to move
            * </pre>
            *
-           * <code>optional int32 MaxMoveCount = 2;</code>
+           * <code>optional int32 MaxMoveCount = 3;</code>
            */
           public int getMaxMoveCount() {
             return maxMoveCount_;
@@ -5777,10 +5896,10 @@ public final class Messages {
            * Max. number of vertices to move
            * </pre>
            *
-           * <code>optional int32 MaxMoveCount = 2;</code>
+           * <code>optional int32 MaxMoveCount = 3;</code>
            */
           public Builder setMaxMoveCount(int value) {
-            bitField0_ |= 0x00000002;
+            bitField0_ |= 0x00000004;
             maxMoveCount_ = value;
             onChanged();
             return this;
@@ -5790,10 +5909,10 @@ public final class Messages {
            * Max. number of vertices to move
            * </pre>
            *
-           * <code>optional int32 MaxMoveCount = 2;</code>
+           * <code>optional int32 MaxMoveCount = 3;</code>
            */
           public Builder clearMaxMoveCount() {
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
             maxMoveCount_ = 0;
             onChanged();
             return this;
@@ -5853,10 +5972,27 @@ public final class Messages {
 
         /**
          * <pre>
+         * Query to receive vertices for
+         * </pre>
+         *
+         * <code>optional int32 QueryId = 1;</code>
+         */
+        boolean hasQueryId();
+        /**
+         * <pre>
+         * Query to receive vertices for
+         * </pre>
+         *
+         * <code>optional int32 QueryId = 1;</code>
+         */
+        int getQueryId();
+
+        /**
+         * <pre>
          * Machine to receive vertices from
          * </pre>
          *
-         * <code>optional int32 ReceiveFromMachine = 1;</code>
+         * <code>optional int32 ReceiveFromMachine = 2;</code>
          */
         boolean hasReceiveFromMachine();
         /**
@@ -5864,7 +6000,7 @@ public final class Messages {
          * Machine to receive vertices from
          * </pre>
          *
-         * <code>optional int32 ReceiveFromMachine = 1;</code>
+         * <code>optional int32 ReceiveFromMachine = 2;</code>
          */
         int getReceiveFromMachine();
       }
@@ -5884,6 +6020,7 @@ public final class Messages {
           super(builder);
         }
         private ReceiveQueryVerticesMessage() {
+          queryId_ = 0;
           receiveFromMachine_ = 0;
         }
 
@@ -5917,6 +6054,11 @@ public final class Messages {
                 }
                 case 8: {
                   bitField0_ |= 0x00000001;
+                  queryId_ = input.readInt32();
+                  break;
+                }
+                case 16: {
+                  bitField0_ |= 0x00000002;
                   receiveFromMachine_ = input.readInt32();
                   break;
                 }
@@ -5945,24 +6087,47 @@ public final class Messages {
         }
 
         private int bitField0_;
-        public static final int RECEIVEFROMMACHINE_FIELD_NUMBER = 1;
+        public static final int QUERYID_FIELD_NUMBER = 1;
+        private int queryId_;
+        /**
+         * <pre>
+         * Query to receive vertices for
+         * </pre>
+         *
+         * <code>optional int32 QueryId = 1;</code>
+         */
+        public boolean hasQueryId() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <pre>
+         * Query to receive vertices for
+         * </pre>
+         *
+         * <code>optional int32 QueryId = 1;</code>
+         */
+        public int getQueryId() {
+          return queryId_;
+        }
+
+        public static final int RECEIVEFROMMACHINE_FIELD_NUMBER = 2;
         private int receiveFromMachine_;
         /**
          * <pre>
          * Machine to receive vertices from
          * </pre>
          *
-         * <code>optional int32 ReceiveFromMachine = 1;</code>
+         * <code>optional int32 ReceiveFromMachine = 2;</code>
          */
         public boolean hasReceiveFromMachine() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
+          return ((bitField0_ & 0x00000002) == 0x00000002);
         }
         /**
          * <pre>
          * Machine to receive vertices from
          * </pre>
          *
-         * <code>optional int32 ReceiveFromMachine = 1;</code>
+         * <code>optional int32 ReceiveFromMachine = 2;</code>
          */
         public int getReceiveFromMachine() {
           return receiveFromMachine_;
@@ -5981,7 +6146,10 @@ public final class Messages {
         public void writeTo(com.google.protobuf.CodedOutputStream output)
                             throws java.io.IOException {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            output.writeInt32(1, receiveFromMachine_);
+            output.writeInt32(1, queryId_);
+          }
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            output.writeInt32(2, receiveFromMachine_);
           }
           unknownFields.writeTo(output);
         }
@@ -5993,7 +6161,11 @@ public final class Messages {
           size = 0;
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
             size += com.google.protobuf.CodedOutputStream
-              .computeInt32Size(1, receiveFromMachine_);
+              .computeInt32Size(1, queryId_);
+          }
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeInt32Size(2, receiveFromMachine_);
           }
           size += unknownFields.getSerializedSize();
           memoizedSize = size;
@@ -6012,6 +6184,11 @@ public final class Messages {
           mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage) obj;
 
           boolean result = true;
+          result = result && (hasQueryId() == other.hasQueryId());
+          if (hasQueryId()) {
+            result = result && (getQueryId()
+                == other.getQueryId());
+          }
           result = result && (hasReceiveFromMachine() == other.hasReceiveFromMachine());
           if (hasReceiveFromMachine()) {
             result = result && (getReceiveFromMachine()
@@ -6028,6 +6205,10 @@ public final class Messages {
           }
           int hash = 41;
           hash = (19 * hash) + getDescriptorForType().hashCode();
+          if (hasQueryId()) {
+            hash = (37 * hash) + QUERYID_FIELD_NUMBER;
+            hash = (53 * hash) + getQueryId();
+          }
           if (hasReceiveFromMachine()) {
             hash = (37 * hash) + RECEIVEFROMMACHINE_FIELD_NUMBER;
             hash = (53 * hash) + getReceiveFromMachine();
@@ -6154,8 +6335,10 @@ public final class Messages {
           }
           public Builder clear() {
             super.clear();
-            receiveFromMachine_ = 0;
+            queryId_ = 0;
             bitField0_ = (bitField0_ & ~0x00000001);
+            receiveFromMachine_ = 0;
+            bitField0_ = (bitField0_ & ~0x00000002);
             return this;
           }
 
@@ -6182,6 +6365,10 @@ public final class Messages {
             int to_bitField0_ = 0;
             if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
               to_bitField0_ |= 0x00000001;
+            }
+            result.queryId_ = queryId_;
+            if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+              to_bitField0_ |= 0x00000002;
             }
             result.receiveFromMachine_ = receiveFromMachine_;
             result.bitField0_ = to_bitField0_;
@@ -6226,6 +6413,9 @@ public final class Messages {
 
           public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage other) {
             if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.getDefaultInstance()) return this;
+            if (other.hasQueryId()) {
+              setQueryId(other.getQueryId());
+            }
             if (other.hasReceiveFromMachine()) {
               setReceiveFromMachine(other.getReceiveFromMachine());
             }
@@ -6257,23 +6447,71 @@ public final class Messages {
           }
           private int bitField0_;
 
+          private int queryId_ ;
+          /**
+           * <pre>
+           * Query to receive vertices for
+           * </pre>
+           *
+           * <code>optional int32 QueryId = 1;</code>
+           */
+          public boolean hasQueryId() {
+            return ((bitField0_ & 0x00000001) == 0x00000001);
+          }
+          /**
+           * <pre>
+           * Query to receive vertices for
+           * </pre>
+           *
+           * <code>optional int32 QueryId = 1;</code>
+           */
+          public int getQueryId() {
+            return queryId_;
+          }
+          /**
+           * <pre>
+           * Query to receive vertices for
+           * </pre>
+           *
+           * <code>optional int32 QueryId = 1;</code>
+           */
+          public Builder setQueryId(int value) {
+            bitField0_ |= 0x00000001;
+            queryId_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <pre>
+           * Query to receive vertices for
+           * </pre>
+           *
+           * <code>optional int32 QueryId = 1;</code>
+           */
+          public Builder clearQueryId() {
+            bitField0_ = (bitField0_ & ~0x00000001);
+            queryId_ = 0;
+            onChanged();
+            return this;
+          }
+
           private int receiveFromMachine_ ;
           /**
            * <pre>
            * Machine to receive vertices from
            * </pre>
            *
-           * <code>optional int32 ReceiveFromMachine = 1;</code>
+           * <code>optional int32 ReceiveFromMachine = 2;</code>
            */
           public boolean hasReceiveFromMachine() {
-            return ((bitField0_ & 0x00000001) == 0x00000001);
+            return ((bitField0_ & 0x00000002) == 0x00000002);
           }
           /**
            * <pre>
            * Machine to receive vertices from
            * </pre>
            *
-           * <code>optional int32 ReceiveFromMachine = 1;</code>
+           * <code>optional int32 ReceiveFromMachine = 2;</code>
            */
           public int getReceiveFromMachine() {
             return receiveFromMachine_;
@@ -6283,10 +6521,10 @@ public final class Messages {
            * Machine to receive vertices from
            * </pre>
            *
-           * <code>optional int32 ReceiveFromMachine = 1;</code>
+           * <code>optional int32 ReceiveFromMachine = 2;</code>
            */
           public Builder setReceiveFromMachine(int value) {
-            bitField0_ |= 0x00000001;
+            bitField0_ |= 0x00000002;
             receiveFromMachine_ = value;
             onChanged();
             return this;
@@ -6296,10 +6534,10 @@ public final class Messages {
            * Machine to receive vertices from
            * </pre>
            *
-           * <code>optional int32 ReceiveFromMachine = 1;</code>
+           * <code>optional int32 ReceiveFromMachine = 2;</code>
            */
           public Builder clearReceiveFromMachine() {
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
             receiveFromMachine_ = 0;
             onChanged();
             return this;
@@ -9207,7 +9445,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\373\020\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\235\021\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022g\n\013" +
@@ -9250,7 +9488,7 @@ public final class Messages {
       "tionsEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\005:\002" +
       "8\001\0321\n\030SendQueryVerticesMessage\022\025\n\rSendTo" +
       "Machine\030\001 \001(\005\0326\n\033ReceiveQueryVerticesMes" +
-      "sage\022\027\n\017RecvFromMachine\030\001 \003(\005\032\263\003\n\023StartB" +
+      "sage\022\027\n\017RecvFromMachine\030\001 \003(\005\032\325\003\n\023StartB" +
       "arrierMessage\022\207\001\n\021SendQueryVertices\030\001 \003(" +
       "\0132l.mthesis.concurrent_graph.communicati",
       "on.messages.ControlMessage.StartBarrierM" +
@@ -9258,21 +9496,22 @@ public final class Messages {
       "iveQueryVertices\030\002 \003(\0132o.mthesis.concurr" +
       "ent_graph.communication.messages.Control" +
       "Message.StartBarrierMessage.ReceiveQuery" +
-      "VerticesMessage\032G\n\030SendQueryVerticesMess" +
-      "age\022\025\n\rMoveToMachine\030\001 \001(\005\022\024\n\014MaxMoveCou" +
-      "nt\030\002 \001(\005\0329\n\033ReceiveQueryVerticesMessage\022" +
-      "\032\n\022ReceiveFromMachine\030\001 \001(\005*\201\003\n\022ControlM" +
-      "essageType\022\025\n\021Channel_Handshake\020\001\022\026\n\022Wor",
-      "ker_Initialized\020\002\022\"\n\036Worker_Query_Supers" +
-      "tep_Barrier\020\003\022#\n\037Worker_Query_Superstep_" +
-      "Finished\020\004\022\031\n\025Worker_Query_Finished\020\005\022\032\n" +
-      "\026Worker_Barrier_Started\020\014\022\033\n\027Worker_Barr" +
-      "ier_Finished\020\r\022\034\n\030Master_Worker_Initiali" +
-      "ze\020\006\022\026\n\022Master_Query_Start\020\007\022\037\n\033Master_Q" +
-      "uery_Next_Superstep\020\010\022\031\n\025Master_Query_Fi" +
-      "nished\020\t\022\023\n\017Master_Shutdown\020\n\022\030\n\024Master_" +
-      "Start_Barrier\020\013B2\n&mthesis.concurrent_gr" +
-      "aph.communicationB\010Messages"
+      "VerticesMessage\032X\n\030SendQueryVerticesMess" +
+      "age\022\017\n\007QueryId\030\001 \001(\005\022\025\n\rMoveToMachine\030\002 " +
+      "\001(\005\022\024\n\014MaxMoveCount\030\003 \001(\005\032J\n\033ReceiveQuer" +
+      "yVerticesMessage\022\017\n\007QueryId\030\001 \001(\005\022\032\n\022Rec" +
+      "eiveFromMachine\030\002 \001(\005*\201\003\n\022ControlMessage",
+      "Type\022\025\n\021Channel_Handshake\020\001\022\026\n\022Worker_In" +
+      "itialized\020\002\022\"\n\036Worker_Query_Superstep_Ba" +
+      "rrier\020\003\022#\n\037Worker_Query_Superstep_Finish" +
+      "ed\020\004\022\031\n\025Worker_Query_Finished\020\005\022\032\n\026Worke" +
+      "r_Barrier_Started\020\014\022\033\n\027Worker_Barrier_Fi" +
+      "nished\020\r\022\034\n\030Master_Worker_Initialize\020\006\022\026" +
+      "\n\022Master_Query_Start\020\007\022\037\n\033Master_Query_N" +
+      "ext_Superstep\020\010\022\031\n\025Master_Query_Finished" +
+      "\020\t\022\023\n\017Master_Shutdown\020\n\022\030\n\024Master_Start_" +
+      "Barrier\020\013B2\n&mthesis.concurrent_graph.co",
+      "mmunicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -9351,13 +9590,13 @@ public final class Messages {
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_SendQueryVerticesMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_SendQueryVerticesMessage_descriptor,
-        new java.lang.String[] { "MoveToMachine", "MaxMoveCount", });
+        new java.lang.String[] { "QueryId", "MoveToMachine", "MaxMoveCount", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryVerticesMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_descriptor.getNestedTypes().get(1);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryVerticesMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryVerticesMessage_descriptor,
-        new java.lang.String[] { "ReceiveFromMachine", });
+        new java.lang.String[] { "QueryId", "ReceiveFromMachine", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

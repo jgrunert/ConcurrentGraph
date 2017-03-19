@@ -91,16 +91,20 @@ message MessageEnvelope {
 			
 			// Message to signal workers to make a system wide barrier to perform tasks
 			message SendQueryVerticesMessage {
+				// Query to send vertices for
+				optional int32 QueryId = 1;
 				// Target machine to send vertices to
-				optional int32 MoveToMachine = 1;
+				optional int32 MoveToMachine = 2;
 				// Max. number of vertices to move
-				optional int32 MaxMoveCount = 2;
+				optional int32 MaxMoveCount = 3;
 			}
 			
 			// Message to signal workers to make a system wide barrier to perform tasks
 			message ReceiveQueryVerticesMessage {
+				// Query to receive vertices for
+				optional int32 QueryId = 1;
 				// Machine to receive vertices from
-				optional int32 ReceiveFromMachine = 1;
+				optional int32 ReceiveFromMachine = 2;
 			}
 		}
 	}
