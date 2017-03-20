@@ -44,7 +44,7 @@ message MessageEnvelope {
 		optional ControlMessageType Type = 1;
 		optional int32 SuperstepNo = 2;
 		optional int32 SrcMachine = 3;
-		optional WorkerStatsMessage WorkerStats = 4;
+		//optional WorkerStatsMessage WorkerStats = 4;
 		optional AssignPartitionsMessage AssignPartitions = 5;
 		optional bytes QueryValues = 6;
 		optional WorkerInitializedMessage WorkerInitialized = 7;
@@ -52,22 +52,23 @@ message MessageEnvelope {
 		optional SendQueryVerticesMessage SendQueryVertices = 9;
 		optional ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;
 		optional StartBarrierMessage StartBarrier = 11;
+		optional WorkerFinalReportMessage WorkerFinalReport = 12;
 		
 		message AssignPartitionsMessage {	
 			repeated string PartitionFiles = 1;
 		}
 		
-		message WorkerStatsMessage {
-			optional int32 SentControlMessages = 2;
-			optional int32 SentVertexMessagesLocal = 3;
-			optional int32 SentVertexMessagesUnicast = 4;
-			optional int32 SentVertexMessagesBroadcast = 5;
-			optional int32 SentVertexMessagesBuckets = 11;
-			optional int32 ReceivedCorrectVertexMessages = 6;
-			optional int32 ReceivedWrongVertexMessages = 7;
-			optional int32 NewVertexMachinesDiscovered = 8;
-			optional int32 TotalVertexMachinesDiscovered = 9;
-		}
+		//message WorkerStatsMessage {
+		//	optional int32 SentControlMessages = 2;
+		//	optional int32 SentVertexMessagesLocal = 3;
+		//	optional int32 SentVertexMessagesUnicast = 4;
+		//	optional int32 SentVertexMessagesBroadcast = 5;
+		//	optional int32 SentVertexMessagesBuckets = 11;
+		//	optional int32 ReceivedCorrectVertexMessages = 6;
+		//	optional int32 ReceivedWrongVertexMessages = 7;
+		//	optional int32 NewVertexMachinesDiscovered = 8;
+		//	optional int32 TotalVertexMachinesDiscovered = 9;
+		//}
 		
 		message WorkerInitializedMessage {
 			optional int32 VertexCount = 1;
@@ -105,6 +106,20 @@ message MessageEnvelope {
 				optional int32 QueryId = 1;
 				// Machine to receive vertices from
 				optional int32 ReceiveFromMachine = 2;
+			}
+		}
+				
+		message WorkerFinalReportMessage {
+			repeated WorkerStatSample Samples = 1;
+				
+			message WorkerStatSample {
+				optional int64 Time = 1;
+				repeated WorkerStatMeasurement Measurement = 2;
+			}
+			
+			message WorkerStatMeasurement {
+				optional string StatName = 1;
+				optional int64 StatValue = 2;
 			}
 		}
 	}

@@ -31,6 +31,8 @@ import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
@@ -106,7 +108,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	// Worker stats
 	private static final long workerStatsInverval = 1000;
 	private long workerStatsLastSample = System.currentTimeMillis();
-	private List<Pair<Long, Map<String, Long>>> workerStatsSamples = new ArrayList<>();
+	private List<WorkerStatSample> workerStatsSamples = new ArrayList<>();
 	// TODO More stats, inspiration from QueryStats
 	private long workerStatsIdleTime;
 	private long workerStatsQueryWaitTime;
@@ -287,15 +289,23 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				// Worker stats
 				if ((System.currentTimeMillis() - workerStatsLastSample) >= workerStatsInverval) {
-					Map<String, Long> wStats = new HashMap<>();
-					wStats.put("WorkerIdleTime", workerStatsIdleTime);
-					wStats.put("WorkerQueryWaitTime", workerStatsQueryWaitTime);
-					wStats.put("WorkerHandleMessagesTime", workerStatsHandleMessagesTime);
-					wStats.put("WorkerComputeTime", workerStatsComputeTime);
-					wStats.put("WorkerBarrierStartWaitTime", workerStatsBarrierStartWaitTime);
-					wStats.put("WorkerBarrierFinishWaitTime", workerStatsBarrierFinishWaitTime);
-					wStats.put("WorkerBarrierVertexMoveTime", workerStatsBarrierVertexMoveTime);
-					workerStatsSamples.add(new Pair<>(System.currentTimeMillis(), wStats));
+					List<WorkerStatMeasurement> wStats = new ArrayList<>();
+					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerIdleTime").setStatValue(workerStatsIdleTime).build());
+					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerQueryWaitTime").setStatValue(workerStatsQueryWaitTime)
+							.build());
+					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerHandleMessagesTime")
+							.setStatValue(workerStatsHandleMessagesTime).build());
+					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerComputeTime").setStatValue(workerStatsComputeTime)
+							.build());
+					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerBarrierStartWaitTime")
+							.setStatValue(workerStatsBarrierStartWaitTime).build());
+					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerBarrierFinishWaitTime")
+							.setStatValue(workerStatsBarrierFinishWaitTime).build());
+					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerBarrierVertexMoveTime")
+							.setStatValue(workerStatsBarrierVertexMoveTime).build());
+
+					workerStatsSamples
+							.add(WorkerStatSample.newBuilder().addAllMeasurement(wStats).setTime(System.currentTimeMillis()).build());
 					workerStatsLastSample = System.currentTimeMillis();
 				}
 			}
