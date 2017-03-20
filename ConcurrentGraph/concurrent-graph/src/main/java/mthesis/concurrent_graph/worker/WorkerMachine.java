@@ -103,6 +103,18 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
 	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
 
+	// Worker stats
+	private static final long workerStatsInverval = 1000;
+	private long workerStatsLastSample = System.currentTimeMillis();
+	private List<Pair<Long, Map<String, Long>>> workerStatsSamples = new ArrayList<>();
+	// TODO More stats, inspiration from QueryStats
+	private long workerStatsIdleTime;
+	private long workerStatsQueryWaitTime;
+	private long workerStatsHandleMessagesTime;
+	private long workerStatsComputeTime;
+	private long workerStatsBarrierStartWaitTime;
+	private long workerStatsBarrierFinishWaitTime;
+	private long workerStatsBarrierVertexMoveTime;
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -151,10 +163,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Execution loop
 			while (!Thread.interrupted()) {
 				// Wait for queries
+				long startTime = System.nanoTime();
 				while (activeQueries.isEmpty()) {
 					Thread.sleep(1); // TODO sleep?
 					handleReceivedMessages();
 				}
+				workerStatsIdleTime += (System.nanoTime() - startTime);
 
 				// Global barrier if requested
 				if (globalBarrierRequested) {
@@ -164,7 +178,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
 					// wait for other workers barriers
-					long startTime = System.nanoTime();
+					startTime = System.nanoTime();
 					while (!globalBarrierStartWaitSet.isEmpty()) {
 						//Thread.sleep(1);  // TODO sleep?
 						handleReceivedMessages();
@@ -172,7 +186,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					long barrierStartWaitTime = System.nanoTime() - startTime;
 
 					// Barrier tasks
-					// TODO Send vertices
+					startTime = System.nanoTime();
+					// Send vertices
 					for (SendQueryVerticesMessage sendVert : globalBarrierSendVerts) {
 						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
 								sendVert.getMaxMoveCount());
@@ -182,6 +197,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						//Thread.sleep(1);  // TODO sleep?
 						handleReceivedMessages();
 					}
+					workerStatsBarrierVertexMoveTime += (System.nanoTime() - startTime);
 
 					// Start barrier, notify other workers
 					logger.debug("Barrier tasks done, waiting for other workers to finish");
@@ -196,12 +212,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					logger.debug("Barrier finished");
 					// TODO Remove sysout, barrier times as worker stats
-					System.out.println(ownId + " " +
-							(double) barrierStartWaitTime / 1000000 + " " + (double) barrierFinishWaitTime / 1000000);
+					//					System.out.println(ownId + " " +
+					//							(double) barrierStartWaitTime / 1000000 + " " + (double) barrierFinishWaitTime / 1000000);
+					workerStatsBarrierStartWaitTime += barrierStartWaitTime;
+					workerStatsBarrierFinishWaitTime += barrierFinishWaitTime;
 					globalBarrierRequested = false;
 				}
 
+
 				// Wait for ready queries
+				startTime = System.nanoTime();
 				activeQueriesThisSuperstep.clear();
 				while (true) {
 					handleReceivedMessages();
@@ -214,6 +234,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						break;
 					Thread.sleep(1);
 				}
+				workerStatsQueryWaitTime += (System.nanoTime() - startTime);
 
 
 				// Compute active queries
@@ -226,7 +247,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						logger.trace("Worker start query " + queryId + " superstep compute " + superstepNo);
 
 						// First frame: Call all vertices, second frame only active vertices
-						long startTime = System.nanoTime();
+						startTime = System.nanoTime();
 						if (superstepNo == 0) {
 							for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
 								vertex.superstep(superstepNo, activeQuery);
@@ -238,7 +259,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							}
 						}
 						activeQuery.calculatedSuperstep();
-						activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.ComputeTimeKey, System.nanoTime() - startTime);
+						long computeTime = System.nanoTime() - startTime;
+						activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.ComputeTimeKey, computeTime);
+						workerStatsComputeTime += computeTime;
 
 
 						// Barrier sync with other workers;
@@ -259,6 +282,21 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					// Handle received messages after each query
 					handleReceivedMessages();
+				}
+
+
+				// Worker stats
+				if ((System.currentTimeMillis() - workerStatsLastSample) >= workerStatsInverval) {
+					Map<String, Long> wStats = new HashMap<>();
+					wStats.put("WorkerIdleTime", workerStatsIdleTime);
+					wStats.put("WorkerQueryWaitTime", workerStatsQueryWaitTime);
+					wStats.put("WorkerHandleMessagesTime", workerStatsHandleMessagesTime);
+					wStats.put("WorkerComputeTime", workerStatsComputeTime);
+					wStats.put("WorkerBarrierStartWaitTime", workerStatsBarrierStartWaitTime);
+					wStats.put("WorkerBarrierFinishWaitTime", workerStatsBarrierFinishWaitTime);
+					wStats.put("WorkerBarrierVertexMoveTime", workerStatsBarrierVertexMoveTime);
+					workerStatsSamples.add(new Pair<>(System.currentTimeMillis(), wStats));
+					workerStatsLastSample = System.currentTimeMillis();
 				}
 			}
 		}
@@ -286,6 +324,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 */
 	@SuppressWarnings("unchecked")
 	private void handleReceivedMessages() {
+		long startTime = System.nanoTime();
 		ChannelMessage message;
 		boolean interruptedMsgHandling = false;
 		while (!interruptedMsgHandling && (message = receivedMessages.poll()) != null) {
@@ -314,6 +353,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					break;
 			}
 		}
+		workerStatsHandleMessagesTime += (System.nanoTime() - startTime);
 	}
 
 
@@ -976,17 +1016,17 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 
-	/**
-	 * @return number of active vertices of this query intersecting with other queries.
-	 */
-	private int getQueryIntersectionCount(int queryId) {
-		int totalIntersects = 0;
-		Map<Integer, Integer> intersects = currentQueryIntersects.get(queryId);
-		if (intersects != null) {
-			for (Integer qInters : intersects.values()) {
-				totalIntersects += qInters;
-			}
-		}
-		return totalIntersects;
-	}
+	//	/**
+	//	 * @return number of active vertices of this query intersecting with other queries.
+	//	 */
+	//	private int getQueryIntersectionCount(int queryId) {
+	//		int totalIntersects = 0;
+	//		Map<Integer, Integer> intersects = currentQueryIntersects.get(queryId);
+	//		if (intersects != null) {
+	//			for (Integer qInters : intersects.values()) {
+	//				totalIntersects += qInters;
+	//			}
+	//		}
+	//		return totalIntersects;
+	//	}
 }
