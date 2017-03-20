@@ -660,20 +660,22 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					int workerId = sortedWorkers.get(i);
 					double workerVaDiff = workerActVertAvg > 0
 							? (double) (workersActiveVerts.get(workerId) - workerActVertAvg) / workerActVertAvg
-									: 0;
-							// Only move vertices from workers with active, query-exclusive vertices and enough active vertices
-							if (queriesWorkerActiveVerts.get(workerId) > 0 && queriesWorkerIntersectsSum.get(workerId) == 0 &&
-									workerVaDiff > -tolerableAvVariance) {
-								// TODO Modify queriesWorkerActiveVerts according to movement
-								anyMoves = true;
-								workerVertSendMsgs.get(workerId).add(
-										Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
+							: 0;
+					// Only move vertices from workers with active, query-exclusive vertices and enough active vertices
+					if (queriesWorkerActiveVerts.get(workerId) > 0 && queriesWorkerIntersectsSum.get(workerId) == 0 &&
+							workerVaDiff > -tolerableAvVariance) {
+						// TODO Modify queriesWorkerActiveVerts according to movement
+						anyMoves = true;
+						workerVertSendMsgs.get(workerId).add(
+								Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
+										.setQueryId(activeQuery.BaseQuery.QueryId)
 										.setMoveToMachine(receivingWorker).setMaxMoveCount(Integer.MAX_VALUE)
 										.build());
-								workerVertRecvMsgs.get(receivingWorker).add(
-										Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
+						workerVertRecvMsgs.get(receivingWorker).add(
+								Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
+										.setQueryId(activeQuery.BaseQuery.QueryId)
 										.setReceiveFromMachine(workerId).build());
-							}
+					}
 				}
 			}
 
