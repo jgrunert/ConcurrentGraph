@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.plotting;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
@@ -206,6 +207,8 @@ public class JFreeChartPlotter {
 		plot.setRangeGridlinePaint(Color.white);
 
 		final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+		for (int i = 0; i < dataset.getSeriesCount(); i++)
+			renderer.setSeriesStroke(i, new BasicStroke(1.5f));
 		//		renderer.setSeriesLinesVisible(0, false);
 		//		renderer.setSeriesShapesVisible(1, false);
 		renderer.setBaseShapesVisible(false);
@@ -218,7 +221,7 @@ public class JFreeChartPlotter {
 		// OPTIONAL CUSTOMISATION COMPLETED.
 
 		ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
-		ChartUtilities.saveChartAsPNG(new File(outputFolder + File.separator + name + ".png"), chart, 1600, 1200, info);
+		ChartUtilities.saveChartAsPNG(new File(outputFolder + File.separator + name + ".png"), chart, 1200, 900, info);
 	}
 
 
