@@ -94,16 +94,16 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			queryMessagesThisSuperstep.put(key, msgs);
 		}
 
-		//		int queryMessagesNextSuperstepCount = bufferToRead.getInt();
-		//		for (int i = 0; i < queryMessagesNextSuperstepCount; i++) {
-		//			int key = bufferToRead.getInt();
-		//			int valueCount = bufferToRead.getInt();
-		//			List<M> msgs = new ArrayList<>(valueCount);
-		//			for (int iV = 0; iV < valueCount; iV++) {
-		//				msgs.add(messageValueFactory.createFromBytes(bufferToRead));
-		//			}
-		//			queryMessagesNextSuperstep.put(key, msgs);
-		//		}
+		int queryMessagesNextSuperstepCount = bufferToRead.getInt();
+		for (int i = 0; i < queryMessagesNextSuperstepCount; i++) {
+			int key = bufferToRead.getInt();
+			int valueCount = bufferToRead.getInt();
+			List<M> msgs = new ArrayList<>(valueCount);
+			for (int iV = 0; iV < valueCount; iV++) {
+				msgs.add(messageValueFactory.createFromBytes(bufferToRead));
+			}
+			queryMessagesNextSuperstep.put(key, msgs);
+		}
 	}
 
 	/**
@@ -148,20 +148,20 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			}
 		}
 
-		for (List<M> qMsgs : queryMessagesNextSuperstep.values()) {
-			if (!qMsgs.isEmpty()) {
-				logger.error("Will not send vertex messages for next superstep - vertices to send shouldnt have these.");
-				break;
-			}
-		}
-		//		buffer.putInt(queryMessagesNextSuperstep.size());
-		//		for (Entry<Integer, List<M>> qMsgs : queryMessagesNextSuperstep.entrySet()) {
-		//			buffer.putInt(qMsgs.getKey());
-		//			buffer.putInt(qMsgs.getValue().size());
-		//			for (M msg : qMsgs.getValue()) {
-		//				msg.writeToBuffer(buffer);
+		//		for (List<M> qMsgs : queryMessagesNextSuperstep.values()) {
+		//			if (!qMsgs.isEmpty()) {
+		//				logger.error("Will not send vertex messages for next superstep - vertices to send shouldnt have these.");
+		//				break;
 		//			}
 		//		}
+		buffer.putInt(queryMessagesNextSuperstep.size());
+		for (Entry<Integer, List<M>> qMsgs : queryMessagesNextSuperstep.entrySet()) {
+			buffer.putInt(qMsgs.getKey());
+			buffer.putInt(qMsgs.getValue().size());
+			for (M msg : qMsgs.getValue()) {
+				msg.writeToBuffer(buffer);
+			}
+		}
 	}
 
 	public void finishQuery(int queryId) {
