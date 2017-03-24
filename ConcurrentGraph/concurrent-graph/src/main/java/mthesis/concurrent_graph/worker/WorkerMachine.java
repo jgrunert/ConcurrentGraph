@@ -31,8 +31,7 @@ import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
@@ -107,16 +106,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	// Worker stats
 	private static final long workerStatsInverval = 1000;
+	private long masterStartTime;
 	private long workerStatsLastSample = System.currentTimeMillis();
-	private List<WorkerStatSample> workerStatsSamples = new ArrayList<>();
-	// TODO More stats, inspiration from QueryStats
-	private long workerStatsIdleTime;
-	private long workerStatsQueryWaitTime;
-	private long workerStatsHandleMessagesTime;
-	private long workerStatsComputeTime;
-	private long workerStatsBarrierStartWaitTime;
-	private long workerStatsBarrierFinishWaitTime;
-	private long workerStatsBarrierVertexMoveTime;
+	// Current worker stats
+	private WorkerStats workerStats = new WorkerStats();
+	// Samples that are finished but not sent to master yet
+	private List<WorkerStatSample> workerStatsSamplesToSend = new ArrayList<>();
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -170,7 +165,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					Thread.sleep(1); // TODO sleep?
 					handleReceivedMessages();
 				}
-				workerStatsIdleTime += (System.nanoTime() - startTime);
+				workerStats.IdleTime += (System.nanoTime() - startTime);
 
 				// Global barrier if requested
 				if (globalBarrierRequested) {
@@ -199,7 +194,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						//Thread.sleep(1);  // TODO sleep?
 						handleReceivedMessages();
 					}
-					workerStatsBarrierVertexMoveTime += (System.nanoTime() - startTime);
+					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
 
 					// Start barrier, notify other workers
 					logger.debug("Barrier tasks done, waiting for other workers to finish");
@@ -216,8 +211,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					// TODO Remove sysout, barrier times as worker stats
 					//					System.out.println(ownId + " " +
 					//							(double) barrierStartWaitTime / 1000000 + " " + (double) barrierFinishWaitTime / 1000000);
-					workerStatsBarrierStartWaitTime += barrierStartWaitTime;
-					workerStatsBarrierFinishWaitTime += barrierFinishWaitTime;
+					workerStats.BarrierStartWaitTime += barrierStartWaitTime;
+					workerStats.BarrierFinishWaitTime += barrierFinishWaitTime;
 					globalBarrierRequested = false;
 				}
 
@@ -236,7 +231,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						break;
 					Thread.sleep(1);
 				}
-				workerStatsQueryWaitTime += (System.nanoTime() - startTime);
+				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
 
 
 				// Compute active queries
@@ -263,7 +258,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						activeQuery.calculatedSuperstep();
 						long computeTime = System.nanoTime() - startTime;
 						activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.ComputeTimeKey, computeTime);
-						workerStatsComputeTime += computeTime;
+						workerStats.ComputeTime += computeTime;
 
 
 						// Barrier sync with other workers;
@@ -289,24 +284,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				// Worker stats
 				if ((System.currentTimeMillis() - workerStatsLastSample) >= workerStatsInverval) {
-					List<WorkerStatMeasurement> wStats = new ArrayList<>();
-					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerIdleTime").setStatValue(workerStatsIdleTime).build());
-					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerQueryWaitTime").setStatValue(workerStatsQueryWaitTime)
-							.build());
-					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerHandleMessagesTime")
-							.setStatValue(workerStatsHandleMessagesTime).build());
-					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerComputeTime").setStatValue(workerStatsComputeTime)
-							.build());
-					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerBarrierStartWaitTime")
-							.setStatValue(workerStatsBarrierStartWaitTime).build());
-					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerBarrierFinishWaitTime")
-							.setStatValue(workerStatsBarrierFinishWaitTime).build());
-					wStats.add(WorkerStatMeasurement.newBuilder().setStatName("WorkerBarrierVertexMoveTime")
-							.setStatValue(workerStatsBarrierVertexMoveTime).build());
+					long activeVertices = 0;
+					for (WorkerQuery<V, E, M, Q> query : activeQueries.values())
+						activeVertices += query.ActiveVerticesThis.size();
 
-					workerStatsSamples
-							.add(WorkerStatSample.newBuilder().addAllMeasurement(wStats).setTime(System.currentTimeMillis()).build());
+					workerStats.ActiveVertices = activeVertices;
+					workerStatsSamplesToSend
+							.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
 					workerStatsLastSample = System.currentTimeMillis();
+					workerStats = new WorkerStats();
 				}
 			}
 		}
@@ -363,7 +349,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					break;
 			}
 		}
-		workerStatsHandleMessagesTime += (System.nanoTime() - startTime);
+		workerStats.HandleMessagesTime += (System.nanoTime() - startTime);
 	}
 
 
@@ -396,8 +382,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		messaging.sendControlMessageUnicast(masterId,
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(workerQuery.getStartedSuperstepNo(), ownId,
-						workerQuery.QueryLocal, queryIntersects),
+						workerQuery.QueryLocal, queryIntersects, workerStatsSamplesToSend),
 				true);
+		workerStatsSamplesToSend.clear();
 	}
 
 	private void sendMasterQueryFinishedMessage(WorkerQuery<V, E, M, Q> workerQuery) {
@@ -507,6 +494,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				switch (message.getType()) {
 					case Master_Worker_Initialize:
 						assignedPartitions = message.getAssignPartitions().getPartitionFilesList();
+						masterStartTime = message.getAssignPartitions().getMasterStartTime();
 						started = true;
 						break;
 
@@ -723,10 +711,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, true);
 		verticesSent += verticesToMove.size();
 
+		long sendTime = (System.nanoTime() - startTime);
 		if (query != null) {
 			query.QueryLocal.Stats.addToOtherStat(QueryStats.MoveSendVerticsKey, verticesSent);
-			query.QueryLocal.Stats.addToOtherStat(QueryStats.MoveSendVerticsTimeKey, (System.nanoTime() - startTime));
+			query.QueryLocal.Stats.addToOtherStat(QueryStats.MoveSendVerticsTimeKey, sendTime);
 		}
+		workerStats.MoveSendVertices += verticesSent;
 	}
 
 

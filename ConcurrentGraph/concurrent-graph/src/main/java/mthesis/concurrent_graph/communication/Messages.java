@@ -1016,17 +1016,17 @@ public final class Messages {
     mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessageOrBuilder getStartBarrierOrBuilder();
 
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
      */
-    boolean hasWorkerFinalReport();
+    boolean hasWorkerStats();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage getWorkerFinalReport();
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage getWorkerStats();
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
      */
-    mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessageOrBuilder getWorkerFinalReportOrBuilder();
+    mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessageOrBuilder getWorkerStatsOrBuilder();
   }
   /**
    * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage}
@@ -1179,14 +1179,14 @@ public final class Messages {
               break;
             }
             case 98: {
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.Builder subBuilder = null;
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.Builder subBuilder = null;
               if (((bitField0_ & 0x00000400) == 0x00000400)) {
-                subBuilder = workerFinalReport_.toBuilder();
+                subBuilder = workerStats_.toBuilder();
               }
-              workerFinalReport_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.PARSER, extensionRegistry);
+              workerStats_ = input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.PARSER, extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(workerFinalReport_);
-                workerFinalReport_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(workerStats_);
+                workerStats_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000400;
               break;
@@ -1220,20 +1220,29 @@ public final class Messages {
         com.google.protobuf.MessageOrBuilder {
 
       /**
-       * <code>repeated string PartitionFiles = 1;</code>
+       * <code>optional int64 MasterStartTime = 1;</code>
+       */
+      boolean hasMasterStartTime();
+      /**
+       * <code>optional int64 MasterStartTime = 1;</code>
+       */
+      long getMasterStartTime();
+
+      /**
+       * <code>repeated string PartitionFiles = 2;</code>
        */
       java.util.List<java.lang.String>
           getPartitionFilesList();
       /**
-       * <code>repeated string PartitionFiles = 1;</code>
+       * <code>repeated string PartitionFiles = 2;</code>
        */
       int getPartitionFilesCount();
       /**
-       * <code>repeated string PartitionFiles = 1;</code>
+       * <code>repeated string PartitionFiles = 2;</code>
        */
       java.lang.String getPartitionFiles(int index);
       /**
-       * <code>repeated string PartitionFiles = 1;</code>
+       * <code>repeated string PartitionFiles = 2;</code>
        */
       com.google.protobuf.ByteString
           getPartitionFilesBytes(int index);
@@ -1250,6 +1259,7 @@ public final class Messages {
         super(builder);
       }
       private AssignPartitionsMessage() {
+        masterStartTime_ = 0L;
         partitionFiles_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       }
 
@@ -1281,11 +1291,16 @@ public final class Messages {
                 }
                 break;
               }
-              case 10: {
+              case 8: {
+                bitField0_ |= 0x00000001;
+                masterStartTime_ = input.readInt64();
+                break;
+              }
+              case 18: {
                 com.google.protobuf.ByteString bs = input.readBytes();
-                if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                   partitionFiles_ = new com.google.protobuf.LazyStringArrayList();
-                  mutable_bitField0_ |= 0x00000001;
+                  mutable_bitField0_ |= 0x00000002;
                 }
                 partitionFiles_.add(bs);
                 break;
@@ -1298,7 +1313,7 @@ public final class Messages {
           throw new com.google.protobuf.InvalidProtocolBufferException(
               e).setUnfinishedMessage(this);
         } finally {
-          if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
             partitionFiles_ = partitionFiles_.getUnmodifiableView();
           }
           this.unknownFields = unknownFields.build();
@@ -1317,29 +1332,45 @@ public final class Messages {
                 mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage.Builder.class);
       }
 
-      public static final int PARTITIONFILES_FIELD_NUMBER = 1;
+      private int bitField0_;
+      public static final int MASTERSTARTTIME_FIELD_NUMBER = 1;
+      private long masterStartTime_;
+      /**
+       * <code>optional int64 MasterStartTime = 1;</code>
+       */
+      public boolean hasMasterStartTime() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional int64 MasterStartTime = 1;</code>
+       */
+      public long getMasterStartTime() {
+        return masterStartTime_;
+      }
+
+      public static final int PARTITIONFILES_FIELD_NUMBER = 2;
       private com.google.protobuf.LazyStringList partitionFiles_;
       /**
-       * <code>repeated string PartitionFiles = 1;</code>
+       * <code>repeated string PartitionFiles = 2;</code>
        */
       public com.google.protobuf.ProtocolStringList
           getPartitionFilesList() {
         return partitionFiles_;
       }
       /**
-       * <code>repeated string PartitionFiles = 1;</code>
+       * <code>repeated string PartitionFiles = 2;</code>
        */
       public int getPartitionFilesCount() {
         return partitionFiles_.size();
       }
       /**
-       * <code>repeated string PartitionFiles = 1;</code>
+       * <code>repeated string PartitionFiles = 2;</code>
        */
       public java.lang.String getPartitionFiles(int index) {
         return partitionFiles_.get(index);
       }
       /**
-       * <code>repeated string PartitionFiles = 1;</code>
+       * <code>repeated string PartitionFiles = 2;</code>
        */
       public com.google.protobuf.ByteString
           getPartitionFilesBytes(int index) {
@@ -1358,8 +1389,11 @@ public final class Messages {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeInt64(1, masterStartTime_);
+        }
         for (int i = 0; i < partitionFiles_.size(); i++) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 1, partitionFiles_.getRaw(i));
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 2, partitionFiles_.getRaw(i));
         }
         unknownFields.writeTo(output);
       }
@@ -1369,6 +1403,10 @@ public final class Messages {
         if (size != -1) return size;
 
         size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt64Size(1, masterStartTime_);
+        }
         {
           int dataSize = 0;
           for (int i = 0; i < partitionFiles_.size(); i++) {
@@ -1394,6 +1432,11 @@ public final class Messages {
         mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage) obj;
 
         boolean result = true;
+        result = result && (hasMasterStartTime() == other.hasMasterStartTime());
+        if (hasMasterStartTime()) {
+          result = result && (getMasterStartTime()
+              == other.getMasterStartTime());
+        }
         result = result && getPartitionFilesList()
             .equals(other.getPartitionFilesList());
         result = result && unknownFields.equals(other.unknownFields);
@@ -1407,6 +1450,11 @@ public final class Messages {
         }
         int hash = 41;
         hash = (19 * hash) + getDescriptorForType().hashCode();
+        if (hasMasterStartTime()) {
+          hash = (37 * hash) + MASTERSTARTTIME_FIELD_NUMBER;
+          hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+              getMasterStartTime());
+        }
         if (getPartitionFilesCount() > 0) {
           hash = (37 * hash) + PARTITIONFILES_FIELD_NUMBER;
           hash = (53 * hash) + getPartitionFilesList().hashCode();
@@ -1529,8 +1577,10 @@ public final class Messages {
         }
         public Builder clear() {
           super.clear();
-          partitionFiles_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+          masterStartTime_ = 0L;
           bitField0_ = (bitField0_ & ~0x00000001);
+          partitionFiles_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+          bitField0_ = (bitField0_ & ~0x00000002);
           return this;
         }
 
@@ -1554,11 +1604,17 @@ public final class Messages {
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage buildPartial() {
           mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage(this);
           int from_bitField0_ = bitField0_;
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.masterStartTime_ = masterStartTime_;
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
             partitionFiles_ = partitionFiles_.getUnmodifiableView();
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           }
           result.partitionFiles_ = partitionFiles_;
+          result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
         }
@@ -1600,10 +1656,13 @@ public final class Messages {
 
         public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage other) {
           if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage.getDefaultInstance()) return this;
+          if (other.hasMasterStartTime()) {
+            setMasterStartTime(other.getMasterStartTime());
+          }
           if (!other.partitionFiles_.isEmpty()) {
             if (partitionFiles_.isEmpty()) {
               partitionFiles_ = other.partitionFiles_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000002);
             } else {
               ensurePartitionFilesIsMutable();
               partitionFiles_.addAll(other.partitionFiles_);
@@ -1638,41 +1697,73 @@ public final class Messages {
         }
         private int bitField0_;
 
+        private long masterStartTime_ ;
+        /**
+         * <code>optional int64 MasterStartTime = 1;</code>
+         */
+        public boolean hasMasterStartTime() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>optional int64 MasterStartTime = 1;</code>
+         */
+        public long getMasterStartTime() {
+          return masterStartTime_;
+        }
+        /**
+         * <code>optional int64 MasterStartTime = 1;</code>
+         */
+        public Builder setMasterStartTime(long value) {
+          bitField0_ |= 0x00000001;
+          masterStartTime_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional int64 MasterStartTime = 1;</code>
+         */
+        public Builder clearMasterStartTime() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          masterStartTime_ = 0L;
+          onChanged();
+          return this;
+        }
+
         private com.google.protobuf.LazyStringList partitionFiles_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         private void ensurePartitionFilesIsMutable() {
-          if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (!((bitField0_ & 0x00000002) == 0x00000002)) {
             partitionFiles_ = new com.google.protobuf.LazyStringArrayList(partitionFiles_);
-            bitField0_ |= 0x00000001;
+            bitField0_ |= 0x00000002;
            }
         }
         /**
-         * <code>repeated string PartitionFiles = 1;</code>
+         * <code>repeated string PartitionFiles = 2;</code>
          */
         public com.google.protobuf.ProtocolStringList
             getPartitionFilesList() {
           return partitionFiles_.getUnmodifiableView();
         }
         /**
-         * <code>repeated string PartitionFiles = 1;</code>
+         * <code>repeated string PartitionFiles = 2;</code>
          */
         public int getPartitionFilesCount() {
           return partitionFiles_.size();
         }
         /**
-         * <code>repeated string PartitionFiles = 1;</code>
+         * <code>repeated string PartitionFiles = 2;</code>
          */
         public java.lang.String getPartitionFiles(int index) {
           return partitionFiles_.get(index);
         }
         /**
-         * <code>repeated string PartitionFiles = 1;</code>
+         * <code>repeated string PartitionFiles = 2;</code>
          */
         public com.google.protobuf.ByteString
             getPartitionFilesBytes(int index) {
           return partitionFiles_.getByteString(index);
         }
         /**
-         * <code>repeated string PartitionFiles = 1;</code>
+         * <code>repeated string PartitionFiles = 2;</code>
          */
         public Builder setPartitionFiles(
             int index, java.lang.String value) {
@@ -1685,7 +1776,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated string PartitionFiles = 1;</code>
+         * <code>repeated string PartitionFiles = 2;</code>
          */
         public Builder addPartitionFiles(
             java.lang.String value) {
@@ -1698,7 +1789,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated string PartitionFiles = 1;</code>
+         * <code>repeated string PartitionFiles = 2;</code>
          */
         public Builder addAllPartitionFiles(
             java.lang.Iterable<java.lang.String> values) {
@@ -1709,16 +1800,16 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated string PartitionFiles = 1;</code>
+         * <code>repeated string PartitionFiles = 2;</code>
          */
         public Builder clearPartitionFiles() {
           partitionFiles_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
           return this;
         }
         /**
-         * <code>repeated string PartitionFiles = 1;</code>
+         * <code>repeated string PartitionFiles = 2;</code>
          */
         public Builder addPartitionFilesBytes(
             com.google.protobuf.ByteString value) {
@@ -6405,46 +6496,46 @@ public final class Messages {
 
     }
 
-    public interface WorkerFinalReportMessageOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage)
+    public interface WorkerStatsMessageOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage)
         com.google.protobuf.MessageOrBuilder {
 
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
-      java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample> 
+      java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample> 
           getSamplesList();
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
-      mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample getSamples(int index);
+      mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample getSamples(int index);
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
       int getSamplesCount();
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
-      java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder> 
+      java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder> 
           getSamplesOrBuilderList();
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
-      mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder getSamplesOrBuilder(
+      mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder getSamplesOrBuilder(
           int index);
     }
     /**
-     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage}
+     * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage}
      */
-    public  static final class WorkerFinalReportMessage extends
+    public  static final class WorkerStatsMessage extends
         com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage)
-        WorkerFinalReportMessageOrBuilder {
-      // Use WorkerFinalReportMessage.newBuilder() to construct.
-      private WorkerFinalReportMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        // @@protoc_insertion_point(message_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage)
+        WorkerStatsMessageOrBuilder {
+      // Use WorkerStatsMessage.newBuilder() to construct.
+      private WorkerStatsMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
       }
-      private WorkerFinalReportMessage() {
+      private WorkerStatsMessage() {
         samples_ = java.util.Collections.emptyList();
       }
 
@@ -6453,7 +6544,7 @@ public final class Messages {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private WorkerFinalReportMessage(
+      private WorkerStatsMessage(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
@@ -6478,11 +6569,11 @@ public final class Messages {
               }
               case 10: {
                 if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                  samples_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample>();
+                  samples_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample>();
                   mutable_bitField0_ |= 0x00000001;
                 }
                 samples_.add(
-                    input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.PARSER, extensionRegistry));
+                    input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.PARSER, extensionRegistry));
                 break;
               }
             }
@@ -6502,18 +6593,18 @@ public final class Messages {
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_descriptor;
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_fieldAccessorTable
+        return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.Builder.class);
+                mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.Builder.class);
       }
 
       public interface WorkerStatSampleOrBuilder extends
-          // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample)
+          // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample)
           com.google.protobuf.MessageOrBuilder {
 
         /**
@@ -6526,35 +6617,20 @@ public final class Messages {
         long getTime();
 
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
+         * <code>optional bytes StatsBytes = 2;</code>
          */
-        java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement> 
-            getMeasurementList();
+        boolean hasStatsBytes();
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
+         * <code>optional bytes StatsBytes = 2;</code>
          */
-        mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement getMeasurement(int index);
-        /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-         */
-        int getMeasurementCount();
-        /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-         */
-        java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder> 
-            getMeasurementOrBuilderList();
-        /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-         */
-        mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder getMeasurementOrBuilder(
-            int index);
+        com.google.protobuf.ByteString getStatsBytes();
       }
       /**
-       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample}
+       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample}
        */
       public  static final class WorkerStatSample extends
           com.google.protobuf.GeneratedMessageV3 implements
-          // @@protoc_insertion_point(message_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample)
+          // @@protoc_insertion_point(message_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample)
           WorkerStatSampleOrBuilder {
         // Use WorkerStatSample.newBuilder() to construct.
         private WorkerStatSample(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -6562,7 +6638,7 @@ public final class Messages {
         }
         private WorkerStatSample() {
           time_ = 0L;
-          measurement_ = java.util.Collections.emptyList();
+          statsBytes_ = com.google.protobuf.ByteString.EMPTY;
         }
 
         @java.lang.Override
@@ -6599,12 +6675,8 @@ public final class Messages {
                   break;
                 }
                 case 18: {
-                  if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                    measurement_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement>();
-                    mutable_bitField0_ |= 0x00000002;
-                  }
-                  measurement_.add(
-                      input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.PARSER, extensionRegistry));
+                  bitField0_ |= 0x00000002;
+                  statsBytes_ = input.readBytes();
                   break;
                 }
               }
@@ -6615,23 +6687,20 @@ public final class Messages {
             throw new com.google.protobuf.InvalidProtocolBufferException(
                 e).setUnfinishedMessage(this);
           } finally {
-            if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-              measurement_ = java.util.Collections.unmodifiableList(measurement_);
-            }
             this.unknownFields = unknownFields.build();
             makeExtensionsImmutable();
           }
         }
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_descriptor;
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_descriptor;
         }
 
         protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_fieldAccessorTable
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
-                  mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder.class);
+                  mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder.class);
         }
 
         private int bitField0_;
@@ -6650,39 +6719,19 @@ public final class Messages {
           return time_;
         }
 
-        public static final int MEASUREMENT_FIELD_NUMBER = 2;
-        private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement> measurement_;
+        public static final int STATSBYTES_FIELD_NUMBER = 2;
+        private com.google.protobuf.ByteString statsBytes_;
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
+         * <code>optional bytes StatsBytes = 2;</code>
          */
-        public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement> getMeasurementList() {
-          return measurement_;
+        public boolean hasStatsBytes() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
+         * <code>optional bytes StatsBytes = 2;</code>
          */
-        public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder> 
-            getMeasurementOrBuilderList() {
-          return measurement_;
-        }
-        /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-         */
-        public int getMeasurementCount() {
-          return measurement_.size();
-        }
-        /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-         */
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement getMeasurement(int index) {
-          return measurement_.get(index);
-        }
-        /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-         */
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder getMeasurementOrBuilder(
-            int index) {
-          return measurement_.get(index);
+        public com.google.protobuf.ByteString getStatsBytes() {
+          return statsBytes_;
         }
 
         private byte memoizedIsInitialized = -1;
@@ -6700,8 +6749,8 @@ public final class Messages {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
             output.writeInt64(1, time_);
           }
-          for (int i = 0; i < measurement_.size(); i++) {
-            output.writeMessage(2, measurement_.get(i));
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            output.writeBytes(2, statsBytes_);
           }
           unknownFields.writeTo(output);
         }
@@ -6715,9 +6764,9 @@ public final class Messages {
             size += com.google.protobuf.CodedOutputStream
               .computeInt64Size(1, time_);
           }
-          for (int i = 0; i < measurement_.size(); i++) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
             size += com.google.protobuf.CodedOutputStream
-              .computeMessageSize(2, measurement_.get(i));
+              .computeBytesSize(2, statsBytes_);
           }
           size += unknownFields.getSerializedSize();
           memoizedSize = size;
@@ -6730,10 +6779,10 @@ public final class Messages {
           if (obj == this) {
            return true;
           }
-          if (!(obj instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample)) {
+          if (!(obj instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample)) {
             return super.equals(obj);
           }
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample) obj;
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample) obj;
 
           boolean result = true;
           result = result && (hasTime() == other.hasTime());
@@ -6741,8 +6790,11 @@ public final class Messages {
             result = result && (getTime()
                 == other.getTime());
           }
-          result = result && getMeasurementList()
-              .equals(other.getMeasurementList());
+          result = result && (hasStatsBytes() == other.hasStatsBytes());
+          if (hasStatsBytes()) {
+            result = result && getStatsBytes()
+                .equals(other.getStatsBytes());
+          }
           result = result && unknownFields.equals(other.unknownFields);
           return result;
         }
@@ -6759,67 +6811,67 @@ public final class Messages {
             hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
                 getTime());
           }
-          if (getMeasurementCount() > 0) {
-            hash = (37 * hash) + MEASUREMENT_FIELD_NUMBER;
-            hash = (53 * hash) + getMeasurementList().hashCode();
+          if (hasStatsBytes()) {
+            hash = (37 * hash) + STATSBYTES_FIELD_NUMBER;
+            hash = (53 * hash) + getStatsBytes().hashCode();
           }
           hash = (29 * hash) + unknownFields.hashCode();
           memoizedHashCode = hash;
           return hash;
         }
 
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseFrom(
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseFrom(
             com.google.protobuf.ByteString data)
             throws com.google.protobuf.InvalidProtocolBufferException {
           return PARSER.parseFrom(data);
         }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseFrom(
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseFrom(
             com.google.protobuf.ByteString data,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
           return PARSER.parseFrom(data, extensionRegistry);
         }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseFrom(byte[] data)
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseFrom(byte[] data)
             throws com.google.protobuf.InvalidProtocolBufferException {
           return PARSER.parseFrom(data);
         }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseFrom(
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseFrom(
             byte[] data,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
           return PARSER.parseFrom(data, extensionRegistry);
         }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseFrom(java.io.InputStream input)
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseFrom(java.io.InputStream input)
             throws java.io.IOException {
           return com.google.protobuf.GeneratedMessageV3
               .parseWithIOException(PARSER, input);
         }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseFrom(
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseFrom(
             java.io.InputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
           return com.google.protobuf.GeneratedMessageV3
               .parseWithIOException(PARSER, input, extensionRegistry);
         }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseDelimitedFrom(java.io.InputStream input)
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseDelimitedFrom(java.io.InputStream input)
             throws java.io.IOException {
           return com.google.protobuf.GeneratedMessageV3
               .parseDelimitedWithIOException(PARSER, input);
         }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseDelimitedFrom(
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseDelimitedFrom(
             java.io.InputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
           return com.google.protobuf.GeneratedMessageV3
               .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
         }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseFrom(
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseFrom(
             com.google.protobuf.CodedInputStream input)
             throws java.io.IOException {
           return com.google.protobuf.GeneratedMessageV3
               .parseWithIOException(PARSER, input);
         }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parseFrom(
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parseFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
@@ -6831,7 +6883,7 @@ public final class Messages {
         public static Builder newBuilder() {
           return DEFAULT_INSTANCE.toBuilder();
         }
-        public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample prototype) {
+        public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample prototype) {
           return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
         }
         public Builder toBuilder() {
@@ -6846,25 +6898,25 @@ public final class Messages {
           return builder;
         }
         /**
-         * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample}
+         * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample}
          */
         public static final class Builder extends
             com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-            // @@protoc_insertion_point(builder_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample)
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder {
+            // @@protoc_insertion_point(builder_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample)
+            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder {
           public static final com.google.protobuf.Descriptors.Descriptor
               getDescriptor() {
-            return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_descriptor;
+            return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_descriptor;
           }
 
           protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
               internalGetFieldAccessorTable() {
-            return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_fieldAccessorTable
+            return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_fieldAccessorTable
                 .ensureFieldAccessorsInitialized(
-                    mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder.class);
+                    mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder.class);
           }
 
-          // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.newBuilder()
+          // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.newBuilder()
           private Builder() {
             maybeForceBuilderInitialization();
           }
@@ -6877,56 +6929,46 @@ public final class Messages {
           private void maybeForceBuilderInitialization() {
             if (com.google.protobuf.GeneratedMessageV3
                     .alwaysUseFieldBuilders) {
-              getMeasurementFieldBuilder();
             }
           }
           public Builder clear() {
             super.clear();
             time_ = 0L;
             bitField0_ = (bitField0_ & ~0x00000001);
-            if (measurementBuilder_ == null) {
-              measurement_ = java.util.Collections.emptyList();
-              bitField0_ = (bitField0_ & ~0x00000002);
-            } else {
-              measurementBuilder_.clear();
-            }
+            statsBytes_ = com.google.protobuf.ByteString.EMPTY;
+            bitField0_ = (bitField0_ & ~0x00000002);
             return this;
           }
 
           public com.google.protobuf.Descriptors.Descriptor
               getDescriptorForType() {
-            return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_descriptor;
+            return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_descriptor;
           }
 
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample getDefaultInstanceForType() {
-            return mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.getDefaultInstance();
+          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample getDefaultInstanceForType() {
+            return mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.getDefaultInstance();
           }
 
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample build() {
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample result = buildPartial();
+          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample build() {
+            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample result = buildPartial();
             if (!result.isInitialized()) {
               throw newUninitializedMessageException(result);
             }
             return result;
           }
 
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample buildPartial() {
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample(this);
+          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample buildPartial() {
+            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample(this);
             int from_bitField0_ = bitField0_;
             int to_bitField0_ = 0;
             if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
               to_bitField0_ |= 0x00000001;
             }
             result.time_ = time_;
-            if (measurementBuilder_ == null) {
-              if (((bitField0_ & 0x00000002) == 0x00000002)) {
-                measurement_ = java.util.Collections.unmodifiableList(measurement_);
-                bitField0_ = (bitField0_ & ~0x00000002);
-              }
-              result.measurement_ = measurement_;
-            } else {
-              result.measurement_ = measurementBuilder_.build();
+            if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+              to_bitField0_ |= 0x00000002;
             }
+            result.statsBytes_ = statsBytes_;
             result.bitField0_ = to_bitField0_;
             onBuilt();
             return result;
@@ -6959,44 +7001,21 @@ public final class Messages {
             return (Builder) super.addRepeatedField(field, value);
           }
           public Builder mergeFrom(com.google.protobuf.Message other) {
-            if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample) {
-              return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample)other);
+            if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample) {
+              return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample)other);
             } else {
               super.mergeFrom(other);
               return this;
             }
           }
 
-          public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample other) {
-            if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.getDefaultInstance()) return this;
+          public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample other) {
+            if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.getDefaultInstance()) return this;
             if (other.hasTime()) {
               setTime(other.getTime());
             }
-            if (measurementBuilder_ == null) {
-              if (!other.measurement_.isEmpty()) {
-                if (measurement_.isEmpty()) {
-                  measurement_ = other.measurement_;
-                  bitField0_ = (bitField0_ & ~0x00000002);
-                } else {
-                  ensureMeasurementIsMutable();
-                  measurement_.addAll(other.measurement_);
-                }
-                onChanged();
-              }
-            } else {
-              if (!other.measurement_.isEmpty()) {
-                if (measurementBuilder_.isEmpty()) {
-                  measurementBuilder_.dispose();
-                  measurementBuilder_ = null;
-                  measurement_ = other.measurement_;
-                  bitField0_ = (bitField0_ & ~0x00000002);
-                  measurementBuilder_ = 
-                    com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                       getMeasurementFieldBuilder() : null;
-                } else {
-                  measurementBuilder_.addAllMessages(other.measurement_);
-                }
-              }
+            if (other.hasStatsBytes()) {
+              setStatsBytes(other.getStatsBytes());
             }
             this.mergeUnknownFields(other.unknownFields);
             onChanged();
@@ -7011,11 +7030,11 @@ public final class Messages {
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
               throws java.io.IOException {
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample parsedMessage = null;
+            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample parsedMessage = null;
             try {
               parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
             } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-              parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample) e.getUnfinishedMessage();
+              parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample) e.getUnfinishedMessage();
               throw e.unwrapIOException();
             } finally {
               if (parsedMessage != null) {
@@ -7058,244 +7077,39 @@ public final class Messages {
             return this;
           }
 
-          private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement> measurement_ =
-            java.util.Collections.emptyList();
-          private void ensureMeasurementIsMutable() {
-            if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-              measurement_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement>(measurement_);
-              bitField0_ |= 0x00000002;
-             }
-          }
-
-          private com.google.protobuf.RepeatedFieldBuilderV3<
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder> measurementBuilder_;
-
+          private com.google.protobuf.ByteString statsBytes_ = com.google.protobuf.ByteString.EMPTY;
           /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
+           * <code>optional bytes StatsBytes = 2;</code>
            */
-          public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement> getMeasurementList() {
-            if (measurementBuilder_ == null) {
-              return java.util.Collections.unmodifiableList(measurement_);
-            } else {
-              return measurementBuilder_.getMessageList();
-            }
+          public boolean hasStatsBytes() {
+            return ((bitField0_ & 0x00000002) == 0x00000002);
           }
           /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
+           * <code>optional bytes StatsBytes = 2;</code>
            */
-          public int getMeasurementCount() {
-            if (measurementBuilder_ == null) {
-              return measurement_.size();
-            } else {
-              return measurementBuilder_.getCount();
-            }
+          public com.google.protobuf.ByteString getStatsBytes() {
+            return statsBytes_;
           }
           /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
+           * <code>optional bytes StatsBytes = 2;</code>
            */
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement getMeasurement(int index) {
-            if (measurementBuilder_ == null) {
-              return measurement_.get(index);
-            } else {
-              return measurementBuilder_.getMessage(index);
-            }
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public Builder setMeasurement(
-              int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement value) {
-            if (measurementBuilder_ == null) {
-              if (value == null) {
-                throw new NullPointerException();
-              }
-              ensureMeasurementIsMutable();
-              measurement_.set(index, value);
-              onChanged();
-            } else {
-              measurementBuilder_.setMessage(index, value);
-            }
+          public Builder setStatsBytes(com.google.protobuf.ByteString value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+            statsBytes_ = value;
+            onChanged();
             return this;
           }
           /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
+           * <code>optional bytes StatsBytes = 2;</code>
            */
-          public Builder setMeasurement(
-              int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder builderForValue) {
-            if (measurementBuilder_ == null) {
-              ensureMeasurementIsMutable();
-              measurement_.set(index, builderForValue.build());
-              onChanged();
-            } else {
-              measurementBuilder_.setMessage(index, builderForValue.build());
-            }
+          public Builder clearStatsBytes() {
+            bitField0_ = (bitField0_ & ~0x00000002);
+            statsBytes_ = getDefaultInstance().getStatsBytes();
+            onChanged();
             return this;
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public Builder addMeasurement(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement value) {
-            if (measurementBuilder_ == null) {
-              if (value == null) {
-                throw new NullPointerException();
-              }
-              ensureMeasurementIsMutable();
-              measurement_.add(value);
-              onChanged();
-            } else {
-              measurementBuilder_.addMessage(value);
-            }
-            return this;
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public Builder addMeasurement(
-              int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement value) {
-            if (measurementBuilder_ == null) {
-              if (value == null) {
-                throw new NullPointerException();
-              }
-              ensureMeasurementIsMutable();
-              measurement_.add(index, value);
-              onChanged();
-            } else {
-              measurementBuilder_.addMessage(index, value);
-            }
-            return this;
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public Builder addMeasurement(
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder builderForValue) {
-            if (measurementBuilder_ == null) {
-              ensureMeasurementIsMutable();
-              measurement_.add(builderForValue.build());
-              onChanged();
-            } else {
-              measurementBuilder_.addMessage(builderForValue.build());
-            }
-            return this;
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public Builder addMeasurement(
-              int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder builderForValue) {
-            if (measurementBuilder_ == null) {
-              ensureMeasurementIsMutable();
-              measurement_.add(index, builderForValue.build());
-              onChanged();
-            } else {
-              measurementBuilder_.addMessage(index, builderForValue.build());
-            }
-            return this;
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public Builder addAllMeasurement(
-              java.lang.Iterable<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement> values) {
-            if (measurementBuilder_ == null) {
-              ensureMeasurementIsMutable();
-              com.google.protobuf.AbstractMessageLite.Builder.addAll(
-                  values, measurement_);
-              onChanged();
-            } else {
-              measurementBuilder_.addAllMessages(values);
-            }
-            return this;
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public Builder clearMeasurement() {
-            if (measurementBuilder_ == null) {
-              measurement_ = java.util.Collections.emptyList();
-              bitField0_ = (bitField0_ & ~0x00000002);
-              onChanged();
-            } else {
-              measurementBuilder_.clear();
-            }
-            return this;
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public Builder removeMeasurement(int index) {
-            if (measurementBuilder_ == null) {
-              ensureMeasurementIsMutable();
-              measurement_.remove(index);
-              onChanged();
-            } else {
-              measurementBuilder_.remove(index);
-            }
-            return this;
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder getMeasurementBuilder(
-              int index) {
-            return getMeasurementFieldBuilder().getBuilder(index);
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder getMeasurementOrBuilder(
-              int index) {
-            if (measurementBuilder_ == null) {
-              return measurement_.get(index);  } else {
-              return measurementBuilder_.getMessageOrBuilder(index);
-            }
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder> 
-               getMeasurementOrBuilderList() {
-            if (measurementBuilder_ != null) {
-              return measurementBuilder_.getMessageOrBuilderList();
-            } else {
-              return java.util.Collections.unmodifiableList(measurement_);
-            }
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder addMeasurementBuilder() {
-            return getMeasurementFieldBuilder().addBuilder(
-                mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.getDefaultInstance());
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder addMeasurementBuilder(
-              int index) {
-            return getMeasurementFieldBuilder().addBuilder(
-                index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.getDefaultInstance());
-          }
-          /**
-           * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement Measurement = 2;</code>
-           */
-          public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder> 
-               getMeasurementBuilderList() {
-            return getMeasurementFieldBuilder().getBuilderList();
-          }
-          private com.google.protobuf.RepeatedFieldBuilderV3<
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder> 
-              getMeasurementFieldBuilder() {
-            if (measurementBuilder_ == null) {
-              measurementBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                  mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder>(
-                      measurement_,
-                      ((bitField0_ & 0x00000002) == 0x00000002),
-                      getParentForChildren(),
-                      isClean());
-              measurement_ = null;
-            }
-            return measurementBuilder_;
           }
           public final Builder setUnknownFields(
               final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -7308,16 +7122,16 @@ public final class Messages {
           }
 
 
-          // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample)
+          // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample)
         }
 
-        // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample)
-        private static final mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample DEFAULT_INSTANCE;
+        // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample)
+        private static final mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample DEFAULT_INSTANCE;
         static {
-          DEFAULT_INSTANCE = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample();
+          DEFAULT_INSTANCE = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample();
         }
 
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample getDefaultInstance() {
+        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample getDefaultInstance() {
           return DEFAULT_INSTANCE;
         }
 
@@ -7340,675 +7154,43 @@ public final class Messages {
           return PARSER;
         }
 
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample getDefaultInstanceForType() {
-          return DEFAULT_INSTANCE;
-        }
-
-      }
-
-      public interface WorkerStatMeasurementOrBuilder extends
-          // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement)
-          com.google.protobuf.MessageOrBuilder {
-
-        /**
-         * <code>optional string StatName = 1;</code>
-         */
-        boolean hasStatName();
-        /**
-         * <code>optional string StatName = 1;</code>
-         */
-        java.lang.String getStatName();
-        /**
-         * <code>optional string StatName = 1;</code>
-         */
-        com.google.protobuf.ByteString
-            getStatNameBytes();
-
-        /**
-         * <code>optional int64 StatValue = 2;</code>
-         */
-        boolean hasStatValue();
-        /**
-         * <code>optional int64 StatValue = 2;</code>
-         */
-        long getStatValue();
-      }
-      /**
-       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement}
-       */
-      public  static final class WorkerStatMeasurement extends
-          com.google.protobuf.GeneratedMessageV3 implements
-          // @@protoc_insertion_point(message_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement)
-          WorkerStatMeasurementOrBuilder {
-        // Use WorkerStatMeasurement.newBuilder() to construct.
-        private WorkerStatMeasurement(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
-          super(builder);
-        }
-        private WorkerStatMeasurement() {
-          statName_ = "";
-          statValue_ = 0L;
-        }
-
-        @java.lang.Override
-        public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
-          return this.unknownFields;
-        }
-        private WorkerStatMeasurement(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          this();
-          int mutable_bitField0_ = 0;
-          com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-              com.google.protobuf.UnknownFieldSet.newBuilder();
-          try {
-            boolean done = false;
-            while (!done) {
-              int tag = input.readTag();
-              switch (tag) {
-                case 0:
-                  done = true;
-                  break;
-                default: {
-                  if (!parseUnknownField(input, unknownFields,
-                                         extensionRegistry, tag)) {
-                    done = true;
-                  }
-                  break;
-                }
-                case 10: {
-                  com.google.protobuf.ByteString bs = input.readBytes();
-                  bitField0_ |= 0x00000001;
-                  statName_ = bs;
-                  break;
-                }
-                case 16: {
-                  bitField0_ |= 0x00000002;
-                  statValue_ = input.readInt64();
-                  break;
-                }
-              }
-            }
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(this);
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(
-                e).setUnfinishedMessage(this);
-          } finally {
-            this.unknownFields = unknownFields.build();
-            makeExtensionsImmutable();
-          }
-        }
-        public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_descriptor;
-        }
-
-        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-            internalGetFieldAccessorTable() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_fieldAccessorTable
-              .ensureFieldAccessorsInitialized(
-                  mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder.class);
-        }
-
-        private int bitField0_;
-        public static final int STATNAME_FIELD_NUMBER = 1;
-        private volatile java.lang.Object statName_;
-        /**
-         * <code>optional string StatName = 1;</code>
-         */
-        public boolean hasStatName() {
-          return ((bitField0_ & 0x00000001) == 0x00000001);
-        }
-        /**
-         * <code>optional string StatName = 1;</code>
-         */
-        public java.lang.String getStatName() {
-          java.lang.Object ref = statName_;
-          if (ref instanceof java.lang.String) {
-            return (java.lang.String) ref;
-          } else {
-            com.google.protobuf.ByteString bs = 
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            if (bs.isValidUtf8()) {
-              statName_ = s;
-            }
-            return s;
-          }
-        }
-        /**
-         * <code>optional string StatName = 1;</code>
-         */
-        public com.google.protobuf.ByteString
-            getStatNameBytes() {
-          java.lang.Object ref = statName_;
-          if (ref instanceof java.lang.String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            statName_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-
-        public static final int STATVALUE_FIELD_NUMBER = 2;
-        private long statValue_;
-        /**
-         * <code>optional int64 StatValue = 2;</code>
-         */
-        public boolean hasStatValue() {
-          return ((bitField0_ & 0x00000002) == 0x00000002);
-        }
-        /**
-         * <code>optional int64 StatValue = 2;</code>
-         */
-        public long getStatValue() {
-          return statValue_;
-        }
-
-        private byte memoizedIsInitialized = -1;
-        public final boolean isInitialized() {
-          byte isInitialized = memoizedIsInitialized;
-          if (isInitialized == 1) return true;
-          if (isInitialized == 0) return false;
-
-          memoizedIsInitialized = 1;
-          return true;
-        }
-
-        public void writeTo(com.google.protobuf.CodedOutputStream output)
-                            throws java.io.IOException {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            com.google.protobuf.GeneratedMessageV3.writeString(output, 1, statName_);
-          }
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
-            output.writeInt64(2, statValue_);
-          }
-          unknownFields.writeTo(output);
-        }
-
-        public int getSerializedSize() {
-          int size = memoizedSize;
-          if (size != -1) return size;
-
-          size = 0;
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, statName_);
-          }
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
-            size += com.google.protobuf.CodedOutputStream
-              .computeInt64Size(2, statValue_);
-          }
-          size += unknownFields.getSerializedSize();
-          memoizedSize = size;
-          return size;
-        }
-
-        private static final long serialVersionUID = 0L;
-        @java.lang.Override
-        public boolean equals(final java.lang.Object obj) {
-          if (obj == this) {
-           return true;
-          }
-          if (!(obj instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement)) {
-            return super.equals(obj);
-          }
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement) obj;
-
-          boolean result = true;
-          result = result && (hasStatName() == other.hasStatName());
-          if (hasStatName()) {
-            result = result && getStatName()
-                .equals(other.getStatName());
-          }
-          result = result && (hasStatValue() == other.hasStatValue());
-          if (hasStatValue()) {
-            result = result && (getStatValue()
-                == other.getStatValue());
-          }
-          result = result && unknownFields.equals(other.unknownFields);
-          return result;
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-          if (memoizedHashCode != 0) {
-            return memoizedHashCode;
-          }
-          int hash = 41;
-          hash = (19 * hash) + getDescriptorForType().hashCode();
-          if (hasStatName()) {
-            hash = (37 * hash) + STATNAME_FIELD_NUMBER;
-            hash = (53 * hash) + getStatName().hashCode();
-          }
-          if (hasStatValue()) {
-            hash = (37 * hash) + STATVALUE_FIELD_NUMBER;
-            hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-                getStatValue());
-          }
-          hash = (29 * hash) + unknownFields.hashCode();
-          memoizedHashCode = hash;
-          return hash;
-        }
-
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseFrom(
-            com.google.protobuf.ByteString data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return PARSER.parseFrom(data);
-        }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseFrom(
-            com.google.protobuf.ByteString data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return PARSER.parseFrom(data, extensionRegistry);
-        }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseFrom(byte[] data)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return PARSER.parseFrom(data);
-        }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseFrom(
-            byte[] data,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return PARSER.parseFrom(data, extensionRegistry);
-        }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseFrom(java.io.InputStream input)
-            throws java.io.IOException {
-          return com.google.protobuf.GeneratedMessageV3
-              .parseWithIOException(PARSER, input);
-        }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          return com.google.protobuf.GeneratedMessageV3
-              .parseWithIOException(PARSER, input, extensionRegistry);
-        }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseDelimitedFrom(java.io.InputStream input)
-            throws java.io.IOException {
-          return com.google.protobuf.GeneratedMessageV3
-              .parseDelimitedWithIOException(PARSER, input);
-        }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseDelimitedFrom(
-            java.io.InputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          return com.google.protobuf.GeneratedMessageV3
-              .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-        }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseFrom(
-            com.google.protobuf.CodedInputStream input)
-            throws java.io.IOException {
-          return com.google.protobuf.GeneratedMessageV3
-              .parseWithIOException(PARSER, input);
-        }
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parseFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          return com.google.protobuf.GeneratedMessageV3
-              .parseWithIOException(PARSER, input, extensionRegistry);
-        }
-
-        public Builder newBuilderForType() { return newBuilder(); }
-        public static Builder newBuilder() {
-          return DEFAULT_INSTANCE.toBuilder();
-        }
-        public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement prototype) {
-          return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-        }
-        public Builder toBuilder() {
-          return this == DEFAULT_INSTANCE
-              ? new Builder() : new Builder().mergeFrom(this);
-        }
-
-        @java.lang.Override
-        protected Builder newBuilderForType(
-            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-          Builder builder = new Builder(parent);
-          return builder;
-        }
-        /**
-         * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement}
-         */
-        public static final class Builder extends
-            com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-            // @@protoc_insertion_point(builder_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement)
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurementOrBuilder {
-          public static final com.google.protobuf.Descriptors.Descriptor
-              getDescriptor() {
-            return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_descriptor;
-          }
-
-          protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-              internalGetFieldAccessorTable() {
-            return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_fieldAccessorTable
-                .ensureFieldAccessorsInitialized(
-                    mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.Builder.class);
-          }
-
-          // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.newBuilder()
-          private Builder() {
-            maybeForceBuilderInitialization();
-          }
-
-          private Builder(
-              com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-            super(parent);
-            maybeForceBuilderInitialization();
-          }
-          private void maybeForceBuilderInitialization() {
-            if (com.google.protobuf.GeneratedMessageV3
-                    .alwaysUseFieldBuilders) {
-            }
-          }
-          public Builder clear() {
-            super.clear();
-            statName_ = "";
-            bitField0_ = (bitField0_ & ~0x00000001);
-            statValue_ = 0L;
-            bitField0_ = (bitField0_ & ~0x00000002);
-            return this;
-          }
-
-          public com.google.protobuf.Descriptors.Descriptor
-              getDescriptorForType() {
-            return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_descriptor;
-          }
-
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement getDefaultInstanceForType() {
-            return mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.getDefaultInstance();
-          }
-
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement build() {
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement result = buildPartial();
-            if (!result.isInitialized()) {
-              throw newUninitializedMessageException(result);
-            }
-            return result;
-          }
-
-          public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement buildPartial() {
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement(this);
-            int from_bitField0_ = bitField0_;
-            int to_bitField0_ = 0;
-            if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
-              to_bitField0_ |= 0x00000001;
-            }
-            result.statName_ = statName_;
-            if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-              to_bitField0_ |= 0x00000002;
-            }
-            result.statValue_ = statValue_;
-            result.bitField0_ = to_bitField0_;
-            onBuilt();
-            return result;
-          }
-
-          public Builder clone() {
-            return (Builder) super.clone();
-          }
-          public Builder setField(
-              com.google.protobuf.Descriptors.FieldDescriptor field,
-              Object value) {
-            return (Builder) super.setField(field, value);
-          }
-          public Builder clearField(
-              com.google.protobuf.Descriptors.FieldDescriptor field) {
-            return (Builder) super.clearField(field);
-          }
-          public Builder clearOneof(
-              com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-            return (Builder) super.clearOneof(oneof);
-          }
-          public Builder setRepeatedField(
-              com.google.protobuf.Descriptors.FieldDescriptor field,
-              int index, Object value) {
-            return (Builder) super.setRepeatedField(field, index, value);
-          }
-          public Builder addRepeatedField(
-              com.google.protobuf.Descriptors.FieldDescriptor field,
-              Object value) {
-            return (Builder) super.addRepeatedField(field, value);
-          }
-          public Builder mergeFrom(com.google.protobuf.Message other) {
-            if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement) {
-              return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement)other);
-            } else {
-              super.mergeFrom(other);
-              return this;
-            }
-          }
-
-          public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement other) {
-            if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement.getDefaultInstance()) return this;
-            if (other.hasStatName()) {
-              bitField0_ |= 0x00000001;
-              statName_ = other.statName_;
-              onChanged();
-            }
-            if (other.hasStatValue()) {
-              setStatValue(other.getStatValue());
-            }
-            this.mergeUnknownFields(other.unknownFields);
-            onChanged();
-            return this;
-          }
-
-          public final boolean isInitialized() {
-            return true;
-          }
-
-          public Builder mergeFrom(
-              com.google.protobuf.CodedInputStream input,
-              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-              throws java.io.IOException {
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement parsedMessage = null;
-            try {
-              parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-              parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement) e.getUnfinishedMessage();
-              throw e.unwrapIOException();
-            } finally {
-              if (parsedMessage != null) {
-                mergeFrom(parsedMessage);
-              }
-            }
-            return this;
-          }
-          private int bitField0_;
-
-          private java.lang.Object statName_ = "";
-          /**
-           * <code>optional string StatName = 1;</code>
-           */
-          public boolean hasStatName() {
-            return ((bitField0_ & 0x00000001) == 0x00000001);
-          }
-          /**
-           * <code>optional string StatName = 1;</code>
-           */
-          public java.lang.String getStatName() {
-            java.lang.Object ref = statName_;
-            if (!(ref instanceof java.lang.String)) {
-              com.google.protobuf.ByteString bs =
-                  (com.google.protobuf.ByteString) ref;
-              java.lang.String s = bs.toStringUtf8();
-              if (bs.isValidUtf8()) {
-                statName_ = s;
-              }
-              return s;
-            } else {
-              return (java.lang.String) ref;
-            }
-          }
-          /**
-           * <code>optional string StatName = 1;</code>
-           */
-          public com.google.protobuf.ByteString
-              getStatNameBytes() {
-            java.lang.Object ref = statName_;
-            if (ref instanceof String) {
-              com.google.protobuf.ByteString b = 
-                  com.google.protobuf.ByteString.copyFromUtf8(
-                      (java.lang.String) ref);
-              statName_ = b;
-              return b;
-            } else {
-              return (com.google.protobuf.ByteString) ref;
-            }
-          }
-          /**
-           * <code>optional string StatName = 1;</code>
-           */
-          public Builder setStatName(
-              java.lang.String value) {
-            if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-            statName_ = value;
-            onChanged();
-            return this;
-          }
-          /**
-           * <code>optional string StatName = 1;</code>
-           */
-          public Builder clearStatName() {
-            bitField0_ = (bitField0_ & ~0x00000001);
-            statName_ = getDefaultInstance().getStatName();
-            onChanged();
-            return this;
-          }
-          /**
-           * <code>optional string StatName = 1;</code>
-           */
-          public Builder setStatNameBytes(
-              com.google.protobuf.ByteString value) {
-            if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-            statName_ = value;
-            onChanged();
-            return this;
-          }
-
-          private long statValue_ ;
-          /**
-           * <code>optional int64 StatValue = 2;</code>
-           */
-          public boolean hasStatValue() {
-            return ((bitField0_ & 0x00000002) == 0x00000002);
-          }
-          /**
-           * <code>optional int64 StatValue = 2;</code>
-           */
-          public long getStatValue() {
-            return statValue_;
-          }
-          /**
-           * <code>optional int64 StatValue = 2;</code>
-           */
-          public Builder setStatValue(long value) {
-            bitField0_ |= 0x00000002;
-            statValue_ = value;
-            onChanged();
-            return this;
-          }
-          /**
-           * <code>optional int64 StatValue = 2;</code>
-           */
-          public Builder clearStatValue() {
-            bitField0_ = (bitField0_ & ~0x00000002);
-            statValue_ = 0L;
-            onChanged();
-            return this;
-          }
-          public final Builder setUnknownFields(
-              final com.google.protobuf.UnknownFieldSet unknownFields) {
-            return super.setUnknownFields(unknownFields);
-          }
-
-          public final Builder mergeUnknownFields(
-              final com.google.protobuf.UnknownFieldSet unknownFields) {
-            return super.mergeUnknownFields(unknownFields);
-          }
-
-
-          // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement)
-        }
-
-        // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement)
-        private static final mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement DEFAULT_INSTANCE;
-        static {
-          DEFAULT_INSTANCE = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement();
-        }
-
-        public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement getDefaultInstance() {
-          return DEFAULT_INSTANCE;
-        }
-
-        @java.lang.Deprecated public static final com.google.protobuf.Parser<WorkerStatMeasurement>
-            PARSER = new com.google.protobuf.AbstractParser<WorkerStatMeasurement>() {
-          public WorkerStatMeasurement parsePartialFrom(
-              com.google.protobuf.CodedInputStream input,
-              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-              throws com.google.protobuf.InvalidProtocolBufferException {
-              return new WorkerStatMeasurement(input, extensionRegistry);
-          }
-        };
-
-        public static com.google.protobuf.Parser<WorkerStatMeasurement> parser() {
-          return PARSER;
-        }
-
-        @java.lang.Override
-        public com.google.protobuf.Parser<WorkerStatMeasurement> getParserForType() {
-          return PARSER;
-        }
-
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatMeasurement getDefaultInstanceForType() {
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample getDefaultInstanceForType() {
           return DEFAULT_INSTANCE;
         }
 
       }
 
       public static final int SAMPLES_FIELD_NUMBER = 1;
-      private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample> samples_;
+      private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample> samples_;
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
-      public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample> getSamplesList() {
+      public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample> getSamplesList() {
         return samples_;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
-      public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder> 
+      public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder> 
           getSamplesOrBuilderList() {
         return samples_;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
       public int getSamplesCount() {
         return samples_.size();
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample getSamples(int index) {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample getSamples(int index) {
         return samples_.get(index);
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder getSamplesOrBuilder(
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder getSamplesOrBuilder(
           int index) {
         return samples_.get(index);
       }
@@ -8051,10 +7233,10 @@ public final class Messages {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage)) {
+        if (!(obj instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage)) {
           return super.equals(obj);
         }
-        mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage) obj;
+        mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage) obj;
 
         boolean result = true;
         result = result && getSamplesList()
@@ -8079,58 +7261,58 @@ public final class Messages {
         return hash;
       }
 
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseFrom(
           com.google.protobuf.ByteString data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseFrom(
           com.google.protobuf.ByteString data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseFrom(byte[] data)
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseFrom(byte[] data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseFrom(
           byte[] data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseFrom(java.io.InputStream input)
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseFrom(java.io.InputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input, extensionRegistry);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseDelimitedFrom(java.io.InputStream input)
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseDelimitedFrom(java.io.InputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseDelimitedWithIOException(PARSER, input);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseDelimitedFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseDelimitedFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseFrom(
           com.google.protobuf.CodedInputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input);
       }
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parseFrom(
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parseFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
@@ -8142,7 +7324,7 @@ public final class Messages {
       public static Builder newBuilder() {
         return DEFAULT_INSTANCE.toBuilder();
       }
-      public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage prototype) {
+      public static Builder newBuilder(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage prototype) {
         return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
       }
       public Builder toBuilder() {
@@ -8157,25 +7339,25 @@ public final class Messages {
         return builder;
       }
       /**
-       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage}
+       * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage}
        */
       public static final class Builder extends
           com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-          // @@protoc_insertion_point(builder_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage)
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessageOrBuilder {
+          // @@protoc_insertion_point(builder_implements:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage)
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessageOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_descriptor;
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor;
         }
 
         protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_fieldAccessorTable
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
-                  mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.Builder.class);
+                  mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.class, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.Builder.class);
         }
 
-        // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.newBuilder()
+        // Construct using mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.newBuilder()
         private Builder() {
           maybeForceBuilderInitialization();
         }
@@ -8204,23 +7386,23 @@ public final class Messages {
 
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
-          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_descriptor;
+          return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor;
         }
 
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage getDefaultInstanceForType() {
-          return mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.getDefaultInstance();
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage getDefaultInstanceForType() {
+          return mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.getDefaultInstance();
         }
 
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage build() {
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage result = buildPartial();
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage build() {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage result = buildPartial();
           if (!result.isInitialized()) {
             throw newUninitializedMessageException(result);
           }
           return result;
         }
 
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage buildPartial() {
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage(this);
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage buildPartial() {
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage(this);
           int from_bitField0_ = bitField0_;
           if (samplesBuilder_ == null) {
             if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -8262,16 +7444,16 @@ public final class Messages {
           return (Builder) super.addRepeatedField(field, value);
         }
         public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage) {
-            return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage)other);
+          if (other instanceof mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage) {
+            return mergeFrom((mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage)other);
           } else {
             super.mergeFrom(other);
             return this;
           }
         }
 
-        public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage other) {
-          if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.getDefaultInstance()) return this;
+        public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage other) {
+          if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.getDefaultInstance()) return this;
           if (samplesBuilder_ == null) {
             if (!other.samples_.isEmpty()) {
               if (samples_.isEmpty()) {
@@ -8311,11 +7493,11 @@ public final class Messages {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage parsedMessage = null;
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage parsedMessage = null;
           try {
             parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage) e.getUnfinishedMessage();
+            parsedMessage = (mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
             if (parsedMessage != null) {
@@ -8326,22 +7508,22 @@ public final class Messages {
         }
         private int bitField0_;
 
-        private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample> samples_ =
+        private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample> samples_ =
           java.util.Collections.emptyList();
         private void ensureSamplesIsMutable() {
           if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-            samples_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample>(samples_);
+            samples_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample>(samples_);
             bitField0_ |= 0x00000001;
            }
         }
 
         private com.google.protobuf.RepeatedFieldBuilderV3<
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder> samplesBuilder_;
+            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder> samplesBuilder_;
 
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
-        public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample> getSamplesList() {
+        public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample> getSamplesList() {
           if (samplesBuilder_ == null) {
             return java.util.Collections.unmodifiableList(samples_);
           } else {
@@ -8349,7 +7531,7 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
         public int getSamplesCount() {
           if (samplesBuilder_ == null) {
@@ -8359,9 +7541,9 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample getSamples(int index) {
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample getSamples(int index) {
           if (samplesBuilder_ == null) {
             return samples_.get(index);
           } else {
@@ -8369,10 +7551,10 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
         public Builder setSamples(
-            int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample value) {
+            int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample value) {
           if (samplesBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -8386,10 +7568,10 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
         public Builder setSamples(
-            int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder builderForValue) {
+            int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder builderForValue) {
           if (samplesBuilder_ == null) {
             ensureSamplesIsMutable();
             samples_.set(index, builderForValue.build());
@@ -8400,9 +7582,9 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
-        public Builder addSamples(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample value) {
+        public Builder addSamples(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample value) {
           if (samplesBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -8416,10 +7598,10 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
         public Builder addSamples(
-            int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample value) {
+            int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample value) {
           if (samplesBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -8433,10 +7615,10 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
         public Builder addSamples(
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder builderForValue) {
+            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder builderForValue) {
           if (samplesBuilder_ == null) {
             ensureSamplesIsMutable();
             samples_.add(builderForValue.build());
@@ -8447,10 +7629,10 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
         public Builder addSamples(
-            int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder builderForValue) {
+            int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder builderForValue) {
           if (samplesBuilder_ == null) {
             ensureSamplesIsMutable();
             samples_.add(index, builderForValue.build());
@@ -8461,10 +7643,10 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
         public Builder addAllSamples(
-            java.lang.Iterable<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample> values) {
+            java.lang.Iterable<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample> values) {
           if (samplesBuilder_ == null) {
             ensureSamplesIsMutable();
             com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -8476,7 +7658,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
         public Builder clearSamples() {
           if (samplesBuilder_ == null) {
@@ -8489,7 +7671,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
         public Builder removeSamples(int index) {
           if (samplesBuilder_ == null) {
@@ -8502,16 +7684,16 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder getSamplesBuilder(
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder getSamplesBuilder(
             int index) {
           return getSamplesFieldBuilder().getBuilder(index);
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder getSamplesOrBuilder(
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder getSamplesOrBuilder(
             int index) {
           if (samplesBuilder_ == null) {
             return samples_.get(index);  } else {
@@ -8519,9 +7701,9 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
-        public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder> 
+        public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder> 
              getSamplesOrBuilderList() {
           if (samplesBuilder_ != null) {
             return samplesBuilder_.getMessageOrBuilderList();
@@ -8530,33 +7712,33 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder addSamplesBuilder() {
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder addSamplesBuilder() {
           return getSamplesFieldBuilder().addBuilder(
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.getDefaultInstance());
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.getDefaultInstance());
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
-        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder addSamplesBuilder(
+        public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder addSamplesBuilder(
             int index) {
           return getSamplesFieldBuilder().addBuilder(
-              index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.getDefaultInstance());
+              index, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.getDefaultInstance());
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample Samples = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage.WorkerStatSample Samples = 1;</code>
          */
-        public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder> 
+        public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder> 
              getSamplesBuilderList() {
           return getSamplesFieldBuilder().getBuilderList();
         }
         private com.google.protobuf.RepeatedFieldBuilderV3<
-            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder> 
+            mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder> 
             getSamplesFieldBuilder() {
           if (samplesBuilder_ == null) {
             samplesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSample.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.WorkerStatSampleOrBuilder>(
+                mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSampleOrBuilder>(
                     samples_,
                     ((bitField0_ & 0x00000001) == 0x00000001),
                     getParentForChildren(),
@@ -8576,39 +7758,39 @@ public final class Messages {
         }
 
 
-        // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage)
+        // @@protoc_insertion_point(builder_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage)
       }
 
-      // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage)
-      private static final mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage DEFAULT_INSTANCE;
+      // @@protoc_insertion_point(class_scope:mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage)
+      private static final mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage DEFAULT_INSTANCE;
       static {
-        DEFAULT_INSTANCE = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage();
+        DEFAULT_INSTANCE = new mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage();
       }
 
-      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage getDefaultInstance() {
+      public static mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage getDefaultInstance() {
         return DEFAULT_INSTANCE;
       }
 
-      @java.lang.Deprecated public static final com.google.protobuf.Parser<WorkerFinalReportMessage>
-          PARSER = new com.google.protobuf.AbstractParser<WorkerFinalReportMessage>() {
-        public WorkerFinalReportMessage parsePartialFrom(
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<WorkerStatsMessage>
+          PARSER = new com.google.protobuf.AbstractParser<WorkerStatsMessage>() {
+        public WorkerStatsMessage parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-            return new WorkerFinalReportMessage(input, extensionRegistry);
+            return new WorkerStatsMessage(input, extensionRegistry);
         }
       };
 
-      public static com.google.protobuf.Parser<WorkerFinalReportMessage> parser() {
+      public static com.google.protobuf.Parser<WorkerStatsMessage> parser() {
         return PARSER;
       }
 
       @java.lang.Override
-      public com.google.protobuf.Parser<WorkerFinalReportMessage> getParserForType() {
+      public com.google.protobuf.Parser<WorkerStatsMessage> getParserForType() {
         return PARSER;
       }
 
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage getDefaultInstanceForType() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
       }
 
@@ -8814,25 +7996,25 @@ public final class Messages {
       return startBarrier_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.getDefaultInstance() : startBarrier_;
     }
 
-    public static final int WORKERFINALREPORT_FIELD_NUMBER = 12;
-    private mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage workerFinalReport_;
+    public static final int WORKERSTATS_FIELD_NUMBER = 12;
+    private mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage workerStats_;
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
      */
-    public boolean hasWorkerFinalReport() {
+    public boolean hasWorkerStats() {
       return ((bitField0_ & 0x00000400) == 0x00000400);
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage getWorkerFinalReport() {
-      return workerFinalReport_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.getDefaultInstance() : workerFinalReport_;
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage getWorkerStats() {
+      return workerStats_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.getDefaultInstance() : workerStats_;
     }
     /**
-     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+     * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
      */
-    public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessageOrBuilder getWorkerFinalReportOrBuilder() {
-      return workerFinalReport_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.getDefaultInstance() : workerFinalReport_;
+    public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessageOrBuilder getWorkerStatsOrBuilder() {
+      return workerStats_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.getDefaultInstance() : workerStats_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -8878,7 +8060,7 @@ public final class Messages {
         output.writeMessage(11, getStartBarrier());
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
-        output.writeMessage(12, getWorkerFinalReport());
+        output.writeMessage(12, getWorkerStats());
       }
       unknownFields.writeTo(output);
     }
@@ -8930,7 +8112,7 @@ public final class Messages {
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(12, getWorkerFinalReport());
+          .computeMessageSize(12, getWorkerStats());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -8998,10 +8180,10 @@ public final class Messages {
         result = result && getStartBarrier()
             .equals(other.getStartBarrier());
       }
-      result = result && (hasWorkerFinalReport() == other.hasWorkerFinalReport());
-      if (hasWorkerFinalReport()) {
-        result = result && getWorkerFinalReport()
-            .equals(other.getWorkerFinalReport());
+      result = result && (hasWorkerStats() == other.hasWorkerStats());
+      if (hasWorkerStats()) {
+        result = result && getWorkerStats()
+            .equals(other.getWorkerStats());
       }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
@@ -9054,9 +8236,9 @@ public final class Messages {
         hash = (37 * hash) + STARTBARRIER_FIELD_NUMBER;
         hash = (53 * hash) + getStartBarrier().hashCode();
       }
-      if (hasWorkerFinalReport()) {
-        hash = (37 * hash) + WORKERFINALREPORT_FIELD_NUMBER;
-        hash = (53 * hash) + getWorkerFinalReport().hashCode();
+      if (hasWorkerStats()) {
+        hash = (37 * hash) + WORKERSTATS_FIELD_NUMBER;
+        hash = (53 * hash) + getWorkerStats().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -9178,7 +8360,7 @@ public final class Messages {
           getSendQueryVerticesFieldBuilder();
           getReceiveQueryVerticesFieldBuilder();
           getStartBarrierFieldBuilder();
-          getWorkerFinalReportFieldBuilder();
+          getWorkerStatsFieldBuilder();
         }
       }
       public Builder clear() {
@@ -9227,10 +8409,10 @@ public final class Messages {
           startBarrierBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000200);
-        if (workerFinalReportBuilder_ == null) {
-          workerFinalReport_ = null;
+        if (workerStatsBuilder_ == null) {
+          workerStats_ = null;
         } else {
-          workerFinalReportBuilder_.clear();
+          workerStatsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000400);
         return this;
@@ -9324,10 +8506,10 @@ public final class Messages {
         if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
           to_bitField0_ |= 0x00000400;
         }
-        if (workerFinalReportBuilder_ == null) {
-          result.workerFinalReport_ = workerFinalReport_;
+        if (workerStatsBuilder_ == null) {
+          result.workerStats_ = workerStats_;
         } else {
-          result.workerFinalReport_ = workerFinalReportBuilder_.build();
+          result.workerStats_ = workerStatsBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -9401,8 +8583,8 @@ public final class Messages {
         if (other.hasStartBarrier()) {
           mergeStartBarrier(other.getStartBarrier());
         }
-        if (other.hasWorkerFinalReport()) {
-          mergeWorkerFinalReport(other.getWorkerFinalReport());
+        if (other.hasWorkerStats()) {
+          mergeWorkerStats(other.getWorkerStats());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -10311,122 +9493,122 @@ public final class Messages {
         return startBarrierBuilder_;
       }
 
-      private mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage workerFinalReport_ = null;
+      private mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage workerStats_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessageOrBuilder> workerFinalReportBuilder_;
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessageOrBuilder> workerStatsBuilder_;
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
        */
-      public boolean hasWorkerFinalReport() {
+      public boolean hasWorkerStats() {
         return ((bitField0_ & 0x00000400) == 0x00000400);
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage getWorkerFinalReport() {
-        if (workerFinalReportBuilder_ == null) {
-          return workerFinalReport_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.getDefaultInstance() : workerFinalReport_;
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage getWorkerStats() {
+        if (workerStatsBuilder_ == null) {
+          return workerStats_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.getDefaultInstance() : workerStats_;
         } else {
-          return workerFinalReportBuilder_.getMessage();
+          return workerStatsBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
        */
-      public Builder setWorkerFinalReport(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage value) {
-        if (workerFinalReportBuilder_ == null) {
+      public Builder setWorkerStats(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage value) {
+        if (workerStatsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          workerFinalReport_ = value;
+          workerStats_ = value;
           onChanged();
         } else {
-          workerFinalReportBuilder_.setMessage(value);
+          workerStatsBuilder_.setMessage(value);
         }
         bitField0_ |= 0x00000400;
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
        */
-      public Builder setWorkerFinalReport(
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.Builder builderForValue) {
-        if (workerFinalReportBuilder_ == null) {
-          workerFinalReport_ = builderForValue.build();
+      public Builder setWorkerStats(
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.Builder builderForValue) {
+        if (workerStatsBuilder_ == null) {
+          workerStats_ = builderForValue.build();
           onChanged();
         } else {
-          workerFinalReportBuilder_.setMessage(builderForValue.build());
+          workerStatsBuilder_.setMessage(builderForValue.build());
         }
         bitField0_ |= 0x00000400;
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
        */
-      public Builder mergeWorkerFinalReport(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage value) {
-        if (workerFinalReportBuilder_ == null) {
+      public Builder mergeWorkerStats(mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage value) {
+        if (workerStatsBuilder_ == null) {
           if (((bitField0_ & 0x00000400) == 0x00000400) &&
-              workerFinalReport_ != null &&
-              workerFinalReport_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.getDefaultInstance()) {
-            workerFinalReport_ =
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.newBuilder(workerFinalReport_).mergeFrom(value).buildPartial();
+              workerStats_ != null &&
+              workerStats_ != mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.getDefaultInstance()) {
+            workerStats_ =
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.newBuilder(workerStats_).mergeFrom(value).buildPartial();
           } else {
-            workerFinalReport_ = value;
+            workerStats_ = value;
           }
           onChanged();
         } else {
-          workerFinalReportBuilder_.mergeFrom(value);
+          workerStatsBuilder_.mergeFrom(value);
         }
         bitField0_ |= 0x00000400;
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
        */
-      public Builder clearWorkerFinalReport() {
-        if (workerFinalReportBuilder_ == null) {
-          workerFinalReport_ = null;
+      public Builder clearWorkerStats() {
+        if (workerStatsBuilder_ == null) {
+          workerStats_ = null;
           onChanged();
         } else {
-          workerFinalReportBuilder_.clear();
+          workerStatsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.Builder getWorkerFinalReportBuilder() {
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.Builder getWorkerStatsBuilder() {
         bitField0_ |= 0x00000400;
         onChanged();
-        return getWorkerFinalReportFieldBuilder().getBuilder();
+        return getWorkerStatsFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
        */
-      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessageOrBuilder getWorkerFinalReportOrBuilder() {
-        if (workerFinalReportBuilder_ != null) {
-          return workerFinalReportBuilder_.getMessageOrBuilder();
+      public mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessageOrBuilder getWorkerStatsOrBuilder() {
+        if (workerStatsBuilder_ != null) {
+          return workerStatsBuilder_.getMessageOrBuilder();
         } else {
-          return workerFinalReport_ == null ?
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.getDefaultInstance() : workerFinalReport_;
+          return workerStats_ == null ?
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.getDefaultInstance() : workerStats_;
         }
       }
       /**
-       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerFinalReportMessage WorkerFinalReport = 12;</code>
+       * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessageOrBuilder> 
-          getWorkerFinalReportFieldBuilder() {
-        if (workerFinalReportBuilder_ == null) {
-          workerFinalReportBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerFinalReportMessageOrBuilder>(
-                  getWorkerFinalReport(),
+          mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessageOrBuilder> 
+          getWorkerStatsFieldBuilder() {
+        if (workerStatsBuilder_ == null) {
+          workerStatsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessageOrBuilder>(
+                  getWorkerStats(),
                   getParentForChildren(),
                   isClean());
-          workerFinalReport_ = null;
+          workerStats_ = null;
         }
-        return workerFinalReportBuilder_;
+        return workerStatsBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -10533,20 +9715,15 @@ public final class Messages {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryVerticesMessage_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_descriptor;
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_fieldAccessorTable;
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_descriptor;
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_fieldAccessorTable;
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -10560,7 +9737,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\321\021\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\241\020\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022q\n\020" +
@@ -10581,53 +9758,49 @@ public final class Messages {
       "sages.ControlMessage.ReceiveQueryVertice" +
       "sMessage\022i\n\014StartBarrier\030\013 \001(\0132S.mthesis" +
       ".concurrent_graph.communication.messages" +
-      ".ControlMessage.StartBarrierMessage\022s\n\021W" +
-      "orkerFinalReport\030\014 \001(\0132X.mthesis.concurr" +
+      ".ControlMessage.StartBarrierMessage\022g\n\013W" +
+      "orkerStats\030\014 \001(\0132R.mthesis.concurrent_gr" +
+      "aph.communication.messages.ControlMessag" +
+      "e.WorkerStatsMessage\032J\n\027AssignPartitions" +
+      "Message\022\027\n\017MasterStartTime\030\001 \001(\003\022\026\n\016Part",
+      "itionFiles\030\002 \003(\t\032/\n\030WorkerInitializedMes" +
+      "sage\022\023\n\013VertexCount\030\001 \001(\005\032\327\001\n\031QueryInter" +
+      "sectionsMessage\022\203\001\n\rIntersections\030\001 \003(\0132" +
+      "l.mthesis.concurrent_graph.communication" +
+      ".messages.ControlMessage.QueryIntersecti" +
+      "onsMessage.IntersectionsEntry\0324\n\022Interse" +
+      "ctionsEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\005:" +
+      "\0028\001\0321\n\030SendQueryVerticesMessage\022\025\n\rSendT" +
+      "oMachine\030\001 \001(\005\0326\n\033ReceiveQueryVerticesMe" +
+      "ssage\022\027\n\017RecvFromMachine\030\001 \003(\005\032\325\003\n\023Start",
+      "BarrierMessage\022\207\001\n\021SendQueryVertices\030\001 \003" +
+      "(\0132l.mthesis.concurrent_graph.communicat" +
+      "ion.messages.ControlMessage.StartBarrier" +
+      "Message.SendQueryVerticesMessage\022\215\001\n\024Rec" +
+      "eiveQueryVertices\030\002 \003(\0132o.mthesis.concur" +
+      "rent_graph.communication.messages.Contro" +
+      "lMessage.StartBarrierMessage.ReceiveQuer" +
+      "yVerticesMessage\032X\n\030SendQueryVerticesMes" +
+      "sage\022\017\n\007QueryId\030\001 \001(\005\022\025\n\rMoveToMachine\030\002" +
+      " \001(\005\022\024\n\014MaxMoveCount\030\003 \001(\005\032J\n\033ReceiveQue",
+      "ryVerticesMessage\022\017\n\007QueryId\030\001 \001(\005\022\032\n\022Re" +
+      "ceiveFromMachine\030\002 \001(\005\032\300\001\n\022WorkerStatsMe" +
+      "ssage\022t\n\007Samples\030\001 \003(\0132c.mthesis.concurr" +
       "ent_graph.communication.messages.Control" +
-      "Message.WorkerFinalReportMessage\0321\n\027Assi" +
-      "gnPartitionsMessage\022\026\n\016PartitionFiles\030\001 ",
-      "\003(\t\032/\n\030WorkerInitializedMessage\022\023\n\013Verte" +
-      "xCount\030\001 \001(\005\032\327\001\n\031QueryIntersectionsMessa" +
-      "ge\022\203\001\n\rIntersections\030\001 \003(\0132l.mthesis.con" +
-      "current_graph.communication.messages.Con" +
-      "trolMessage.QueryIntersectionsMessage.In" +
-      "tersectionsEntry\0324\n\022IntersectionsEntry\022\013" +
-      "\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\005:\0028\001\0321\n\030SendQu" +
-      "eryVerticesMessage\022\025\n\rSendToMachine\030\001 \001(" +
-      "\005\0326\n\033ReceiveQueryVerticesMessage\022\027\n\017Recv" +
-      "FromMachine\030\001 \003(\005\032\325\003\n\023StartBarrierMessag",
-      "e\022\207\001\n\021SendQueryVertices\030\001 \003(\0132l.mthesis." +
-      "concurrent_graph.communication.messages." +
-      "ControlMessage.StartBarrierMessage.SendQ" +
-      "ueryVerticesMessage\022\215\001\n\024ReceiveQueryVert" +
-      "ices\030\002 \003(\0132o.mthesis.concurrent_graph.co" +
-      "mmunication.messages.ControlMessage.Star" +
-      "tBarrierMessage.ReceiveQueryVerticesMess" +
-      "age\032X\n\030SendQueryVerticesMessage\022\017\n\007Query" +
-      "Id\030\001 \001(\005\022\025\n\rMoveToMachine\030\002 \001(\005\022\024\n\014MaxMo" +
-      "veCount\030\003 \001(\005\032J\n\033ReceiveQueryVerticesMes",
-      "sage\022\017\n\007QueryId\030\001 \001(\005\022\032\n\022ReceiveFromMach" +
-      "ine\030\002 \001(\005\032\375\002\n\030WorkerFinalReportMessage\022z" +
-      "\n\007Samples\030\001 \003(\0132i.mthesis.concurrent_gra" +
-      "ph.communication.messages.ControlMessage" +
-      ".WorkerFinalReportMessage.WorkerStatSamp" +
-      "le\032\246\001\n\020WorkerStatSample\022\014\n\004Time\030\001 \001(\003\022\203\001" +
-      "\n\013Measurement\030\002 \003(\0132n.mthesis.concurrent" +
-      "_graph.communication.messages.ControlMes" +
-      "sage.WorkerFinalReportMessage.WorkerStat" +
-      "Measurement\032<\n\025WorkerStatMeasurement\022\020\n\010",
-      "StatName\030\001 \001(\t\022\021\n\tStatValue\030\002 \001(\003*\201\003\n\022Co" +
-      "ntrolMessageType\022\025\n\021Channel_Handshake\020\001\022" +
-      "\026\n\022Worker_Initialized\020\002\022\"\n\036Worker_Query_" +
-      "Superstep_Barrier\020\003\022#\n\037Worker_Query_Supe" +
-      "rstep_Finished\020\004\022\031\n\025Worker_Query_Finishe" +
-      "d\020\005\022\032\n\026Worker_Barrier_Started\020\014\022\033\n\027Worke" +
-      "r_Barrier_Finished\020\r\022\034\n\030Master_Worker_In" +
-      "itialize\020\006\022\026\n\022Master_Query_Start\020\007\022\037\n\033Ma" +
-      "ster_Query_Next_Superstep\020\010\022\031\n\025Master_Qu" +
-      "ery_Finished\020\t\022\023\n\017Master_Shutdown\020\n\022\030\n\024M",
-      "aster_Start_Barrier\020\013B2\n&mthesis.concurr" +
-      "ent_graph.communicationB\010Messages"
+      "Message.WorkerStatsMessage.WorkerStatSam" +
+      "ple\0324\n\020WorkerStatSample\022\014\n\004Time\030\001 \001(\003\022\022\n" +
+      "\nStatsBytes\030\002 \001(\014*\201\003\n\022ControlMessageType" +
+      "\022\025\n\021Channel_Handshake\020\001\022\026\n\022Worker_Initia" +
+      "lized\020\002\022\"\n\036Worker_Query_Superstep_Barrie" +
+      "r\020\003\022#\n\037Worker_Query_Superstep_Finished\020\004",
+      "\022\031\n\025Worker_Query_Finished\020\005\022\032\n\026Worker_Ba" +
+      "rrier_Started\020\014\022\033\n\027Worker_Barrier_Finish" +
+      "ed\020\r\022\034\n\030Master_Worker_Initialize\020\006\022\026\n\022Ma" +
+      "ster_Query_Start\020\007\022\037\n\033Master_Query_Next_" +
+      "Superstep\020\010\022\031\n\025Master_Query_Finished\020\t\022\023" +
+      "\n\017Master_Shutdown\020\n\022\030\n\024Master_Start_Barr" +
+      "ier\020\013B2\n&mthesis.concurrent_graph.commun" +
+      "icationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10652,13 +9825,13 @@ public final class Messages {
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor,
-        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "AssignPartitions", "QueryValues", "WorkerInitialized", "QueryIntersections", "SendQueryVertices", "ReceiveQueryVertices", "StartBarrier", "WorkerFinalReport", });
+        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "AssignPartitions", "QueryValues", "WorkerInitialized", "QueryIntersections", "SendQueryVertices", "ReceiveQueryVertices", "StartBarrier", "WorkerStats", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(0);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_descriptor,
-        new java.lang.String[] { "PartitionFiles", });
+        new java.lang.String[] { "MasterStartTime", "PartitionFiles", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(1);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerInitializedMessage_fieldAccessorTable = new
@@ -10707,24 +9880,18 @@ public final class Messages {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryVerticesMessage_descriptor,
         new java.lang.String[] { "QueryId", "ReceiveFromMachine", });
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_descriptor =
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(6);
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_fieldAccessorTable = new
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_descriptor,
+        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor,
         new java.lang.String[] { "Samples", });
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_descriptor =
-      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_descriptor.getNestedTypes().get(0);
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_fieldAccessorTable = new
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_descriptor =
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_descriptor.getNestedTypes().get(0);
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatSample_descriptor,
-        new java.lang.String[] { "Time", "Measurement", });
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_descriptor =
-      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_descriptor.getNestedTypes().get(1);
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerFinalReportMessage_WorkerStatMeasurement_descriptor,
-        new java.lang.String[] { "StatName", "StatValue", });
+        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_WorkerStatsMessage_WorkerStatSample_descriptor,
+        new java.lang.String[] { "Time", "StatsBytes", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

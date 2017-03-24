@@ -50,7 +50,6 @@ public class Configuration {
 	 */
 	public static final boolean VERTEX_MACHINE_DISCOVERY_INCOMING;
 
-
 	public static final int LOG_LEVEL_Main;
 	//public static final int LOG_LEVEL_Main = Level.DEBUG_INT;
 
@@ -59,9 +58,11 @@ public class Configuration {
 	/** Maximum number parallel active of queries */
 	public static final int MAX_PARALLEL_QUERIES;
 
-
 	public static final boolean VERTEX_MESSAGE_POOLING;
 	public static final int VERTEX_MESSAGE_POOL_SIZE;
+
+	// Enables recording of some more expensive stats
+	public static final boolean DETAILED_STATS;
 
 
 
@@ -90,6 +91,7 @@ public class Configuration {
 			MAX_PARALLEL_QUERIES = Integer.parseInt(Properties.getProperty("MAX_PARALLEL_QUERIES"));
 			VERTEX_MESSAGE_POOLING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MESSAGE_POOLING"));
 			VERTEX_MESSAGE_POOL_SIZE = Integer.parseInt(Properties.getProperty("VERTEX_MESSAGE_POOL_SIZE"));
+			DETAILED_STATS = Boolean.parseBoolean(Properties.getProperty("DETAILED_STATS"));
 
 			logger.debug("Configuration loaded from " + CONFIG_FILE);
 		}

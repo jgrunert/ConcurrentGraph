@@ -27,6 +27,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mthesis.concurrent_graph.util.FileUtil;
+
 public class JFreeChartPlotter {
 
 	private static final Logger logger = LoggerFactory.getLogger(JFreeChartPlotter.class);
@@ -35,6 +37,7 @@ public class JFreeChartPlotter {
 		logger.info("Start plotting");
 
 		String statsFolder = outputFolder + File.separator + "stats";
+		FileUtil.makeCleanDirectory(statsFolder + File.separator + "plots");
 
 		List<Integer> workers = new ArrayList<>();
 		List<Integer> queries = new ArrayList<>();
@@ -221,7 +224,8 @@ public class JFreeChartPlotter {
 		// OPTIONAL CUSTOMISATION COMPLETED.
 
 		ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
-		ChartUtilities.saveChartAsPNG(new File(outputFolder + File.separator + name + ".png"), chart, 1200, 900, info);
+		ChartUtilities.saveChartAsPNG(new File(outputFolder + File.separator + "plots" + File.separator + name + ".png"), chart, 1200, 900,
+				info);
 	}
 
 

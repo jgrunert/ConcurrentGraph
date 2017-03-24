@@ -13,6 +13,8 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQue
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 
@@ -25,8 +27,9 @@ import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
  */
 public class ControlMessageBuildUtil {
 
-	public static MessageEnvelope Build_Master_WorkerInitialize(int srcMachineId, List<String> partitions) {
-		final AssignPartitionsMessage assignPartitionsMsg = AssignPartitionsMessage.newBuilder().addAllPartitionFiles(partitions).build();
+	public static MessageEnvelope Build_Master_WorkerInitialize(int srcMachineId, List<String> partitions, long masterStartTime) {
+		final AssignPartitionsMessage assignPartitionsMsg = AssignPartitionsMessage.newBuilder().addAllPartitionFiles(partitions)
+				.setMasterStartTime(masterStartTime).build();
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
 						.setType(ControlMessageType.Master_Worker_Initialize)
@@ -131,7 +134,7 @@ public class ControlMessageBuildUtil {
 	}
 
 	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId, //SuperstepStats stats,
-			BaseQueryGlobalValues localQuery, Map<Integer, Integer> queryIntersects) {
+			BaseQueryGlobalValues localQuery, Map<Integer, Integer> queryIntersects, List<WorkerStatSample> workerStats) {
 		final QueryIntersectionsMessage intersectMsg = QueryIntersectionsMessage.newBuilder().putAllIntersections(queryIntersects).build();
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Superstep_Finished)
@@ -139,6 +142,7 @@ public class ControlMessageBuildUtil {
 						.setSuperstepNo(superstepNo)
 						.setSrcMachine(srcMachineId)
 						.setQueryIntersections(intersectMsg)
+						.setWorkerStats(WorkerStatsMessage.newBuilder().addAllSamples(workerStats))
 						.build())
 				.build();
 	}

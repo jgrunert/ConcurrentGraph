@@ -26,6 +26,7 @@ import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
@@ -34,6 +35,8 @@ import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.plotting.JFreeChartPlotter;
 import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.MiscUtil;
+import mthesis.concurrent_graph.util.Pair;
+import mthesis.concurrent_graph.worker.WorkerStats;
 import mthesis.concurrent_graph.writable.NullWritable;
 
 /**
@@ -46,7 +49,8 @@ import mthesis.concurrent_graph.writable.NullWritable;
  */
 public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMachine<NullWritable, NullWritable, NullWritable, Q> {
 
-	private long masterStartTime;
+	private long masterStartTimeMs;
+	private long masterStartTimeNano;
 	private final List<Integer> workerIds;
 	private final Set<Integer> workersToInitialize;
 	private Map<Integer, MasterQuery<Q>> activeQueries = new HashMap<>();
@@ -64,6 +68,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private final Map<Integer, List<Long>> queryStatsStepTimes = new HashMap<>();
 	private final Map<Integer, Q> queryStatsTotals = new HashMap<>();
 	private final Map<Integer, Long> queryDurations = new HashMap<>();
+
+	// Map WorkerId->(timestamp, workerStatsSample)
+	private Map<Integer, List<Pair<Long, WorkerStats>>> workerStats = new HashMap<>();
 
 	private final String inputFile;
 	private final String inputPartitionDir;
@@ -94,16 +101,21 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		FileUtil.makeCleanDirectory(queryStatsDir);
 		saveSetupSummary(machines, ownId);
 		saveConfigSummary();
+
+		for (Integer workerId : workerIds) {
+			workerStats.put(workerId, new ArrayList<>());
+		}
 	}
 
 	@Override
 	public void start() {
-		masterStartTime = System.nanoTime();
+		masterStartTimeMs = System.currentTimeMillis();
+		masterStartTimeNano = System.nanoTime();
 		super.start();
 		// Initialize workers
 		initializeWorkersAssignPartitions(); // Signal workers to initialize
 		logger.info("Workers partitions assigned and initialize starting after "
-				+ ((System.nanoTime() - masterStartTime) / 1000000) + "ms");
+				+ ((System.nanoTime() - masterStartTimeNano) / 1000000) + "ms");
 	}
 
 
@@ -219,7 +231,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 			if (workersToInitialize.isEmpty()) {
 				logger.info("All workers initialized, " + workerIds.size() + " workers, " + vertexCount
-						+ " vertices after " + ((System.nanoTime() - masterStartTime) / 1000000) + "ms");
+						+ " vertices after " + ((System.nanoTime() - masterStartTimeNano) / 1000000) + "ms");
 			}
 		}
 		else if (controlMsg.getType() == ControlMessageType.Worker_Query_Superstep_Finished
@@ -251,6 +263,15 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				return;
 			}
 			msgActiveQuery.workersWaitingFor.remove(srcMachine);
+
+			// Get latest worker stats
+			if (controlMsg.hasWorkerStats()) {
+				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
+				for (WorkerStatSample sample : samples) {
+					workerStats.get(controlMsg.getSrcMachine())
+							.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
+				}
+			}
 
 			// Query intersects on machine
 			Map<Integer, Integer> queryIntersects = controlMsg.getQueryIntersections().getIntersectionsMap();
@@ -380,7 +401,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	public void stop() {
 		signalWorkersShutdown();
 		super.stop();
+		saveWorkerStats();
 		saveQueryStats();
+		plotStats();
 		printErrorCount();
 	}
 
@@ -392,6 +415,41 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			logger.warn("Errors: " + ErrWarnCounter.Errors);
 		if (ErrWarnCounter.Warnings == 0 && ErrWarnCounter.Errors == 0)
 			logger.info("No warnings or errors");
+	}
+
+	private void saveWorkerStats() {
+		StringBuilder sb = new StringBuilder();
+		Set<String> statsNames = new WorkerStats().getStatsMap().keySet();
+		for (int workerId : workerIds) {
+			try (PrintWriter writer = new PrintWriter(
+					new FileWriter(queryStatsDir + File.separator + workerId + "_workerstats.csv"))) {
+				// Header line
+				sb.append("Time(s);");
+				for (String statName : statsNames) {
+					sb.append(statName);
+					sb.append(';');
+				}
+				writer.println(sb.toString());
+				sb.setLength(0);
+
+				// Values
+				for (Pair<Long, WorkerStats> statSample : workerStats.get(workerId)) {
+					sb.append(statSample.first / 1000); // Timestamp in seconds
+					sb.append(';');
+					Map<String, Long> sampleValues = statSample.second.getStatsMap();
+					for (String statName : statsNames) {
+						sb.append(sampleValues.get(statName));
+						sb.append(';');
+					}
+					writer.println(sb.toString());
+					sb.setLength(0);
+				}
+			}
+			catch (Exception e) {
+				logger.error("Exception when saveWorkerStats", e);
+			}
+		}
+		logger.info("Saved worker stats");
 	}
 
 	private void saveQueryStats() {
@@ -516,6 +574,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			logger.error("Exception when saveQueryStats", e);
 		}
 
+		logger.info("Saved worker stats");
+	}
+
+	private void plotStats() {
 
 		// Plotting
 		if (Configuration.getPropertyBool("OutputPlots")) {
@@ -526,6 +588,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				logger.error("Exception when plot stats", e);
 			}
 		}
+		logger.info("Plotted stats");
 	}
 
 	private void saveConfigSummary() {
@@ -586,7 +649,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		}
 		for (final Integer workerId : workerIds) {
 			messaging.sendControlMessageUnicast(workerId,
-					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, assignedPartitions.get(workerId)),
+					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, assignedPartitions.get(workerId), masterStartTimeMs),
 					true);
 		}
 	}
