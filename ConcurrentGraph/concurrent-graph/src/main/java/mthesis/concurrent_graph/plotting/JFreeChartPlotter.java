@@ -45,6 +45,7 @@ public class JFreeChartPlotter {
 		Map<Integer, Integer> queriesHashes = new HashMap<>();
 		Map<Integer, List<Integer>> queriesByHash = new HashMap<>();
 
+
 		// Load setup file
 		BufferedReader setupReader = new BufferedReader(new FileReader(outputFolder + File.separator + "setup.txt"));
 		int masterId = Integer.parseInt(setupReader.readLine().substring(10));
@@ -56,6 +57,7 @@ public class JFreeChartPlotter {
 				workers.add(idTmp);
 		}
 		setupReader.close();
+
 
 		// Load queries file
 		CsvDataFile queriesCsv = new CsvDataFile(statsFolder + File.separator + "queries.csv");
@@ -73,6 +75,24 @@ public class JFreeChartPlotter {
 			}
 			hashQs.add(queryId);
 		}
+
+
+		// Plot worker stats
+		Map<Integer, CsvDataFile> workerStatsCsvs = new HashMap<>();
+		String[] workerStatsCaptions = null;
+		for (Integer workerId : workers) {
+			CsvDataFile csv = new CsvDataFile(statsFolder + File.separator + workerId + "_workerstats.csv");
+			workerStatsCsvs.put(workerId, csv);
+			workerStatsCaptions = csv.Captions;
+		}
+
+		if (workerStatsCaptions != null) {
+			for (int iStat = 1; iStat < workerStatsCaptions.length; iStat++) {
+				plotWorkerStats(statsFolder, "WorkerStats_" + workerStatsCaptions[iStat], workerStatsCaptions[iStat], workerStatsCsvs,
+						iStat, 1);
+			}
+		}
+		logger.info("Finished plotting worker stats");
 
 
 		// Plot single queries
@@ -106,22 +126,41 @@ public class JFreeChartPlotter {
 			//			plotWorkerStats(statsFolder, "ActiveVertices_" + queryName, "ActiveVertices", workerCsvs, 0, 1);
 			//			plotWorkerStats(statsFolder, "WorkerTimes_" + queryName, "WorkerTimes", workerCsvs, 1, 1);
 			for (int iCol = 0; iCol < workerCsvCaptions.length; iCol++) {
-				plotWorkerStats(statsFolder, "Worker" + workerCsvCaptions[iCol] + "_" + queryName, workerCsvCaptions[iCol], workerCsvs,
+				plotWorkerQueryStats(statsFolder, "Worker" + workerCsvCaptions[iCol] + "_" + queryName, workerCsvCaptions[iCol], workerCsvs,
 						iCol, 1);
 			}
 		}
 		logger.info("Finished plotting single queries");
+
 
 		// Plot query compares
 		plotQueryComparisons(statsFolder, "all", queries, queriesStats);
 		for (Entry<Integer, List<Integer>> hashQueries : queriesByHash.entrySet()) {
 			plotQueryComparisons(statsFolder, "" + hashQueries.getKey(), hashQueries.getValue(), queriesStats);
 		}
-
 		logger.info("Finished plotting query comparisons");
 	}
 
-	private static void plotWorkerStats(String outputFolder, String name, String axisTitleY,
+
+	private static void plotWorkerStats(String outputFolder, String plotName, String axisTitleY,
+			Map<Integer, CsvDataFile> workerStatsCsvs, int columnIndex, double factor) throws IOException {
+		final XYSeriesCollection dataset = new XYSeriesCollection();
+		//		for (int iQ = 0; iQ < queriesToPlot.size(); iQ++) {
+		//			series.add(iQ, queriesTimes.get(queriesToPlot.get(iQ))[column]);
+		//		}
+		for (Entry<Integer, CsvDataFile> worker : workerStatsCsvs.entrySet()) {
+			CsvDataFile workerCsv = worker.getValue();
+			final XYSeries series = new XYSeries("Worker " + worker.getKey());
+			for (int i = 0; i < workerCsv.NumDataRows; i++) {
+				series.add(workerCsv.Data[i][0], workerCsv.Data[i][columnIndex]);
+			}
+			dataset.addSeries(series);
+		}
+		plotDataset(outputFolder, plotName, "Time (s)", axisTitleY, dataset);
+	}
+
+
+	private static void plotWorkerQueryStats(String outputFolder, String name, String axisTitleY,
 			Map<Integer, CsvDataFile> workerCsvs, int columnIndex, double factor) throws IOException {
 		List<ColumnToPlot> columns = new ArrayList<>(workerCsvs.size());
 		for (Entry<Integer, CsvDataFile> wCsv : workerCsvs.entrySet()) {

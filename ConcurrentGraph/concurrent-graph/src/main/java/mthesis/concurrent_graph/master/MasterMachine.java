@@ -456,32 +456,6 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		if (!enableQueryStats) return;
 		StringBuilder sb = new StringBuilder();
 
-		// Query active vertices
-		//		for (Entry<Integer, List<SortedMap<Integer, Q>>> querySteps : queryStatsStepMachines.entrySet()) {
-		//			try (PrintWriter writer = new PrintWriter(
-		//					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_query_actverts.csv"))) {
-		//				for (Integer workerId : workerIds) {
-		//					sb.append("Worker " + workerId);
-		//					sb.append(';');
-		//				}
-		//				writer.println(sb.toString());
-		//				sb.setLength(0);
-		//
-		//				for (Map<Integer, Q> step : querySteps.getValue()) {
-		//					for (Q stepMachine : step.values()) {
-		//						sb.append(stepMachine.getActiveVertices());
-		//						sb.append(';');
-		//					}
-		//					writer.println(sb.toString());
-		//					sb.setLength(0);
-		//				}
-		//			}
-		//			catch (Exception e) {
-		//				logger.error("Exception when saveQueryStats", e);
-		//			}
-		//		}
-
-
 		// Query times in milliseconds. Step time is how long a step took, worker time is the time workers spent calculating.
 		for (Entry<Integer, List<Q>> querySteps : queryStatsSteps.entrySet()) {
 			try (PrintWriter writer = new PrintWriter(
