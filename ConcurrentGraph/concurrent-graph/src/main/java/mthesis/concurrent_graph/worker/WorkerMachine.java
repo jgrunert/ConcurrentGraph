@@ -675,6 +675,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private void sendQueryVerticesToMove(int queryId, int sendToWorker, int maxVertices) {
 		long startTime = System.nanoTime();
 		int verticesSent = 0;
+		int verticesMessagesSent = 0;
 		WorkerQuery<V, E, M, Q> query = activeQueries.get(queryId);
 		List<AbstractVertex<V, E, M, Q>> verticesToMove = new ArrayList<>();
 
@@ -692,6 +693,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
 					verticesSent += verticesToMove.size();
 					verticesToMove = new ArrayList<>();
+				}
+				if (Configuration.DETAILED_STATS) {
+					verticesMessagesSent += vertex.getBufferedMessageCount();
 				}
 			}
 			System.out.println(ownId + " Sent " + query.ActiveVerticesThis.size() + " for " + queryId);
@@ -717,6 +721,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			query.QueryLocal.Stats.addToOtherStat(QueryStats.MoveSendVerticsTimeKey, sendTime);
 		}
 		workerStats.MoveSendVertices += verticesSent;
+		workerStats.MoveSendVerticesTime += sendTime;
+		workerStats.MoveSendVerticesMessages += verticesMessagesSent;
 	}
 
 
@@ -962,8 +968,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			//			}
 		}
 
+		long moveTime = (System.nanoTime() - startTime);
+		workerStats.MoveRecvVertices += message.vertices.size();
+		workerStats.MoveSendVerticesTime += moveTime;
 		activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.MoveRecvVerticsKey, message.vertices.size());
-		activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.MoveRecvVerticsTimeKey, (System.nanoTime() - startTime));
+		activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.MoveRecvVerticsTimeKey, moveTime);
 	}
 
 

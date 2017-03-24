@@ -35,7 +35,9 @@ public class WorkerStats {
 	public long MessagesReceivedCorrectVertex;
 	public long DiscoveredNewVertexMachines;
 	public long MoveSendVertices;
+	public long MoveSendVerticesTime;
 	public long MoveRecvVertices;
+	public long MoveRecvVerticesTime;
 
 	// Detailed stats
 	public long MoveSendVerticesMessages; // TODO
@@ -71,7 +73,9 @@ public class WorkerStats {
 		MessagesReceivedCorrectVertex = bytes.getLong();
 		DiscoveredNewVertexMachines = bytes.getLong();
 		MoveSendVertices = bytes.getLong();
+		MoveSendVerticesTime = bytes.getLong();
 		MoveRecvVertices = bytes.getLong();
+		MoveRecvVerticesTime = bytes.getLong();
 
 		MoveSendVerticesMessages = bytes.getLong();
 
@@ -102,7 +106,9 @@ public class WorkerStats {
 		buffer.putLong(MessagesReceivedCorrectVertex);
 		buffer.putLong(DiscoveredNewVertexMachines);
 		buffer.putLong(MoveSendVertices);
+		buffer.putLong(MoveSendVerticesTime);
 		buffer.putLong(MoveRecvVertices);
+		buffer.putLong(MoveRecvVerticesTime);
 
 		buffer.putLong(MoveSendVerticesMessages);
 
@@ -134,7 +140,9 @@ public class WorkerStats {
 		statsMap.put("MessagesReceivedCorrectVertex", MessagesReceivedCorrectVertex);
 		statsMap.put("DiscoveredNewVertexMachines", DiscoveredNewVertexMachines);
 		statsMap.put("MoveSendVertices", MoveSendVertices);
+		statsMap.put("MoveSendVerticesTime", MoveSendVerticesTime);
 		statsMap.put("MoveRecvVertices", MoveRecvVertices);
+		statsMap.put("MoveRecvVerticesTime", MoveRecvVerticesTime);
 
 		statsMap.put("MoveSendVerticesMessages", MoveSendVerticesMessages);
 

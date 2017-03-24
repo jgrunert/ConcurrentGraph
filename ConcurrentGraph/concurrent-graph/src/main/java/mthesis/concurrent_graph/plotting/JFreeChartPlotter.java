@@ -126,7 +126,8 @@ public class JFreeChartPlotter {
 			//			plotWorkerStats(statsFolder, "ActiveVertices_" + queryName, "ActiveVertices", workerCsvs, 0, 1);
 			//			plotWorkerStats(statsFolder, "WorkerTimes_" + queryName, "WorkerTimes", workerCsvs, 1, 1);
 			for (int iCol = 0; iCol < workerCsvCaptions.length; iCol++) {
-				plotWorkerQueryStats(statsFolder, "Worker" + workerCsvCaptions[iCol] + "_" + queryName, workerCsvCaptions[iCol], workerCsvs,
+				plotWorkerQueryStats(statsFolder, "QueryWorker" + workerCsvCaptions[iCol] + "_" + queryName, workerCsvCaptions[iCol],
+						workerCsvs,
 						iCol, 1);
 			}
 		}

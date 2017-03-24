@@ -288,6 +288,18 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
+	public int getBufferedMessageCount() {
+		int msgCount = 0;
+		for (List<M> qMsgs : queryMessagesThisSuperstep.values()) {
+			msgCount += qMsgs.size();
+		}
+		for (List<M> qMsgs : queryMessagesNextSuperstep.values()) {
+			msgCount += qMsgs.size();
+		}
+		return msgCount;
+	}
+
+
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName() + "_" + ID + "(" + queryValues + ")," + edges;
