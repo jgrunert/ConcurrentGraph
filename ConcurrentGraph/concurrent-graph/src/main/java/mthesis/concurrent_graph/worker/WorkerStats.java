@@ -1,10 +1,12 @@
 package mthesis.concurrent_graph.worker;
 
+import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.TreeMap;
 
 import com.google.protobuf.ByteString;
+import com.sun.management.OperatingSystemMXBean;
 
 import mthesis.concurrent_graph.QueryStats;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
@@ -18,6 +20,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStat
  *
  * @author Jonas Grunert
  */
+@SuppressWarnings("restriction")
 public class WorkerStats {
 
 	private static final int WorkerStatsMaxBytes = 2048;
@@ -33,8 +36,26 @@ public class WorkerStats {
 	public long BarrierFinishWaitTime;
 	public long BarrierVertexMoveTime;
 
+	public double SystemCpuLoad;
+	public double ProcessCpuTime;
+	public double ProcessCpuLoad;
+
 	private QueryStats aggregatedQueryStats;
 
+	private static final boolean cpuStatsActive;
+	private static final OperatingSystemMXBean operatingSystemMXBean;
+
+	static {
+		OperatingSystemMXBean operatingSystemMXBeanTmp = null;
+		try {
+			operatingSystemMXBeanTmp = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		operatingSystemMXBean = operatingSystemMXBeanTmp;
+		cpuStatsActive = operatingSystemMXBean != null;
+	}
 
 	public WorkerStats() {
 		aggregatedQueryStats = new QueryStats();
@@ -54,6 +75,11 @@ public class WorkerStats {
 		BarrierStartWaitTime = bytes.getLong();
 		BarrierFinishWaitTime = bytes.getLong();
 		BarrierVertexMoveTime = bytes.getLong();
+
+		SystemCpuLoad = bytes.getDouble();
+		ProcessCpuTime = bytes.getDouble();
+		ProcessCpuLoad = bytes.getDouble();
+
 		aggregatedQueryStats = new QueryStats(bytes);
 	}
 
@@ -67,20 +93,29 @@ public class WorkerStats {
 		buffer.putLong(BarrierStartWaitTime);
 		buffer.putLong(BarrierFinishWaitTime);
 		buffer.putLong(BarrierVertexMoveTime);
+
+		buffer.putDouble(SystemCpuLoad);
+		buffer.putDouble(ProcessCpuTime);
+		buffer.putDouble(ProcessCpuLoad);
+
 		aggregatedQueryStats.writeToBuffer(buffer);
 	}
 
-	public Map<String, Long> getStatsMap() {
-		Map<String, Long> statsMap = new TreeMap<>();
+	public Map<String, Double> getStatsMap() {
+		Map<String, Double> statsMap = new TreeMap<>();
 
-		statsMap.put("ActiveVertices", ActiveVertices);
-		statsMap.put("IdleTime", IdleTime);
-		statsMap.put("QueryWaitTime", QueryWaitTime);
-		statsMap.put("HandleMessagesTime", HandleMessagesTime);
-		statsMap.put("ComputeTime", ComputeTime);
-		statsMap.put("BarrierStartWaitTime", BarrierStartWaitTime);
-		statsMap.put("BarrierFinishWaitTime", BarrierFinishWaitTime);
-		statsMap.put("BarrierVertexMoveTime", BarrierVertexMoveTime);
+		statsMap.put("ActiveVertices", (double) ActiveVertices);
+		statsMap.put("IdleTime", (double) IdleTime);
+		statsMap.put("QueryWaitTime", (double) QueryWaitTime);
+		statsMap.put("HandleMessagesTime", (double) HandleMessagesTime);
+		statsMap.put("ComputeTime", (double) ComputeTime);
+		statsMap.put("BarrierStartWaitTime", (double) BarrierStartWaitTime);
+		statsMap.put("BarrierFinishWaitTime", (double) BarrierFinishWaitTime);
+		statsMap.put("BarrierVertexMoveTime", (double) BarrierVertexMoveTime);
+
+		statsMap.put("SystemCpuLoad", SystemCpuLoad);
+		statsMap.put("ProcessCpuTime", ProcessCpuTime);
+		statsMap.put("ProcessCpuLoad", ProcessCpuLoad);
 
 		statsMap.putAll(aggregatedQueryStats.getStatsMap());
 
@@ -94,6 +129,12 @@ public class WorkerStats {
 
 
 	public WorkerStatSample getSample(long sampleTime) {
+		if (cpuStatsActive) {
+			SystemCpuLoad = operatingSystemMXBean.getSystemCpuLoad() * 100;
+			ProcessCpuTime = operatingSystemMXBean.getProcessCpuTime();
+			ProcessCpuLoad = operatingSystemMXBean.getProcessCpuLoad() * 100;
+		}
+
 		ByteBuffer buffer = ByteBuffer.wrap(workerStatsBuffer);
 		writeToBuffer(buffer);
 		int byteCount = buffer.position();

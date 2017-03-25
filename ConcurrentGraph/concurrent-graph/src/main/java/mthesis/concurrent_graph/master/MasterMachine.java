@@ -404,6 +404,15 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		super.stop();
 		saveWorkerStats();
 		saveQueryStats();
+
+		// Silly waiting, somethimes files not finished
+		try {
+			Thread.sleep(1000);
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 		plotStats();
 		printErrorCount();
 	}
@@ -437,7 +446,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				for (Pair<Long, WorkerStats> statSample : workerStats.get(workerId)) {
 					sb.append(statSample.first / 1000); // Timestamp in seconds
 					sb.append(';');
-					Map<String, Long> sampleValues = statSample.second.getStatsMap();
+					Map<String, Double> sampleValues = statSample.second.getStatsMap();
 					for (String statName : statsNames) {
 						sb.append(sampleValues.get(statName));
 						sb.append(';');
@@ -511,7 +520,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						sb.append(step.getActiveVertices());
 						sb.append(';');
 
-						for (Long colStat : step.Stats.getStatsMap().values()) {
+						for (Double colStat : step.Stats.getStatsMap().values()) {
 							sb.append(colStat);
 							sb.append(';');
 						}

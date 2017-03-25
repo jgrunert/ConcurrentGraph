@@ -105,7 +105,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
 
 	// Worker stats
-	private static final long workerStatsInverval = 1000;
 	private long masterStartTime;
 	private long workerStatsLastSample = System.currentTimeMillis();
 	// Current worker stats
@@ -283,7 +282,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 				// Worker stats
-				if ((System.currentTimeMillis() - workerStatsLastSample) >= workerStatsInverval) {
+				if ((System.currentTimeMillis() - workerStatsLastSample) >= Configuration.WORKER_STATS_SAMPLING_INTERVAL) {
 					long activeVertices = 0;
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values())
 						activeVertices += query.ActiveVerticesThis.size();

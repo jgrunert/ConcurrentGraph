@@ -1,0 +1,6 @@
+# Master
+localhost	23499	true
+# Worker
+localhost	23500	true	true
+localhost	23501	true	true
+localhost	23502	true	true

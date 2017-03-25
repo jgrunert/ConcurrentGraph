@@ -106,29 +106,29 @@ public class QueryStats {
 	}
 
 
-	public Map<String, Long> getStatsMap() {
-		Map<String, Long> statsMap = new TreeMap<>();
+	public Map<String, Double> getStatsMap() {
+		Map<String, Double> statsMap = new TreeMap<>();
 
-		statsMap.put("MessagesTransmittedLocal", MessagesTransmittedLocal);
-		statsMap.put("MessagesSentUnicast", MessagesSentUnicast);
-		statsMap.put("MessagesSentBroadcast", MessagesSentBroadcast);
-		statsMap.put("MessageBucketsSentUnicast", MessageBucketsSentUnicast);
-		statsMap.put("MessageBucketsSentBroadcast", MessageBucketsSentBroadcast);
-		statsMap.put("MessagesReceivedWrongVertex", MessagesReceivedWrongVertex);
-		statsMap.put("MessagesReceivedCorrectVertex", MessagesReceivedCorrectVertex);
-		statsMap.put("DiscoveredNewVertexMachines", DiscoveredNewVertexMachines);
+		statsMap.put("MessagesTransmittedLocal", (double) MessagesTransmittedLocal);
+		statsMap.put("MessagesSentUnicast", (double) MessagesSentUnicast);
+		statsMap.put("MessagesSentBroadcast", (double) MessagesSentBroadcast);
+		statsMap.put("MessageBucketsSentUnicast", (double) MessageBucketsSentUnicast);
+		statsMap.put("MessageBucketsSentBroadcast", (double) MessageBucketsSentBroadcast);
+		statsMap.put("MessagesReceivedWrongVertex", (double) MessagesReceivedWrongVertex);
+		statsMap.put("MessagesReceivedCorrectVertex", (double) MessagesReceivedCorrectVertex);
+		statsMap.put("DiscoveredNewVertexMachines", (double) DiscoveredNewVertexMachines);
 
-		statsMap.put("ComputeTime", ComputeTime);
-		statsMap.put("StepFinishTime", StepFinishTime);
-		statsMap.put("IntersectCalcTime", IntersectCalcTime);
-		statsMap.put("UpdateVertexRegisters", UpdateVertexRegisters);
-		statsMap.put("RedirectedMessages", RedirectedMessages);
-		statsMap.put("MoveSendVertices", MoveSendVertices);
-		statsMap.put("MoveSendVerticesTime", MoveSendVerticesTime);
-		statsMap.put("MoveRecvVertices", MoveRecvVertices);
-		statsMap.put("MoveRecvVerticesTime", MoveRecvVerticesTime);
+		statsMap.put("ComputeTime", (double) ComputeTime);
+		statsMap.put("StepFinishTime", (double) StepFinishTime);
+		statsMap.put("IntersectCalcTime", (double) IntersectCalcTime);
+		statsMap.put("UpdateVertexRegisters", (double) UpdateVertexRegisters);
+		statsMap.put("RedirectedMessages", (double) RedirectedMessages);
+		statsMap.put("MoveSendVertices", (double) MoveSendVertices);
+		statsMap.put("MoveSendVerticesTime", (double) MoveSendVerticesTime);
+		statsMap.put("MoveRecvVertices", (double) MoveRecvVertices);
+		statsMap.put("MoveRecvVerticesTime", (double) MoveRecvVerticesTime);
 
-		statsMap.put("MoveSendVerticesMessages", MoveSendVerticesMessages);
+		statsMap.put("MoveSendVerticesMessages", (double) MoveSendVerticesMessages);
 
 		return statsMap;
 	}
