@@ -654,12 +654,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			}
 			logger.info("Starting barrier with vertex move");
 		}
-		else {
-			// No vertex move
-			for (Integer otherWorkerId : workerIds) {
-				messaging.sendControlMessageUnicast(otherWorkerId,
-						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, queryToStart), true);
-			}
+		// No vertex move
+		for (Integer otherWorkerId : workerIds) {
+			messaging.sendControlMessageUnicast(otherWorkerId,
+					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, queryToStart), true);
 		}
 	}
 

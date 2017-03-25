@@ -32,6 +32,7 @@ import mthesis.concurrent_graph.communication.GetToKnowMessage;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
@@ -152,7 +153,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		try {
 			while (!started) {
 				Thread.sleep(100);
-				handleReceivedMessages();
+				handleReceivedMessages(false);
 			}
 
 			// Initialize, load assigned partitions
@@ -202,7 +203,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				long startTime = System.nanoTime();
 				while (activeQueries.isEmpty()) {
 					Thread.sleep(1); // TODO sleep?
-					handleReceivedMessages();
+					handleReceivedMessages(true);
 				}
 				workerStats.IdleTime += (System.nanoTime() - startTime);
 
@@ -217,23 +218,26 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					startTime = System.nanoTime();
 					while (!globalBarrierStartWaitSet.isEmpty()) {
 						//Thread.sleep(1);  // TODO sleep?
-						handleReceivedMessages();
+						handleReceivedMessages(true);
 					}
 					long barrierStartWaitTime = System.nanoTime() - startTime;
 
-					//					// Barrier tasks
-					//					startTime = System.nanoTime();
-					//					// Send vertices
-					//					for (SendQueryVerticesMessage sendVert : globalBarrierSendVerts) {
-					//						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
-					//								sendVert.getMaxMoveCount());
-					//					}
-					//					// Receive vertices
-					//					while (!globalBarrierRecvVerts.isEmpty()) {
-					//						//Thread.sleep(1);  // TODO sleep?
-					//						handleReceivedMessages();
-					//					}
-					//					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
+					// Handle all messages before barrier
+					handleReceivedMessages(false);
+
+					// Barrier tasks
+					startTime = System.nanoTime();
+					// Send vertices
+					for (SendQueryVerticesMessage sendVert : globalBarrierSendVerts) {
+						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
+								sendVert.getMaxMoveCount());
+					}
+					// Receive vertices
+					while (!globalBarrierRecvVerts.isEmpty()) {
+						//Thread.sleep(1);  // TODO sleep?
+						handleReceivedMessages(true);
+					}
+					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
 
 
 					// Finish barrier, notify other workers
@@ -243,7 +247,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					startTime = System.nanoTime();
 					while (!globalBarrierFinishWaitSet.isEmpty()) {
 						//Thread.sleep(1);  // TODO sleep?
-						handleReceivedMessages();
+						handleReceivedMessages(true);
 					}
 					long barrierFinishWaitTime = System.nanoTime() - startTime;
 
@@ -262,11 +266,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				startTime = System.nanoTime();
 				activeQueriesThisSuperstep.clear();
 				while (!globalBarrierRequested) {
-					handleReceivedMessages();
+					handleReceivedMessages(true);
 
 					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 						if ((activeQuery.getStartedSuperstepNo() > activeQuery.getCalculatedSuperstepNo()))
 							activeQueriesThisSuperstep.add(activeQuery);
+						// TODO Directly finish superstep if no active vertices. Or even faster method?
 					}
 					if (!activeQueriesThisSuperstep.isEmpty())
 						break;
@@ -274,45 +279,46 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
 
-				System.out.println("c " + ownId);
+				//				System.out.println("c " + ownId);
 
 				// Compute active queries
 				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisSuperstep) {
-					{
-						int queryId = activeQuery.Query.QueryId;
-						int superstepNo = activeQuery.getStartedSuperstepNo();
+					//					System.out.println(ownId + " compute " + activeQuery.QueryId + ":" + activeQuery.getStartedSuperstepNo());
 
-						// Next superstep. Compute and Messaging (done by vertices)
-						logger.trace("Worker start query " + queryId + " superstep compute " + superstepNo);
+					int queryId = activeQuery.Query.QueryId;
+					int superstepNo = activeQuery.getStartedSuperstepNo();
 
-						// First frame: Call all vertices, second frame only active vertices
-						startTime = System.nanoTime();
-						if (superstepNo == 0) {
-							for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
-								vertex.superstep(superstepNo, activeQuery);
-							}
-						}
-						else {
-							for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
-								vertex.superstep(superstepNo, activeQuery);
-							}
-						}
-						activeQuery.calculatedSuperstep();
-						long computeTime = System.nanoTime() - startTime;
-						activeQuery.QueryLocal.Stats.ComputeTime += computeTime;
-						workerStats.ComputeTime += computeTime;
+					// Next superstep. Compute and Messaging (done by vertices)
+					logger.trace("Worker start query " + queryId + " superstep compute " + superstepNo);
 
-
-						// Barrier sync with other workers;
-						if (!otherWorkerIds.isEmpty()) {
-							flushVertexMessages(activeQuery);
-							sendWorkersSuperstepFinished(activeQuery);
+					// First frame: Call all vertices, second frame only active vertices
+					startTime = System.nanoTime();
+					if (superstepNo == 0) {
+						for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
+							vertex.superstep(superstepNo, activeQuery);
 						}
-						else {
-							checkSuperstepBarrierFinished(activeQuery);
-						}
-						logger.trace("Worker finished compute " + queryId + ":" + superstepNo);
 					}
+					else {
+						for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
+							vertex.superstep(superstepNo, activeQuery);
+						}
+					}
+					activeQuery.calculatedSuperstep();
+					long computeTime = System.nanoTime() - startTime;
+					activeQuery.QueryLocal.Stats.ComputeTime += computeTime;
+					workerStats.ComputeTime += computeTime;
+
+
+					// Barrier sync with other workers;
+					if (!otherWorkerIds.isEmpty()) {
+						flushVertexMessages(activeQuery);
+						sendWorkersSuperstepFinished(activeQuery);
+					}
+					else {
+						checkSuperstepBarrierFinished(activeQuery);
+					}
+					logger.trace("Worker finished compute " + queryId + ":" + superstepNo);
+
 
 					// Finish barrier sync if received all barrier syncs from other workers
 					if (!otherWorkerIds.isEmpty()) {
@@ -320,7 +326,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					}
 
 					// Handle received messages after each query
-					handleReceivedMessages();
+					handleReceivedMessages(false);
 				}
 
 
@@ -361,11 +367,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 * Handles all messages in received queues.
 	 */
 	@SuppressWarnings("unchecked")
-	private void handleReceivedMessages() {
+	private void handleReceivedMessages(boolean interruptOnBarrierFinished) {
 		long startTime = System.nanoTime();
 		ChannelMessage message;
 		boolean interruptedMsgHandling = false;
-		while (!interruptedMsgHandling && (message = receivedMessages.poll()) != null) {
+		while (!(interruptOnBarrierFinished && interruptedMsgHandling) && (message = receivedMessages.poll()) != null) {
 			switch (message.getTypeCode()) {
 				case 0:
 					handleVertexMessage((VertexMessage<V, E, M, Q>) message);
