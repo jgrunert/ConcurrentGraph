@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import org.jfree.util.Log;
+
 import com.google.protobuf.ByteString;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -112,6 +114,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	// Samples that are finished but not sent to master yet
 	private List<WorkerStatSample> workerStatsSamplesToSend = new ArrayList<>();
 
+	// Watchdog
+	private long lastWatchdogSignal;
+	private static final long WatchdogTimeout = 5000;
+
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
 			JobConfiguration<V, E, M, Q> jobConfig,
@@ -155,6 +161,31 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			System.gc();
 			logger.debug("Worker pre-partition-load GC finished");
 			sendMasterInitialized();
+
+			// Start watchdog
+			Thread watchdogThread = new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					Log.debug("Watchdog started");
+					while (!Thread.interrupted()) {
+						if ((System.currentTimeMillis() - lastWatchdogSignal) > WatchdogTimeout) {
+							Log.warn("Watchdog triggered");
+							System.exit(1);
+						}
+						try {
+							Thread.sleep(WatchdogTimeout);
+						}
+						catch (InterruptedException e) {
+							Log.warn("Watchdog interrupted", e);
+							break;
+						}
+					}
+				}
+			});
+			watchdogThread.setDaemon(true);
+			lastWatchdogSignal = System.currentTimeMillis();
+			watchdogThread.start();
 
 			// Execution loop
 			while (!Thread.interrupted()) {
@@ -502,6 +533,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						break;
 
 					case Master_Query_Next_Superstep: {
+						lastWatchdogSignal = System.currentTimeMillis();
 						prepareNextSuperstep(message);
 					}
 						break;
