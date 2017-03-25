@@ -252,13 +252,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					long barrierFinishWaitTime = System.nanoTime() - startTime;
 
 					logger.debug("Barrier finished");
-					// TODO Remove sysout, barrier times as worker stats
-					//					System.out.println(ownId + " " +
-					//							(double) barrierStartWaitTime / 1000000 + " " + (double) barrierFinishWaitTime / 1000000);
 					workerStats.BarrierStartWaitTime += barrierStartWaitTime;
 					workerStats.BarrierFinishWaitTime += barrierFinishWaitTime;
 					globalBarrierRequested = false;
-					System.out.println("b " + ownId);
 				}
 
 

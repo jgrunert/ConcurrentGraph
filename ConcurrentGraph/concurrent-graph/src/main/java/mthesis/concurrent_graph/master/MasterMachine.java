@@ -653,6 +653,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						true);
 			}
 			logger.info("Starting barrier with vertex move");
+			// TODO Wait for barrier finish?
 		}
 		// No vertex move
 		for (Integer otherWorkerId : workerIds) {

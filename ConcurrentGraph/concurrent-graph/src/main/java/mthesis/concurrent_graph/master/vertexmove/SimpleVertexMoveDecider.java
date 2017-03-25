@@ -29,8 +29,6 @@ public class SimpleVertexMoveDecider<Q extends BaseQueryGlobalValues> extends Ab
 				|| (System.currentTimeMillis() - vertexBarrierMoveLastTime) < Configuration.VERTEX_BARRIER_MOVE_INTERVAL)
 			return null;
 
-		System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa " + activeQueries.size());
-
 		// Total worker load
 		// TODO Diagram output
 		Map<Integer, Integer> workersActiveVerts = new HashMap<>(actQueryWorkerActiveVerts.size());
