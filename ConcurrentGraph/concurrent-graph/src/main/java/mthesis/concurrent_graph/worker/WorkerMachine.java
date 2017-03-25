@@ -32,7 +32,6 @@ import mthesis.concurrent_graph.communication.GetToKnowMessage;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
@@ -95,8 +94,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private Map<Integer, Map<Integer, Integer>> currentQueryIntersects = new HashMap<>();
 
 	// Vertex redirections for vertex moved away from this machine
-	private final Map<Integer, Integer> movedVerticesRedirections = new HashMap<>();
-	private final Map<Integer, List<Integer>> movedQueryVertices = new HashMap<>();
+	//	private final Map<Integer, Integer> movedVerticesRedirections = new HashMap<>();
+	//	private final Map<Integer, List<Integer>> movedQueryVertices = new HashMap<>();
 
 	// Global barrier coordination/control
 	private boolean globalBarrierRequested = false;// TODO Enum?
@@ -116,7 +115,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	// Watchdog
 	private long lastWatchdogSignal;
-	private static final long WatchdogTimeout = 5000;
+	private static boolean WatchdogEnabled = true;
+	private static final long WatchdogTimeout = 10000;
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -163,29 +163,38 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			sendMasterInitialized();
 
 			// Start watchdog
-			Thread watchdogThread = new Thread(new Runnable() {
+			if (Configuration.WORKER_WATCHDOG_ENABLED) {
+				Thread watchdogThread = new Thread(new Runnable() {
 
-				@Override
-				public void run() {
-					Log.debug("Watchdog started");
-					while (!Thread.interrupted()) {
-						if ((System.currentTimeMillis() - lastWatchdogSignal) > WatchdogTimeout) {
-							Log.warn("Watchdog triggered");
-							System.exit(1);
-						}
-						try {
-							Thread.sleep(WatchdogTimeout);
-						}
-						catch (InterruptedException e) {
-							Log.warn("Watchdog interrupted", e);
-							break;
+					@Override
+					public void run() {
+						Log.debug("Watchdog started");
+						while (!Thread.interrupted()) {
+							if (WatchdogEnabled && (System.currentTimeMillis() - lastWatchdogSignal) > WatchdogTimeout) {
+								Log.warn("Watchdog triggered");
+								try {
+									Thread.sleep(1000);
+								}
+								catch (InterruptedException e) {
+									Log.warn("Watchdog interrupted", e);
+									break;
+								}
+								System.exit(1);
+							}
+							try {
+								Thread.sleep(WatchdogTimeout);
+							}
+							catch (InterruptedException e) {
+								Log.warn("Watchdog interrupted", e);
+								break;
+							}
 						}
 					}
-				}
-			});
-			watchdogThread.setDaemon(true);
-			lastWatchdogSignal = System.currentTimeMillis();
-			watchdogThread.start();
+				});
+				watchdogThread.setDaemon(true);
+				lastWatchdogSignal = System.currentTimeMillis();
+				watchdogThread.start();
+			}
 
 			// Execution loop
 			while (!Thread.interrupted()) {
@@ -212,21 +221,22 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					}
 					long barrierStartWaitTime = System.nanoTime() - startTime;
 
-					// Barrier tasks
-					startTime = System.nanoTime();
-					// Send vertices
-					for (SendQueryVerticesMessage sendVert : globalBarrierSendVerts) {
-						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
-								sendVert.getMaxMoveCount());
-					}
-					// Receive vertices
-					while (!globalBarrierRecvVerts.isEmpty()) {
-						//Thread.sleep(1);  // TODO sleep?
-						handleReceivedMessages();
-					}
-					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
+					//					// Barrier tasks
+					//					startTime = System.nanoTime();
+					//					// Send vertices
+					//					for (SendQueryVerticesMessage sendVert : globalBarrierSendVerts) {
+					//						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
+					//								sendVert.getMaxMoveCount());
+					//					}
+					//					// Receive vertices
+					//					while (!globalBarrierRecvVerts.isEmpty()) {
+					//						//Thread.sleep(1);  // TODO sleep?
+					//						handleReceivedMessages();
+					//					}
+					//					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
 
-					// Start barrier, notify other workers
+
+					// Finish barrier, notify other workers
 					logger.debug("Barrier tasks done, waiting for other workers to finish");
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Finished(ownId), true);
@@ -244,13 +254,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					workerStats.BarrierStartWaitTime += barrierStartWaitTime;
 					workerStats.BarrierFinishWaitTime += barrierFinishWaitTime;
 					globalBarrierRequested = false;
+					System.out.println("b " + ownId);
 				}
 
 
 				// Wait for ready queries
 				startTime = System.nanoTime();
 				activeQueriesThisSuperstep.clear();
-				while (true) {
+				while (!globalBarrierRequested) {
 					handleReceivedMessages();
 
 					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
@@ -263,6 +274,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
 
+				System.out.println("c " + ownId);
 
 				// Compute active queries
 				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisSuperstep) {
@@ -711,8 +723,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		WorkerQuery<V, E, M, Q> query = activeQueries.get(queryId);
 		List<AbstractVertex<V, E, M, Q>> verticesToMove = new ArrayList<>();
 
-		if (movedQueryVertices.containsKey(queryId))
-			logger.error("movedVerticesRedirections not cleaned up after last superstep");
+		//		if (movedQueryVertices.containsKey(queryId))
+		//			logger.error("movedVerticesRedirections not cleaned up after last superstep");
 
 		if (query != null) {
 			//			if (getQueryIntersectionCount(queryId) == 0) { // Only move vertices if no intersection
@@ -763,11 +775,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		List<Integer> vertexMoveIds = verticesMoving.stream().map(v -> v.ID)
 				.collect(Collectors.toCollection(ArrayList::new));
 
-		// Add vertex redirections
-		movedQueryVertices.put(queryId, vertexMoveIds);
-		for (Integer movedVert : vertexMoveIds) {
-			movedVerticesRedirections.put(movedVert, movedTo);
-		}
+		//		// Add vertex redirections
+		//		//		movedQueryVertices.put(queryId, vertexMoveIds);
+		//		for (Integer movedVert : vertexMoveIds) {
+		//			movedVerticesRedirections.put(movedVert, movedTo);
+		//		}
 
 		// Broadcast vertex invalidate message
 		for (int otherWorker : otherWorkerIds) {
@@ -848,14 +860,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 
 
-			// Clean up redirections
-			List<Integer> redirections = movedQueryVertices.get(activeQuery.QueryId);
-			if (redirections != null) {
-				for (Integer redir : redirections) {
-					movedVerticesRedirections.remove(redir);
-				}
-				movedQueryVertices.remove(activeQuery.QueryId);
-			}
+			//			// Clean up redirections
+			//			List<Integer> redirections = movedQueryVertices.get(activeQuery.QueryId);
+			//			if (redirections != null) {
+			//				for (Integer redir : redirections) {
+			//					movedVerticesRedirections.remove(redir);
+			//				}
+			//				movedQueryVertices.remove(activeQuery.QueryId);
+			//			}
 
 
 			sendMasterSuperstepFinished(activeQuery, queryIntersects);
@@ -923,20 +935,20 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 				else {
 					if (!message.broadcastFlag) {
-						Integer redirectMachine = movedVerticesRedirections.get(msg.first);
-						if (redirectMachine != null) {
-							//								logger.info("Redirect to " + redirectMachine);
-							activeQuery.QueryLocal.Stats.RedirectedMessages++;
-							sendVertexMessageToMachine(redirectMachine, msg.first, activeQuery, message.superstepNo, msg.second);
-						}
-						else {
-							logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from "
-									+ message.srcMachine + " query " + activeQuery.QueryId + ":" + superstepNo
-									+ " with no redirection");
-							//								Integer machineMb = remoteVertexMachineRegistry.lookupEntry(msg.first);
-							//								System.err.println(machineMb);
-							freePooledMessageValue(msg.second);
-						}
+						//						Integer redirectMachine = movedVerticesRedirections.get(msg.first);
+						//						if (redirectMachine != null) {
+						//							//								logger.info("Redirect to " + redirectMachine);
+						//							activeQuery.QueryLocal.Stats.RedirectedMessages++;
+						//							sendVertexMessageToMachine(redirectMachine, msg.first, activeQuery, message.superstepNo, msg.second);
+						//						}
+						//						else {
+						logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from "
+								+ message.srcMachine + " query " + activeQuery.QueryId + ":" + superstepNo
+								+ " with no redirection");
+						//								Integer machineMb = remoteVertexMachineRegistry.lookupEntry(msg.first);
+						//								System.err.println(machineMb);
+						freePooledMessageValue(msg.second);
+						//						}
 					}
 					else {
 						freePooledMessageValue(msg.second);
@@ -1037,8 +1049,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		logger.info("Worker finished query " + activeQuery.Query.QueryId);
 		activeQueries.remove(activeQuery.Query.QueryId);
 
-		if (movedQueryVertices.containsKey(activeQuery.QueryId))
-			logger.error("movedVerticesRedirections not cleaned up after last superstep");
+		//		if (movedQueryVertices.containsKey(activeQuery.QueryId))
+		//			logger.error("movedVerticesRedirections not cleaned up after last superstep");
 	}
 
 
