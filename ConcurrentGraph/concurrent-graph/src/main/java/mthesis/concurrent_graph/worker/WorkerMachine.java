@@ -257,7 +257,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						}
 						activeQuery.calculatedSuperstep();
 						long computeTime = System.nanoTime() - startTime;
-						activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.ComputeTimeKey, computeTime);
+						activeQuery.QueryLocal.Stats.ComputeTime += computeTime;
 						workerStats.ComputeTime += computeTime;
 
 
@@ -617,6 +617,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		// Start new superstep query values
 		activeQuery.Query = msgQuery;
 		activeQuery.QueryLocal = globalValueFactory.createClone(msgQuery);
+		workerStats.addQueryStatsstepStats(activeQuery.QueryLocal.Stats);
 		activeQuery.QueryLocal.Stats = new QueryStats();
 
 		{
@@ -715,14 +716,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, true);
 		verticesSent += verticesToMove.size();
 
-		long sendTime = (System.nanoTime() - startTime);
 		if (query != null) {
-			query.QueryLocal.Stats.addToOtherStat(QueryStats.MoveSendVerticsKey, verticesSent);
-			query.QueryLocal.Stats.addToOtherStat(QueryStats.MoveSendVerticsTimeKey, sendTime);
+			query.QueryLocal.Stats.MoveSendVertices += verticesSent;
+			query.QueryLocal.Stats.MoveSendVerticesTime += (System.nanoTime() - startTime);
+			query.QueryLocal.Stats.MoveSendVerticesMessages += verticesMessagesSent;
 		}
-		workerStats.MoveSendVertices += verticesSent;
-		workerStats.MoveSendVerticesTime += sendTime;
-		workerStats.MoveSendVerticesMessages += verticesMessagesSent;
 	}
 
 
@@ -792,7 +790,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Reset active vertices
 			activeQuery.QueryLocal.setActiveVertices(activeQuery.ActiveVerticesThis.size());
 			activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
-			activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.StepFinishTimeKey, System.nanoTime() - startTime);
+			activeQuery.QueryLocal.Stats.StepFinishTime += System.nanoTime() - startTime;
 
 
 			// Calculate query intersections
@@ -805,7 +803,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						otherQuery.ActiveVerticesThis.keySet());
 				queryIntersects.put(otherQuery.QueryId, intersects);
 			}
-			activeQuery.QueryLocal.Stats.OtherStats.put(QueryStats.IntersectCalcTimeKey, System.nanoTime() - startTime2);
+			activeQuery.QueryLocal.Stats.IntersectCalcTime += System.nanoTime() - startTime2;
 
 			// Update currentQueryIntersects
 			currentQueryIntersects.put(activeQuery.QueryId, queryIntersects);
@@ -897,7 +895,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						Integer redirectMachine = movedVerticesRedirections.get(msg.first);
 						if (redirectMachine != null) {
 							//								logger.info("Redirect to " + redirectMachine);
-							activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.RedirectedMessagesKey, 1);
+							activeQuery.QueryLocal.Stats.RedirectedMessages++;
 							sendVertexMessageToMachine(redirectMachine, msg.first, activeQuery, message.superstepNo, msg.second);
 						}
 						else {
@@ -969,10 +967,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 
 		long moveTime = (System.nanoTime() - startTime);
-		workerStats.MoveRecvVertices += message.vertices.size();
-		workerStats.MoveSendVerticesTime += moveTime;
-		activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.MoveRecvVerticsKey, message.vertices.size());
-		activeQuery.QueryLocal.Stats.addToOtherStat(QueryStats.MoveRecvVerticsTimeKey, moveTime);
+		activeQuery.QueryLocal.Stats.MoveRecvVertices += message.vertices.size();
+		activeQuery.QueryLocal.Stats.MoveSendVerticesTime += moveTime;
 	}
 
 
@@ -984,7 +980,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			updatedEntries = remoteVertexMachineRegistry.updateEntries(message.vertices, message.movedTo);
 		else
 			updatedEntries = remoteVertexMachineRegistry.removeEntries(message.vertices);
-		query.QueryLocal.Stats.addToOtherStat(QueryStats.UpdateVertexRegistersKey, updatedEntries);
+		query.QueryLocal.Stats.UpdateVertexRegisters += updatedEntries;
 	}
 
 

@@ -6,10 +6,17 @@ import java.util.TreeMap;
 
 import com.google.protobuf.ByteString;
 
+import mthesis.concurrent_graph.QueryStats;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 
 /**
- * Statistics per worker, query independent.
+ * Statistics per worker, over all active queries.
+ * All statistics are kept in simple variables to keep performance good.
+ * WorkerStats represent a sample of statistics in a fixed period of time.
+ * There are two types of stats: Worker stats and aggregated query stats.
+ * Query stats are aggregated by adding them to the worker step when a superstep is finished.
+ *
+ * @author Jonas Grunert
  */
 public class WorkerStats {
 
@@ -17,6 +24,7 @@ public class WorkerStats {
 	private final byte[] workerStatsBuffer = new byte[WorkerStatsMaxBytes];
 
 	// Direct variables for quick access of frequently changed variables
+	public long ActiveVertices;
 	public long IdleTime;
 	public long QueryWaitTime;
 	public long HandleMessagesTime;
@@ -25,28 +33,11 @@ public class WorkerStats {
 	public long BarrierFinishWaitTime;
 	public long BarrierVertexMoveTime;
 
-	public long ActiveVertices;
-	public long MessagesTransmittedLocal;
-	public long MessagesSentUnicast;
-	public long MessagesSentBroadcast;
-	public long MessageBucketsSentUnicast;
-	public long MessageBucketsSentBroadcast;
-	public long MessagesReceivedWrongVertex;
-	public long MessagesReceivedCorrectVertex;
-	public long DiscoveredNewVertexMachines;
-	public long MoveSendVertices;
-	public long MoveSendVerticesTime;
-	public long MoveRecvVertices;
-	public long MoveRecvVerticesTime;
-
-	// Detailed stats
-	public long MoveSendVerticesMessages; // TODO
-
-	//	public final HashMap<String, Long> OtherStats;
+	private QueryStats aggregatedQueryStats;
 
 
 	public WorkerStats() {
-		//		OtherStats = new HashMap<>();
+		aggregatedQueryStats = new QueryStats();
 	}
 
 	public WorkerStats(ByteString bytesString) {
@@ -63,27 +54,7 @@ public class WorkerStats {
 		BarrierStartWaitTime = bytes.getLong();
 		BarrierFinishWaitTime = bytes.getLong();
 		BarrierVertexMoveTime = bytes.getLong();
-
-		MessagesTransmittedLocal = bytes.getLong();
-		MessagesSentUnicast = bytes.getLong();
-		MessagesSentBroadcast = bytes.getLong();
-		MessageBucketsSentUnicast = bytes.getLong();
-		MessageBucketsSentBroadcast = bytes.getLong();
-		MessagesReceivedWrongVertex = bytes.getLong();
-		MessagesReceivedCorrectVertex = bytes.getLong();
-		DiscoveredNewVertexMachines = bytes.getLong();
-		MoveSendVertices = bytes.getLong();
-		MoveSendVerticesTime = bytes.getLong();
-		MoveRecvVertices = bytes.getLong();
-		MoveRecvVerticesTime = bytes.getLong();
-
-		MoveSendVerticesMessages = bytes.getLong();
-
-		//		int numOtherStats = bytes.getInt();
-		//		OtherStats = new HashMap<>(numOtherStats);
-		//		for (int i = 0; i < numOtherStats; i++) {
-		//			OtherStats.put(bytes.getInt(), bytes.getLong());
-		//		}
+		aggregatedQueryStats = new QueryStats(bytes);
 	}
 
 
@@ -96,27 +67,7 @@ public class WorkerStats {
 		buffer.putLong(BarrierStartWaitTime);
 		buffer.putLong(BarrierFinishWaitTime);
 		buffer.putLong(BarrierVertexMoveTime);
-
-		buffer.putLong(MessagesTransmittedLocal);
-		buffer.putLong(MessagesSentUnicast);
-		buffer.putLong(MessagesSentBroadcast);
-		buffer.putLong(MessageBucketsSentUnicast);
-		buffer.putLong(MessageBucketsSentBroadcast);
-		buffer.putLong(MessagesReceivedWrongVertex);
-		buffer.putLong(MessagesReceivedCorrectVertex);
-		buffer.putLong(DiscoveredNewVertexMachines);
-		buffer.putLong(MoveSendVertices);
-		buffer.putLong(MoveSendVerticesTime);
-		buffer.putLong(MoveRecvVertices);
-		buffer.putLong(MoveRecvVerticesTime);
-
-		buffer.putLong(MoveSendVerticesMessages);
-
-		//		buffer.putInt(OtherStats.size());
-		//		for (Entry<Integer, Long> stat : OtherStats.entrySet()) {
-		//			buffer.putInt(stat.getKey());
-		//			buffer.putLong(stat.getValue());
-		//		}
+		aggregatedQueryStats.writeToBuffer(buffer);
 	}
 
 	public Map<String, Long> getStatsMap() {
@@ -131,22 +82,14 @@ public class WorkerStats {
 		statsMap.put("BarrierFinishWaitTime", BarrierFinishWaitTime);
 		statsMap.put("BarrierVertexMoveTime", BarrierVertexMoveTime);
 
-		statsMap.put("MessagesTransmittedLocal", MessagesTransmittedLocal);
-		statsMap.put("MessagesSentUnicast", MessagesSentUnicast);
-		statsMap.put("MessagesSentBroadcast", MessagesSentBroadcast);
-		statsMap.put("MessageBucketsSentUnicast", MessageBucketsSentUnicast);
-		statsMap.put("MessageBucketsSentBroadcast", MessageBucketsSentBroadcast);
-		statsMap.put("MessagesReceivedWrongVertex", MessagesReceivedWrongVertex);
-		statsMap.put("MessagesReceivedCorrectVertex", MessagesReceivedCorrectVertex);
-		statsMap.put("DiscoveredNewVertexMachines", DiscoveredNewVertexMachines);
-		statsMap.put("MoveSendVertices", MoveSendVertices);
-		statsMap.put("MoveSendVerticesTime", MoveSendVerticesTime);
-		statsMap.put("MoveRecvVertices", MoveRecvVertices);
-		statsMap.put("MoveRecvVerticesTime", MoveRecvVerticesTime);
-
-		statsMap.put("MoveSendVerticesMessages", MoveSendVerticesMessages);
+		statsMap.putAll(aggregatedQueryStats.getStatsMap());
 
 		return statsMap;
+	}
+
+
+	public void addQueryStatsstepStats(QueryStats stats) {
+		aggregatedQueryStats.combine(stats);
 	}
 
 

@@ -1,19 +1,22 @@
 package mthesis.concurrent_graph;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
-import mthesis.concurrent_graph.util.MiscUtil;
+import com.google.protobuf.ByteString;
 
 
+/**
+ * Statistics per query and worker, over all active queries.
+ * All statistics are kept in simple variables to keep performance good.
+ *
+ * @author Jonas Grunert
+ *
+ */
 public class QueryStats {
 
-
-	// Direct variables for quick access of frequently changed variables
+	// Message stats
 	public long MessagesTransmittedLocal;
 	public long MessagesSentUnicast;
 	public long MessagesSentBroadcast;
@@ -23,75 +26,39 @@ public class QueryStats {
 	public long MessagesReceivedCorrectVertex;
 	public long DiscoveredNewVertexMachines;
 
-	// Other stats values. Map to integers for better performance
-	public static final Integer ComputeTimeKey = 0;
-	public static final Integer StepFinishTimeKey = 1;
-	public static final Integer IntersectCalcTimeKey = 2;
-	public static final Integer UpdateVertexRegistersKey = 3;
-	public static final Integer RedirectedMessagesKey = 4;
-	public static final Integer MoveSendVerticsKey = 5;
-	public static final Integer MoveRecvVerticsKey = 6;
-	public static final Integer MoveSendVerticsTimeKey = 7;
-	public static final Integer MoveRecvVerticsTimeKey = 8;
+	// Query Worker states
+	public long ComputeTime;
+	public long StepFinishTime;
+	public long IntersectCalcTime;
+	public long UpdateVertexRegisters;
+	public long RedirectedMessages;
+	public long MoveSendVertices;
+	public long MoveRecvVertices;
+	public long MoveSendVerticesTime;
+	public long MoveRecvVerticesTime;
 
-	public static final SortedSet<String> AllStatsNames;
-	public static final Map<Integer, String> OtherStatsNames;
-	public static final Map<String, Integer> OtherStatsIndices;
-	static {
-		OtherStatsNames = new HashMap<Integer, String>();
-		OtherStatsNames.put(ComputeTimeKey, "ComputeTime");
-		OtherStatsNames.put(StepFinishTimeKey, "StepFinishTime");
-		OtherStatsNames.put(IntersectCalcTimeKey, "IntersectCalcTime");
-		OtherStatsNames.put(UpdateVertexRegistersKey, "UpdateVertexRegisters");
-		OtherStatsNames.put(RedirectedMessagesKey, "RedirectedMessages");
-		OtherStatsNames.put(MoveSendVerticsKey, "MoveSendVertics");
-		OtherStatsNames.put(MoveRecvVerticsKey, "MoveRecvVertics");
-		OtherStatsNames.put(MoveSendVerticsTimeKey, "MoveSendVerticsTime");
-		OtherStatsNames.put(MoveRecvVerticsTimeKey, "MoveRecvVerticsTime");
+	// Detailed stats
+	public long MoveSendVerticesMessages; // TODO
 
-		OtherStatsIndices = new HashMap<>();
-		for (Entry<Integer, String> stat : OtherStatsNames.entrySet()) {
-			OtherStatsIndices.put(stat.getValue(), stat.getKey());
-		}
-
-		AllStatsNames = new TreeSet<String>(OtherStatsNames.values());
-		AllStatsNames.add("MessagesTransmittedLocal");
-		AllStatsNames.add("MessagesSentUnicast");
-		AllStatsNames.add("MessagesSentBroadcast");
-		AllStatsNames.add("MessageBucketsSentUnicast");
-		AllStatsNames.add("MessageBucketsSentBroadcast");
-		AllStatsNames.add("MessagesReceivedWrongVertex");
-		AllStatsNames.add("MessagesReceivedCorrectVertex");
-		AllStatsNames.add("DiscoveredNewVertexMachines");
-	}
-
-	// Other stats which are less frequently changed
-	public final Map<Integer, Long> OtherStats;
 
 
 	public QueryStats() {
-		OtherStats = new HashMap<>();
 	}
 
-	public QueryStats(long messagesTransmittedLocal, long messagesSentUnicast, long messagesSentBroadcast,
-			long messageBucketsSentUnicast,
-			long messageBucketsSentBroadcast, long messagesReceivedWrongVertex, long messagesReceivedCorrectVertex,
-			long discoveredNewVertexMachines,
-			Map<Integer, Long> otherStats) {
+	public QueryStats(ByteString bytesString) {
 		super();
-		MessagesTransmittedLocal = messagesTransmittedLocal;
-		MessagesSentUnicast = messagesSentUnicast;
-		MessagesSentBroadcast = messagesSentBroadcast;
-		MessageBucketsSentUnicast = messageBucketsSentUnicast;
-		MessageBucketsSentBroadcast = messageBucketsSentBroadcast;
-		MessagesReceivedWrongVertex = messagesReceivedWrongVertex;
-		MessagesReceivedCorrectVertex = messagesReceivedCorrectVertex;
-		DiscoveredNewVertexMachines = discoveredNewVertexMachines;
-		OtherStats = otherStats;
+		ByteBuffer bytes = ByteBuffer.allocate(getBytesLength());
+		bytesString.copyTo(bytes);
+		bytes.position(0);
+		initFromBytes(bytes);
 	}
 
 	public QueryStats(ByteBuffer bytes) {
 		super();
+		initFromBytes(bytes);
+	}
+
+	public void initFromBytes(ByteBuffer bytes) {
 		MessagesTransmittedLocal = bytes.getLong();
 		MessagesSentUnicast = bytes.getLong();
 		MessagesSentBroadcast = bytes.getLong();
@@ -101,40 +68,17 @@ public class QueryStats {
 		MessagesReceivedCorrectVertex = bytes.getLong();
 		DiscoveredNewVertexMachines = bytes.getLong();
 
-		int numOtherStats = bytes.getInt();
-		OtherStats = new HashMap<>(numOtherStats);
-		for (int i = 0; i < numOtherStats; i++) {
-			OtherStats.put(bytes.getInt(), bytes.getLong());
-		}
-	}
+		ComputeTime = bytes.getLong();
+		StepFinishTime = bytes.getLong();
+		IntersectCalcTime = bytes.getLong();
+		UpdateVertexRegisters = bytes.getLong();
+		RedirectedMessages = bytes.getLong();
+		MoveSendVertices = bytes.getLong();
+		MoveSendVerticesTime = bytes.getLong();
+		MoveRecvVertices = bytes.getLong();
+		MoveRecvVerticesTime = bytes.getLong();
 
-
-	public void setOtherStat(int key, long value) {
-		OtherStats.put(key, value);
-	}
-
-	public void addToOtherStat(int key, long toAdd) {
-		Long thisStat = OtherStats.get(key);
-		if (thisStat == null) thisStat = 0L;
-		OtherStats.put(key, thisStat + toAdd);
-	}
-
-
-	public void combine(QueryStats v) {
-		MessagesTransmittedLocal += v.MessagesTransmittedLocal;
-		MessagesSentUnicast += v.MessagesSentUnicast;
-		MessagesSentBroadcast += v.MessagesSentBroadcast;
-		MessageBucketsSentUnicast += v.MessageBucketsSentUnicast;
-		MessageBucketsSentBroadcast += v.MessageBucketsSentBroadcast;
-		MessagesReceivedWrongVertex += v.MessagesReceivedWrongVertex;
-		MessagesReceivedCorrectVertex += v.MessagesReceivedCorrectVertex;
-		DiscoveredNewVertexMachines += v.DiscoveredNewVertexMachines;
-
-		for (Entry<Integer, Long> stat : v.OtherStats.entrySet()) {
-			Long thisStat = OtherStats.get(stat.getKey());
-			if (thisStat == null) thisStat = 0L;
-			OtherStats.put(stat.getKey(), thisStat + stat.getValue());
-		}
+		MoveSendVerticesMessages = bytes.getLong();
 	}
 
 
@@ -148,15 +92,74 @@ public class QueryStats {
 		buffer.putLong(MessagesReceivedCorrectVertex);
 		buffer.putLong(DiscoveredNewVertexMachines);
 
-		buffer.putInt(OtherStats.size());
-		for (Entry<Integer, Long> stat : OtherStats.entrySet()) {
-			buffer.putInt(stat.getKey());
-			buffer.putLong(stat.getValue());
-		}
+		buffer.putLong(ComputeTime);
+		buffer.putLong(StepFinishTime);
+		buffer.putLong(IntersectCalcTime);
+		buffer.putLong(UpdateVertexRegisters);
+		buffer.putLong(RedirectedMessages);
+		buffer.putLong(MoveSendVertices);
+		buffer.putLong(MoveRecvVertices);
+		buffer.putLong(MoveSendVerticesTime);
+		buffer.putLong(MoveRecvVerticesTime);
+
+		buffer.putLong(MoveSendVerticesMessages);
 	}
 
-	public int getBytesLength() {
-		return 11 * 8 + 4 + 12 * OtherStats.size();
+
+	public Map<String, Long> getStatsMap() {
+		Map<String, Long> statsMap = new TreeMap<>();
+
+		statsMap.put("MessagesTransmittedLocal", MessagesTransmittedLocal);
+		statsMap.put("MessagesSentUnicast", MessagesSentUnicast);
+		statsMap.put("MessagesSentBroadcast", MessagesSentBroadcast);
+		statsMap.put("MessageBucketsSentUnicast", MessageBucketsSentUnicast);
+		statsMap.put("MessageBucketsSentBroadcast", MessageBucketsSentBroadcast);
+		statsMap.put("MessagesReceivedWrongVertex", MessagesReceivedWrongVertex);
+		statsMap.put("MessagesReceivedCorrectVertex", MessagesReceivedCorrectVertex);
+		statsMap.put("DiscoveredNewVertexMachines", DiscoveredNewVertexMachines);
+
+		statsMap.put("ComputeTime", ComputeTime);
+		statsMap.put("StepFinishTime", StepFinishTime);
+		statsMap.put("IntersectCalcTime", IntersectCalcTime);
+		statsMap.put("UpdateVertexRegisters", UpdateVertexRegisters);
+		statsMap.put("RedirectedMessages", RedirectedMessages);
+		statsMap.put("MoveSendVertices", MoveSendVertices);
+		statsMap.put("MoveSendVerticesTime", MoveSendVerticesTime);
+		statsMap.put("MoveRecvVertices", MoveRecvVertices);
+		statsMap.put("MoveRecvVerticesTime", MoveRecvVerticesTime);
+
+		statsMap.put("MoveSendVerticesMessages", MoveSendVerticesMessages);
+
+		return statsMap;
+	}
+
+
+	public void combine(QueryStats v) {
+		MessagesTransmittedLocal += v.MessagesTransmittedLocal;
+		MessagesSentUnicast += v.MessagesSentUnicast;
+		MessagesSentBroadcast += v.MessagesSentBroadcast;
+		MessageBucketsSentUnicast += v.MessageBucketsSentUnicast;
+		MessageBucketsSentBroadcast += v.MessageBucketsSentBroadcast;
+		MessagesReceivedWrongVertex += v.MessagesReceivedWrongVertex;
+		MessagesReceivedCorrectVertex += v.MessagesReceivedCorrectVertex;
+		DiscoveredNewVertexMachines += v.DiscoveredNewVertexMachines;
+
+		ComputeTime += v.ComputeTime;
+		StepFinishTime += v.StepFinishTime;
+		IntersectCalcTime += v.IntersectCalcTime;
+		UpdateVertexRegisters += v.UpdateVertexRegisters;
+		RedirectedMessages += v.RedirectedMessages;
+		MoveSendVertices += v.MoveSendVertices;
+		MoveRecvVertices += v.MoveRecvVertices;
+		MoveSendVerticesTime += v.MoveSendVerticesTime;
+		MoveRecvVerticesTime += v.MoveRecvVerticesTime;
+
+		MoveSendVerticesMessages += v.MoveSendVerticesMessages;
+	}
+
+
+	public static int getBytesLength() {
+		return 18 * 8;
 	}
 
 	public String getString() {
@@ -167,59 +170,11 @@ public class QueryStats {
 				+ ":" + MessageBucketsSentBroadcast
 				+ ":" + MessagesReceivedWrongVertex
 				+ ":" + MessagesReceivedCorrectVertex
-				+ ":" + DiscoveredNewVertexMachines
-				+ ":" + getOtherStatsString();
+				+ ":" + DiscoveredNewVertexMachines;
 	}
 
-
-	public String getOtherStatsString() {
-		StringBuilder sb = new StringBuilder();
-		for (Entry<Integer, Long> stat : OtherStats.entrySet()) {
-			sb.append(OtherStatsNames.get(stat.getKey()));
-			sb.append(':');
-			sb.append(stat.getValue());
-			sb.append(", ");
-		}
-		return sb.toString();
-	}
-
-
-	/**
-	 * @return Value of a stat if existing, 0 by default.
-	 */
-	public long getStatValue(String statName) {
-		switch (statName) {
-			case "MessagesTransmittedLocal":
-				return MessagesTransmittedLocal;
-			case "MessagesSentUnicast":
-				return MessagesSentUnicast;
-			case "MessagesSentBroadcast":
-				return MessagesSentBroadcast;
-			case "MessageBucketsSentUnicast":
-				return MessageBucketsSentUnicast;
-			case "MessageBucketsSentBroadcast":
-				return MessageBucketsSentBroadcast;
-			case "MessagesReceivedWrongVertex":
-				return MessagesReceivedWrongVertex;
-			case "MessagesReceivedCorrectVertex":
-				return MessagesReceivedCorrectVertex;
-			case "DiscoveredNewVertexMachines":
-				return DiscoveredNewVertexMachines;
-
-			default:
-				Integer otherStatIndex = OtherStatsIndices.get(statName);
-				if (otherStatIndex == null) return 0;
-				Long otherVal = OtherStats.get(otherStatIndex);
-				if (otherVal == null) return 0;
-				return otherVal;
-		}
-	}
 
 	public long getWorkersTime() {
-		return MiscUtil.defaultLong(OtherStats.get(QueryStats.ComputeTimeKey))
-				+ MiscUtil.defaultLong(OtherStats.get(QueryStats.IntersectCalcTimeKey))
-				+ MiscUtil.defaultLong(OtherStats.get(QueryStats.StepFinishTimeKey))
-				+ MiscUtil.defaultLong(OtherStats.get(QueryStats.MoveSendVerticsTimeKey))
-				+ MiscUtil.defaultLong(OtherStats.get(QueryStats.MoveRecvVerticsTimeKey));
+		return ComputeTime + IntersectCalcTime + StepFinishTime + MoveSendVerticesTime + MoveRecvVerticesTime;
 	}
 }

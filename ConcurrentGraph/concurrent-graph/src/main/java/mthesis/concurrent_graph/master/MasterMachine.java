@@ -388,7 +388,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					queryDurations.put(msgActiveQuery.BaseQuery.QueryId, duration);
 					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
 							+ (duration / 1000000) + "ms, "
-							+ msgActiveQuery.QueryTotalAggregator.Stats.getOtherStatsString());
+							+ msgActiveQuery.QueryTotalAggregator.toString());
 				}
 			}
 		}
@@ -465,26 +465,19 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 
 				for (int i = 0; i < querySteps.getValue().size(); i++) {
 					Q step = querySteps.getValue().get(i);
-					long workersTime = step.Stats.getWorkersTime();
-					long compTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.ComputeTimeKey));
-					long intersCalcTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.IntersectCalcTimeKey));
-					long stepFinishTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.StepFinishTimeKey));
-					long moveSendTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.MoveSendVerticsTimeKey));
-					long moveRecvTime = MiscUtil.defaultLong(step.Stats.OtherStats.get(QueryStats.MoveRecvVerticsTimeKey));
-
 					sb.append(queryStatsStepTimes.get(querySteps.getKey()).get(i) / 1000000);
 					sb.append(';');
-					sb.append(workersTime / 1000000);
+					sb.append(step.Stats.getWorkersTime() / 1000000);
 					sb.append(';');
-					sb.append(compTime / 1000000);
+					sb.append(step.Stats.ComputeTime / 1000000);
 					sb.append(';');
-					sb.append(intersCalcTime / 1000000);
+					sb.append(step.Stats.IntersectCalcTime / 1000000);
 					sb.append(';');
-					sb.append(stepFinishTime / 1000000);
+					sb.append(step.Stats.StepFinishTime / 1000000);
 					sb.append(';');
-					sb.append(moveSendTime / 1000000);
+					sb.append(step.Stats.MoveSendVerticesTime / 1000000);
 					sb.append(';');
-					sb.append(moveRecvTime / 1000000);
+					sb.append(step.Stats.MoveRecvVerticesTime / 1000000);
 					sb.append(';');
 					writer.println(sb.toString());
 					sb.setLength(0);
@@ -504,7 +497,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					// Write first line
 					sb.append("ActiveVertices");
 					sb.append(';');
-					for (String colName : QueryStats.AllStatsNames) {
+					for (String colName : new QueryStats().getStatsMap().keySet()) {
 						sb.append(colName);
 						sb.append(';');
 					}
@@ -517,8 +510,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						sb.append(step.getActiveVertices());
 						sb.append(';');
 
-						for (String colName : QueryStats.AllStatsNames) {
-							sb.append(step.Stats.getStatValue(colName));
+						for (Long colStat : step.Stats.getStatsMap().values()) {
+							sb.append(colStat);
 							sb.append(';');
 						}
 						writer.println(sb.toString());
@@ -541,7 +534,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						query.getKey() + ";" + query.getValue().GetQueryHash() + ";"
 								+ queryDurations.get(query.getKey()) / 1000000 + ";"
 								+ query.getValue().Stats.getWorkersTime() / 1000000 + ";"
-								+ query.getValue().Stats.getStatValue(("ComputeTime")) / 1000000 + ";");
+								+ query.getValue().Stats.ComputeTime / 1000000 + ";");
 			}
 		}
 		catch (Exception e) {
