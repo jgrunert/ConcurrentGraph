@@ -32,7 +32,7 @@ import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.master.vertexmove.AbstractVertexMoveDecider;
-import mthesis.concurrent_graph.master.vertexmove.SimpleVertexMoveDecider;
+import mthesis.concurrent_graph.master.vertexmove.GreedyCostBasedVertexMoveDecider;
 import mthesis.concurrent_graph.master.vertexmove.VertexMoveDecision;
 import mthesis.concurrent_graph.plotting.JFreeChartPlotter;
 import mthesis.concurrent_graph.util.FileUtil;
@@ -81,7 +81,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private final MasterOutputEvaluator<Q> outputCombiner;
 	private final BaseQueryGlobalValuesFactory<Q> queryValueFactory;
 
-	private final AbstractVertexMoveDecider<Q> vertexMoveDecider = new SimpleVertexMoveDecider<>();
+	private final AbstractVertexMoveDecider<Q> vertexMoveDecider = new GreedyCostBasedVertexMoveDecider<>();
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,

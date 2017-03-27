@@ -604,14 +604,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						return true;
 
 					case Worker_Barrier_Started: {
-						System.out.println("Worker_Barrier_Started");
+						//						System.out.println("Worker_Barrier_Started");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else logger.warn("Worker_Barrier_Started message from worker not waiting for: " + message);
 					}
 						return true;
 					case Worker_Barrier_Finished: {
-						System.out.println("Worker_Barrier_Finished");
+						System.out.println(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker))
 							globalBarrierFinishWaitSet.remove(srcWorker);
@@ -744,7 +744,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					verticesMessagesSent += vertex.getBufferedMessageCount();
 				}
 			}
-			System.out.println(ownId + " Sent " + query.ActiveVerticesThis.size() + " for " + queryId);
+			System.out.println(ownId + " Sent " + query.ActiveVerticesThis.size() + " to " + sendToWorker + " for " + queryId);
 			query.ActiveVerticesThis.clear();
 			//			}
 			//			else {
@@ -1013,7 +1013,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		long moveTime = (System.nanoTime() - startTime);
 		activeQuery.QueryLocal.Stats.MoveRecvVertices += message.vertices.size();
-		activeQuery.QueryLocal.Stats.MoveSendVerticesTime += moveTime;
+		activeQuery.QueryLocal.Stats.MoveRecvVerticesTime += moveTime;
 	}
 
 

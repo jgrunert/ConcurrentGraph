@@ -74,8 +74,8 @@ public class QueryStats {
 		UpdateVertexRegisters = bytes.getLong();
 		RedirectedMessages = bytes.getLong();
 		MoveSendVertices = bytes.getLong();
-		MoveSendVerticesTime = bytes.getLong();
 		MoveRecvVertices = bytes.getLong();
+		MoveSendVerticesTime = bytes.getLong();
 		MoveRecvVerticesTime = bytes.getLong();
 
 		MoveSendVerticesMessages = bytes.getLong();
@@ -124,8 +124,8 @@ public class QueryStats {
 		statsMap.put("UpdateVertexRegisters", (double) UpdateVertexRegisters);
 		statsMap.put("RedirectedMessages", (double) RedirectedMessages);
 		statsMap.put("MoveSendVertices", (double) MoveSendVertices);
-		statsMap.put("MoveSendVerticesTime", (double) MoveSendVerticesTime);
 		statsMap.put("MoveRecvVertices", (double) MoveRecvVertices);
+		statsMap.put("MoveSendVerticesTime", (double) MoveSendVerticesTime);
 		statsMap.put("MoveRecvVerticesTime", (double) MoveRecvVerticesTime);
 
 		statsMap.put("MoveSendVerticesMessages", (double) MoveSendVerticesMessages);
