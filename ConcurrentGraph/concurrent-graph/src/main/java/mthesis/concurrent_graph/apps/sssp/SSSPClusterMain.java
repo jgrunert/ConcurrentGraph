@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.apps.sssp;
 
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
@@ -9,24 +10,31 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
 public class SSSPClusterMain {
 
 	public static void main(String[] args) throws Exception {
-		if (args.length < 3) {
-			System.out.println("Usage: [configFile] [inputFile] [partitionPerWorker]");
+		if (args.length < 2) {
+			System.out.println("Usage: [clusterConfigFile] [inputFile] [optional extraJvmPerWorker-bool]");
 			return;
 		}
+		boolean extraJvmPerWorker = false;
+		if (args.length >= 3) {
+			extraJvmPerWorker = Boolean.parseBoolean(args[2]);
+		}
+		final String clusterConfigFile = args[0];
 		final String inputFile = args[1];
-		final int partitionPerWorker = Integer.parseInt(args[2]);
 
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
 		final SSSPJobConfiguration jobConfig = new SSSPJobConfiguration();
-		final MasterInputPartitioner inputPartitioner = new RoadNetInputPartitioner(partitionPerWorker);
+		final MasterInputPartitioner inputPartitioner = new RoadNetInputPartitioner(
+				Configuration.getPropertyInt("PartitionsPerWorker"));
 		final MasterOutputEvaluator<SSSPQueryValues> outputCombiner = new SSSPOutputEvaluator();
 
 		// Start machines
 		System.out.println("Starting machines");
 		final RunUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtils<>();
-		MasterMachine<SSSPQueryValues> master = testUtils.startSetup(args[0], inputFile,
+		MasterMachine<SSSPQueryValues> master = testUtils.startSetup(clusterConfigFile, extraJvmPerWorker, inputFile,
 				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig, new RoadNetVertexInputReader());
+
+		// TODO Start queries by script or external application
 
 		// Start query
 		if (master != null) {

@@ -3,15 +3,14 @@ package mthesis.concurrent_graph;
 
 public class MachineConfig {
 
+	public final int MachineId;
 	public final String HostName;
 	public final int MessagePort;
-	// Indicates if run in a separate VM. By default false.
-	public final boolean ExtraVm;
 
-	public MachineConfig(String hostName, int messagePort, boolean extraVm) {
+	public MachineConfig(int machineId, String hostName, int messagePort) {
 		super();
+		MachineId = machineId;
 		HostName = hostName;
 		MessagePort = messagePort;
-		ExtraVm = extraVm;
 	}
 }

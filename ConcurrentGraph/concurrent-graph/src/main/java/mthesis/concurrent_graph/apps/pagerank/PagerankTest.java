@@ -37,14 +37,13 @@ public class PagerankTest {
 		System.out.println("Starting machines");
 		MasterMachine<BaseQueryGlobalValues> master = null;
 		final RunUtils<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> testUtils = new RunUtils<>();
-		if (config.StartOnThisMachine.get(config.masterId)) master = testUtils.startMaster(config.AllMachineConfigs, config.masterId,
+		master = testUtils.startMaster(config.AllMachineConfigs, config.masterId,
 				config.AllWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
 
 		final List<WorkerMachine<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
-			if (config.StartOnThisMachine.get(config.AllWorkerIds.get(i)))
-				workers.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
-						new VertexTextInputReader<>()));
+			workers.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
+					new VertexTextInputReader<>()));
 		}
 
 		if (master != null) master.startQuery(new BaseQueryGlobalValues(0));

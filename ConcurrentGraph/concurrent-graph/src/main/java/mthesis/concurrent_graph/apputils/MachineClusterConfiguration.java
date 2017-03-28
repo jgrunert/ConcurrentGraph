@@ -15,27 +15,28 @@ public class MachineClusterConfiguration {
 	public final int masterId;
 	public final List<Integer> AllWorkerIds = new ArrayList<>();
 	public final Map<Integer, MachineConfig> AllMachineConfigs = new HashMap<>();
-	public final Map<Integer, Boolean> StartOnThisMachine = new HashMap<>();
 
 	public MachineClusterConfiguration(String configFilePath) {
-		masterId = -1;
+		int masterIdTmp = -1;
 		try {
 			List<String> lines = Files.readAllLines(Paths.get(configFilePath), Charset.forName("UTF-8"));
-			AddMachineConfig(-1, lines.get(1));
+			MachineConfig masterConfig = AddMachineConfig(lines.get(1));
+			masterIdTmp = masterConfig.MachineId;
 			for (int i = 3; i < lines.size(); i++) {
-				AllWorkerIds.add(i - 3);
-				AddMachineConfig(i - 3, lines.get(i));
+				MachineConfig workerConfig = AddMachineConfig(lines.get(i));
+				AllWorkerIds.add(workerConfig.MachineId);
 			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		masterId = masterIdTmp;
 	}
 
-	private void AddMachineConfig(int id, String cfg) {
+	private MachineConfig AddMachineConfig(String cfg) {
 		String[] sSplit = cfg.split("\t");
-		boolean extraVm = (sSplit.length >= 4) ? Boolean.parseBoolean(sSplit[3]) : false;
-		AllMachineConfigs.put(id, new MachineConfig(sSplit[0], Integer.parseInt(sSplit[1]), extraVm));
-		StartOnThisMachine.put(id, Boolean.parseBoolean(sSplit[2]));
+		MachineConfig config = new MachineConfig(Integer.parseInt(sSplit[0]), sSplit[1], Integer.parseInt(sSplit[2]));
+		AllMachineConfigs.put(config.MachineId, config);
+		return config;
 	}
 }

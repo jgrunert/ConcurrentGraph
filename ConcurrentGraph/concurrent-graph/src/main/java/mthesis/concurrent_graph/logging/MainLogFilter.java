@@ -9,7 +9,7 @@ public class MainLogFilter extends Filter<ILoggingEvent> {
 
 	@Override
 	public FilterReply decide(ILoggingEvent event) {
-		if (event.getLevel().toInteger() < Configuration.LOG_LEVEL_Main) {
+		if (event.getLevel().toInteger() < Configuration.LOG_LEVEL_MAIN) {
 			return FilterReply.DENY;
 		} else {
 			return FilterReply.NEUTRAL;

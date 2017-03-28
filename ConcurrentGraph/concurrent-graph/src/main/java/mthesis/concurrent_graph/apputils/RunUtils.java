@@ -20,39 +20,35 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class RunUtils<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
-	public MasterMachine<Q> startSetup(String configFile,
+	public MasterMachine<Q> startSetup(String configFile, boolean extraJvmPerWorker,
 			String inputFile, String inputPartitionDir, MasterInputPartitioner inputPartitioner,
 			MasterOutputEvaluator<Q> outputCombiner, String outputDir,
 			JobConfiguration<V, E, M, Q> jobConfig, BaseVertexInputReader<V, E, M, Q> vertexReader) {
 		MachineClusterConfiguration config = new MachineClusterConfiguration(configFile);
 		MasterMachine<Q> master = null;
-		if (config.StartOnThisMachine.get(config.masterId))
-			master = this.startMaster(config.AllMachineConfigs, config.masterId, config.AllWorkerIds, inputFile,
-					inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
+		master = this.startMaster(config.AllMachineConfigs, config.masterId, config.AllWorkerIds, inputFile,
+				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
 
 		final List<WorkerMachine<V, E, M, Q>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
 			int workerId = config.AllWorkerIds.get(i);
-			if (config.StartOnThisMachine.get(workerId)) {
-				MachineConfig workerConfig = config.AllMachineConfigs.get(workerId);
-				if (workerConfig.ExtraVm) {
-					try {
-						Process proc = Runtime.getRuntime().exec("java -jar single_worker.jar " + configFile + " " + workerId);
-						//						InputStream in = proc.getInputStream();
-						//						InputStream err = proc.getErrorStream();
-						StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream());
-						StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream());
-						errorGobbler.start();
-						outputGobbler.start();
-					}
-					catch (IOException e) {
-						e.printStackTrace();
-					}
+			if (extraJvmPerWorker) {
+				try {
+					Process proc = Runtime.getRuntime().exec("java -jar single_worker.jar " + configFile + " " + workerId);
+					//						InputStream in = proc.getInputStream();
+					//						InputStream err = proc.getErrorStream();
+					StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream());
+					StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream());
+					errorGobbler.start();
+					outputGobbler.start();
 				}
-				else {
-					workers.add(this.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
-							vertexReader));
+				catch (IOException e) {
+					e.printStackTrace();
 				}
+			}
+			else {
+				workers.add(this.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
+						vertexReader));
 			}
 		}
 

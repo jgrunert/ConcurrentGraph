@@ -50,7 +50,7 @@ public class Configuration {
 	 */
 	public static final boolean VERTEX_MACHINE_DISCOVERY_INCOMING;
 
-	public static final int LOG_LEVEL_Main;
+	public static final int LOG_LEVEL_MAIN;
 	//public static final int LOG_LEVEL_Main = Level.DEBUG_INT;
 
 	/** Default size of slots for parallel queries */
@@ -89,7 +89,7 @@ public class Configuration {
 			VERTEX_BARRIER_MOVE_INTERVAL = Long.parseLong(Properties.getProperty("VERTEX_BARRIER_MOVE_INTERVAL"));
 			VERTEX_MACHINE_DISCOVERY = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY"));
 			VERTEX_MACHINE_DISCOVERY_INCOMING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY_INCOMING"));
-			LOG_LEVEL_Main = Level.valueOf(Properties.getProperty("LOG_LEVEL_Main")).levelInt;
+			LOG_LEVEL_MAIN = Level.valueOf(Properties.getProperty("LOG_LEVEL_MAIN")).levelInt;
 			DEFAULT_QUERY_SLOTS = Integer.parseInt(Properties.getProperty("DEFAULT_QUERY_SLOTS"));
 			MAX_PARALLEL_QUERIES = Integer.parseInt(Properties.getProperty("MAX_PARALLEL_QUERIES"));
 			VERTEX_MESSAGE_POOLING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MESSAGE_POOLING"));
