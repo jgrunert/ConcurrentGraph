@@ -117,7 +117,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	// Watchdog
 	private long lastWatchdogSignal;
 	private static boolean WatchdogEnabled = true;
-	private static final long WatchdogTimeout = 10000;
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -164,14 +163,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			sendMasterInitialized();
 
 			// Start watchdog
-			if (Configuration.WORKER_WATCHDOG_ENABLED) {
+			if (Configuration.WORKER_WATCHDOG_TIME > 0) {
 				Thread watchdogThread = new Thread(new Runnable() {
 
 					@Override
 					public void run() {
 						Log.debug("Watchdog started");
 						while (!Thread.interrupted()) {
-							if (WatchdogEnabled && (System.currentTimeMillis() - lastWatchdogSignal) > WatchdogTimeout) {
+							if (WatchdogEnabled && (System.currentTimeMillis()
+									- lastWatchdogSignal) > Configuration.WORKER_WATCHDOG_TIME) {
 								Log.warn("Watchdog triggered");
 								try {
 									Thread.sleep(1000);
@@ -183,7 +183,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 								System.exit(1);
 							}
 							try {
-								Thread.sleep(WatchdogTimeout);
+								Thread.sleep(Configuration.WORKER_WATCHDOG_TIME);
 							}
 							catch (InterruptedException e) {
 								Log.warn("Watchdog interrupted", e);
@@ -334,7 +334,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					workerStats.ActiveVertices = activeVertices;
 					workerStatsSamplesToSend
-							.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
+					.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
 					workerStatsLastSample = System.currentTimeMillis();
 					workerStats = new WorkerStats();
 				}
@@ -550,13 +550,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						lastWatchdogSignal = System.currentTimeMillis();
 						prepareNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: {
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
@@ -566,11 +566,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryVerticesMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
-									.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
+							.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
 						}
 						globalBarrierRequested = true;
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -598,10 +598,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						else {
 							// Completely wrong superstep
 							logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-									+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
+							+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
 						}
 					}
-						return true;
+					return true;
 
 					case Worker_Barrier_Started: {
 						//						System.out.println("Worker_Barrier_Started");
@@ -609,7 +609,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else logger.warn("Worker_Barrier_Started message from worker not waiting for: " + message);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Finished: {
 						System.out.println(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
@@ -617,13 +617,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							globalBarrierFinishWaitSet.remove(srcWorker);
 						else logger.warn("Worker_Barrier_Started message from worker not waiting for: " + message);
 					}
-						return true;
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -691,7 +691,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			if (activeQuery.VertexMovesWaitingFor.isEmpty()
 					|| activeQuery.VertexMovesReceived.size() == activeQuery.VertexMovesWaitingFor.size()) {
 				assert activeQuery.VertexMovesWaitingFor.isEmpty()
-						|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
+				|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
 				startNextSuperstep(activeQuery);
 			}
 		}
@@ -918,7 +918,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		else if (message.superstepNo != (barrierSuperstepNo + 1)) {
 			logger.error(
 					"VertexMessage from wrong barrier superstepNo: " + message.superstepNo + " should be " + (barrierSuperstepNo + 1)
-							+ " from " + message.srcMachine);
+					+ " from " + message.srcMachine);
 		}
 		else {
 			for (final Pair<Integer, M> msg : message.vertexMessages) {

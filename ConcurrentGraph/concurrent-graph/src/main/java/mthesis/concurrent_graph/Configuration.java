@@ -61,7 +61,7 @@ public class Configuration {
 	public static final boolean VERTEX_MESSAGE_POOLING;
 	public static final int VERTEX_MESSAGE_POOL_SIZE;
 
-	public static final boolean WORKER_WATCHDOG_ENABLED;
+	public static final int WORKER_WATCHDOG_TIME;
 
 	public static final int WORKER_STATS_SAMPLING_INTERVAL;
 	// Enables recording of some more expensive stats
@@ -94,7 +94,7 @@ public class Configuration {
 			MAX_PARALLEL_QUERIES = Integer.parseInt(Properties.getProperty("MAX_PARALLEL_QUERIES"));
 			VERTEX_MESSAGE_POOLING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MESSAGE_POOLING"));
 			VERTEX_MESSAGE_POOL_SIZE = Integer.parseInt(Properties.getProperty("VERTEX_MESSAGE_POOL_SIZE"));
-			WORKER_WATCHDOG_ENABLED = Boolean.parseBoolean(Properties.getProperty("WORKER_WATCHDOG_ENABLED"));
+			WORKER_WATCHDOG_TIME = Integer.parseInt(Properties.getProperty("WORKER_WATCHDOG_TIME"));
 			DETAILED_STATS = Boolean.parseBoolean(Properties.getProperty("DETAILED_STATS"));
 			WORKER_STATS_SAMPLING_INTERVAL = Integer.parseInt(Properties.getProperty("WORKER_STATS_SAMPLING_INTERVAL"));
 
