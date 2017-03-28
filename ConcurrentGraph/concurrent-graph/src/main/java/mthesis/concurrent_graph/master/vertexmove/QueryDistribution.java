@@ -21,23 +21,25 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
 public class QueryDistribution {
 
 	// Move costs per vertex to move, relative to a vertex separated from its larger partition
-	private static final double vertexMoveCosts = 0.5;
+	private static final double vertexMoveCosts = 0.7;
 
 	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
 	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
+	private final List<Integer> workerIds;
 
 	// Move operations and costs so far
 	private final Set<VertexMoveOperation> moveOperationsSoFar;
 	private double moveCostsSoFar;
 
 
-	public QueryDistribution(Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts) {
-		this(actQueryWorkerActiveVerts, new HashSet<>(), 0);
+	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts) {
+		this(workerIds, actQueryWorkerActiveVerts, new HashSet<>(), 0);
 	}
 
-	public QueryDistribution(Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts,
+	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts,
 			Set<VertexMoveOperation> moveOperationsSoFar, double moveCostsSoFar) {
 		super();
+		this.workerIds = workerIds;
 		this.actQueryWorkerActiveVerts = actQueryWorkerActiveVerts;
 		this.moveOperationsSoFar = moveOperationsSoFar;
 		this.moveCostsSoFar = moveCostsSoFar;
@@ -49,7 +51,7 @@ public class QueryDistribution {
 		for (Entry<Integer, Map<Integer, Integer>> entry : actQueryWorkerActiveVerts.entrySet()) {
 			actQueryWorkerActiveVertsClone.put(entry.getKey(), new HashMap<>(entry.getValue()));
 		}
-		return new QueryDistribution(actQueryWorkerActiveVertsClone, new HashSet<>(moveOperationsSoFar), moveCostsSoFar);
+		return new QueryDistribution(workerIds, actQueryWorkerActiveVertsClone, new HashSet<>(moveOperationsSoFar), moveCostsSoFar);
 	}
 
 
@@ -112,8 +114,31 @@ public class QueryDistribution {
 	}
 
 	private double getLoadImbalanceCosts() {
-		// TODO
-		return 0;
+		// TODO Also queries per machine?
+		Map<Integer, Integer> workerVertices = new HashMap<>(workerIds.size());
+		for (int workerId : workerIds) {
+			workerVertices.put(workerId, 0);
+		}
+		for (Entry<Integer, Map<Integer, Integer>> queryWorkerVertices : actQueryWorkerActiveVerts.entrySet()) {
+			for (Entry<Integer, Integer> partition : queryWorkerVertices.getValue().entrySet()) {
+				workerVertices.put(partition.getKey(), workerVertices.get(partition.getKey()) + partition.getValue());
+			}
+		}
+
+		// TODO Other cost model?
+		int largest = 0;
+		int smallest = Integer.MAX_VALUE;
+		for (int workerId : workerIds) {
+			largest = Math.max(largest, workerVertices.get(workerId));
+			smallest = Math.min(smallest, workerVertices.get(workerId));
+		}
+		double imbalance = (double) (largest - smallest) / (double) largest;
+
+		// TODO Quantify costs instead of only one hard limit?
+		if (imbalance > 0.6)
+			return Double.POSITIVE_INFINITY;
+		else
+			return 0;
 	}
 
 
@@ -124,7 +149,6 @@ public class QueryDistribution {
 				System.out.println("  " + partition.getKey() + ": " + partition.getValue());
 			}
 		}
-
 	}
 
 	public void printMoveDecissions() {
@@ -160,29 +184,29 @@ public class QueryDistribution {
 	}
 
 
-	// Testing
-	public static void main(String[] args) {
-		Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts = new HashMap<>();
-
-		Map<Integer, Integer> q0 = new HashMap<>();
-		q0.put(0, 200);
-		q0.put(1, 100);
-		q0.put(2, 100);
-		actQueryWorkerActiveVerts.put(1, q0);
-
-		Map<Integer, Integer> q1 = new HashMap<>();
-		q1.put(0, 200);
-		q1.put(1, 100);
-		q1.put(2, 100);
-		actQueryWorkerActiveVerts.put(1, q1);
-
-		QueryDistribution qd = new QueryDistribution(actQueryWorkerActiveVerts);
-		System.out.println(qd.getCosts());
-		System.out.println(qd.moveVertices(1, 1, 0));
-		System.out.println(qd.getCosts());
-		System.out.println(qd.moveVertices(1, 1, 0));
-		System.out.println(qd.getCosts());
-		System.out.println(qd.moveVertices(1, 2, 0));
-		System.out.println(qd.getCosts());
-	}
+	//	// Testing
+	//	public static void main(String[] args) {
+	//		Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts = new HashMap<>();
+	//
+	//		Map<Integer, Integer> q0 = new HashMap<>();
+	//		q0.put(0, 200);
+	//		q0.put(1, 100);
+	//		q0.put(2, 100);
+	//		actQueryWorkerActiveVerts.put(1, q0);
+	//
+	//		Map<Integer, Integer> q1 = new HashMap<>();
+	//		q1.put(0, 200);
+	//		q1.put(1, 100);
+	//		q1.put(2, 100);
+	//		actQueryWorkerActiveVerts.put(1, q1);
+	//
+	//		QueryDistribution qd = new QueryDistribution(actQueryWorkerActiveVerts);
+	//		System.out.println(qd.getCosts());
+	//		System.out.println(qd.moveVertices(1, 1, 0));
+	//		System.out.println(qd.getCosts());
+	//		System.out.println(qd.moveVertices(1, 1, 0));
+	//		System.out.println(qd.getCosts());
+	//		System.out.println(qd.moveVertices(1, 2, 0));
+	//		System.out.println(qd.getCosts());
+	//	}
 }

@@ -23,7 +23,7 @@ public class GreedyCostBasedVertexMoveDecider<Q extends BaseQueryGlobalValues> e
 		vertexBarrierMoveLastTime = System.currentTimeMillis();
 
 
-		QueryDistribution originalDistribution = new QueryDistribution(actQueryWorkerActiveVerts);
+		QueryDistribution originalDistribution = new QueryDistribution(workerIds, actQueryWorkerActiveVerts);
 		QueryDistribution bestDistribution = originalDistribution;
 		System.out.println(bestDistribution.getCosts());
 
@@ -47,7 +47,7 @@ public class GreedyCostBasedVertexMoveDecider<Q extends BaseQueryGlobalValues> e
 			QueryDistribution iterBestDistribution = bestDistribution.clone();
 			boolean anyImproves = false;
 
-			System.out.println(i + " iteration");
+			//			System.out.println(i + " iteration");
 
 			for (Integer queryId : activeQueries.keySet()) {
 				for (Integer fromWorker : workerIds) {
@@ -59,9 +59,9 @@ public class GreedyCostBasedVertexMoveDecider<Q extends BaseQueryGlobalValues> e
 						if (moveSuccess && newDistribution.getCosts() < bestDistribution.getCosts()) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
-							System.out.println("## i " + i + ": " + newDistribution.getCosts());
-							System.out
-									.println("# " + newDistribution.getCosts() + " vs " + bestDistribution.getCosts());
+							//							System.out.println("## i " + i + ": " + newDistribution.getCosts());
+							//							System.out
+							//									.println("# " + newDistribution.getCosts() + " vs " + bestDistribution.getCosts());
 						}
 					}
 				}

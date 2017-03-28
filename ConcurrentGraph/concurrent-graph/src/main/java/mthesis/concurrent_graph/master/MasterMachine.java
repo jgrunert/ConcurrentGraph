@@ -430,9 +430,55 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private void saveWorkerStats() {
 		StringBuilder sb = new StringBuilder();
 		Set<String> statsNames = new WorkerStats().getStatsMap().keySet();
+
+		// Worker times in milliseconds
+		for (Integer workerId : workerIds) {
+			try (PrintWriter writer = new PrintWriter(
+					new FileWriter(queryStatsDir + File.separator + "worker" + workerId + "_times_ms.csv"))) {
+				writer.println(
+						"SampleTime;ComputeTime;StepFinishTime;IntersectCalcTime;MoveSendVerticesTime;MoveRecvVerticesTime;HandleMessagesTime;BarrierStartWaitTime;BarrierFinishWaitTime;BarrierVertexMoveTime;");
+
+				for (Pair<Long, WorkerStats> statSample : workerStats.get(workerId)) {
+					Map<String, Double> statsMap = statSample.second.getStatsMap();
+
+					double sampleTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					sb.append(sampleTime / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("ComputeTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("StepFinishTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("IntersectCalcTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("MoveSendVerticesTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("MoveRecvVerticesTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("HandleMessagesTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("BarrierStartWaitTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("BarrierFinishWaitTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("BarrierVertexMoveTime") / 1000000);
+					sb.append(';');
+
+					writer.println(sb.toString());
+					sb.setLength(0);
+				}
+			}
+			catch (Exception e) {
+				logger.error("Exception when saveQueryStats", e);
+			}
+		}
+
+		// Worker all stats
 		for (int workerId : workerIds) {
 			try (PrintWriter writer = new PrintWriter(
-					new FileWriter(queryStatsDir + File.separator + workerId + "_workerstats.csv"))) {
+					new FileWriter(queryStatsDir + File.separator + "worker" + workerId + "_all.csv"))) {
 				// Header line
 				sb.append("Time(s);");
 				for (String statName : statsNames) {
@@ -469,7 +515,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		// Query times in milliseconds. Step time is how long a step took, worker time is the time workers spent calculating.
 		for (Entry<Integer, List<Q>> querySteps : queryStatsSteps.entrySet()) {
 			try (PrintWriter writer = new PrintWriter(
-					new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_times_ms.csv"))) {
+					new FileWriter(queryStatsDir + File.separator + "query" + querySteps.getKey() + "_times_ms.csv"))) {
 				writer.println(
 						"StepTime;WorkerTime;ComputeTime;StepFinishTime;IntersectCalcTime;MoveSendVerticsTime;MoveRecvVerticsTime;");
 
@@ -503,7 +549,8 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		for (Entry<Integer, List<SortedMap<Integer, Q>>> querySteps : queryStatsStepMachines.entrySet()) {
 			for (Integer workerId : workerIds) {
 				try (PrintWriter writer = new PrintWriter(
-						new FileWriter(queryStatsDir + File.separator + querySteps.getKey() + "_" + workerId + "_all.csv"))) {
+						new FileWriter(
+								queryStatsDir + File.separator + "query" + querySteps.getKey() + "_worker" + workerId + "_all.csv"))) {
 					// Write first line
 					sb.append("ActiveVertices");
 					sb.append(';');
@@ -641,10 +688,13 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	 */
 	private void startWorkersQueryNextSuperstep(Q queryToStart, int superstepNo) {
 
+		long decideStartTime = System.currentTimeMillis();
 		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerIds, activeQueries, actQueryWorkerActiveVerts,
 				actQueryWorkerIntersects);
 
 		if (moveDecission != null) {
+			System.out.println("Decided in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
+
 			// Send barrier move messages
 			for (int workerId : workerIds) {
 				messaging.sendControlMessageUnicast(workerId,
