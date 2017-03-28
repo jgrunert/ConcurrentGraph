@@ -22,6 +22,8 @@ public class QueryDistribution {
 
 	// Move costs per vertex to move, relative to a vertex separated from its larger partition
 	private static final double vertexMoveCosts = 0.7;
+	// Relative cost of a vertex imbalanced workload
+	private static final double vertexImbalanceCosts = 5.0;
 
 	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
 	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
@@ -113,6 +115,10 @@ public class QueryDistribution {
 		return costs;
 	}
 
+
+	/**
+	 * Calculates cost of imbalanced workload of active vertices
+	 */
 	private double getLoadImbalanceCosts() {
 		// TODO Also queries per machine?
 		Map<Integer, Integer> workerVertices = new HashMap<>(workerIds.size());
@@ -126,20 +132,48 @@ public class QueryDistribution {
 		}
 
 		// TODO Other cost model?
-		int largest = 0;
-		int smallest = Integer.MAX_VALUE;
+		long averageVerts = 0;
 		for (int workerId : workerIds) {
-			largest = Math.max(largest, workerVertices.get(workerId));
-			smallest = Math.min(smallest, workerVertices.get(workerId));
+			averageVerts += workerVertices.get(workerId);
 		}
-		double imbalance = (double) (largest - smallest) / (double) largest;
+		averageVerts /= workerIds.size();
 
-		// TODO Quantify costs instead of only one hard limit?
-		if (imbalance > 0.6)
-			return Double.POSITIVE_INFINITY;
-		else
-			return 0;
+		double imbalance = 0;
+		for (int workerId : workerIds) {
+			imbalance += Math.abs(workerVertices.get(workerId) - averageVerts);
+		}
+
+		// Imalance factor, divide by two. Otherwise we would count a imbalanced vertex twice (to much and to few workload)
+		return imbalance * vertexImbalanceCosts / 2;
 	}
+
+	//	private double getLoadImbalanceCosts() {
+	//		// TODO Also queries per machine?
+	//		Map<Integer, Integer> workerVertices = new HashMap<>(workerIds.size());
+	//		for (int workerId : workerIds) {
+	//			workerVertices.put(workerId, 0);
+	//		}
+	//		for (Entry<Integer, Map<Integer, Integer>> queryWorkerVertices : actQueryWorkerActiveVerts.entrySet()) {
+	//			for (Entry<Integer, Integer> partition : queryWorkerVertices.getValue().entrySet()) {
+	//				workerVertices.put(partition.getKey(), workerVertices.get(partition.getKey()) + partition.getValue());
+	//			}
+	//		}
+	//
+	//		// TODO Other cost model?
+	//		int largest = 0;
+	//		int smallest = Integer.MAX_VALUE;
+	//		for (int workerId : workerIds) {
+	//			largest = Math.max(largest, workerVertices.get(workerId));
+	//			smallest = Math.min(smallest, workerVertices.get(workerId));
+	//		}
+	//		double imbalance = (double) (largest - smallest) / (double) largest;
+	//
+	//		// TODO Quantify costs instead of only one hard limit?
+	//		if (imbalance > 0.6)
+	//			return Double.POSITIVE_INFINITY;
+	//		else
+	//			return 0;
+	//	}
 
 
 	public void printMoveDistribution() {
