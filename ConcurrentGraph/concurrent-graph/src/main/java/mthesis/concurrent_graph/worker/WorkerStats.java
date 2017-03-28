@@ -31,7 +31,6 @@ public class WorkerStats {
 	public long IdleTime;
 	public long QueryWaitTime;
 	public long HandleMessagesTime;
-	public long ComputeTime;
 	public long BarrierStartWaitTime;
 	public long BarrierFinishWaitTime;
 	public long BarrierVertexMoveTime;
@@ -71,7 +70,6 @@ public class WorkerStats {
 		IdleTime = bytes.getLong();
 		QueryWaitTime = bytes.getLong();
 		HandleMessagesTime = bytes.getLong();
-		ComputeTime = bytes.getLong();
 		BarrierStartWaitTime = bytes.getLong();
 		BarrierFinishWaitTime = bytes.getLong();
 		BarrierVertexMoveTime = bytes.getLong();
@@ -89,7 +87,6 @@ public class WorkerStats {
 		buffer.putLong(IdleTime);
 		buffer.putLong(QueryWaitTime);
 		buffer.putLong(HandleMessagesTime);
-		buffer.putLong(ComputeTime);
 		buffer.putLong(BarrierStartWaitTime);
 		buffer.putLong(BarrierFinishWaitTime);
 		buffer.putLong(BarrierVertexMoveTime);
@@ -108,7 +105,6 @@ public class WorkerStats {
 		statsMap.put("IdleTime", (double) IdleTime);
 		statsMap.put("QueryWaitTime", (double) QueryWaitTime);
 		statsMap.put("HandleMessagesTime", (double) HandleMessagesTime);
-		statsMap.put("ComputeTime", (double) ComputeTime);
 		statsMap.put("BarrierStartWaitTime", (double) BarrierStartWaitTime);
 		statsMap.put("BarrierFinishWaitTime", (double) BarrierFinishWaitTime);
 		statsMap.put("BarrierVertexMoveTime", (double) BarrierVertexMoveTime);

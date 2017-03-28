@@ -302,7 +302,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					activeQuery.calculatedSuperstep();
 					long computeTime = System.nanoTime() - startTime;
 					activeQuery.QueryLocal.Stats.ComputeTime += computeTime;
-					workerStats.ComputeTime += computeTime;
 
 
 					// Barrier sync with other workers;
