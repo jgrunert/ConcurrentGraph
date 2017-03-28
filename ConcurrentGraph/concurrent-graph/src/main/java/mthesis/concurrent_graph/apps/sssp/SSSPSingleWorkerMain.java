@@ -8,10 +8,10 @@ public class SSSPSingleWorkerMain {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length < 2) {
-			System.out.println("Usage: [configFile] [workerId]");
+			System.out.println("Usage: [clusterConfigFile] [workerId]");
 			return;
 		}
-		MachineClusterConfiguration config = new MachineClusterConfiguration(args[0]);
+		final MachineClusterConfiguration config = new MachineClusterConfiguration(args[0]);
 		final int workerId = Integer.parseInt(args[1]);
 
 		final String outputDir = "output";
