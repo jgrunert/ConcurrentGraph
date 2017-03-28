@@ -270,7 +270,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
 				for (WorkerStatSample sample : samples) {
 					workerStats.get(controlMsg.getSrcMachine())
-							.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
+					.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
 				}
 			}
 
@@ -442,9 +442,9 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sampleTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sampleTime / 1000000);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000);
@@ -618,7 +618,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private void saveConfigSummary() {
 		// Copy configuration
 		try {
-			Files.copy(new File(Configuration.CONFIG_FILE).toPath(),
+			Files.copy(new File(Configuration.ConfigFile).toPath(),
 					new File(outputDir + File.separator + "configuration.properties").toPath());
 		}
 		catch (Exception e) {

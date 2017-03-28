@@ -10,16 +10,17 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
 public class SSSPLocalTestClusterMain {
 
 	public static void main(String[] args) throws Exception {
-		if (args.length < 2) {
-			System.out.println("Usage: [clusterConfigFile] [inputFile] [optional extraJvmPerWorker-bool]");
+		if (args.length < 3) {
+			System.out.println("Usage: [configFile] [clusterConfigFile] [inputFile] [optional extraJvmPerWorker-bool]");
 			return;
 		}
 		boolean extraJvmPerWorker = false;
-		if (args.length >= 3) {
-			extraJvmPerWorker = Boolean.parseBoolean(args[2]);
+		if (args.length >= 4) {
+			extraJvmPerWorker = Boolean.parseBoolean(args[3]);
 		}
-		final String clusterConfigFile = args[0];
-		final String inputFile = args[1];
+		Configuration.loadConfig(args[0]);
+		final String clusterConfigFile = args[1];
+		final String inputFile = args[2];
 
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";

@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.apps.sssp;
 
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
 import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.writable.DoubleWritable;
@@ -7,12 +8,15 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
 public class SSSPSingleWorkerMain {
 
 	public static void main(String[] args) throws Exception {
-		if (args.length < 2) {
-			System.out.println("Usage: [clusterConfigFile] [workerId]");
+		System.out.println("SSSPSingleMasterMain");
+
+		if (args.length < 3) {
+			System.out.println("Usage: [configFile] [clusterConfigFile] [workerId]");
 			return;
 		}
-		final MachineClusterConfiguration config = new MachineClusterConfiguration(args[0]);
-		final int workerId = Integer.parseInt(args[1]);
+		Configuration.loadConfig(args[0]);
+		final MachineClusterConfiguration config = new MachineClusterConfiguration(args[1]);
+		final int workerId = Integer.parseInt(args[2]);
 
 		final String outputDir = "output";
 		final SSSPJobConfiguration jobConfig = new SSSPJobConfiguration();

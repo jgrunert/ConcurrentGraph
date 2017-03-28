@@ -12,68 +12,67 @@ import ch.qos.logback.classic.Level;
 
 public class Configuration {
 
-	private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
-
-	public static final String CONFIG_FILE = "configs/configuration.properties";
-	public static final Properties Properties = new Properties();
+	private static Logger logger = LoggerFactory.getLogger(Configuration.class);
+	public static String ConfigFile;
+	public static Properties Properties = new Properties();
 
 	/** Maximum size of a message in bytes */
-	public static final int MAX_MESSAGE_SIZE;
+	public static int MAX_MESSAGE_SIZE;
 	/** Maximum number of messages per vertex message. Must ensure that messages not >MAX_MESSAGE_SIZE/MsgSize. */
-	public static final int VERTEX_MESSAGE_BUCKET_MAX_MESSAGES; // TODO Could be not constant, depending on message content size
+	public static int VERTEX_MESSAGE_BUCKET_MAX_MESSAGES; // TODO Could be not constant, depending on message content size
 	/** Maximum number of vertices per vertex-move message. Must ensure that messages not >MAX_MESSAGE_SIZE/VertSize. */
-	public static final int VERTEX_MOVE_BUCKET_MAX_VERTICES; // TODO Could be not constant, depending on message content size
+	public static int VERTEX_MOVE_BUCKET_MAX_VERTICES; // TODO Could be not constant, depending on message content size
 
-	public static final boolean TCP_NODELAY;
-	public static final int CONNECT_TIMEOUT;
-	public static final int MESSAGE_TIMEOUT;
+	public static boolean TCP_NODELAY;
+	public static int CONNECT_TIMEOUT;
+	public static int MESSAGE_TIMEOUT;
 
 
 	/**
 	 * Enables moving of vertices while queries are running, without barrier.
 	 * TODO Broken/NotImplemented
 	 */
-	public static final boolean VERTEX_LIVE_MOVE_ENABLED;
+	public static boolean VERTEX_LIVE_MOVE_ENABLED;
 
-	public static final boolean VERTEX_BARRIER_MOVE_ENABLED;
-	public static final long VERTEX_BARRIER_MOVE_INTERVAL;
+	public static boolean VERTEX_BARRIER_MOVE_ENABLED;
+	public static long VERTEX_BARRIER_MOVE_INTERVAL;
 
 	/**
 	 * When enabled, machines will discover and store mappings VertexId->Machine.
 	 * This is done by sending "get-to-know-messages":
 	 * A receiver of a broadcast message replies with all dstVertex IDs on its machine.
 	 */
-	public static final boolean VERTEX_MACHINE_DISCOVERY;
+	public static boolean VERTEX_MACHINE_DISCOVERY;
 	/**
 	 * If enabled, also adds discovered vertices from incoming broadcast messages.
 	 * This increases learning speed but can also lead to discovered vertices but no corresponding outgoing edge.
 	 */
-	public static final boolean VERTEX_MACHINE_DISCOVERY_INCOMING;
+	public static boolean VERTEX_MACHINE_DISCOVERY_INCOMING;
 
-	public static final int LOG_LEVEL_MAIN;
-	//public static final int LOG_LEVEL_Main = Level.DEBUG_INT;
+	public static int LOG_LEVEL_MAIN;
+	//public static int LOG_LEVEL_Main = Level.DEBUG_INT;
 
 	/** Default size of slots for parallel queries */
-	public static final int DEFAULT_QUERY_SLOTS;
+	public static int DEFAULT_QUERY_SLOTS;
 	/** Maximum number parallel active of queries */
-	public static final int MAX_PARALLEL_QUERIES;
+	public static int MAX_PARALLEL_QUERIES;
 
-	public static final boolean VERTEX_MESSAGE_POOLING;
-	public static final int VERTEX_MESSAGE_POOL_SIZE;
+	public static boolean VERTEX_MESSAGE_POOLING;
+	public static int VERTEX_MESSAGE_POOL_SIZE;
 
-	public static final int WORKER_WATCHDOG_TIME;
+	public static int WORKER_WATCHDOG_TIME;
 
-	public static final int WORKER_STATS_SAMPLING_INTERVAL;
+	public static int WORKER_STATS_SAMPLING_INTERVAL;
 	// Enables recording of some more expensive stats
-	public static final boolean DETAILED_STATS;
+	public static boolean DETAILED_STATS;
 
 
 
-	static {
+	public static void loadConfig(String configFile) {
 		// Load configuration
-		if (!(new File(CONFIG_FILE)).exists())
-			throw new RuntimeException("Unable to start without configuration: No file found at " + CONFIG_FILE);
-		try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(CONFIG_FILE))) {
+		if (!(new File(configFile)).exists())
+			throw new RuntimeException("Unable to start without configuration: No file found at " + configFile);
+		try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(configFile))) {
 			Properties.load(stream);
 
 			// Write important values from properties file to constants to improve performance.
@@ -98,11 +97,12 @@ public class Configuration {
 			DETAILED_STATS = Boolean.parseBoolean(Properties.getProperty("DETAILED_STATS"));
 			WORKER_STATS_SAMPLING_INTERVAL = Integer.parseInt(Properties.getProperty("WORKER_STATS_SAMPLING_INTERVAL"));
 
-			logger.debug("Configuration loaded from " + CONFIG_FILE);
+			ConfigFile = configFile;
+			logger.debug("Configuration loaded from " + configFile);
 		}
 		catch (Exception e) {
 			logger.error("", e);
-			throw new RuntimeException("Failure while loading configuration file " + CONFIG_FILE, e);
+			throw new RuntimeException("Failure while loading configuration file " + configFile, e);
 		}
 	}
 
