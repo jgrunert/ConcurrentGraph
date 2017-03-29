@@ -8,7 +8,7 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
 public class SSSPSingleWorkerMain {
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("SSSPSingleMasterMain");
+		System.out.println("SSSPSingleWorkerMain");
 
 		if (args.length < 3) {
 			System.out.println("Usage: [configFile] [clusterConfigFile] [workerId]");

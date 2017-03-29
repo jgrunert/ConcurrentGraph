@@ -48,12 +48,13 @@ public class RoadNetInputPartitioner extends MasterInputPartitioner {
 		int iPTmp = 0;
 		for (int iW = 0; iW < workers.size(); iW++) {
 			List<String> workerPartitions = new ArrayList<>(partitionsPerWorker);
-			partitionsAssignements.put(iW, workerPartitions);
+			partitionsAssignements.put(workers.get(iW), workerPartitions);
 			for (int iWP = 0; iWP < (numPartitions / workers.size()); iWP++) {
 				String partitionFileName = outputDir + File.separator + iPTmp + ".bin";
 				workerPartitions.add(partitionFileName);
 				DataOutputStream partitionFileWriter = new DataOutputStream(
 						new BufferedOutputStream(new FileOutputStream(partitionFileName)));
+				logger.trace("Write partition file " + new File(partitionFileName).getAbsolutePath());
 				partitionFiles.add(partitionFileWriter);
 				iPTmp++;
 			}

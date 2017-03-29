@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -41,6 +42,9 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
 	private final Logger logger;
+
+	private static final int MaxConnectRetries = 4;
+	private static final int ConnectRetryWaitTime = 4000;
 
 	private final int ownId;
 	private final Map<Integer, MachineConfig> machineConfigs;
@@ -119,7 +123,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		final long timeoutTime = System.currentTimeMillis() + Configuration.CONNECT_TIMEOUT;
 		while (System.currentTimeMillis() <= timeoutTime &&
 				!(channelAsyncReceivers.size() == (machineConfigs.size() - 1)
-						&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
+				&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
 			try {
 				Thread.sleep(1);
 			}
@@ -233,7 +237,24 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 
 	private void connectToMachine(String host, int port, int machineId) throws Exception {
-		final Socket socket = new Socket(host, port);
+		int connectTries = 0;
+		Socket socket = null;
+		while (connectTries <= MaxConnectRetries) {
+			try{
+				socket = new Socket(host, port);
+				break;
+			}
+			catch (ConnectException e) {
+				connectTries++;
+				logger.debug("Connect failed to: " + host + ":" + port + " for machine channel " + machineId + " try "
+						+ connectTries + "/" + (MaxConnectRetries + 1), e);
+				Thread.sleep(ConnectRetryWaitTime);
+			}
+		}
+		if (socket == null) {
+			throw new ConnectException(
+					"Giving up connecting  to: " + host + ":" + port + " for machine channel " + machineId);
+		}
 		logger.debug("Connected to: " + host + ":" + port + " for machine channel " + machineId);
 
 		final OutputStream writer = socket.getOutputStream();

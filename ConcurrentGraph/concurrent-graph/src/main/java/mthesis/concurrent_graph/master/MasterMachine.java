@@ -206,12 +206,16 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		// TODO No more super.onIncomingControlMessage(message);
 
 		if (message.getTypeCode() != 1) {
-			logger.error("Master machine can only handle ProtoEnvelopeMessage");
+			logger.error("Master machine can only handle ProtoEnvelopeMessage.");
+			logger.error("Communication error, shutting down.");
+			stop();
 			return;
 		}
 		MessageEnvelope protoMsg = ((ProtoEnvelopeMessage) message).message;
 		if (!protoMsg.hasControlMessage()) {
 			logger.error("Master machine can only handle ProtoEnvelopeMessage with ControlMessage");
+			logger.error("Communication error, shutting down.");
+			stop();
 			return;
 		}
 		ControlMessage controlMsg = protoMsg.getControlMessage();
@@ -664,18 +668,23 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private void initializeWorkersAssignPartitions() {
 		Map<Integer, List<String>> assignedPartitions;
 		try {
+			logger.debug("Start input partitioning/assigning");
 			assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir,
 					workerIds);
+			logger.debug("Finished input partitioning");
 		}
 		catch (IOException e) {
 			logger.error("Error at partitioning", e);
 			return;
 		}
 		for (final Integer workerId : workerIds) {
+			List<String> partitions = assignedPartitions.get(workerId);
+			logger.debug("Assign partitions to " + workerId + ": " + partitions);
 			messaging.sendControlMessageUnicast(workerId,
-					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, assignedPartitions.get(workerId), masterStartTimeMs),
+					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, partitions, masterStartTimeMs),
 					true);
 		}
+		logger.debug("Start input assigning");
 	}
 
 	private void signalWorkersQueryStart(Q query) {
