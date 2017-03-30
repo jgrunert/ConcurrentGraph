@@ -98,7 +98,9 @@ public class Configuration {
 			WORKER_STATS_SAMPLING_INTERVAL = Integer.parseInt(Properties.getProperty("WORKER_STATS_SAMPLING_INTERVAL"));
 
 			ConfigFile = configFile;
-			logger.debug("Configuration loaded from " + configFile);
+			logger.info("Configuration loaded from " + configFile);
+			logger.info("Log level " + Level.toLevel(LOG_LEVEL_MAIN));
+			System.out.println("Log level " + Level.toLevel(LOG_LEVEL_MAIN));
 		}
 		catch (Exception e) {
 			logger.error("", e);

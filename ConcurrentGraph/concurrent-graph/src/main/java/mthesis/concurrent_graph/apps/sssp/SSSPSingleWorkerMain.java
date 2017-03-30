@@ -24,7 +24,8 @@ public class SSSPSingleWorkerMain {
 		// Start machines
 		System.out.println("Starting machines");
 		final RunUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtils<>();
-		testUtils.startWorker(config.AllMachineConfigs, workerId, config.AllWorkerIds, outputDir, jobConfig,
+		testUtils.startWorker(config.AllMachineConfigs, workerId, config.masterId, config.AllWorkerIds, outputDir,
+				jobConfig,
 				new RoadNetVertexInputReader());
 	}
 }

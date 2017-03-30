@@ -42,7 +42,8 @@ public class PagerankTest {
 
 		final List<WorkerMachine<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
-			workers.add(testUtils.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
+			workers.add(testUtils.startWorker(config.AllMachineConfigs, i, config.masterId, config.AllWorkerIds,
+					outputDir, jobConfig,
 					new VertexTextInputReader<>()));
 		}
 

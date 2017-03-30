@@ -47,7 +47,8 @@ public class RunUtils<V extends BaseWritable, E extends BaseWritable, M extends 
 				}
 			}
 			else {
-				workers.add(this.startWorker(config.AllMachineConfigs, i, config.AllWorkerIds, outputDir, jobConfig,
+				workers.add(this.startWorker(config.AllMachineConfigs, i, config.masterId, config.AllWorkerIds,
+						outputDir, jobConfig,
 						vertexReader));
 			}
 		}
@@ -55,9 +56,11 @@ public class RunUtils<V extends BaseWritable, E extends BaseWritable, M extends 
 		return master;
 	}
 
-	public WorkerMachine<V, E, M, Q> startWorker(Map<Integer, MachineConfig> allCfg, int id, List<Integer> allWorkers, String output,
+	public WorkerMachine<V, E, M, Q> startWorker(Map<Integer, MachineConfig> allCfg, int id, int masterId,
+			List<Integer> allWorkers, String output,
 			JobConfiguration<V, E, M, Q> jobConfig, BaseVertexInputReader<V, E, M, Q> vertexReader) {
-		final WorkerMachine<V, E, M, Q> node = new WorkerMachine<>(allCfg, id, allWorkers, -1, output, jobConfig, vertexReader);
+		final WorkerMachine<V, E, M, Q> node = new WorkerMachine<>(allCfg, id, allWorkers, masterId, output, jobConfig,
+				vertexReader);
 		Thread workerStartThread = new Thread(new Runnable() {
 
 			@Override
