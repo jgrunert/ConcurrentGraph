@@ -33,7 +33,7 @@
 				%d %-5level [%thread] %logger{80} %F:%L - %msg%n
 			</pattern>
 		</encoder>
-		<file>log_${log_file_name}.txt</file>
+		<file>logs/log_${log_file_name}.txt</file>
 		<append>false</append>
 	</appender>
 	
