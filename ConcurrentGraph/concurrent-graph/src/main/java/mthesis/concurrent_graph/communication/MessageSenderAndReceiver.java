@@ -43,7 +43,6 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 	private final Logger logger;
 
-	private static final int MaxConnectRetries = 10;
 	private static final int ConnectRetryWaitTime = 2000;
 
 	private final int ownId;
@@ -237,18 +236,21 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 
 	private void connectToMachine(String host, int port, int machineId) throws Exception {
-		int connectTries = 0;
+		int tries = 0;
+		long connectStartTime = System.currentTimeMillis();
 		Socket socket = null;
-		while (connectTries <= MaxConnectRetries) {
+		while (true) {
 			try{
 				socket = new Socket(host, port);
 				break;
 			}
 			catch (ConnectException e) {
-				connectTries++;
+				tries++;
 				logger.debug("Connect failed to: " + host + ":" + port + " for machine channel " + machineId + " try "
-						+ connectTries + "/" + (MaxConnectRetries + 1));
-				if (connectTries <= MaxConnectRetries) Thread.sleep(ConnectRetryWaitTime);
+						+ tries);
+				if ((System.currentTimeMillis() - connectStartTime) < Configuration
+						.getPropertyLongDefault("MaxConnectTime", 10000))
+					Thread.sleep(ConnectRetryWaitTime);
 				else {
 					logger.error("Giving up connecting  to: " + host + ":" + port + " for machine channel " + machineId,
 							e);

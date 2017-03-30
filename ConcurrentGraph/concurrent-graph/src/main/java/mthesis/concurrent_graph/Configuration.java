@@ -16,6 +16,8 @@ public class Configuration {
 	public static String ConfigFile;
 	public static Properties Properties = new Properties();
 
+	public static final String VERSION = "0.0.2";
+
 	/** Maximum size of a message in bytes */
 	public static int MAX_MESSAGE_SIZE;
 	/** Maximum number of messages per vertex message. Must ensure that messages not >MAX_MESSAGE_SIZE/MsgSize. */
@@ -115,5 +117,14 @@ public class Configuration {
 
 	public static int getPropertyInt(String propName) {
 		return Integer.parseInt(Properties.getProperty(propName));
+	}
+
+	public static long getPropertyLong(String propName) {
+		return Long.parseLong(Properties.getProperty(propName));
+	}
+
+	public static long getPropertyLongDefault(String propName, long defaultValue) {
+		if (!Properties.containsKey(propName)) return defaultValue;
+		return Long.parseLong(Properties.getProperty(propName));
 	}
 }

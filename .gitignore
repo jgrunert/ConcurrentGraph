@@ -12,3 +12,5 @@ buildNumber.properties
 .project
 *.log
 ConcurrentGraph/concurrent-graph/output*
+ConcurrentGraph/concurrent-graph/build+upload_capps.bat
+log*.txt

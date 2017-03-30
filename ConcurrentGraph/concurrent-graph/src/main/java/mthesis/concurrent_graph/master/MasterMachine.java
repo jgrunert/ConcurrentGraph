@@ -206,14 +206,14 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		// TODO No more super.onIncomingControlMessage(message);
 
 		if (message.getTypeCode() != 1) {
-			logger.error("Master machine can only handle ProtoEnvelopeMessage.");
+			logger.error("Master machine can only handle ProtoEnvelopeMessage: " + message);
 			logger.error("Communication error, shutting down.");
 			stop();
 			return;
 		}
 		MessageEnvelope protoMsg = ((ProtoEnvelopeMessage) message).message;
 		if (!protoMsg.hasControlMessage()) {
-			logger.error("Master machine can only handle ProtoEnvelopeMessage with ControlMessage");
+			logger.error("Master machine can only handle ProtoEnvelopeMessage with ControlMessage: " + message);
 			logger.error("Communication error, shutting down.");
 			stop();
 			return;

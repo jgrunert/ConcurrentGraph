@@ -11,12 +11,13 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
 public class SSSPSingleMasterMain {
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("SSSPSingleMasterMain");
+		System.out.println("Starting SSSP SingleMaster " + Configuration.VERSION);
 
 		if (args.length < 3) {
 			System.out.println("Usage: [configFile] [clusterConfigFile] [inputFile]");
 			return;
 		}
+
 		Configuration.loadConfig(args[0]);
 		final MachineClusterConfiguration config = new MachineClusterConfiguration(args[1]);
 		final String inputFile = args[2];

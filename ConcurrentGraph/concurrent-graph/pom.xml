@@ -73,41 +73,6 @@
 				<version>2.3</version>
 				<executions>
 					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<finalName>single_worker</finalName>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<manifestEntries>
-										<Main-Class>mthesis.concurrent_graph.apps.sssp.SSSPSingleWorkerMain</Main-Class>
-									</manifestEntries>
-								</transformer>
-							</transformers>
-							<filters>
-								<filter>
-									<artifact>org.eclipse.jetty.orbit:javax.servlet</artifact>
-									<excludes>
-										<exclude>META-INF/ECLIPSEF.RSA</exclude>
-										<exclude>META-INF/ECLIPSEF.SF</exclude>
-										<exclude>META-INF/eclipse.inf</exclude>
-									</excludes>
-								</filter>
-							</filters>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.3</version>
-				<executions>
-					<execution>
 						<id>shade-master</id>
 						<phase>package</phase>
 						<goals>
@@ -120,6 +85,9 @@
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
 										<Main-Class>mthesis.concurrent_graph.apps.sssp.SSSPSingleMasterMain</Main-Class>
+										<addDefaultImplementationEntries>
+											true
+										</addDefaultImplementationEntries>
 									</manifestEntries>
 								</transformer>
 							</transformers>
@@ -139,6 +107,9 @@
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
 										<Main-Class>mthesis.concurrent_graph.apps.sssp.SSSPSingleWorkerMain</Main-Class>
+										<addDefaultImplementationEntries>
+											true
+										</addDefaultImplementationEntries>
 									</manifestEntries>
 								</transformer>
 							</transformers>
