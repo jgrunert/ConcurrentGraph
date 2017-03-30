@@ -69,8 +69,8 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 					int msgContentLength;
 					int readIndex;
 					while (!Thread.interrupted() && !socket.isClosed()) {
-						reader.read(inBytes, 0, 2);
-						msgContentLength = inBuffer.getShort();
+						reader.read(inBytes, 0, 4);
+						msgContentLength = inBuffer.getInt();
 
 						inBuffer.clear();
 						readIndex = 0;
@@ -82,19 +82,19 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 							}
 						}
 
-						if (msgContentLength == 100) {
-							String line = "";
-							for (int i = 0; i < 104; i++) {
-								line += inBuffer.array()[i] + ", ";
-							}
-							System.out.println(line);
-						}
+						//						if (msgContentLength == 100) {
+						//							String line = "";
+						//							for (int i = 0; i < 104; i++) {
+						//								line += inBuffer.array()[i] + ", ";
+						//							}
+						//							System.out.println(line);
+						//						}
 
 						final byte msgType = inBuffer.get();
 						switch (msgType) {
 							case 0:
 								inMsgHandler
-										.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, 1));
+								.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, 1));
 								break;
 							case 1:
 								readIncomingMessageEnvelope(1, msgContentLength - 1);

@@ -72,14 +72,14 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	// Format: short MsgLength, byte MsgType, byte[] MsgContent
 	private void sendMessageViaStream(final ChannelMessage message) throws IOException {
 		if (message.hasContent()) {
-			outBuffer.position(2); // Leave 2 bytes for content length
+			outBuffer.position(4); // Leave 2 bytes for content length
 			outBuffer.put(message.getTypeCode());
 			message.writeMessageToBuffer(outBuffer);
 			// Write position
 			final int msgLength = outBuffer.position();
 
 			outBuffer.position(0);
-			outBuffer.putShort((short) (msgLength - 2));
+			outBuffer.putInt((msgLength - 4));
 			// Send message
 			writer.write(outBytes, 0, msgLength);
 			outBuffer.clear();
