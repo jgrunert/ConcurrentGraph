@@ -27,7 +27,7 @@ public class MachineClusterConfiguration {
 				AllWorkerIds.add(workerConfig.MachineId);
 			}
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
 			e.printStackTrace();
 		}
 		masterId = masterIdTmp;

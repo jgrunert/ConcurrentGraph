@@ -13,8 +13,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import org.jfree.util.Log;
-
 import com.google.protobuf.ByteString;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -149,6 +147,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	public void run() {
 		logger.info("Starting run worker node " + ownId);
 
+		boolean interrupted = false;
 		try {
 			while (!started) {
 				Thread.sleep(100);
@@ -157,7 +156,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 			// Initialize, load assigned partitions
 			loadVertices(assignedPartitions);
-			logger.debug("Worker loaded partitions");
+			logger.debug("Worker loaded partitions.");
 			//			System.gc();
 			//			logger.debug("Worker pre-partition-load GC finished");
 			sendMasterInitialized();
@@ -168,16 +167,16 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 					@Override
 					public void run() {
-						Log.debug("Watchdog started");
+						logger.debug("Watchdog started");
 						while (!Thread.interrupted()) {
 							if (WatchdogEnabled && (System.currentTimeMillis()
 									- lastWatchdogSignal) > Configuration.WORKER_WATCHDOG_TIME) {
-								Log.warn("Watchdog triggered");
+								logger.warn("Watchdog triggered");
 								try {
 									Thread.sleep(1000);
 								}
 								catch (InterruptedException e) {
-									Log.warn("Watchdog interrupted", e);
+									logger.warn("Watchdog interrupted", e);
 									break;
 								}
 								System.exit(1);
@@ -186,7 +185,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 								Thread.sleep(Configuration.WORKER_WATCHDOG_TIME);
 							}
 							catch (InterruptedException e) {
-								Log.warn("Watchdog interrupted", e);
+								logger.warn("Watchdog interrupted", e);
 								break;
 							}
 						}
@@ -194,11 +193,14 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				});
 				watchdogThread.setDaemon(true);
 				lastWatchdogSignal = System.currentTimeMillis();
+				logger.debug("Starting watchdog");
 				watchdogThread.start();
 			}
 
+			logger.info("Starting worker execution");
+
 			// Execution loop
-			while (!Thread.interrupted()) {
+			while (!(interrupted = Thread.interrupted())) {
 				// Wait for queries
 				long startTime = System.nanoTime();
 				while (activeQueries.isEmpty()) {
@@ -340,16 +342,18 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					workerStats = new WorkerStats();
 				}
 			}
+
+			logger.info("Finished worker execution");
 		}
 		catch (final InterruptedException e) {
 			logger.info("worker interrupted");
 			return;
 		}
-		catch (final Exception e) {
+		catch (final Throwable e) {
 			logger.error("Exception at worker run", e);
 		}
 		finally {
-			logger.info("Worker closing");
+			logger.info("Worker closing, interrupted: " + interrupted);
 			messaging.getReadyForClose();
 			try {
 				Thread.sleep(200); // TODO Cleaner solution, for example a final message from master
@@ -417,8 +421,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	}
 
 	private void sendMasterInitialized() {
+		logger.debug("b0");
 		messaging.sendControlMessageUnicast(masterId, ControlMessageBuildUtil.Build_Worker_Initialized(ownId, localVertices.size()),
 				true);
+		logger.debug("b1");
 	}
 
 	private void sendMasterSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery, Map<Integer, Integer> queryIntersects) {
@@ -636,7 +642,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		catch (InterruptedException e) {
 			return false;
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
 			logger.error("exception at incomingControlMessage", e);
 		}
 		return false;

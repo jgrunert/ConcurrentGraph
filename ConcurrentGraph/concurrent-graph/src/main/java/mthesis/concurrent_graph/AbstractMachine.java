@@ -52,7 +52,15 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 
 			@Override
 			public void run() {
-				AbstractMachine.this.run();
+				try {
+					AbstractMachine.this.run();
+				}
+				catch (Throwable e) {
+					logger.error("Exception at run", e);
+				}
+				finally {
+					logger.debug("Finished run");
+				}
 			}
 		});
 		runThread.setName("NodeThread[" + ownId + "]");

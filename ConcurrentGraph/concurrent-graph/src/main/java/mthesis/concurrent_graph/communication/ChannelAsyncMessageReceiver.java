@@ -72,12 +72,20 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 						reader.read(inBytes, 0, 4);
 						msgContentLength = inBuffer.getInt();
 
+						if (msgContentLength <= 0) {
+							logger.error(
+									"Receive error, message with non positive content length: " + msgContentLength);
+							socket.close();
+							return;
+						}
+
 						inBuffer.clear();
 						readIndex = 0;
 						while (readIndex < msgContentLength) {
 							readIndex += reader.read(inBytes, readIndex, msgContentLength - readIndex);
 							if (readIndex == -1) {
 								logger.debug("Reader returned -1, exiting reader");
+								socket.close();
 								return;
 							}
 						}
@@ -125,13 +133,13 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 					}
 				}
 				finally {
+					logger.debug("ChannelMessageReceiver closed: " + socket.isClosed());
 					try {
 						if (!socket.isClosed()) socket.close();
 					}
 					catch (final IOException e) {
 						logger.error("close socket failed", e);
 					}
-					logger.debug("ChannelMessageReceiver closed");
 				}
 			}
 		});

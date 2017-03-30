@@ -49,7 +49,7 @@ public class WorkerStats {
 		try {
 			operatingSystemMXBeanTmp = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
 			e.printStackTrace();
 		}
 		operatingSystemMXBean = operatingSystemMXBeanTmp;

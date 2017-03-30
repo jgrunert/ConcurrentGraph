@@ -91,6 +91,9 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 						if (!closingServer)
 							logger.error("runServer", e);
 					}
+					finally {
+						logger.debug("Finished connection server, closing: " + closingServer);
+					}
 				}
 			});
 			serverThread.setName("MessageServerThread_" + ownId);
@@ -278,13 +281,14 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		try {
 			serverSocket = new ServerSocket(port);
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
 			logger.error("Failed to start ServerSocket on port " + port, e);
 		}
 		logger.info("Started connection server");
 
+		boolean interrupted = false;
 		try {
-			while (!Thread.interrupted() && !serverSocket.isClosed()) {
+			while (!(interrupted = Thread.interrupted()) && !(serverSocket.isClosed())) {
 				final Socket clientSocket = serverSocket.accept();
 
 				logger.debug("Accepted connection: " + clientSocket);
@@ -295,12 +299,15 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 				startConnection(connectedMachineId, clientSocket, writer, reader);
 				logger.debug("Handshaked and established connection channel: " + connectedMachineId + " -> " + ownId + " " + clientSocket);
 			}
+			logger.debug("connection server loop finished");
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
 			logger.error("Error at runServer", e);
 		}
 		finally {
-			logger.info("Closed connection server, closed: " + serverSocket.isClosed());
+			logger.info(
+					"Closed connection server, closed: " + serverSocket.isClosed() + " interrupted: "
+							+ interrupted);
 			serverSocket.close();
 		}
 	}
