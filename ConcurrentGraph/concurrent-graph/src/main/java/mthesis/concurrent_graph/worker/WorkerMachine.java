@@ -62,7 +62,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -158,8 +158,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Initialize, load assigned partitions
 			loadVertices(assignedPartitions);
 			logger.debug("Worker loaded partitions");
-			System.gc();
-			logger.debug("Worker pre-partition-load GC finished");
+			//			System.gc();
+			//			logger.debug("Worker pre-partition-load GC finished");
 			sendMasterInitialized();
 
 			// Start watchdog
@@ -289,14 +289,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					// First frame: Call all vertices, second frame only active vertices
 					startTime = System.nanoTime();
-					if (superstepNo == 0) {
-						for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
-							vertex.superstep(superstepNo, activeQuery);
+					if (superstepNo >= 0) {
+						if (superstepNo == 0) {
+							for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
+								vertex.superstep(superstepNo, activeQuery);
+							}
 						}
-					}
-					else {
-						for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
-							vertex.superstep(superstepNo, activeQuery);
+						else {
+							for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
+								vertex.superstep(superstepNo, activeQuery);
+							}
 						}
 					}
 					activeQuery.calculatedSuperstep();
@@ -340,6 +342,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 		}
 		catch (final InterruptedException e) {
+			logger.info("worker interrupted");
 			return;
 		}
 		catch (final Exception e) {
@@ -882,6 +885,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	public void handleVertexMessage(VertexMessage<V, E, M, Q> message) {
 		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
+		if (activeQuery == null) {
+			logger.error("Cannot process vertex message, no active query for ID " + message.queryId + ". " + message);
+			return;
+		}
 		int superstepNo = activeQuery.getCalculatedSuperstepNo();
 		int barrierSuperstepNo = activeQuery.getBarrierFinishedSuperstepNo();
 

@@ -30,7 +30,7 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 	public MasterQuery(Q query, Collection<Integer> workersToWait, BaseQueryGlobalValues.BaseQueryGlobalValuesFactory<Q> queryFactory) {
 		super();
 		BaseQuery = query;
-		SuperstepNo = -1;
+		SuperstepNo = -2;
 		StartTime = System.nanoTime();
 		LastStepTime = StartTime;
 		workersWaitingFor = new HashSet<>(workersToWait.size());

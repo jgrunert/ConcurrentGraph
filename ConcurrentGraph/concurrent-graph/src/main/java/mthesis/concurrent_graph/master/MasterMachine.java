@@ -184,6 +184,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				Thread.sleep(100);
 			}
 			catch (InterruptedException e) {
+				logger.info("waitForQueryFinish interrupted");
 				return;
 			}
 		}
@@ -195,6 +196,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				Thread.sleep(100);
 			}
 			catch (InterruptedException e) {
+				logger.info("waitForAllQueriesFinish interrupted");
 				return;
 			}
 		}
@@ -294,7 +296,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
 
 				// Log worker superstep stats
-				if (enableQueryStats) {
+				if (enableQueryStats && controlMsg.getSuperstepNo() >= 0) {
 					List<SortedMap<Integer, Q>> queryStepList = queryStatsStepMachines.get(msgQueryOnWorker.QueryId);
 					SortedMap<Integer, Q> queryStepWorkerMap;
 					if (queryStepList.size() <= controlMsg.getSuperstepNo()) {
@@ -334,13 +336,13 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					//					}
 
 					// Log query superstep stats
-					if (enableQueryStats) {
+					if (enableQueryStats && controlMsg.getSuperstepNo() >= 0) {
 						queryStatsSteps.get(msgQueryOnWorker.QueryId).add(msgActiveQuery.QueryStepAggregator);
 						queryStatsStepTimes.get(msgQueryOnWorker.QueryId).add((System.nanoTime() - msgActiveQuery.LastStepTime));
 					}
 
 					// All workers have superstep finished
-					if (msgActiveQuery.ActiveWorkers > 0) {
+					if (msgActiveQuery.ActiveWorkers > 0 || controlMsg.getSuperstepNo() < 0) {
 						// Active workers, start next superstep
 						msgActiveQuery.nextSuperstep(workerIds);
 						startWorkersQueryNextSuperstep(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);

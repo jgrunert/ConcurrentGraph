@@ -47,7 +47,7 @@ public class RunUtils<V extends BaseWritable, E extends BaseWritable, M extends 
 				}
 			}
 			else {
-				workers.add(this.startWorker(config.AllMachineConfigs, i, config.masterId, config.AllWorkerIds,
+				workers.add(this.startWorker(config.AllMachineConfigs, workerId, config.masterId, config.AllWorkerIds,
 						outputDir, jobConfig,
 						vertexReader));
 			}

@@ -10,7 +10,7 @@ import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
-		implements ChannelMessage {
+implements ChannelMessage {
 
 	public int superstepNo;
 	public int srcMachine;
@@ -101,5 +101,11 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 	@Override
 	public boolean flushAfter() {
 		return false;
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + "_" + srcMachine + "_" + queryId + ":" + superstepNo + "_"
+				+ vertexMessages;
 	}
 }

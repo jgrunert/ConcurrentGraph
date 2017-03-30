@@ -135,7 +135,9 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 			return true;
 		}
 		else {
-			logger.error("Timeout while wait for establish all connections");
+			logger.error("Timeout while wait for establish all connections, connected receivers "
+					+ channelAsyncReceivers.size() + "/" + (machineConfigs.size() - 1) + " senders "
+					+ channelAsyncSenders.size() + "/" + (machineConfigs.size() - 1));
 			return false;
 		}
 	}
@@ -248,8 +250,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 				tries++;
 				logger.debug("Connect failed to: " + host + ":" + port + " for machine channel " + machineId + " try "
 						+ tries);
-				if ((System.currentTimeMillis() - connectStartTime) < Configuration
-						.getPropertyLongDefault("MaxConnectTime", 10000))
+				if ((System.currentTimeMillis() - connectStartTime) < Configuration.CONNECT_TIMEOUT)
 					Thread.sleep(ConnectRetryWaitTime);
 				else {
 					logger.error("Giving up connecting  to: " + host + ":" + port + " for machine channel " + machineId,
@@ -268,8 +269,18 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	}
 
 	private void runServer() throws Exception {
-		final int port = machineConfigs.get(ownId).MessagePort;
-		serverSocket = new ServerSocket(port);
+		MachineConfig config = machineConfigs.get(ownId);
+		if (config == null) {
+			logger.error("No machine config for " + ownId);
+			return;
+		}
+		final int port = config.MessagePort;
+		try {
+			serverSocket = new ServerSocket(port);
+		}
+		catch (Exception e) {
+			logger.error("Failed to start ServerSocket on port " + port, e);
+		}
 		logger.info("Started connection server");
 
 		try {
@@ -285,9 +296,12 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 				logger.debug("Handshaked and established connection channel: " + connectedMachineId + " -> " + ownId + " " + clientSocket);
 			}
 		}
+		catch (Exception e) {
+			logger.error("Error at runServer", e);
+		}
 		finally {
+			logger.info("Closed connection server, closed: " + serverSocket.isClosed());
 			serverSocket.close();
-			logger.info("Closed connection server");
 		}
 	}
 

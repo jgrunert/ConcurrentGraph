@@ -20,14 +20,15 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public Q QueryLocal;
 	//private final BaseQueryGlobalValuesFactory<Q> globalValueFactory;
 
+	// Supersteps: Start with -1, the prepare step
 	// Last calculated superstep number
-	private volatile int calculatedSuperstepNo = -1;
+	private volatile int calculatedSuperstepNo = -2;
 	// Last superstep when finished barrier sync
-	private volatile int barrierFinishedSuperstepNo = -1;
+	private volatile int barrierFinishedSuperstepNo = -2;
 	// Superstep prepared, confirmed by master. Is >= CalculatedSuperstepNo
-	private volatile int preparedSuperstepNo = 0;
+	private volatile int preparedSuperstepNo = -1;
 	// Superstep to start, confirmed by master and ready. Is >= CalculatedSuperstepNo
-	private volatile int startedSuperstepNo = 0;
+	private volatile int startedSuperstepNo = -1;
 
 	public Set<Integer> ChannelBarrierWaitSet = new HashSet<>();
 	// Channgel barriers received for next superstep
