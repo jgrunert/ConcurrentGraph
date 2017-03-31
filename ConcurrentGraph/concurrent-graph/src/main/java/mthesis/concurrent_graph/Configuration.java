@@ -115,6 +115,11 @@ public class Configuration {
 		return Boolean.parseBoolean(Properties.getProperty(propName));
 	}
 
+	public static boolean getPropertyBoolDefault(String propName, boolean defaultValue) {
+		if (!Properties.containsKey(propName)) return defaultValue;
+		return Boolean.parseBoolean(Properties.getProperty(propName));
+	}
+
 	public static int getPropertyInt(String propName) {
 		return Integer.parseInt(Properties.getProperty(propName));
 	}

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.util.Pair;
 
@@ -24,24 +25,48 @@ public class SSSPOutputEvaluator extends MasterOutputEvaluator<SSSPQueryValues> 
 		final File[] outFiles = outFolder.listFiles();
 		final Map<Integer, Pair<Integer, Double>> vertices = new HashMap<>();
 
-		// Output combined, parse vertices
-		try (PrintWriter writer = new PrintWriter(new FileWriter(outputDir + File.separator + "combined.txt"))) {
-			for (final File f : outFiles) {
-				try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
-					String line;
-					while ((line = reader.readLine()) != null) {
-						String[] split0 = line.split("\t");
-						String[] valueSplit = split0[1].split(":");
-						vertices.put(Integer.parseInt(split0[0]),
-								new Pair<>(Integer.parseInt(valueSplit[0]), Double.parseDouble(valueSplit[1])));
-						writer.println(line);
+		// Get vertices
+		for (final File f : outFiles) {
+			try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					String[] split0 = line.split("\t");
+					String[] valueSplit = split0[1].split(":");
+					vertices.put(Integer.parseInt(split0[0]),
+							new Pair<>(Integer.parseInt(valueSplit[0]), Double.parseDouble(valueSplit[1])));
+				}
+			}
+			catch (final Exception e) {
+				logger.error("combine output failed", e);
+				return;
+			}
+		}
+
+		if (Configuration.getPropertyBoolDefault("KeepWorkerOutput", false)) {
+			// Output combined, parse vertices
+			try (PrintWriter writer = new PrintWriter(new FileWriter(outputDir + File.separator + "combined.txt"))) {
+				for (final File f : outFiles) {
+					try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
+						String line;
+						while ((line = reader.readLine()) != null) {
+							String[] split0 = line.split("\t");
+							String[] valueSplit = split0[1].split(":");
+							vertices.put(Integer.parseInt(split0[0]),
+									new Pair<>(Integer.parseInt(valueSplit[0]), Double.parseDouble(valueSplit[1])));
+							writer.println(line);
+						}
 					}
 				}
 			}
+			catch (final Exception e) {
+				logger.error("combine output failed", e);
+				return;
+			}
 		}
-		catch (final Exception e) {
-			logger.error("combine output failed", e);
-			return;
+		else {
+			for (final File f : outFiles) {
+				f.delete();
+			}
 		}
 
 		// Find target

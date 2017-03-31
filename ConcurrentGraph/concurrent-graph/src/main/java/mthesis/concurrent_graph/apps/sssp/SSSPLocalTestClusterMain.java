@@ -163,7 +163,7 @@ public class SSSPLocalTestClusterMain {
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
 
 			// Run test sequence
-			new SSSPTestSequenceRunner(master).runTestSequence("testplans" + File.separator + "bw4.txt");
+			new SSSPTestSequenceRunner(master).runTestSequence("testplans" + File.separator + "bw1.txt");
 			master.waitForAllQueriesFinish();
 			master.stop();
 
