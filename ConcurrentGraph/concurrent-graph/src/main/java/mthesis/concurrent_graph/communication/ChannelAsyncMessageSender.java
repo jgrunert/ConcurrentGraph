@@ -23,6 +23,8 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  */
 public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
 
+	public static final int ChannelCloseSignal = -2;
+
 	private final Logger logger;
 	private final Socket socket;
 	private final OutputStream writer;
@@ -91,8 +93,14 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 
 	public void close() {
 		try {
-			if (!socket.isClosed())
+			if (!socket.isClosed()) {
+				// Send close signal
+				outBuffer.position(0);
+				outBuffer.putInt(ChannelCloseSignal);
+				writer.write(outBytes, 0, 4);
+
 				socket.close();
+			}
 		}
 		catch (final IOException e) {
 			logger.error("close socket failed", e);

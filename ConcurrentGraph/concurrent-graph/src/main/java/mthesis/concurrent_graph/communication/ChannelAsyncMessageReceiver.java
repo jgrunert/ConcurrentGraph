@@ -72,13 +72,16 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 						reader.read(inBytes, 0, 4);
 						msgContentLength = inBuffer.getInt();
 
+						if (msgContentLength == ChannelAsyncMessageSender.ChannelCloseSignal) {
+							logger.debug("Received channel close signal");
+							return;
+						}
 						if (msgContentLength <= 0) {
 							logger.error(
 									"Receive error, message with non positive content length: " + msgContentLength);
 							socket.close();
 							return;
 						}
-
 						if (msgContentLength > Configuration.MAX_MESSAGE_SIZE) {
 							logger.error("Receive error, to long message: " + msgContentLength);
 							socket.close();
