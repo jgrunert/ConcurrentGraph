@@ -287,8 +287,9 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		logger.info("Started connection server");
 
 		boolean interrupted = false;
+		boolean closedTest = false;
 		try {
-			while (!(interrupted = Thread.interrupted()) && !(serverSocket.isClosed())) {
+			while (!(interrupted = Thread.interrupted()) && !(closedTest = serverSocket.isClosed())) {
 				final Socket clientSocket = serverSocket.accept();
 
 				logger.debug("Accepted connection: " + clientSocket);
@@ -301,12 +302,16 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 			}
 			logger.debug("connection server loop finished");
 		}
+		catch (SocketException e) {
+			if (closingServer) logger.debug("Socket closed by exception at runServer");
+			else logger.error("Error at runServer", e);
+		}
 		catch (Throwable e) {
 			logger.error("Error at runServer", e);
 		}
 		finally {
 			logger.info(
-					"Closed connection server, closed: " + serverSocket.isClosed() + " interrupted: "
+					"Closed connection server, closed: " + serverSocket.isClosed() + "/" + closedTest + " interrupted: "
 							+ interrupted);
 			serverSocket.close();
 		}

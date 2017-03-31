@@ -349,7 +349,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 						msgActiveQuery.resetValueAggregator(queryValueFactory);
 						msgActiveQuery.LastStepTime = System.nanoTime();
 						logger.debug("Workers finished superstep " + msgActiveQuery.BaseQuery.QueryId + ":"
-								+ msgActiveQuery.SuperstepNo + " after "
+								+ (msgActiveQuery.SuperstepNo - 1) + " after "
 								+ ((System.nanoTime() - msgActiveQuery.LastStepTime) / 1000000) + "ms. Total "
 								+ ((System.nanoTime() - msgActiveQuery.StartTime) / 1000000) + "ms. Active: "
 								+ msgActiveQuery.QueryStepAggregator.getActiveVertices());
