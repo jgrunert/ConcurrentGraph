@@ -1,5 +1,8 @@
 package mthesis.concurrent_graph.apps.sssp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
 import mthesis.concurrent_graph.apputils.RunUtils;
@@ -10,17 +13,20 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
 
 public class SSSPSingleMasterMain {
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("Starting SSSP SingleMaster " + Configuration.VERSION);
+	private static final Logger logger = LoggerFactory.getLogger(SSSPSingleMasterMain.class);
 
-		if (args.length < 3) {
-			System.out.println("Usage: [configFile] [clusterConfigFile] [inputFile]");
+	public static void main(String[] args) throws Exception {
+		logger.info("Starting SSSP SingleMaster " + Configuration.VERSION);
+
+		if (args.length < 4) {
+			System.out.println("Usage: [configFile] [clusterConfigFile] [graphInputFile] [testSequence]");
 			return;
 		}
 
 		Configuration.loadConfig(args[0]);
 		final MachineClusterConfiguration config = new MachineClusterConfiguration(args[1]);
 		final String inputFile = args[2];
+		final String testSequenceFile = args[3];
 
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
@@ -30,34 +36,14 @@ public class SSSPSingleMasterMain {
 		final MasterOutputEvaluator<SSSPQueryValues> outputCombiner = new SSSPOutputEvaluator();
 
 		// Start machines
-		System.out.println("Starting machines");
 		final RunUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtils<>();
 		MasterMachine<SSSPQueryValues> master = testUtils.startMaster(config.AllMachineConfigs, config.masterId,
 				config.AllWorkerIds, inputFile,
 				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
 
-		// TODO Better test or external tests
-		int queryIndex = 0;
-		// Test sequence
-		master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821)); // Medium PF->HB
-		master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
-		master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832)); // Short RT->ST
-		master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624)); // Short ST-HBF->TU
-		master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337)); // Very short Meersburg->Pfullendorf
+		// Run test sequence
+		new SSSPTestSequenceRunner(master).runTestSequence(testSequenceFile);
 		master.waitForAllQueriesFinish();
-		master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821)); // Medium PF->HB
-		master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
-		master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832)); // Short RT->ST
-		master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624)); // Short ST-HBF->TU
-		master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337)); // Very short Meersburg->Pfullendorf
-		master.waitForAllQueriesFinish();
-		master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821)); // Medium PF->HB
-		master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
-		master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832)); // Short RT->ST
-		master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624)); // Short ST-HBF->TU
-		master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337)); // Very short Meersburg->Pfullendorf
-		master.waitForAllQueriesFinish();
-
 		master.stop();
 	}
 }

@@ -1,0 +1,11 @@
+start	1348329	3040821	Medium PF->HB
+start	8272129	115011	Short Heidelberg->Heilbronn
+start	3184057	7894832	Short RT->ST
+start	2557651	4982624	Short ST-HBF->TU
+start	8693095	2075337	Very short Meersburg->Pfullendorf
+waitall
+start	1348329	3040821	Medium PF->HB
+start	8272129	115011	Short Heidelberg->Heilbronn
+start	3184057	7894832	Short RT->ST
+start	2557651	4982624	Short ST-HBF->TU
+start	8693095	2075337	Very short Meersburg->Pfullendorf

@@ -442,18 +442,23 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + "worker" + workerId + "_times_ms.csv"))) {
 				writer.println(
-						"SampleTime;ComputeTime;StepFinishTime;IntersectCalcTime;MoveSendVerticesTime;MoveRecvVerticesTime;HandleMessagesTime;BarrierStartWaitTime;BarrierFinishWaitTime;BarrierVertexMoveTime;");
+						"SampleTime;ComputeTime;IdleTime;QueryWaitTime;StepFinishTime;IntersectCalcTime;MoveSendVerticesTime;MoveRecvVerticesTime;HandleMessagesTime;BarrierStartWaitTime;BarrierFinishWaitTime;BarrierVertexMoveTime;");
 
 				for (Pair<Long, WorkerStats> statSample : workerStats.get(workerId)) {
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sampleTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
 					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
 					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
 					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sampleTime / 1000000);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("IdleTime") / 1000000);
+					sb.append(';');
+					sb.append(statsMap.get("QueryWaitTime") / 1000000);
 					sb.append(';');
 					sb.append(statsMap.get("StepFinishTime") / 1000000);
 					sb.append(';');

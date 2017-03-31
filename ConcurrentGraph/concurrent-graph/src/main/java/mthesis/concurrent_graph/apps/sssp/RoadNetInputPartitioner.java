@@ -34,6 +34,7 @@ public class RoadNetInputPartitioner extends MasterInputPartitioner {
 	public Map<Integer, List<String>> partition(String inputFile, String outputDir, List<Integer> workers) throws IOException {
 		// Get number of vertices
 		int numVertices = 0;
+		int numEdgesAll = 0;
 		try (DataInputStream reader = new DataInputStream(new BufferedInputStream(new FileInputStream(inputFile)))) {
 			numVertices = reader.readInt();
 		}
@@ -84,6 +85,7 @@ public class RoadNetInputPartitioner extends MasterInputPartitioner {
 						partitionFileWriter.writeDouble(reader.readDouble());
 					}
 
+					numEdgesAll += numEdges;
 					iNode++;
 				}
 			}
@@ -94,7 +96,8 @@ public class RoadNetInputPartitioner extends MasterInputPartitioner {
 			partitionFile.close();
 		}
 
-		logger.info("Partitioned " + numVertices + " into " + numPartitions + " partitions");
+		logger.info("Partitioned " + numVertices + " vertices and " + numEdgesAll + " edges into " + numPartitions
+				+ " partitions");
 
 		return partitionsAssignements;
 	}

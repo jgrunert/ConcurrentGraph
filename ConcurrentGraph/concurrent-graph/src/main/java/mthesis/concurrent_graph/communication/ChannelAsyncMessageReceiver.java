@@ -136,14 +136,12 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 					}
 				}
 				catch (final Throwable e) {
-					System.out.println("close " + socket.isClosed() + " " + readyForClose);
 					if (!readyForClose) {
 						if (socket.isClosed()) logger.debug("Socket closed");
 						else logger.error("receive error", e);
 					}
 				}
 				finally {
-					System.out.println("finally " + socket.isClosed() + " " + readyForClose);
 					logger.debug("ChannelMessageReceiver closed: " + socket.isClosed());
 					try {
 						if (!socket.isClosed()) socket.close();
