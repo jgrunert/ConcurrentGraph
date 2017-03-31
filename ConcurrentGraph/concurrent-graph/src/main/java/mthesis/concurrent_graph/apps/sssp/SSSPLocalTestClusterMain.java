@@ -1,5 +1,7 @@
 package mthesis.concurrent_graph.apps.sssp;
 
+import java.io.File;
+
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.master.MasterMachine;
@@ -63,7 +65,7 @@ public class SSSPLocalTestClusterMain {
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 3184057, 7894832)); // Short RT->ST
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624)); // Short ST-HBF->TU
-			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337)); // Very short Meersburg->Pfullendorf
+			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8693095, 2075337)); // Very short Meersburg->Pfullendorf
 			//			master.waitForAllQueriesFinish();
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 1348329, 3040821)); // Medium PF->HB
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 8272129, 115011)); // Short Heidelberg->Heilbronn
@@ -159,6 +161,11 @@ public class SSSPLocalTestClusterMain {
 
 			// Short ST-HBF->TU
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
+
+			// Run test sequence
+			new SSSPTestSequenceRunner(master).runTestSequence("testplans" + File.separator + "bw4.txt");
+			master.waitForAllQueriesFinish();
+			master.stop();
 
 			master.waitForAllQueriesFinish();
 			master.stop();
