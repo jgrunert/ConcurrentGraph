@@ -32,7 +32,6 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
-import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.communication.UpdateRegisteredVerticesMessage;
@@ -379,9 +378,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					handleVertexMessage((VertexMessage<V, E, M, Q>) message);
 					break;
 				case 1:
-					MessageEnvelope msgEnvelope = ((ProtoEnvelopeMessage) message).message;
-					if (msgEnvelope.hasControlMessage()) {
-						interruptedMsgHandling = handleControlMessage(msgEnvelope.getControlMessage());
+					ProtoEnvelopeMessage msgEnvelope = ((ProtoEnvelopeMessage) message);
+					if (msgEnvelope.message.hasControlMessage()) {
+						interruptedMsgHandling = handleControlMessage(msgEnvelope);
 					}
 					break;
 				case 2:
@@ -538,7 +537,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	 * @param message
 	 * @return Returns true if message handling should be interrupted after this message
 	 */
-	public boolean handleControlMessage(ControlMessage message) {
+	public boolean handleControlMessage(ProtoEnvelopeMessage messageEnvelope) {
+		ControlMessage message = messageEnvelope.message.getControlMessage();
+
 		try {
 			if (message != null) {
 				switch (message.getType()) {
@@ -584,10 +585,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(query.QueryId);
 
 						// We have to wait if the query is not already started
-						while (activeQuery == null) {
-							logger.warn("Waiting for not yet started query " + query.QueryId);
+						if (activeQuery == null) {
+							logger.warn("Postpone barrier message for not yet started query " + query.QueryId);
+							receivedMessages.add(messageEnvelope);
 							Thread.sleep(1);
-							activeQuery = activeQueries.get(query.QueryId);
+							return false;
 						}
 
 						if (message.getSuperstepNo() == activeQuery.getStartedSuperstepNo()) {
