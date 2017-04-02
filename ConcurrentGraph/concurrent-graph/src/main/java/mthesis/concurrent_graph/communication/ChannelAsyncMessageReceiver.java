@@ -77,14 +77,28 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 							return;
 						}
 						if (msgContentLength <= 0) {
-							logger.error(
-									"Receive error, message with non positive content length: " + msgContentLength);
-							socket.close();
+							Thread.sleep(100);
+							if (!readyForClose && !socket.isClosed()) {
+								logger.error(
+										"Receive error, message with non positive content length: " + msgContentLength);
+								socket.close();
+							}
+							else {
+								logger.info(
+										"Receive error after closed socket, message with non positive content length: " + msgContentLength);
+							}
 							return;
 						}
 						if (msgContentLength > Configuration.MAX_MESSAGE_SIZE) {
-							logger.error("Receive error, to long message: " + msgContentLength);
-							socket.close();
+							Thread.sleep(100);
+							if (!readyForClose && !socket.isClosed()) {
+								logger.error("Receive error, to long message: " + msgContentLength + " " + socket.isClosed());
+								socket.close();
+							}
+							else {
+								logger.info("Receive error after closed socket, to long message: " + msgContentLength + " "
+										+ socket.isClosed());
+							}
 							return;
 						}
 
@@ -111,7 +125,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 						switch (msgType) {
 							case 0:
 								inMsgHandler
-								.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, 1));
+										.onIncomingMessage(vertexMessagePool.getPooledVertexMessage(inBuffer, 1));
 								break;
 							case 1:
 								readIncomingMessageEnvelope(1, msgContentLength - 1);
