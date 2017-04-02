@@ -90,7 +90,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			return;
 		}
 
-		if (minDist > superstepNo * 40) { // TODO Better factor, dynamic?
+		if (minDist > superstepNo * 5.0) { // Dynamic?
 			// Come back later
 			if (minDist < mutableValue.Dist) {
 				mutableValue.Dist = minDist;
