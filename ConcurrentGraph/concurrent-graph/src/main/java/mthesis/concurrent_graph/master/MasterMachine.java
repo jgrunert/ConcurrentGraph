@@ -146,9 +146,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		}
 
 		while (activeQueries.size() >= Configuration.MAX_PARALLEL_QUERIES) {
-			logger.info("Wait for activeQueries<MAX_PARALLEL_QUERIES before starting query: " + query.QueryId);
+			logger.debug("Wait for activeQueries<" + Configuration.MAX_PARALLEL_QUERIES + " before starting query: "
+					+ query.QueryId);
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(2000);
 			}
 			catch (InterruptedException e) {
 				throw new RuntimeException(e);
@@ -448,7 +449,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sampleTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
 					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
 					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
 					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
