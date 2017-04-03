@@ -13,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
 
@@ -61,24 +64,50 @@ public class RoadNetInputPartitioner extends MasterInputPartitioner {
 			}
 		}
 
+
 		// Parse and partition vertices
-		try (DataInputStream reader = new DataInputStream(new BufferedInputStream(new FileInputStream(inputFile)))) {
-			int iNode = 0;
-			reader.readInt();
+		if (Configuration.getPropertyBoolDefault("HashedPartitioning", false)) {
+			// Hashed partitioning
 
-			for (int iP = 0; iP < numPartitions; iP++) {
-				int partitionVerts = Math.min(vertsPerPartition, numVertices - iNode);
-				DataOutputStream partitionFileWriter = partitionFiles.get(iP);
-				//System.out.println(iP + " has " + partitionVerts);
-
-				partitionFileWriter.writeInt(partitionVerts);
-				for (int iV = 0; iV < partitionVerts; iV++) {
-					partitionFileWriter.writeInt(reader.readInt());
-					// We don't need latitude and longitude
+			// Assign vertices
+			int[] partitionVertexCount = new int[numPartitions];
+			Int2IntMap vertexPartitions = new Int2IntOpenHashMap(numVertices);
+			try (DataInputStream reader = new DataInputStream(
+					new BufferedInputStream(new FileInputStream(inputFile)))) {
+				reader.readInt();
+				for (int iV = 0; iV < numVertices; iV++) {
+					int vertexId = reader.readInt();
 					reader.readDouble();
 					reader.readDouble();
-
 					int numEdges = reader.readInt();
+					for (int iEdge = 0; iEdge < numEdges; iEdge++) {
+						reader.readInt();
+						reader.readDouble();
+					}
+
+					int partitionIndex = (vertexId * 31 + numEdges) % numPartitions;
+					vertexPartitions.put(vertexId, partitionIndex);
+					partitionVertexCount[partitionIndex]++;
+				}
+			}
+
+			// Write out partitions
+			for (int iP = 0; iP < numPartitions; iP++) {
+				partitionFiles.get(iP).writeInt(partitionVertexCount[iP]);
+			}
+			try (DataInputStream reader = new DataInputStream(
+					new BufferedInputStream(new FileInputStream(inputFile)))) {
+				reader.readInt();
+				for (int iV = 0; iV < numVertices; iV++) {
+					int vertexId = reader.readInt();
+					reader.readDouble();
+					reader.readDouble();
+					int numEdges = reader.readInt();
+
+					int partitionIndex = (vertexId * 31 + numEdges) % numPartitions;
+					DataOutputStream partitionFileWriter = partitionFiles.get(partitionIndex);
+
+					partitionFileWriter.writeInt(vertexId);
 					partitionFileWriter.writeInt(numEdges);
 					for (int iEdge = 0; iEdge < numEdges; iEdge++) {
 						partitionFileWriter.writeInt(reader.readInt());
@@ -86,7 +115,38 @@ public class RoadNetInputPartitioner extends MasterInputPartitioner {
 					}
 
 					numEdgesAll += numEdges;
-					iNode++;
+				}
+			}
+		}
+		else {
+			try (DataInputStream reader = new DataInputStream(
+					new BufferedInputStream(new FileInputStream(inputFile)))) {
+				// Original OSM data partitioning
+				int iNode = 0;
+				reader.readInt();
+
+				for (int iP = 0; iP < numPartitions; iP++) {
+					int partitionVerts = Math.min(vertsPerPartition, numVertices - iNode);
+					DataOutputStream partitionFileWriter = partitionFiles.get(iP);
+					//System.out.println(iP + " has " + partitionVerts);
+
+					partitionFileWriter.writeInt(partitionVerts);
+					for (int iV = 0; iV < partitionVerts; iV++) {
+						partitionFileWriter.writeInt(reader.readInt());
+						// We don't need latitude and longitude
+						reader.readDouble();
+						reader.readDouble();
+
+						int numEdges = reader.readInt();
+						partitionFileWriter.writeInt(numEdges);
+						for (int iEdge = 0; iEdge < numEdges; iEdge++) {
+							partitionFileWriter.writeInt(reader.readInt());
+							partitionFileWriter.writeDouble(reader.readDouble());
+						}
+
+						numEdgesAll += numEdges;
+						iNode++;
+					}
 				}
 			}
 		}
