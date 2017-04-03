@@ -32,6 +32,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	private final ByteBuffer outBuffer = ByteBuffer.wrap(outBytes);
 	private final BlockingQueue<ChannelMessage> outMessages = new LinkedBlockingQueue<>();
 	private Thread senderThread;
+	private boolean isClosing = false;
 
 
 	public ChannelAsyncMessageSender(Socket socket, OutputStream writer, int ownId) {
@@ -47,6 +48,8 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 			public void run() {
 				try {
 					while (!Thread.interrupted() && !socket.isClosed()) {
+						if (isClosing && outMessages.isEmpty())
+							break;
 						final ChannelMessage message = outMessages.take();
 						sendMessageViaStream(message);
 						message.free(true);
@@ -94,15 +97,26 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	public void close() {
 		try {
 			if (!socket.isClosed()) {
-				// Send close signal
-				outBuffer.position(0);
-				outBuffer.putInt(ChannelCloseSignal);
-				writer.write(outBytes, 0, 4);
+				// Stop sending
+				isClosing = true;
+				flush();
+				while (!outMessages.isEmpty())
+					Thread.sleep(1);
+				senderThread.interrupt();
+				senderThread.join(100);
 
-				socket.close();
+				// Send close signal if not closed now
+				if (!socket.isClosed()) {
+					outBuffer.position(0);
+					outBuffer.putInt(ChannelCloseSignal);
+					writer.write(outBytes, 0, 4);
+					writer.flush();
+
+					socket.close();
+				}
 			}
 		}
-		catch (final IOException e) {
+		catch (final Exception e) {
 			logger.error("close socket failed", e);
 		}
 		flush();
