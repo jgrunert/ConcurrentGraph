@@ -129,13 +129,15 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			throw new RuntimeException("There is already an active query with this ID: " + query.QueryId);
 
 		logger.info("Start request for query: " + query.QueryId);
-		while (!workersToInitialize.isEmpty()) {
+		if (!workersToInitialize.isEmpty()) {
 			logger.info("Wait for workersInitialized before starting query: " + query.QueryId);
-			try {
-				Thread.sleep(1000);
-			}
-			catch (InterruptedException e) {
-				throw new RuntimeException(e);
+			while (!workersToInitialize.isEmpty()) {
+				try {
+					Thread.sleep(100);
+				}
+				catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 
@@ -145,13 +147,16 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 			queryStatsStepTimes.put(query.QueryId, new ArrayList<>());
 		}
 
-		while (activeQueries.size() >= Configuration.MAX_PARALLEL_QUERIES) {
-			logger.info("Wait for activeQueries<MAX_PARALLEL_QUERIES before starting query: " + query.QueryId);
-			try {
-				Thread.sleep(1000);
-			}
-			catch (InterruptedException e) {
-				throw new RuntimeException(e);
+		if (activeQueries.size() >= Configuration.MAX_PARALLEL_QUERIES) {
+			logger.info("Wait for activeQueries<MAX_PARALLEL_QUERIES " + Configuration.MAX_PARALLEL_QUERIES
+					+ " before starting query: " + query.QueryId);
+			while (activeQueries.size() >= Configuration.MAX_PARALLEL_QUERIES) {
+				try {
+					Thread.sleep(100);
+				}
+				catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 
@@ -276,7 +281,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
 				for (WorkerStatSample sample : samples) {
 					workerStats.get(controlMsg.getSrcMachine())
-							.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
+					.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
 				}
 			}
 
@@ -448,10 +453,10 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sampleTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sampleTime / 1000000);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000);

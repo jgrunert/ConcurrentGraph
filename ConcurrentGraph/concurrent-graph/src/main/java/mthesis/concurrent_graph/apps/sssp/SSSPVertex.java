@@ -54,7 +54,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 				return;
 			}
 			else {
-				logger.debug(query.QueryId + ":" + superstepNo + " start vertex compute start");
+				logger.info(query.QueryId + ":" + superstepNo + " start vertex compute start");
 				SSSPVertexWritable mutableValue = new SSSPVertexWritable(-1, 0, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
@@ -114,12 +114,9 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 		}
 		voteVertexHalt(query.QueryId);
 
-
-		// TODO Better, faster termination
 		if (ID == query.Query.To) {
 			if (!query.QueryLocal.TargetFound)
-				logger.debug(query.QueryId + ":" + superstepNo + " target found with dist " + minDist + " max " + query.QueryLocal.MaxDist);
-
+				logger.info(query.QueryId + ":" + superstepNo + " target found with dist " + minDist);
 			query.QueryLocal.TargetFound = true;
 			query.QueryLocal.MaxDist = minDist;
 		}

@@ -78,7 +78,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	// Global, aggregated QueryGlobalValues. Aggregated and sent by master
 	private final Map<Integer, WorkerQuery<V, E, M, Q>> activeQueries = new HashMap<>();
-	private final List<WorkerQuery<V, E, M, Q>> activeQueriesThisSuperstep = new ArrayList<>();
+	// Barrier messages that arrived before a became was active
+	private final Map<Integer, List<ControlMessage>> postponedBarrierMessages = new HashMap<>();
 
 	private final VertexMachineRegistry remoteVertexMachineRegistry = new VertexMachineRegistry();
 
@@ -199,11 +200,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			logger.info("Starting worker execution");
 
 			// Execution loop
+			final List<WorkerQuery<V, E, M, Q>> activeQueriesThisStep = new ArrayList<>();
 			while (!(interrupted = Thread.interrupted())) {
 				// Wait for queries
 				long startTime = System.nanoTime();
 				while (activeQueries.isEmpty()) {
-					Thread.sleep(1); // TODO sleep?
+					Thread.sleep(1);
 					handleReceivedMessages(true);
 				}
 				workerStats.IdleTime += (System.nanoTime() - startTime);
@@ -261,25 +263,30 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 				// Wait for ready queries
 				startTime = System.nanoTime();
-				activeQueriesThisSuperstep.clear();
+				activeQueriesThisStep.clear();
 				while (!globalBarrierRequested) {
 					handleReceivedMessages(true);
 
 					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 						if ((activeQuery.getStartedSuperstepNo() > activeQuery.getCalculatedSuperstepNo()))
-							activeQueriesThisSuperstep.add(activeQuery);
+							activeQueriesThisStep.add(activeQuery);
 						// TODO Directly finish superstep if no active vertices. Or even faster method?
 					}
-					if (!activeQueriesThisSuperstep.isEmpty())
+					if (!activeQueriesThisStep.isEmpty())
 						break;
-					Thread.sleep(1);
+					Thread.sleep(1); // TODO Sleep?
+					if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
+						logger.warn("Waiting long time for active queries");
+						Thread.sleep(2000);
+					}
 				}
 				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
 
-				//				System.out.println("c " + ownId);
+				if (globalBarrierRequested) continue;
+
 
 				// Compute active queries
-				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisSuperstep) {
+				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisStep) {
 					//					System.out.println(ownId + " compute " + activeQuery.QueryId + ":" + activeQuery.getStartedSuperstepNo());
 
 					int queryId = activeQuery.Query.QueryId;
@@ -585,29 +592,18 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(query.QueryId);
 
 						// We have to wait if the query is not already started
-						if (activeQuery == null) {
-							logger.warn("Postpone barrier message for not yet started query " + query.QueryId);
-							receivedMessages.add(messageEnvelope);
-							Thread.sleep(1);
+				     	if (activeQuery == null) {
+							logger.debug("Postpone barrier message for not yet started query " + query.QueryId);
+							List<ControlMessage> postponedForQuery = postponedBarrierMessages.get(query.QueryId);
+							if (postponedForQuery == null) {
+								postponedForQuery = new ArrayList<>();
+								postponedBarrierMessages.put(query.QueryId, postponedForQuery);
+							}
+							postponedForQuery.add(message);
 							return false;
 						}
 
-						if (message.getSuperstepNo() == activeQuery.getStartedSuperstepNo()) {
-							// Remove worker from ChannelBarrierWaitSet, wait finished, correct superstep
-							activeQuery.ChannelBarrierWaitSet.remove(message.getSrcMachine());
-							checkSuperstepBarrierFinished(activeQuery);
-						}
-						else if (message.getSuperstepNo() == activeQuery.getStartedSuperstepNo() + 1) {
-							// We received a superstep barrier sync before even starting it. Remember it for later
-							activeQuery.ChannelBarrierPremature.add(message.getSrcMachine());
-							//							logger.warn("Premature " + query.QueryId + ":" + message.getSuperstepNo()
-							//									+ " at " + ownId + " from " + message.getSrcMachine());
-						}
-						else {
-							// Completely wrong superstep
-							logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-							+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
-						}
+						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
 					return true;
 
@@ -639,13 +635,29 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				}
 			}
 		}
-		catch (InterruptedException e) {
-			return false;
-		}
 		catch (Throwable e) {
 			logger.error("exception at incomingControlMessage", e);
 		}
 		return false;
+	}
+
+	private void handleQuerySuperstepBarrierMsg(ControlMessage message, WorkerQuery<V, E, M, Q> activeQuery) {
+		if (message.getSuperstepNo() == activeQuery.getStartedSuperstepNo()) {
+			// Remove worker from ChannelBarrierWaitSet, wait finished, correct superstep
+			activeQuery.ChannelBarrierWaitSet.remove(message.getSrcMachine());
+			checkSuperstepBarrierFinished(activeQuery);
+		}
+		else if (message.getSuperstepNo() == activeQuery.getStartedSuperstepNo() + 1) {
+			// We received a superstep barrier sync before even starting it. Remember it for later
+			activeQuery.ChannelBarrierPremature.add(message.getSrcMachine());
+			//							logger.warn("Premature " + query.QueryId + ":" + message.getSuperstepNo()
+			//									+ " at " + ownId + " from " + message.getSrcMachine());
+		}
+		else {
+			// Completely wrong superstep
+			logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
+			+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
+		}
 	}
 
 	/**
@@ -1048,6 +1060,15 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
 
 		activeQueries.put(query.QueryId, activeQuery);
+
+		// Handle postponed barrier messages if there are any
+		List<ControlMessage> postponedBarrierMsgs = postponedBarrierMessages.get(query.QueryId);
+		if (postponedBarrierMsgs != null) {
+			for (ControlMessage message : postponedBarrierMsgs) {
+				handleQuerySuperstepBarrierMsg(message, activeQuery);
+			}
+		}
+
 
 		logger.info("Worker started query " + query.QueryId);
 	}
