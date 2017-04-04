@@ -118,7 +118,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			if (!query.QueryLocal.TargetFound)
 				logger.info(query.QueryId + ":" + superstepNo + " target found with dist " + minDist);
 			query.QueryLocal.TargetFound = true;
-			query.QueryLocal.MaxDist = minDist;
+			query.QueryLocal.MaxDist = minDist; // Now start limiting max dist to target dist
 		}
 	}
 

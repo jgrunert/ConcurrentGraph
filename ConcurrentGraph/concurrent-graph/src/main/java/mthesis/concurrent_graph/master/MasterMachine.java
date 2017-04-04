@@ -706,6 +706,17 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 	private void signalWorkersQueryStart(Q query) {
 		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryStart(ownId, query),
 				true);
+		//		for (Integer workerId : workerIds) {
+		//			messaging.sendControlMessageUnicast(workerId, ControlMessageBuildUtil.Build_Master_QueryStart(ownId, query),
+		//					true);
+		//			try {
+		//				Thread.sleep(1000);
+		//			}
+		//			catch (InterruptedException e) {
+		//				// TODO Auto-generated catch block
+		//				e.printStackTrace();
+		//			}
+		//		}
 	}
 
 	/**

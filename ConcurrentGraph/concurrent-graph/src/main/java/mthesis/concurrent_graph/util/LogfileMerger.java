@@ -26,10 +26,12 @@ public class LogfileMerger {
 		}
 
 		Collections.sort(logLines);
-		try (PrintWriter writer = new PrintWriter(new FileWriter(logfileDir + File.separator + "log_merged.txt"))) {
+		String logMergedFile = logfileDir + File.separator + "log_merged.txt";
+		try (PrintWriter writer = new PrintWriter(new FileWriter(logMergedFile))) {
 			for (String line : logLines) {
 				writer.println(line);
 			}
 		}
+		System.out.println("Logs merged to " + logMergedFile);
 	}
 }

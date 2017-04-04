@@ -77,17 +77,32 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	// Format: short MsgLength, byte MsgType, byte[] MsgContent
 	private void sendMessageViaStream(final ChannelMessage message) throws IOException {
 		if (message.hasContent()) {
+			outBuffer.clear();
 			outBuffer.position(4); // Leave 2 bytes for content length
 			outBuffer.put(message.getTypeCode());
 			message.writeMessageToBuffer(outBuffer);
-			// Write position
+
 			final int msgLength = outBuffer.position();
+			if (msgLength <= 0) {
+				logger.error("Unable to send message with non positive length " + msgLength);
+				return;
+			}
+			if ((msgLength + 4) > Configuration.MAX_MESSAGE_SIZE) {
+				logger.error("Unable to send message with too long length " + msgLength);
+				return;
+			}
 
 			outBuffer.position(0);
 			outBuffer.putInt((msgLength - 4));
 			// Send message
 			writer.write(outBytes, 0, msgLength);
-			outBuffer.clear();
+
+			// TODO Temporary check to find messaging issues
+			outBuffer.position(0);
+			int testLen = outBuffer.getInt();
+			if (testLen != msgLength - 4) {
+				logger.warn("Wrong overwritten length, " + testLen + " instead of " + (msgLength - 4));
+			}
 		}
 		if (message.flushAfter()) {
 			writer.flush();
@@ -107,6 +122,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 
 				// Send close signal if not closed now
 				if (!socket.isClosed()) {
+					outBuffer.clear();
 					outBuffer.position(0);
 					outBuffer.putInt(ChannelCloseSignal);
 					writer.write(outBytes, 0, 4);

@@ -59,7 +59,9 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 		this.vertexFactory = jobConfig != null ? jobConfig.getVertexFactory() : null;
 	}
 
+
 	public void startReceiver(int connectedMachineId) {
+		//		Random testRd = new Random(ownId);
 		readyForClose = false;
 		thread = new Thread(new Runnable() {
 
@@ -69,35 +71,50 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 					int msgContentLength;
 					int readIndex;
 					while (!Thread.interrupted() && !socket.isClosed()) {
+						//						if (testRd.nextDouble() < 0.01) {
+						//							logger.warn("Random delay");
+						//							Thread.sleep(200);
+						//						}
+
 						reader.read(inBytes, 0, 4);
 						msgContentLength = inBuffer.getInt();
 
+						// Check for closed socket or message error
 						if (msgContentLength == ChannelAsyncMessageSender.ChannelCloseSignal) {
 							logger.debug("Received channel close signal");
 							return;
 						}
 						if (msgContentLength <= 0) {
-							Thread.sleep(100);
-							if (!readyForClose && !socket.isClosed()) {
-								logger.error(
-										"Receive error, message with non positive content length: " + msgContentLength);
-								socket.close();
+							Thread.sleep(100); // Sleep to wait wait until socket is closed when shutting down
+							if (socket.isClosed()) {
+								if (!readyForClose) {
+									logger.info("Receive error after closed socket, message with non positive content length: "
+											+ msgContentLength);
+									logger.warn("aA " + inBuffer.getInt()); // TODO Test
+								}
 							}
 							else {
-								logger.info(
-										"Receive error after closed socket, message with non positive content length: " + msgContentLength);
+								if (!readyForClose) {
+									logger.error("Receive error, message with non positive content length: " + msgContentLength);
+								}
+								socket.close();
 							}
 							return;
 						}
-						if (msgContentLength > Configuration.MAX_MESSAGE_SIZE) {
-							Thread.sleep(100);
-							if (!readyForClose && !socket.isClosed()) {
-								logger.error("Receive error, to long message: " + msgContentLength + " " + socket.isClosed());
-								socket.close();
+						if ((msgContentLength + 4) > Configuration.MAX_MESSAGE_SIZE) {
+							Thread.sleep(100); // Sleep to wait wait until socket is closed when shutting down
+							if (socket.isClosed()) {
+								if (!readyForClose) {
+									logger.info("Receive error after closed socket, message with too long content length: "
+											+ msgContentLength);
+									logger.warn("aB " + inBuffer.getInt()); // TODO Test
+								}
 							}
 							else {
-								logger.info("Receive error after closed socket, to long message: " + msgContentLength + " "
-										+ socket.isClosed());
+								if (!readyForClose) {
+									logger.error("Receive error, message with too long content length: " + msgContentLength);
+								}
+								socket.close();
 							}
 							return;
 						}
@@ -112,14 +129,6 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 								return;
 							}
 						}
-
-						//						if (msgContentLength == 100) {
-						//							String line = "";
-						//							for (int i = 0; i < 104; i++) {
-						//								line += inBuffer.array()[i] + ", ";
-						//							}
-						//							System.out.println(line);
-						//						}
 
 						final byte msgType = inBuffer.get();
 						switch (msgType) {
