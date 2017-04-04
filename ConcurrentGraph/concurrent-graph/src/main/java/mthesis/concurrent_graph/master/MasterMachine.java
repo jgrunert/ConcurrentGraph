@@ -281,7 +281,7 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
 				for (WorkerStatSample sample : samples) {
 					workerStats.get(controlMsg.getSrcMachine())
-					.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
+							.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
 				}
 			}
 
@@ -442,44 +442,48 @@ public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMach
 		StringBuilder sb = new StringBuilder();
 		Set<String> statsNames = new WorkerStats().getStatsMap().keySet();
 
-		// Worker times in milliseconds
+		// Worker times in milliseconds, normalized for time/s
 		for (Integer workerId : workerIds) {
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + "worker" + workerId + "_times_ms.csv"))) {
 				writer.println(
-						"SampleTime;ComputeTime;IdleTime;QueryWaitTime;StepFinishTime;IntersectCalcTime;MoveSendVerticesTime;MoveRecvVerticesTime;HandleMessagesTime;BarrierStartWaitTime;BarrierFinishWaitTime;BarrierVertexMoveTime;");
+						"SumTime;ComputeTime;IdleTime;QueryWaitTime;StepFinishTime;IntersectCalcTime;MoveSendVerticesTime;MoveRecvVerticesTime;HandleMessagesTime;BarrierStartWaitTime;BarrierFinishWaitTime;BarrierVertexMoveTime;");
 
+				long lastTime = 0;
 				for (Pair<Long, WorkerStats> statSample : workerStats.get(workerId)) {
+					long timeSinceLastSample = statSample.first - lastTime;
+					lastTime = statSample.first;
+					double timeNormFactor = (double) 1000 / timeSinceLastSample;
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
-					double sampleTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
-					sb.append(sampleTime / 1000000);
+					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("ComputeTime") / 1000000);
+					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("IdleTime") / 1000000);
+					sb.append(statsMap.get("IdleTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("QueryWaitTime") / 1000000);
+					sb.append(statsMap.get("QueryWaitTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("StepFinishTime") / 1000000);
+					sb.append(statsMap.get("StepFinishTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("IntersectCalcTime") / 1000000);
+					sb.append(statsMap.get("IntersectCalcTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("MoveSendVerticesTime") / 1000000);
+					sb.append(statsMap.get("MoveSendVerticesTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("MoveRecvVerticesTime") / 1000000);
+					sb.append(statsMap.get("MoveRecvVerticesTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("HandleMessagesTime") / 1000000);
+					sb.append(statsMap.get("HandleMessagesTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("BarrierStartWaitTime") / 1000000);
+					sb.append(statsMap.get("BarrierStartWaitTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("BarrierFinishWaitTime") / 1000000);
+					sb.append(statsMap.get("BarrierFinishWaitTime") / 1000000 * timeNormFactor);
 					sb.append(';');
-					sb.append(statsMap.get("BarrierVertexMoveTime") / 1000000);
+					sb.append(statsMap.get("BarrierVertexMoveTime") / 1000000 * timeNormFactor);
 					sb.append(';');
 
 					writer.println(sb.toString());
