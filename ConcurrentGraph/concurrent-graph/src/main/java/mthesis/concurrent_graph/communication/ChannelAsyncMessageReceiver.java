@@ -76,8 +76,12 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 						//							Thread.sleep(200);
 						//						}
 
-						reader.read(inBytes, 0, 4);
-						msgContentLength = inBuffer.getInt();
+						//						synchronized (reader)
+						{
+							inBuffer.clear();
+							reader.read(inBytes, 0, 4);
+							msgContentLength = inBuffer.getInt();
+						}
 
 						// Check for closed socket or message error
 						if (msgContentLength == ChannelAsyncMessageSender.ChannelCloseSignal) {
@@ -90,7 +94,6 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 								if (!readyForClose) {
 									logger.info("Receive error after closed socket, message with non positive content length: "
 											+ msgContentLength);
-									logger.warn("aA " + inBuffer.getInt()); // TODO Test
 								}
 							}
 							else {
@@ -107,7 +110,6 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 								if (!readyForClose) {
 									logger.info("Receive error after closed socket, message with too long content length: "
 											+ msgContentLength);
-									logger.warn("aB " + inBuffer.getInt()); // TODO Test
 								}
 							}
 							else {
@@ -119,14 +121,17 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 							return;
 						}
 
-						inBuffer.clear();
-						readIndex = 0;
-						while (readIndex < msgContentLength) {
-							readIndex += reader.read(inBytes, readIndex, msgContentLength - readIndex);
-							if (readIndex == -1) {
-								logger.debug("Reader returned -1, exiting reader");
-								socket.close();
-								return;
+						//						synchronized (reader)
+						{
+							inBuffer.clear();
+							readIndex = 0;
+							while (readIndex < msgContentLength) {
+								readIndex += reader.read(inBytes, readIndex, msgContentLength - readIndex);
+								if (readIndex == -1) {
+									logger.debug("Reader returned -1, exiting reader");
+									socket.close();
+									return;
+								}
 							}
 						}
 
@@ -155,7 +160,6 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 								logger.warn("Unknown incoming message id: " + msgType);
 								break;
 						}
-						inBuffer.clear();
 					}
 				}
 				catch (final Throwable e) {

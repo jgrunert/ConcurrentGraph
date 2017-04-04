@@ -41,7 +41,12 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 		this.writer = writer;
 	}
 
+	// TODO Testcode
+	//	ChannelMessage m0 = null;
+	//	ChannelMessage m1 = null;
+
 	public void startSender(int ownId, int otherId) {
+
 		senderThread = new Thread(new Runnable() {
 
 			@Override
@@ -51,6 +56,8 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 						if (isClosing && outMessages.isEmpty())
 							break;
 						final ChannelMessage message = outMessages.take();
+						//						m1 = m0;
+						//						m0 = message;
 						sendMessageViaStream(message);
 						message.free(true);
 					}
@@ -63,6 +70,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 						logger.error("sending failed", e);
 				}
 				finally {
+					//					logger.debug("sender finished + " + m0 + " " + m1);
 					logger.debug("sender finished");
 				}
 			}
@@ -94,8 +102,11 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 
 			outBuffer.position(0);
 			outBuffer.putInt((msgLength - 4));
-			// Send message
-			writer.write(outBytes, 0, msgLength);
+			//			synchronized (writer)
+			{
+				// Send message
+				writer.write(outBytes, 0, msgLength);
+			}
 
 			// TODO Temporary check to find messaging issues
 			outBuffer.position(0);
@@ -105,7 +116,10 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 			}
 		}
 		if (message.flushAfter()) {
-			writer.flush();
+			//			synchronized (writer)
+			{
+				writer.flush();
+			}
 		}
 	}
 
@@ -125,8 +139,11 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 					outBuffer.clear();
 					outBuffer.position(0);
 					outBuffer.putInt(ChannelCloseSignal);
-					writer.write(outBytes, 0, 4);
-					writer.flush();
+					//					synchronized (writer)
+					{
+						writer.write(outBytes, 0, 4);
+						writer.flush();
+					}
 
 					socket.close();
 				}
