@@ -67,11 +67,11 @@ public class SPQuery extends BaseQuery {
 	 */
 	@Override
 	public boolean onWorkerSuperstepStart(int superstepNo) {
-		//		if (ReconstructionPhaseActive && !InitializedReconstructionPhase) {
-		//			logger.info(QueryId + " worker start initialize reconstruction phase");
-		//			InitializedReconstructionPhase = true;
-		//			return true;
-		//		}
+		if (ReconstructionPhaseActive && !InitializedReconstructionPhase) {
+			logger.info(QueryId + " worker start initialize reconstruction phase");
+			InitializedReconstructionPhase = true;
+			return true;
+		}
 		return superstepNo == 0;
 	}
 

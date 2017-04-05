@@ -198,11 +198,12 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	}
 
 
-	public void superstep(int superstepNo, WorkerQuery<V, E, M, Q> query) {
+	public void superstep(int superstepNo, WorkerQuery<V, E, M, Q> query, boolean forceCompute) {
 		int queryId = query.Query.QueryId;
 		List<M> messagesThisSuperstep = queryMessagesThisSuperstep.get(queryId);
 
-		if (!(queriesVertexInactive.contains(queryId) && (messagesThisSuperstep == null || messagesThisSuperstep.isEmpty()))) {
+		if (forceCompute
+				|| !(queriesVertexInactive.contains(queryId) && (messagesThisSuperstep == null || messagesThisSuperstep.isEmpty()))) {
 			//			if (messagesThisSuperstep == null) {
 			//				messagesThisSuperstep = new ArrayList<>();
 			//				queryMessagesNextSuperstep.put(query.QueryId, messagesThisSuperstep);

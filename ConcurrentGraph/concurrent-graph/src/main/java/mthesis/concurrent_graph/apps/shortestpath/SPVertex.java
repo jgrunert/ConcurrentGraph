@@ -48,6 +48,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		//			if (reVisits % 100000 == 1 || firstVisits % 100000 == 1)
 		//				System.out.println(reVisits + "/" + firstVisits + " " + vis + " " + maxVisits);
 		//		}
+
 		if (superstepNo == 0) {
 			if (ID != query.Query.From) {
 				voteVertexHalt(query.QueryId);
@@ -152,3 +153,4 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		}
 	}
 }
+

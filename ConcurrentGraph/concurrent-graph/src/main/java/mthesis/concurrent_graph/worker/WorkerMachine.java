@@ -301,12 +301,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					if (superstepNo >= 0) {
 						if (allVerticesActivate) {
 							for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
-								vertex.superstep(superstepNo, activeQuery);
+								vertex.superstep(superstepNo, activeQuery, true);
 							}
 						}
 						else {
 							for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
-								vertex.superstep(superstepNo, activeQuery);
+								vertex.superstep(superstepNo, activeQuery, false);
 							}
 						}
 					}
