@@ -6,7 +6,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 
 
 /**
- * Base class for query global values such as initial configuration or aggregators.
+ * Base class for query global values and control, such as initial configuration or aggregators.
  * Configuration values remain unchanged while aggregated values are aggregated by the master.
  *
  * @author Jonas Grunert
@@ -45,6 +45,23 @@ public class BaseQuery extends BaseWritable {
 		ActiveVertices += v.ActiveVertices;
 		VertexCount += v.VertexCount;
 		Stats.combine(v.Stats);
+	}
+
+
+	/**
+	 * Called by master when no more vertices are active
+	 * @return TRUE if the query is finished now
+	 */
+	public boolean onMasterAllVerticesFinished() {
+		return true;
+	}
+
+	/**
+	 * Called by worker before the computation of a new superstep is started
+	 * @return TRUE if all vertices should be activated this superstep.
+	 */
+	public boolean onWorkerSuperstepStart(int superstepNo) {
+		return superstepNo == 0;
 	}
 
 

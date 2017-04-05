@@ -2,11 +2,16 @@ package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.nio.ByteBuffer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.QueryStats;
 
 
 public class SPQuery extends BaseQuery {
+
+	protected static final Logger logger = LoggerFactory.getLogger(SPQuery.class);
 
 	public int From;
 	public int To;
@@ -33,6 +38,33 @@ public class SPQuery extends BaseQuery {
 		To = to;
 		MaxDist = maxDist;
 		ReconstructionPhase = targetFound;
+	}
+
+
+	/**
+	 * Called by master when no more vertices are active
+	 * @return Returns TRUE if the query is finished now
+	 */
+	@Override
+	public boolean onMasterAllVerticesFinished() {
+		if (!ReconstructionPhase) {
+			// Start reconstruction phase
+			logger.info(QueryId + " start reconstruction phase");
+			ReconstructionPhase = true;
+			return false;
+		}
+		// Reconstruction finished
+		logger.info(QueryId + " finished reconstruction phase");
+		return true;
+	}
+
+	/**
+	 * Called by worker before the computation of a new superstep is started
+	 * @return TRUE if all vertices should be activated this superstep.
+	 */
+	@Override
+	public boolean onWorkerSuperstepStart(int superstepNo) {
+		return superstepNo == 0;
 	}
 
 

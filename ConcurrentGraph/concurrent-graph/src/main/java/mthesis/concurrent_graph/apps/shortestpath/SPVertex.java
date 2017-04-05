@@ -116,13 +116,11 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		voteVertexHalt(query.QueryId);
 
 		if (ID == query.Query.To) {
-			// Target found. Keep target active until reconstruction phase
-			//			if (!query.QueryLocal.TargetFound)
+			// Target vertex found.  Now start limiting max dist to target dist.
 			if (query.QueryLocal.MaxDist == Double.POSITIVE_INFINITY)
 				logger.info(query.QueryId + ":" + superstepNo + " target found with dist " + minDist);
 			System.out.println("targ ss " + superstepNo);
-			//			query.QueryLocal.TargetFound = true;
-			query.QueryLocal.MaxDist = minDist; // Now start limiting max dist to target dist
+			query.QueryLocal.MaxDist = minDist;
 		}
 		//		else {
 		//			// Halt vertex next superstep if not target and no messages

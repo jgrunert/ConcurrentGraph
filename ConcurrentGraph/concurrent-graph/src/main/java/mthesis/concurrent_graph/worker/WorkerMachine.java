@@ -291,6 +291,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					int queryId = activeQuery.Query.QueryId;
 					int superstepNo = activeQuery.getStartedSuperstepNo();
+					boolean allVerticesActivate = activeQuery.Query.onWorkerSuperstepStart(superstepNo);
 
 					// Next superstep. Compute and Messaging (done by vertices)
 					logger.trace("Worker start query " + queryId + " superstep compute " + superstepNo);
@@ -298,7 +299,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					// First frame: Call all vertices, second frame only active vertices
 					startTime = System.nanoTime();
 					if (superstepNo >= 0) {
-						if (superstepNo == 0) {
+						if (allVerticesActivate) {
 							for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
 								vertex.superstep(superstepNo, activeQuery);
 							}

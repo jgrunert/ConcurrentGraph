@@ -346,8 +346,14 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 						queryStatsStepTimes.get(msgQueryOnWorker.QueryId).add((System.nanoTime() - msgActiveQuery.LastStepTime));
 					}
 
+					boolean queryFinished;
+					if (msgActiveQuery.ActiveWorkers == 0 && controlMsg.getSuperstepNo() >= 0)
+						queryFinished = msgActiveQuery.BaseQuery.onMasterAllVerticesFinished();
+					else
+						queryFinished = false;
+
 					// All workers have superstep finished
-					if (msgActiveQuery.ActiveWorkers > 0 || controlMsg.getSuperstepNo() < 0) {
+					if (!queryFinished) {
 						// Active workers, start next superstep
 						msgActiveQuery.nextSuperstep(workerIds);
 						startWorkersQueryNextSuperstep(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
