@@ -10,17 +10,20 @@ public class SPVertexWritable extends BaseWritable {
 	public double Dist;
 	// Indicates if a superstep was skipped because of distance limit and messages should be sent later.
 	public boolean SendMsgsLater;
+	// Indicates if this vertex is on the shortest path
+	public boolean OnShortestPath;
 
 
 	public SPVertexWritable() {
 		super();
 	}
 
-	public SPVertexWritable(int pre, double dist, boolean sendMsgsLater) {
+	public SPVertexWritable(int pre, double dist, boolean sendMsgsLater, boolean onShortestPath) {
 		super();
 		Pre = pre;
 		Dist = dist;
 		SendMsgsLater = sendMsgsLater;
+		OnShortestPath = onShortestPath;
 	}
 
 	@Override
@@ -28,6 +31,7 @@ public class SPVertexWritable extends BaseWritable {
 		Pre = buffer.getInt();
 		Dist = buffer.getDouble();
 		SendMsgsLater = (buffer.get() == 0);
+		OnShortestPath = (buffer.get() == 0);
 	}
 
 
@@ -36,16 +40,17 @@ public class SPVertexWritable extends BaseWritable {
 		buffer.putInt(Pre);
 		buffer.putDouble(Dist);
 		buffer.put(SendMsgsLater ? (byte) 0 : (byte) 1);
+		buffer.put(OnShortestPath ? (byte) 0 : (byte) 1);
 	}
 
 	@Override
 	public String getString() {
-		return Pre + ":" + Dist + ":" + SendMsgsLater;
+		return Pre + ":" + Dist + ":" + SendMsgsLater + ":" + OnShortestPath;
 	}
 
 	@Override
 	public int getBytesLength() {
-		return 4 + 8;
+		return 4 + 8 + 2;
 	}
 
 
@@ -59,12 +64,13 @@ public class SPVertexWritable extends BaseWritable {
 		@Override
 		public SPVertexWritable createFromString(String str) {
 			final String[] sSplit = str.split(":");
-			return new SPVertexWritable(Integer.parseInt(sSplit[0]), Double.parseDouble(sSplit[1]), Boolean.parseBoolean(sSplit[2]));
+			return new SPVertexWritable(Integer.parseInt(sSplit[0]), Double.parseDouble(sSplit[1]), Boolean.parseBoolean(sSplit[2]),
+					Boolean.parseBoolean(sSplit[3]));
 		}
 
 		@Override
 		public SPVertexWritable createClone(SPVertexWritable toClone) {
-			return new SPVertexWritable(toClone.Pre, toClone.Dist, toClone.SendMsgsLater);
+			return new SPVertexWritable(toClone.Pre, toClone.Dist, toClone.SendMsgsLater, toClone.OnShortestPath);
 		}
 	}
 }

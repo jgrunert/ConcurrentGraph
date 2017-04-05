@@ -56,7 +56,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 			}
 			else {
 				logger.info(query.QueryId + ":" + superstepNo + " start vertex compute start");
-				SPVertexWritable mutableValue = new SPVertexWritable(-1, 0, false);
+				SPVertexWritable mutableValue = new SPVertexWritable(-1, 0, false, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
 					sendMessageToVertex(getPooledMessageValue().setup(ID, edge.Value.Value), edge.TargetVertexId,
@@ -66,17 +66,32 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 				return;
 			}
 		}
-		if (query.Query.ReconstructionPhaseActive && !query.Query.InitializedReconstructionPhase) {
-			if (ID == query.Query.To) {
-				logger.info(query.QueryId + ":" + superstepNo + " target " + ID + " start reconstructing");
+
+		SPVertexWritable mutableValue = getValue(query.QueryId);
+
+		// Reconstruct path over all vertices that have been visitied so far
+		if (query.Query.ReconstructionPhaseActive && mutableValue != null) {
+			if (!query.Query.InitializedReconstructionPhase) {
+				// Start reconstruction at target vertex
+				if (ID == query.Query.To) {
+					logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " start reconstructing");
+					mutableValue.OnShortestPath = true;
+					sendMessageToVertex(getPooledMessageValue().setup(ID, 0), mutableValue.Pre, query);
+				}
+			}
+			else {
+				// Send message to pre vertex until start vertex reached
+				mutableValue.OnShortestPath = true;
+				if (ID != query.Query.From) {
+					sendMessageToVertex(getPooledMessageValue().setup(ID, 0), mutableValue.Pre, query);
+				}
 			}
 			voteVertexHalt(query.QueryId);
 			return;
 		}
 
-		SPVertexWritable mutableValue = getValue(query.QueryId);
 		if (mutableValue == null) {
-			mutableValue = new SPVertexWritable(-1, Double.POSITIVE_INFINITY, false);
+			mutableValue = new SPVertexWritable(-1, Double.POSITIVE_INFINITY, false, false);
 			setValue(mutableValue, query.QueryId);
 		}
 
@@ -126,13 +141,21 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		if (ID == query.Query.To) {
 			// Target vertex found.  Now start limiting max dist to target dist.
 			if (query.QueryLocal.MaxDist == Double.POSITIVE_INFINITY)
-				logger.info(query.QueryId + ":" + superstepNo + " target " + ID + " found with dist " + minDist);
+				logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " found with dist " + minDist);
 			query.QueryLocal.MaxDist = minDist;
 		}
 		//		else {
 		//			// Halt vertex next superstep if not target and no messages
 		//			voteVertexHalt(query.QueryId);
 		//		}
+	}
+
+
+
+	@Override
+	public SPVertexWritable getOutputValue(int queryId) {
+		SPVertexWritable value = super.getOutputValue(queryId);
+		return value != null && value.OnShortestPath ? value : null;
 	}
 
 

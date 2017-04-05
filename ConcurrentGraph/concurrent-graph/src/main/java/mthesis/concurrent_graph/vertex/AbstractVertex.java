@@ -274,6 +274,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		return value != null ? value : vertexDefaultValue;
 	}
 
+	public V getOutputValue(int queryId) {
+		return getValue(queryId);
+	}
+
 	public void setValue(V value, int queryId) {
 		this.queryValues.put(queryId, value);
 	}

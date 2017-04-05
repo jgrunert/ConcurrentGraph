@@ -23,7 +23,7 @@ public class VertexTextOutputWriter<V extends BaseWritable, E extends BaseWritab
 	public void writeOutput(String file, Collection<AbstractVertex<V, E, M, G>> vertices, int queryId) {
 		try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
 			for (final AbstractVertex<V, E, M, G> vertex : vertices) {
-				final V value = vertex.getValue(queryId);
+				final V value = vertex.getOutputValue(queryId);
 				if (value != null) {
 					final String vertexValue = value != null ? value.getString() : "";
 					writer.println(vertex.ID + "\t" + vertexValue);
