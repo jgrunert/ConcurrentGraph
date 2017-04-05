@@ -18,7 +18,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  *
  * @author Jonas Grunert
  */
-public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
+public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery> {
 
 	protected final Logger logger;
 	//private final Map<Integer, Pair<String, Integer>> machines;

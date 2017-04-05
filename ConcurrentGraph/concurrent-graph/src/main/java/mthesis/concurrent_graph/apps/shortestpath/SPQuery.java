@@ -1,38 +1,38 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.nio.ByteBuffer;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.QueryStats;
 
 
-public class SSSPQueryValues extends BaseQueryGlobalValues {
+public class SPQuery extends BaseQuery {
 
 	public int From;
 	public int To;
 	// Maximum distance. Initially set to infinite, set to target dist as soon as target discovered
 	public double MaxDist;
-	public boolean TargetFound; // TODO Remove?
+	public boolean ReconstructionPhase;
 
 
 	/**
 	 * Public query creation constructor
 	 */
-	public SSSPQueryValues(int queryId, int from, int to) {
+	public SPQuery(int queryId, int from, int to) {
 		super(queryId);
 		From = from;
 		To = to;
 		MaxDist = Double.POSITIVE_INFINITY;
-		TargetFound = false;
+		ReconstructionPhase = false;
 	}
 
-	private SSSPQueryValues(int queryId, int activeVertices, int vertexCount, QueryStats stats,
+	private SPQuery(int queryId, int activeVertices, int vertexCount, QueryStats stats,
 			int from, int to, double maxDist, boolean targetFound) {
 		super(queryId, activeVertices, vertexCount, stats);
 		From = from;
 		To = to;
 		MaxDist = maxDist;
-		TargetFound = targetFound;
+		ReconstructionPhase = targetFound;
 	}
 
 
@@ -42,12 +42,12 @@ public class SSSPQueryValues extends BaseQueryGlobalValues {
 		buffer.putInt(From);
 		buffer.putInt(To);
 		buffer.putDouble(MaxDist);
-		buffer.put(TargetFound ? (byte) 0 : (byte) 1);
+		buffer.put(ReconstructionPhase ? (byte) 0 : (byte) 1);
 	}
 
 	@Override
 	public String getString() {
-		return super.getString() + ":" + From + ":" + To + ":" + MaxDist + ":" + TargetFound;
+		return super.getString() + ":" + From + ":" + To + ":" + MaxDist + ":" + ReconstructionPhase;
 	}
 
 	@Override
@@ -65,35 +65,35 @@ public class SSSPQueryValues extends BaseQueryGlobalValues {
 	}
 
 	@Override
-	public void combine(BaseQueryGlobalValues v) {
-		SSSPQueryValues other = (SSSPQueryValues) v;
+	public void combine(BaseQuery v) {
+		SPQuery other = (SPQuery) v;
 		MaxDist = Math.min(MaxDist, other.MaxDist);
-		TargetFound |= (other).TargetFound;
+		ReconstructionPhase |= (other).ReconstructionPhase;
 		super.combine(v);
 	}
 
 
 
-	public static class Factory extends BaseQueryGlobalValuesFactory<SSSPQueryValues> {
+	public static class Factory extends BaseQueryGlobalValuesFactory<SPQuery> {
 
 		@Override
-		public SSSPQueryValues createDefault() {
+		public SPQuery createDefault() {
 			throw new RuntimeException("Not supported");
 		}
 
 		@Override
-		public SSSPQueryValues createDefault(int queryId) {
-			return new SSSPQueryValues(queryId, 0, 0);
+		public SPQuery createDefault(int queryId) {
+			return new SPQuery(queryId, 0, 0);
 		}
 
 		@Override
-		public SSSPQueryValues createFromString(String str) {
+		public SPQuery createFromString(String str) {
 			throw new RuntimeException("createFromString not implemented for BaseQueryGlobalValues");
 		}
 
 		@Override
-		public SSSPQueryValues createFromBytes(ByteBuffer bytes) {
-			return new SSSPQueryValues(bytes.getInt(), bytes.getInt(), bytes.getInt(), new QueryStats(bytes),
+		public SPQuery createFromBytes(ByteBuffer bytes) {
+			return new SPQuery(bytes.getInt(), bytes.getInt(), bytes.getInt(), new QueryStats(bytes),
 					bytes.getInt(), bytes.getInt(), bytes.getDouble(), bytes.get() == 0);
 		}
 	}

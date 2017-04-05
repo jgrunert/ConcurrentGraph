@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -22,15 +22,15 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
  * @author Jonas Grunert
  */
 public class RoadNetVertexInputReader
-		implements BaseVertexInputReader<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> {
+		implements BaseVertexInputReader<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Override
-	public List<AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues>> getVertices(
-			List<String> partitions, JobConfiguration<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> jobConfig,
-			VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> vertexWorkerInterface) {
-		final List<AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues>> vertices = new ArrayList<>();
+	public List<AbstractVertex<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery>> getVertices(
+			List<String> partitions, JobConfiguration<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> jobConfig,
+			VertexWorkerInterface<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> vertexWorkerInterface) {
+		final List<AbstractVertex<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery>> vertices = new ArrayList<>();
 
 		for (final String partition : partitions) {
 			try (DataInputStream reader = new DataInputStream(new BufferedInputStream(new FileInputStream(partition)))) {
@@ -38,7 +38,7 @@ public class RoadNetVertexInputReader
 
 				for (int iV = 0; iV < numVertices; iV++) {
 					int vertexId = reader.readInt();
-					SSSPVertex vertex = new SSSPVertex(vertexId, vertexWorkerInterface);
+					SPVertex vertex = new SPVertex(vertexId, vertexWorkerInterface);
 
 					int numEdges = reader.readInt();
 					final List<Edge<DoubleWritable>> edges = new ArrayList<>(numEdges);

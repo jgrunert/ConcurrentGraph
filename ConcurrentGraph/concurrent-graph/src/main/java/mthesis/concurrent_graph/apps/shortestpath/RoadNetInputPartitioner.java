@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

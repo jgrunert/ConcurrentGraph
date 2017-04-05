@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
@@ -14,7 +14,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
 import mthesis.concurrent_graph.master.MasterQuery;
 import mthesis.concurrent_graph.util.MiscUtil;
 
-public class SimpleVertexMoveDecider<Q extends BaseQueryGlobalValues> extends AbstractVertexMoveDecider<Q> {
+public class SimpleVertexMoveDecider<Q extends BaseQuery> extends AbstractVertexMoveDecider<Q> {
 
 	private static final double tolerableAvVariance = 0.2;
 	private long vertexBarrierMoveLastTime = System.currentTimeMillis();

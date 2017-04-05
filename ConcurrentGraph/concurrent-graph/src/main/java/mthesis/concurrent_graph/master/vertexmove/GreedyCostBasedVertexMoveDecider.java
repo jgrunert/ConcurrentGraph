@@ -3,11 +3,11 @@ package mthesis.concurrent_graph.master.vertexmove;
 import java.util.List;
 import java.util.Map;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.master.MasterQuery;
 
-public class GreedyCostBasedVertexMoveDecider<Q extends BaseQueryGlobalValues> extends AbstractVertexMoveDecider<Q> {
+public class GreedyCostBasedVertexMoveDecider<Q extends BaseQuery> extends AbstractVertexMoveDecider<Q> {
 
 	private long vertexBarrierMoveLastTime = System.currentTimeMillis();
 

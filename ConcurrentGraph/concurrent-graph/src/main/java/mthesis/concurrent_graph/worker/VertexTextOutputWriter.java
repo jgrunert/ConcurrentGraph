@@ -7,7 +7,7 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
@@ -16,7 +16,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  *
  * @author Jonas Grunert
  */
-public class VertexTextOutputWriter<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQueryGlobalValues> {
+public class VertexTextOutputWriter<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, G extends BaseQuery> {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

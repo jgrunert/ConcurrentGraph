@@ -18,8 +18,8 @@ import com.google.protobuf.ByteString;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import mthesis.concurrent_graph.AbstractMachine;
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
-import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.BaseQuery;
+import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
@@ -58,7 +58,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  * @param <Q>
  *            Global query values type
  */
-public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues>
+public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
 		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;

@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
@@ -21,7 +21,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  * @author Jonas Grunert
  *
  */
-public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
+public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery> {
 
 	public static final int ChannelCloseSignal = -2;
 

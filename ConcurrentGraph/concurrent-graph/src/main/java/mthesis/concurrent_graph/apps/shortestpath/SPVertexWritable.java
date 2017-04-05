@@ -1,10 +1,10 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.nio.ByteBuffer;
 
 import mthesis.concurrent_graph.writable.BaseWritable;
 
-public class SSSPVertexWritable extends BaseWritable {
+public class SPVertexWritable extends BaseWritable {
 
 	public int Pre;
 	public double Dist;
@@ -12,11 +12,11 @@ public class SSSPVertexWritable extends BaseWritable {
 	public boolean SendMsgsLater;
 
 
-	public SSSPVertexWritable() {
+	public SPVertexWritable() {
 		super();
 	}
 
-	public SSSPVertexWritable(int pre, double dist, boolean sendMsgsLater) {
+	public SPVertexWritable(int pre, double dist, boolean sendMsgsLater) {
 		super();
 		Pre = pre;
 		Dist = dist;
@@ -49,22 +49,22 @@ public class SSSPVertexWritable extends BaseWritable {
 	}
 
 
-	public static class Factory extends BaseWritable.BaseWritableFactory<SSSPVertexWritable> {
+	public static class Factory extends BaseWritable.BaseWritableFactory<SPVertexWritable> {
 
 		@Override
-		public SSSPVertexWritable createDefault() {
-			return new SSSPVertexWritable();
+		public SPVertexWritable createDefault() {
+			return new SPVertexWritable();
 		}
 
 		@Override
-		public SSSPVertexWritable createFromString(String str) {
+		public SPVertexWritable createFromString(String str) {
 			final String[] sSplit = str.split(":");
-			return new SSSPVertexWritable(Integer.parseInt(sSplit[0]), Double.parseDouble(sSplit[1]), Boolean.parseBoolean(sSplit[2]));
+			return new SPVertexWritable(Integer.parseInt(sSplit[0]), Double.parseDouble(sSplit[1]), Boolean.parseBoolean(sSplit[2]));
 		}
 
 		@Override
-		public SSSPVertexWritable createClone(SSSPVertexWritable toClone) {
-			return new SSSPVertexWritable(toClone.Pre, toClone.Dist, toClone.SendMsgsLater);
+		public SPVertexWritable createClone(SPVertexWritable toClone) {
+			return new SPVertexWritable(toClone.Pre, toClone.Dist, toClone.SendMsgsLater);
 		}
 	}
 }

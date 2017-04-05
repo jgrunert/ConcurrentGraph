@@ -2,12 +2,12 @@ package mthesis.concurrent_graph;
 
 import java.util.ArrayList;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.writable.BaseWritable;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
-public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
+public abstract class JobConfiguration<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery> {
 
 	private final VertexFactory<V, E, M, Q> vertexFactory;
 	private final BaseWritableFactory<V> vertexValueFactory;

@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,16 +16,16 @@ import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.util.Pair;
 
-public class SSSPOutputEvaluator extends MasterOutputEvaluator<SSSPQueryValues> {
+public class SPOutputEvaluator extends MasterOutputEvaluator<SPQuery> {
 
-	protected static final Logger logger = LoggerFactory.getLogger(SSSPOutputEvaluator.class);
+	protected static final Logger logger = LoggerFactory.getLogger(SPOutputEvaluator.class);
 
-	public SSSPOutputEvaluator() {
+	public SPOutputEvaluator() {
 		super();
 	}
 
 	@Override
-	public void evaluateOutput(String outputDir, SSSPQueryValues query) {
+	public void evaluateOutput(String outputDir, SPQuery query) {
 
 		logger.debug("Start evaluateOutput for query " + query.QueryId);
 		long startTime = System.currentTimeMillis();

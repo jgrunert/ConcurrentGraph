@@ -3,7 +3,7 @@ package mthesis.concurrent_graph.apps.pagerank;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
@@ -18,23 +18,23 @@ import mthesis.concurrent_graph.writable.NullWritable;
  * @author Jonas Grunert
  *
  */
-public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> {
+public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> {
 
 	public PagerankVertex(int id,
-			VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> messageSender) {
+			VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> messageSender) {
 		super(id, messageSender);
 	}
 
 	public PagerankVertex(ByteBuffer bufferToRead,
-			VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> worker,
-			JobConfiguration<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> jobConfig) {
+			VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> worker,
+			JobConfiguration<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> jobConfig) {
 		super(bufferToRead, worker, jobConfig);
 	}
 
 
 	@Override
 	protected void compute(int superstepNo, List<DoubleWritable> messages,
-			WorkerQuery<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> query) {
+			WorkerQuery<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> query) {
 		DoubleWritable mutableValue;
 		if (superstepNo == 0) {
 			mutableValue = new DoubleWritable(1.0 / query.Query.getVertexCount());
@@ -61,18 +61,18 @@ public class PagerankVertex extends AbstractVertex<DoubleWritable, NullWritable,
 	}
 
 
-	public static class Factory extends VertexFactory<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> {
+	public static class Factory extends VertexFactory<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> {
 
 		@Override
-		public AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> newInstance(int id,
-				VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> messageSender) {
+		public AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> newInstance(int id,
+				VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> messageSender) {
 			return new PagerankVertex(id, messageSender);
 		}
 
 		@Override
-		public AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> newInstance(ByteBuffer bufferToRead,
-				VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> worker,
-				JobConfiguration<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> jobConfig) {
+		public AbstractVertex<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> newInstance(ByteBuffer bufferToRead,
+				VertexWorkerInterface<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> worker,
+				JobConfiguration<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> jobConfig) {
 			return new PagerankVertex(bufferToRead, worker, jobConfig);
 		}
 	}

@@ -12,7 +12,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  * @author Jonas Grunert
  *
  */
-public class BaseQueryGlobalValues extends BaseWritable {
+public class BaseQuery extends BaseWritable {
 
 	public int QueryId;
 	protected int ActiveVertices;
@@ -20,11 +20,11 @@ public class BaseQueryGlobalValues extends BaseWritable {
 	public QueryStats Stats;
 
 
-	public BaseQueryGlobalValues() {
+	public BaseQuery() {
 		super();
 	}
 
-	public BaseQueryGlobalValues(int queryId) {
+	public BaseQuery(int queryId) {
 		super();
 		QueryId = queryId;
 		ActiveVertices = 0;
@@ -32,7 +32,7 @@ public class BaseQueryGlobalValues extends BaseWritable {
 		Stats = new QueryStats();
 	}
 
-	public BaseQueryGlobalValues(int queryId, int activeVertices, int vertexCount, QueryStats stats) {
+	public BaseQuery(int queryId, int activeVertices, int vertexCount, QueryStats stats) {
 		super();
 		QueryId = queryId;
 		ActiveVertices = activeVertices;
@@ -40,7 +40,7 @@ public class BaseQueryGlobalValues extends BaseWritable {
 		Stats = stats;
 	}
 
-	public void combine(BaseQueryGlobalValues v) {
+	public void combine(BaseQuery v) {
 		if (QueryId != v.QueryId) throw new RuntimeException("Cannot add qureries with differend IDs: " + QueryId + " " + v.QueryId);
 		ActiveVertices += v.ActiveVertices;
 		VertexCount += v.VertexCount;
@@ -73,7 +73,7 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 	@Override
 	public int getBytesLength() {
-		return 3 * 4 + Stats.getBytesLength();
+		return 3 * 4 + QueryStats.getBytesLength();
 	}
 
 
@@ -103,25 +103,25 @@ public class BaseQueryGlobalValues extends BaseWritable {
 
 
 
-	public static abstract class BaseQueryGlobalValuesFactory<T extends BaseQueryGlobalValues> extends BaseWritableFactory<T> {
+	public static abstract class BaseQueryGlobalValuesFactory<T extends BaseQuery> extends BaseWritableFactory<T> {
 
 		public abstract T createDefault(int queryId);
 	}
 
-	public static class Factory extends BaseQueryGlobalValuesFactory<BaseQueryGlobalValues> {
+	public static class Factory extends BaseQueryGlobalValuesFactory<BaseQuery> {
 
 		@Override
-		public BaseQueryGlobalValues createDefault() {
-			return new BaseQueryGlobalValues();
+		public BaseQuery createDefault() {
+			return new BaseQuery();
 		}
 
 		@Override
-		public BaseQueryGlobalValues createDefault(int queryId) {
-			return new BaseQueryGlobalValues(queryId);
+		public BaseQuery createDefault(int queryId) {
+			return new BaseQuery(queryId);
 		}
 
 		@Override
-		public BaseQueryGlobalValues createFromString(String str) {
+		public BaseQuery createFromString(String str) {
 			throw new RuntimeException("createFromString not implemented for BaseQueryGlobalValues");
 		}
 	}

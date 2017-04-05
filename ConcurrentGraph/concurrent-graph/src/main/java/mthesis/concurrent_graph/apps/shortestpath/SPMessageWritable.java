@@ -1,26 +1,26 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.nio.ByteBuffer;
 
 import mthesis.concurrent_graph.writable.BaseWritable;
 
-public class SSSPMessageWritable extends BaseWritable {
+public class SPMessageWritable extends BaseWritable {
 
 	public int SrcVertex;
 	public double Dist;
 
 
-	public SSSPMessageWritable() {
+	public SPMessageWritable() {
 		super();
 	}
 
-	public SSSPMessageWritable(int srcVertex, double dist) {
+	public SPMessageWritable(int srcVertex, double dist) {
 		super();
 		SrcVertex = srcVertex;
 		Dist = dist;
 	}
 
-	public SSSPMessageWritable setup(int srcVertex, double dist) {
+	public SPMessageWritable setup(int srcVertex, double dist) {
 		SrcVertex = srcVertex;
 		Dist = dist;
 		return this;
@@ -50,17 +50,17 @@ public class SSSPMessageWritable extends BaseWritable {
 	}
 
 
-	public static class Factory extends BaseWritable.BaseWritableFactory<SSSPMessageWritable> {
+	public static class Factory extends BaseWritable.BaseWritableFactory<SPMessageWritable> {
 
 		@Override
-		public SSSPMessageWritable createDefault() {
-			return new SSSPMessageWritable();
+		public SPMessageWritable createDefault() {
+			return new SPMessageWritable();
 		}
 
 		@Override
-		public SSSPMessageWritable createFromString(String str) {
+		public SPMessageWritable createFromString(String str) {
 			final String[] sSplit = str.split(":");
-			return new SSSPMessageWritable(Integer.parseInt(sSplit[0]), Double.parseDouble(sSplit[1]));
+			return new SPMessageWritable(Integer.parseInt(sSplit[0]), Double.parseDouble(sSplit[1]));
 		}
 	}
 }

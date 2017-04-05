@@ -17,8 +17,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import mthesis.concurrent_graph.AbstractMachine;
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
-import mthesis.concurrent_graph.BaseQueryGlobalValues.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.BaseQuery;
+import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.QueryStats;
@@ -48,7 +48,7 @@ import mthesis.concurrent_graph.writable.NullWritable;
  * @param <Q>
  *            Global query values
  */
-public class MasterMachine<Q extends BaseQueryGlobalValues> extends AbstractMachine<NullWritable, NullWritable, NullWritable, Q> {
+public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWritable, NullWritable, NullWritable, Q> {
 
 	private long masterStartTimeMs;
 	private long masterStartTimeNano;

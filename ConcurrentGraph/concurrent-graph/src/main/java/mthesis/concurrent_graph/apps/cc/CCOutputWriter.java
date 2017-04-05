@@ -9,17 +9,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 
-public class CCOutputWriter extends MasterOutputEvaluator<BaseQueryGlobalValues> {
+public class CCOutputWriter extends MasterOutputEvaluator<BaseQuery> {
 
 	public CCOutputWriter() {
 		super();
 	}
 
 	@Override
-	public void evaluateOutput(String outputDir, BaseQueryGlobalValues query) {
+	public void evaluateOutput(String outputDir, BaseQuery query) {
 		// Connectec components ID->VertexCount
 		final Map<Integer, Integer> components = new HashMap<>();
 

@@ -4,7 +4,7 @@ import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
@@ -14,7 +14,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  * @author Jonas Grunert
  *
  */
-public class WorkerGraph<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
+public class WorkerGraph<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery> {
 
 	public final Int2ObjectMap<AbstractVertex<V, E, M, Q>> Vertices;
 

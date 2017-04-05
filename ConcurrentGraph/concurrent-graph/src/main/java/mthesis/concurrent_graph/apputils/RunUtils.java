@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.master.MasterMachine;
@@ -18,7 +18,7 @@ import mthesis.concurrent_graph.worker.BaseVertexInputReader;
 import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
-public class RunUtils<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
+public class RunUtils<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery> {
 
 	public MasterMachine<Q> startSetup(String configFile, boolean extraJvmPerWorker,
 			String inputFile, String inputPartitionDir, MasterInputPartitioner inputPartitioner,

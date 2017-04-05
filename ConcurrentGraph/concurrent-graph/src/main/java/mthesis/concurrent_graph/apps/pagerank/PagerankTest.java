@@ -3,7 +3,7 @@ package mthesis.concurrent_graph.apps.pagerank;
 import java.util.ArrayList;
 import java.util.List;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
 import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.master.MasterMachine;
@@ -32,21 +32,21 @@ public class PagerankTest {
 		// final MasterInputPartitioner inputPartitioner = new
 		// ContinousBlockInputPartitioner(partitionSize);
 		final MasterInputPartitioner inputPartitioner = new RoundRobinBlockInputPartitioner(partitionSize);
-		final MasterOutputEvaluator<BaseQueryGlobalValues> outputCombiner = new PagerankOutputEvaluator();
+		final MasterOutputEvaluator<BaseQuery> outputCombiner = new PagerankOutputEvaluator();
 
 		System.out.println("Starting machines");
-		MasterMachine<BaseQueryGlobalValues> master = null;
-		final RunUtils<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues> testUtils = new RunUtils<>();
+		MasterMachine<BaseQuery> master = null;
+		final RunUtils<DoubleWritable, NullWritable, DoubleWritable, BaseQuery> testUtils = new RunUtils<>();
 		master = testUtils.startMaster(config.AllMachineConfigs, config.masterId,
 				config.AllWorkerIds, inputFile, inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
 
-		final List<WorkerMachine<DoubleWritable, NullWritable, DoubleWritable, BaseQueryGlobalValues>> workers = new ArrayList<>();
+		final List<WorkerMachine<DoubleWritable, NullWritable, DoubleWritable, BaseQuery>> workers = new ArrayList<>();
 		for (int i = 0; i < config.AllWorkerIds.size(); i++) {
 			workers.add(testUtils.startWorker(config.AllMachineConfigs, i, config.masterId, config.AllWorkerIds,
 					outputDir, jobConfig,
 					new VertexTextInputReader<>()));
 		}
 
-		if (master != null) master.startQuery(new BaseQueryGlobalValues(0));
+		if (master != null) master.startQuery(new BaseQuery(0));
 	}
 }

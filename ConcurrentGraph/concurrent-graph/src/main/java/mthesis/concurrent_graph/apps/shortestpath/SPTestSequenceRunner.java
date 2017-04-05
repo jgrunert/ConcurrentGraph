@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -8,13 +8,13 @@ import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.master.MasterMachine;
 
-public class SSSPTestSequenceRunner {
+public class SPTestSequenceRunner {
 
-	private static final Logger logger = LoggerFactory.getLogger(SSSPTestSequenceRunner.class);
-	private final MasterMachine<SSSPQueryValues> master;
+	private static final Logger logger = LoggerFactory.getLogger(SPTestSequenceRunner.class);
+	private final MasterMachine<SPQuery> master;
 
 
-	public SSSPTestSequenceRunner(MasterMachine<SSSPQueryValues> master) {
+	public SPTestSequenceRunner(MasterMachine<SPQuery> master) {
 		this.master = master;
 	}
 
@@ -35,7 +35,7 @@ public class SSSPTestSequenceRunner {
 						master.waitForAllQueriesFinish();
 						break;
 					case "start":
-						master.startQuery(new SSSPQueryValues(queryIndex++, Integer.parseInt(lineSplit[1]),
+						master.startQuery(new SPQuery(queryIndex++, Integer.parseInt(lineSplit[1]),
 								Integer.parseInt(lineSplit[2])));
 						break;
 					default:

@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,9 +8,9 @@ import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
 import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
-public class SSSPSingleWorkerMain {
+public class SPSingleWorkerMain {
 
-	private static final Logger logger = LoggerFactory.getLogger(SSSPSingleWorkerMain.class);
+	private static final Logger logger = LoggerFactory.getLogger(SPSingleWorkerMain.class);
 
 
 	public static void main(String[] args) throws Exception {
@@ -26,10 +26,10 @@ public class SSSPSingleWorkerMain {
 
 
 		final String outputDir = "output";
-		final SSSPJobConfiguration jobConfig = new SSSPJobConfiguration();
+		final SPConfiguration jobConfig = new SPConfiguration();
 
 		// Start machines
-		final RunUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtils<>();
+		final RunUtils<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> testUtils = new RunUtils<>();
 		testUtils.startWorker(config.AllMachineConfigs, workerId, config.masterId, config.AllWorkerIds, outputDir,
 				jobConfig,
 				new RoadNetVertexInputReader());

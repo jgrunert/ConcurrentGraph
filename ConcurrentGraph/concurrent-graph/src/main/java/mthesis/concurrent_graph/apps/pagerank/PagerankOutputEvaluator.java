@@ -6,17 +6,17 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 
-public class PagerankOutputEvaluator extends MasterOutputEvaluator<BaseQueryGlobalValues> {
+public class PagerankOutputEvaluator extends MasterOutputEvaluator<BaseQuery> {
 
 	public PagerankOutputEvaluator() {
 		super();
 	}
 
 	@Override
-	public void evaluateOutput(String outputDir, BaseQueryGlobalValues query) {
+	public void evaluateOutput(String outputDir, BaseQuery query) {
 		// Aggregate output
 		final File outFolder = new File(outputDir);
 		final File[] outFiles = outFolder.listFiles();

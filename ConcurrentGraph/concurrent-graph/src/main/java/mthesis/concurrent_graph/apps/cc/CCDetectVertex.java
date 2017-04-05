@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
@@ -21,25 +21,25 @@ import mthesis.concurrent_graph.writable.NullWritable;
  * @author Jonas Grunert
  *
  */
-public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> {
+public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQuery> {
 
 	// TODO Have this in state?
 	private final Set<Integer> allNeighbors = new HashSet<>();
 
 	public CCDetectVertex(int id,
-			VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> messageSender) {
+			VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQuery> messageSender) {
 		super(id, messageSender);
 	}
 
 	public CCDetectVertex(ByteBuffer bufferToRead,
-			VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> worker,
-			JobConfiguration<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> jobConfig) {
+			VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQuery> worker,
+			JobConfiguration<IntWritable, NullWritable, CCMessageWritable, BaseQuery> jobConfig) {
 		super(bufferToRead, worker, jobConfig);
 	}
 
 	@Override
 	protected void compute(int superstepNo, List<CCMessageWritable> messages,
-			WorkerQuery<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> query) {
+			WorkerQuery<IntWritable, NullWritable, CCMessageWritable, BaseQuery> query) {
 		if (superstepNo == 0) {
 			IntWritable value = new IntWritable(ID);
 			setValue(value, query.QueryId);
@@ -77,18 +77,18 @@ public class CCDetectVertex extends AbstractVertex<IntWritable, NullWritable, CC
 	}
 
 
-	public static class Factory extends VertexFactory<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> {
+	public static class Factory extends VertexFactory<IntWritable, NullWritable, CCMessageWritable, BaseQuery> {
 
 		@Override
-		public AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> newInstance(int id,
-				VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> messageSender) {
+		public AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQuery> newInstance(int id,
+				VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQuery> messageSender) {
 			return new CCDetectVertex(id, messageSender);
 		}
 
 		@Override
-		public AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> newInstance(ByteBuffer bufferToRead,
-				VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> worker,
-				JobConfiguration<IntWritable, NullWritable, CCMessageWritable, BaseQueryGlobalValues> jobConfig) {
+		public AbstractVertex<IntWritable, NullWritable, CCMessageWritable, BaseQuery> newInstance(ByteBuffer bufferToRead,
+				VertexWorkerInterface<IntWritable, NullWritable, CCMessageWritable, BaseQuery> worker,
+				JobConfiguration<IntWritable, NullWritable, CCMessageWritable, BaseQuery> jobConfig) {
 			return new CCDetectVertex(bufferToRead, worker, jobConfig);
 		}
 	}

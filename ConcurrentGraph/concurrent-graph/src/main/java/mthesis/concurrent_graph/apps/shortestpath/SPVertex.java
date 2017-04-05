@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -12,32 +12,32 @@ import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
 /**
- * Example vertex for single source shortest path
+ * Example vertex for shortest path
  *
  * @author Jonas Grunert
  *
  */
-public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> {
+public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> {
 
 	//	private final Map<Integer, Integer> visits = new HashMap<>(4);
 	//	private static int firstVisits = 0;
 	//	private static int reVisits = 0;
 	//	private static int maxVisits = 0;
 
-	public SSSPVertex(int id,
-			VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> messageSender) {
+	public SPVertex(int id,
+			VertexWorkerInterface<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> messageSender) {
 		super(id, messageSender);
 	}
 
-	public SSSPVertex(ByteBuffer bufferToRead,
-			VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> worker,
-			JobConfiguration<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> jobConfig) {
+	public SPVertex(ByteBuffer bufferToRead,
+			VertexWorkerInterface<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> worker,
+			JobConfiguration<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> jobConfig) {
 		super(bufferToRead, worker, jobConfig);
 	}
 
 	@Override
-	protected void compute(int superstepNo, List<SSSPMessageWritable> messages,
-			WorkerQuery<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> query) {
+	protected void compute(int superstepNo, List<SPMessageWritable> messages,
+			WorkerQuery<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> query) {
 		//		int vis = MiscUtil.defaultInt(visits.get(query.QueryId));
 		//		visits.put(query.QueryId, vis + 1);
 		//		if (vis >= 1) {
@@ -55,7 +55,7 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			}
 			else {
 				logger.info(query.QueryId + ":" + superstepNo + " start vertex compute start");
-				SSSPVertexWritable mutableValue = new SSSPVertexWritable(-1, 0, false);
+				SPVertexWritable mutableValue = new SPVertexWritable(-1, 0, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
 					sendMessageToVertex(getPooledMessageValue().setup(ID, edge.Value.Value), edge.TargetVertexId,
@@ -66,16 +66,16 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			}
 		}
 
-		SSSPVertexWritable mutableValue = getValue(query.QueryId);
+		SPVertexWritable mutableValue = getValue(query.QueryId);
 		if (mutableValue == null) {
-			mutableValue = new SSSPVertexWritable(-1, Double.POSITIVE_INFINITY, false);
+			mutableValue = new SPVertexWritable(-1, Double.POSITIVE_INFINITY, false);
 			setValue(mutableValue, query.QueryId);
 		}
 
 		double minDist = mutableValue.Dist;
 		int minPre = mutableValue.Pre;
 		if (messages != null) {
-			for (SSSPMessageWritable msg : messages) {
+			for (SPMessageWritable msg : messages) {
 				if (msg.Dist < minDist) {
 					minDist = msg.Dist;
 					minPre = msg.SrcVertex;
@@ -112,30 +112,39 @@ public class SSSPVertex extends AbstractVertex<SSSPVertexWritable, DoubleWritabl
 			}
 			mutableValue.SendMsgsLater = false;
 		}
+
 		voteVertexHalt(query.QueryId);
 
 		if (ID == query.Query.To) {
-			if (!query.QueryLocal.TargetFound)
+			// Target found. Keep target active until reconstruction phase
+			//			if (!query.QueryLocal.TargetFound)
+			if (query.QueryLocal.MaxDist == Double.POSITIVE_INFINITY)
 				logger.info(query.QueryId + ":" + superstepNo + " target found with dist " + minDist);
-			query.QueryLocal.TargetFound = true;
+			System.out.println("targ ss " + superstepNo);
+			//			query.QueryLocal.TargetFound = true;
 			query.QueryLocal.MaxDist = minDist; // Now start limiting max dist to target dist
 		}
+		//		else {
+		//			// Halt vertex next superstep if not target and no messages
+		//			voteVertexHalt(query.QueryId);
+		//		}
 	}
 
 
-	public static class Factory extends VertexFactory<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> {
+	public static class Factory extends VertexFactory<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> {
 
 		@Override
-		public AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> newInstance(int id,
-				VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> messageSender) {
-			return new SSSPVertex(id, messageSender);
+		public AbstractVertex<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> newInstance(int id,
+				VertexWorkerInterface<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> messageSender) {
+			return new SPVertex(id, messageSender);
 		}
 
 		@Override
-		public AbstractVertex<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> newInstance(ByteBuffer bufferToRead,
-				VertexWorkerInterface<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> worker,
-				JobConfiguration<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> jobConfig) {
-			return new SSSPVertex(bufferToRead, worker, jobConfig);
+		public AbstractVertex<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> newInstance(
+				ByteBuffer bufferToRead,
+				VertexWorkerInterface<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> worker,
+				JobConfiguration<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> jobConfig) {
+			return new SPVertex(bufferToRead, worker, jobConfig);
 		}
 	}
 }

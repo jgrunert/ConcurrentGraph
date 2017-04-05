@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.io.File;
 
@@ -9,7 +9,7 @@ import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
-public class SSSPLocalTestClusterMain {
+public class SPLocalTestClusterMain {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length < 3) {
@@ -26,15 +26,15 @@ public class SSSPLocalTestClusterMain {
 
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
-		final SSSPJobConfiguration jobConfig = new SSSPJobConfiguration();
+		final SPConfiguration jobConfig = new SPConfiguration();
 		final MasterInputPartitioner inputPartitioner = new RoadNetInputPartitioner(
 				Configuration.getPropertyInt("PartitionsPerWorker"));
-		final MasterOutputEvaluator<SSSPQueryValues> outputCombiner = new SSSPOutputEvaluator();
+		final MasterOutputEvaluator<SPQuery> outputCombiner = new SPOutputEvaluator();
 
 		// Start machines
 		System.out.println("Starting machines");
-		final RunUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtils<>();
-		MasterMachine<SSSPQueryValues> master = testUtils.startSetup(clusterConfigFile, extraJvmPerWorker, inputFile,
+		final RunUtils<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> testUtils = new RunUtils<>();
+		MasterMachine<SPQuery> master = testUtils.startSetup(clusterConfigFile, extraJvmPerWorker, inputFile,
 				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig, new RoadNetVertexInputReader());
 
 		// TODO Start queries by script or external application
@@ -163,7 +163,7 @@ public class SSSPLocalTestClusterMain {
 			//			master.startQuery(new SSSPQueryValues(queryIndex++, 2557651, 4982624));
 
 			// Run test sequence
-			new SSSPTestSequenceRunner(master).runTestSequence("testplans" + File.separator + "bw1.txt");
+			new SPTestSequenceRunner(master).runTestSequence("testplans" + File.separator + "bw1.txt");
 			master.waitForAllQueriesFinish();
 			master.stop();
 

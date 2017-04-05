@@ -12,7 +12,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import mthesis.concurrent_graph.AbstractMachine;
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
@@ -27,7 +27,7 @@ import mthesis.concurrent_graph.writable.BaseWritable;
  * @author Jonas Grunert
  *
  */
-public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQueryGlobalValues> {
+public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery> {
 
 	private final Logger logger;
 	private final int ownId;

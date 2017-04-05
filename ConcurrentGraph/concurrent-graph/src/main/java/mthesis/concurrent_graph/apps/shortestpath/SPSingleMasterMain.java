@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.apps.sssp;
+package mthesis.concurrent_graph.apps.shortestpath;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +11,9 @@ import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
-public class SSSPSingleMasterMain {
+public class SPSingleMasterMain {
 
-	private static final Logger logger = LoggerFactory.getLogger(SSSPSingleMasterMain.class);
+	private static final Logger logger = LoggerFactory.getLogger(SPSingleMasterMain.class);
 
 	public static void main(String[] args) throws Exception {
 		logger.info("Starting SSSP SingleMaster " + Configuration.VERSION);
@@ -30,19 +30,19 @@ public class SSSPSingleMasterMain {
 
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
-		final SSSPJobConfiguration jobConfig = new SSSPJobConfiguration();
+		final SPConfiguration jobConfig = new SPConfiguration();
 		final MasterInputPartitioner inputPartitioner = new RoadNetInputPartitioner(
 				Configuration.getPropertyInt("PartitionsPerWorker"));
-		final MasterOutputEvaluator<SSSPQueryValues> outputCombiner = new SSSPOutputEvaluator();
+		final MasterOutputEvaluator<SPQuery> outputCombiner = new SPOutputEvaluator();
 
 		// Start machines
-		final RunUtils<SSSPVertexWritable, DoubleWritable, SSSPMessageWritable, SSSPQueryValues> testUtils = new RunUtils<>();
-		MasterMachine<SSSPQueryValues> master = testUtils.startMaster(config.AllMachineConfigs, config.masterId,
+		final RunUtils<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> testUtils = new RunUtils<>();
+		MasterMachine<SPQuery> master = testUtils.startMaster(config.AllMachineConfigs, config.masterId,
 				config.AllWorkerIds, inputFile,
 				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig);
 
 		// Run test sequence
-		new SSSPTestSequenceRunner(master).runTestSequence(testSequenceFile);
+		new SPTestSequenceRunner(master).runTestSequence(testSequenceFile);
 		master.waitForAllQueriesFinish();
 		master.stop();
 	}

@@ -7,9 +7,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 
-public class MasterQuery<Q extends BaseQueryGlobalValues> {
+public class MasterQuery<Q extends BaseQuery> {
 
 	private static final Logger logger = LoggerFactory.getLogger(MasterQuery.class);
 
@@ -27,7 +27,7 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 	public boolean IsComputing = true;
 
 
-	public MasterQuery(Q query, Collection<Integer> workersToWait, BaseQueryGlobalValues.BaseQueryGlobalValuesFactory<Q> queryFactory) {
+	public MasterQuery(Q query, Collection<Integer> workersToWait, BaseQuery.BaseQueryGlobalValuesFactory<Q> queryFactory) {
 		super();
 		BaseQuery = query;
 		SuperstepNo = -2;
@@ -44,7 +44,7 @@ public class MasterQuery<Q extends BaseQueryGlobalValues> {
 		SuperstepNo++;
 	}
 
-	public void resetValueAggregator(BaseQueryGlobalValues.BaseQueryGlobalValuesFactory<Q> queryFactory) {
+	public void resetValueAggregator(BaseQuery.BaseQueryGlobalValuesFactory<Q> queryFactory) {
 		QueryStepAggregator = queryFactory.createClone(BaseQuery);
 		QueryStepAggregator.setVertexCount(0);
 		QueryStepAggregator.setActiveVertices(0);

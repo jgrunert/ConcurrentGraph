@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.google.protobuf.ByteString;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryIntersectionsMessage;
@@ -38,7 +38,7 @@ public class ControlMessageBuildUtil {
 				.build();
 	}
 
-	public static MessageEnvelope Build_Master_QueryStart(int srcMachineId, BaseQueryGlobalValues query) {
+	public static MessageEnvelope Build_Master_QueryStart(int srcMachineId, BaseQuery query) {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
 						.setType(ControlMessageType.Master_Query_Start)
@@ -51,7 +51,7 @@ public class ControlMessageBuildUtil {
 
 	// Normal next superstep message, no vertex transfer
 	public static MessageEnvelope Build_Master_QueryNextSuperstep_NoVertMove(int superstepNo, int srcMachineId,
-			BaseQueryGlobalValues query) {
+			BaseQuery query) {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
 						.setType(ControlMessageType.Master_Query_Next_Superstep)
@@ -62,7 +62,7 @@ public class ControlMessageBuildUtil {
 	}
 
 	// Transfer Vertices: Send to other worker
-	public static MessageEnvelope Build_Master_QueryNextSuperstep_VertSend(int superstepNo, int srcMachineId, BaseQueryGlobalValues query,
+	public static MessageEnvelope Build_Master_QueryNextSuperstep_VertSend(int superstepNo, int srcMachineId, BaseQuery query,
 			int sendTo) {
 		SendQueryVerticesMessage.Builder sendVertMsg = SendQueryVerticesMessage.newBuilder().setSendToMachine(sendTo);
 		return MessageEnvelope.newBuilder()
@@ -78,7 +78,7 @@ public class ControlMessageBuildUtil {
 
 	// Transfer vertices: Receive vertices from one ore more workers before next superstep
 	public static MessageEnvelope Build_Master_QueryNextSuperstep_VertReceive(int superstepNo, int srcMachineId,
-			BaseQueryGlobalValues query,
+			BaseQuery query,
 			List<Integer> receiveFrom) {
 		ReceiveQueryVerticesMessage.Builder recvVertMsg = ReceiveQueryVerticesMessage.newBuilder().addAllRecvFromMachine(receiveFrom);
 		return MessageEnvelope.newBuilder()
@@ -93,7 +93,7 @@ public class ControlMessageBuildUtil {
 				.build();
 	}
 
-	public static MessageEnvelope Build_Master_QueryFinish(int srcMachineId, BaseQueryGlobalValues query) {
+	public static MessageEnvelope Build_Master_QueryFinish(int srcMachineId, BaseQuery query) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Master_Query_Finished)
 				.setQueryValues(ByteString.copyFrom(query.getBytes()))
@@ -115,7 +115,7 @@ public class ControlMessageBuildUtil {
 				.setSrcMachine(srcMachineId).build()).build();
 	}
 
-	public static MessageEnvelope Build_Worker_QuerySuperstepBarrier(int superstepNo, int srcMachineId, BaseQueryGlobalValues query) {
+	public static MessageEnvelope Build_Worker_QuerySuperstepBarrier(int superstepNo, int srcMachineId, BaseQuery query) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Worker_Query_Superstep_Barrier)
 				.setQueryValues(ByteString.copyFrom(query.getBytes()))
@@ -134,7 +134,7 @@ public class ControlMessageBuildUtil {
 	}
 
 	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId, //SuperstepStats stats,
-			BaseQueryGlobalValues localQuery, Map<Integer, Integer> queryIntersects, List<WorkerStatSample> workerStats) {
+			BaseQuery localQuery, Map<Integer, Integer> queryIntersects, List<WorkerStatSample> workerStats) {
 		final QueryIntersectionsMessage intersectMsg = QueryIntersectionsMessage.newBuilder().putAllIntersections(queryIntersects).build();
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Superstep_Finished)
@@ -147,7 +147,7 @@ public class ControlMessageBuildUtil {
 				.build();
 	}
 
-	public static MessageEnvelope Build_Worker_QueryFinished(int superstepNo, int srcMachineId, BaseQueryGlobalValues localQuery) {
+	public static MessageEnvelope Build_Worker_QueryFinished(int superstepNo, int srcMachineId, BaseQuery localQuery) {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
 						.setQueryValues(ByteString.copyFrom(localQuery.getBytes()))

@@ -3,7 +3,7 @@ package mthesis.concurrent_graph.apps.cc;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import mthesis.concurrent_graph.BaseQueryGlobalValues;
+import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
@@ -18,22 +18,22 @@ import mthesis.concurrent_graph.writable.NullWritable;
  * @author Jonas Grunert
  *
  */
-public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> {
+public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQuery> {
 
 	public SCCDetectVertex(int id,
-			VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> messageSender) {
+			VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQuery> messageSender) {
 		super(id, messageSender);
 	}
 
 	public SCCDetectVertex(ByteBuffer bufferToRead,
-			VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> worker,
-			JobConfiguration<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> jobConfig) {
+			VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQuery> worker,
+			JobConfiguration<IntWritable, NullWritable, IntWritable, BaseQuery> jobConfig) {
 		super(bufferToRead, worker, jobConfig);
 	}
 
 	@Override
 	protected void compute(int superstepNo, List<IntWritable> messages,
-			WorkerQuery<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> query) {
+			WorkerQuery<IntWritable, NullWritable, IntWritable, BaseQuery> query) {
 		if (superstepNo == 0) {
 			IntWritable value = new IntWritable(ID);
 			setValue(value, query.QueryId);
@@ -61,18 +61,18 @@ public class SCCDetectVertex extends AbstractVertex<IntWritable, NullWritable, I
 	}
 
 
-	public static class Factory extends VertexFactory<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> {
+	public static class Factory extends VertexFactory<IntWritable, NullWritable, IntWritable, BaseQuery> {
 
 		@Override
-		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> newInstance(int id,
-				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> messageSender) {
+		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQuery> newInstance(int id,
+				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQuery> messageSender) {
 			return new SCCDetectVertex(id, messageSender);
 		}
 
 		@Override
-		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> newInstance(ByteBuffer bufferToRead,
-				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> worker,
-				JobConfiguration<IntWritable, NullWritable, IntWritable, BaseQueryGlobalValues> jobConfig) {
+		public AbstractVertex<IntWritable, NullWritable, IntWritable, BaseQuery> newInstance(ByteBuffer bufferToRead,
+				VertexWorkerInterface<IntWritable, NullWritable, IntWritable, BaseQuery> worker,
+				JobConfiguration<IntWritable, NullWritable, IntWritable, BaseQuery> jobConfig) {
 			return new SCCDetectVertex(bufferToRead, worker, jobConfig);
 		}
 	}
