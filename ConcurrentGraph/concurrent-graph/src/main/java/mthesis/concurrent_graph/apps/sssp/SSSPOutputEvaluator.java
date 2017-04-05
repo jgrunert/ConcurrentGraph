@@ -9,11 +9,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
 import mthesis.concurrent_graph.util.Pair;
 
 public class SSSPOutputEvaluator extends MasterOutputEvaluator<SSSPQueryValues> {
+
+	protected static final Logger logger = LoggerFactory.getLogger(SSSPOutputEvaluator.class);
 
 	public SSSPOutputEvaluator() {
 		super();
@@ -21,6 +26,10 @@ public class SSSPOutputEvaluator extends MasterOutputEvaluator<SSSPQueryValues> 
 
 	@Override
 	public void evaluateOutput(String outputDir, SSSPQueryValues query) {
+
+		logger.debug("Start evaluateOutput for query " + query.QueryId);
+		long startTime = System.currentTimeMillis();
+
 		final File outFolder = new File(outputDir);
 		final File[] outFiles = outFolder.listFiles();
 		final Map<Integer, Pair<Integer, Double>> vertices = new HashMap<>();
@@ -94,5 +103,7 @@ public class SSSPOutputEvaluator extends MasterOutputEvaluator<SSSPQueryValues> 
 				return;
 			}
 		}
+
+		logger.info("Finished evaluateOutput for query " + query.QueryId + " after " + (System.currentTimeMillis() - startTime) + "ms");
 	}
 }
