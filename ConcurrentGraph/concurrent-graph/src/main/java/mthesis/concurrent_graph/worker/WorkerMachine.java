@@ -291,7 +291,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					int queryId = activeQuery.Query.QueryId;
 					int superstepNo = activeQuery.getStartedSuperstepNo();
-					boolean allVerticesActivate = activeQuery.Query.onWorkerSuperstepStart(superstepNo);
+					boolean allVerticesActivate = activeQuery.QueryLocal.onWorkerSuperstepStart(superstepNo);
 
 					// Next superstep. Compute and Messaging (done by vertices)
 					logger.trace("Worker start query " + queryId + " superstep compute " + superstepNo);

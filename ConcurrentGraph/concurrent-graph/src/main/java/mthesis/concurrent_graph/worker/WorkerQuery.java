@@ -14,9 +14,9 @@ import mthesis.concurrent_graph.writable.BaseWritable;
 public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery> {
 
 	public final int QueryId;
-	// Global query, values from master, aggregated from local queries from last frame
+	/** Global query, values from master, aggregated from local queries from last frame */
 	public Q Query;
-	// Local query values, are sent to the master after superstep and then aggregated
+	/** Local query values, are sent to the master after superstep and then aggregated */
 	public Q QueryLocal;
 	//private final BaseQueryGlobalValuesFactory<Q> globalValueFactory;
 

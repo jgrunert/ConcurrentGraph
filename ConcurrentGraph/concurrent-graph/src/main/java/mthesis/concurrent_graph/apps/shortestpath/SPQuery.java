@@ -17,7 +17,8 @@ public class SPQuery extends BaseQuery {
 	public int To;
 	// Maximum distance. Initially set to infinite, set to target dist as soon as target discovered
 	public double MaxDist;
-	public boolean ReconstructionPhase;
+	public boolean ReconstructionPhaseActive;
+	public boolean InitializedReconstructionPhase;
 
 
 	/**
@@ -28,16 +29,18 @@ public class SPQuery extends BaseQuery {
 		From = from;
 		To = to;
 		MaxDist = Double.POSITIVE_INFINITY;
-		ReconstructionPhase = false;
+		ReconstructionPhaseActive = false;
+		InitializedReconstructionPhase = false;
 	}
 
 	private SPQuery(int queryId, int activeVertices, int vertexCount, QueryStats stats,
-			int from, int to, double maxDist, boolean targetFound) {
+			int from, int to, double maxDist, boolean startedReconstructionPhase, boolean initializedReconstructionPhase) {
 		super(queryId, activeVertices, vertexCount, stats);
 		From = from;
 		To = to;
 		MaxDist = maxDist;
-		ReconstructionPhase = targetFound;
+		ReconstructionPhaseActive = startedReconstructionPhase;
+		InitializedReconstructionPhase = initializedReconstructionPhase;
 	}
 
 
@@ -47,10 +50,10 @@ public class SPQuery extends BaseQuery {
 	 */
 	@Override
 	public boolean onMasterAllVerticesFinished() {
-		if (!ReconstructionPhase) {
+		if (!ReconstructionPhaseActive) {
 			// Start reconstruction phase
 			logger.info(QueryId + " start reconstruction phase");
-			ReconstructionPhase = true;
+			ReconstructionPhaseActive = true;
 			return false;
 		}
 		// Reconstruction finished
@@ -64,6 +67,11 @@ public class SPQuery extends BaseQuery {
 	 */
 	@Override
 	public boolean onWorkerSuperstepStart(int superstepNo) {
+		//		if (ReconstructionPhaseActive && !InitializedReconstructionPhase) {
+		//			logger.info(QueryId + " worker start initialize reconstruction phase");
+		//			InitializedReconstructionPhase = true;
+		//			return true;
+		//		}
 		return superstepNo == 0;
 	}
 
@@ -74,17 +82,19 @@ public class SPQuery extends BaseQuery {
 		buffer.putInt(From);
 		buffer.putInt(To);
 		buffer.putDouble(MaxDist);
-		buffer.put(ReconstructionPhase ? (byte) 0 : (byte) 1);
+		buffer.put(ReconstructionPhaseActive ? (byte) 0 : (byte) 1);
+		buffer.put(InitializedReconstructionPhase ? (byte) 0 : (byte) 1);
 	}
 
 	@Override
 	public String getString() {
-		return super.getString() + ":" + From + ":" + To + ":" + MaxDist + ":" + ReconstructionPhase;
+		return super.getString() + ":" + From + ":" + To + ":" + MaxDist + ":" + ReconstructionPhaseActive + ":"
+				+ InitializedReconstructionPhase;
 	}
 
 	@Override
 	public int getBytesLength() {
-		return super.getBytesLength() + 2 * 4 + 8 + 1;
+		return super.getBytesLength() + 2 * 4 + 1 * 8 + 2 * 1;
 	}
 
 	@Override
@@ -100,7 +110,8 @@ public class SPQuery extends BaseQuery {
 	public void combine(BaseQuery v) {
 		SPQuery other = (SPQuery) v;
 		MaxDist = Math.min(MaxDist, other.MaxDist);
-		ReconstructionPhase |= (other).ReconstructionPhase;
+		ReconstructionPhaseActive |= (other).ReconstructionPhaseActive;
+		InitializedReconstructionPhase |= (other).InitializedReconstructionPhase;
 		super.combine(v);
 	}
 
@@ -126,7 +137,7 @@ public class SPQuery extends BaseQuery {
 		@Override
 		public SPQuery createFromBytes(ByteBuffer bytes) {
 			return new SPQuery(bytes.getInt(), bytes.getInt(), bytes.getInt(), new QueryStats(bytes),
-					bytes.getInt(), bytes.getInt(), bytes.getDouble(), bytes.get() == 0);
+					bytes.getInt(), bytes.getInt(), bytes.getDouble(), bytes.get() == 0, bytes.get() == 0);
 		}
 	}
 }

@@ -38,6 +38,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 	@Override
 	protected void compute(int superstepNo, List<SPMessageWritable> messages,
 			WorkerQuery<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> query) {
+		// Revisit testing code
 		//		int vis = MiscUtil.defaultInt(visits.get(query.QueryId));
 		//		visits.put(query.QueryId, vis + 1);
 		//		if (vis >= 1) {
@@ -47,7 +48,6 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		//			if (reVisits % 100000 == 1 || firstVisits % 100000 == 1)
 		//				System.out.println(reVisits + "/" + firstVisits + " " + vis + " " + maxVisits);
 		//		}
-
 		if (superstepNo == 0) {
 			if (ID != query.Query.From) {
 				voteVertexHalt(query.QueryId);
@@ -64,6 +64,13 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 				voteVertexHalt(query.QueryId);
 				return;
 			}
+		}
+		if (query.Query.ReconstructionPhaseActive && !query.Query.InitializedReconstructionPhase) {
+			if (ID == query.Query.To) {
+				logger.info(query.QueryId + ":" + superstepNo + " target " + ID + " start reconstructing");
+			}
+			voteVertexHalt(query.QueryId);
+			return;
 		}
 
 		SPVertexWritable mutableValue = getValue(query.QueryId);
@@ -118,8 +125,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		if (ID == query.Query.To) {
 			// Target vertex found.  Now start limiting max dist to target dist.
 			if (query.QueryLocal.MaxDist == Double.POSITIVE_INFINITY)
-				logger.info(query.QueryId + ":" + superstepNo + " target found with dist " + minDist);
-			System.out.println("targ ss " + superstepNo);
+				logger.info(query.QueryId + ":" + superstepNo + " target " + ID + " found with dist " + minDist);
 			query.QueryLocal.MaxDist = minDist;
 		}
 		//		else {

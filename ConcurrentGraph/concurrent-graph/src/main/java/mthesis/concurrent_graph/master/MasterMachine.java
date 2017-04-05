@@ -348,7 +348,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 					boolean queryFinished;
 					if (msgActiveQuery.ActiveWorkers == 0 && controlMsg.getSuperstepNo() >= 0)
-						queryFinished = msgActiveQuery.BaseQuery.onMasterAllVerticesFinished();
+						queryFinished = msgActiveQuery.QueryStepAggregator.onMasterAllVerticesFinished();
 					else
 						queryFinished = false;
 
