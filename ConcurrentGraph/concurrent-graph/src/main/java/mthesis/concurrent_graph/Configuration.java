@@ -124,6 +124,11 @@ public class Configuration {
 		return Integer.parseInt(Properties.getProperty(propName));
 	}
 
+	public static int getPropertyIntDefault(String propName, int defaultValue) {
+		if (!Properties.containsKey(propName)) return defaultValue;
+		return Integer.parseInt(Properties.getProperty(propName));
+	}
+
 	public static long getPropertyLong(String propName) {
 		return Long.parseLong(Properties.getProperty(propName));
 	}
