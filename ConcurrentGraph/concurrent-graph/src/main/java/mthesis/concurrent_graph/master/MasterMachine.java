@@ -281,7 +281,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
 				for (WorkerStatSample sample : samples) {
 					workerStats.get(controlMsg.getSrcMachine())
-							.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
+					.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
 				}
 			}
 
@@ -417,6 +417,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	@Override
 	public void stop() {
+		logger.info("Stopping master after " + (System.currentTimeMillis() - masterStartTimeMs) + "ms");
+
 		signalWorkersShutdown();
 		super.stop();
 		saveWorkerStats();
@@ -463,10 +465,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -630,7 +632,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private void plotStats() {
 
 		// Plotting
-		if (Configuration.getPropertyBool("OutputPlots")) {
+		if (Configuration.getPropertyBoolDefault("PlotWorkerStats", false)
+				|| Configuration.getPropertyBoolDefault("PlotQueryStats", false)) {
 			try {
 				JFreeChartPlotter.plotStats(outputDir);
 			}

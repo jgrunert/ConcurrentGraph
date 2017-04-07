@@ -27,6 +27,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.util.FileUtil;
 
 public class JFreeChartPlotter {
@@ -78,79 +79,83 @@ public class JFreeChartPlotter {
 
 
 		// Plot worker stats
-		Map<Integer, CsvDataFile> workerStatsCsvs = new HashMap<>();
-		String[] workerStatsCaptions = null;
-		for (Integer workerId : workers) {
-			CsvDataFile csv = new CsvDataFile(statsFolder + File.separator + "worker" + workerId + "_all.csv");
-			workerStatsCsvs.put(workerId, csv);
-			workerStatsCaptions = csv.Captions;
-		}
-
-		if (workerStatsCaptions != null) {
-			for (int iStat = 1; iStat < workerStatsCaptions.length; iStat++) {
-				plotWorkerStats(statsFolder, "WorkerStats_" + workerStatsCaptions[iStat], workerStatsCaptions[iStat], workerStatsCsvs,
-						iStat, 1);
+		if (Configuration.getPropertyBoolDefault("PlotWorkerStats", false)) {
+			Map<Integer, CsvDataFile> workerStatsCsvs = new HashMap<>();
+			String[] workerStatsCaptions = null;
+			for (Integer workerId : workers) {
+				CsvDataFile csv = new CsvDataFile(statsFolder + File.separator + "worker" + workerId + "_all.csv");
+				workerStatsCsvs.put(workerId, csv);
+				workerStatsCaptions = csv.Captions;
 			}
-		}
 
-		for (Integer workerId : workers) {
-			// Plot query times for all workers accumulated
-			CsvDataFile timesCsv = new CsvDataFile(statsFolder + File.separator + "worker" + workerId + "_times_ms.csv");
-			List<ColumnToPlot> timeColumns = new ArrayList<>();
-			for (int i = 0; i < timesCsv.Captions.length; i++) {
-				timeColumns.add(new ColumnToPlot(null, timesCsv, i, 1));
+			if (workerStatsCaptions != null) {
+				for (int iStat = 1; iStat < workerStatsCaptions.length; iStat++) {
+					plotWorkerStats(statsFolder, "WorkerStats_" + workerStatsCaptions[iStat], workerStatsCaptions[iStat], workerStatsCsvs,
+							iStat, 1);
+				}
 			}
-			plotCsvColumns(statsFolder, "WorkerTimes_" + workerId, "Sample", "Time (ms)", 1, timeColumns);
-		}
 
-		logger.info("Finished plotting worker stats");
+			for (Integer workerId : workers) {
+				// Plot query times for all workers accumulated
+				CsvDataFile timesCsv = new CsvDataFile(statsFolder + File.separator + "worker" + workerId + "_times_ms.csv");
+				List<ColumnToPlot> timeColumns = new ArrayList<>();
+				for (int i = 0; i < timesCsv.Captions.length; i++) {
+					timeColumns.add(new ColumnToPlot(null, timesCsv, i, 1));
+				}
+				plotCsvColumns(statsFolder, "WorkerTimes_" + workerId, "Sample", "Time (ms)", 1, timeColumns);
+			}
+
+			logger.info("Finished plotting worker stats");
+		}
 
 
 		// Plot single queries
-		for (Integer queryId : queries) {
-			int queryHash = queriesHashes.get(queryId);
-			String queryName = queryId + "_" + queryHash;
+		if (Configuration.getPropertyBoolDefault("PlotQueryStats", false)) {
+			for (Integer queryId : queries) {
+				int queryHash = queriesHashes.get(queryId);
+				String queryName = queryId + "_" + queryHash;
 
-			// Plot query times for all workers accumulated
-			CsvDataFile timesCsv = new CsvDataFile(statsFolder + File.separator + "query" + queryId + "_times_ms.csv");
-			plotCsvColumns(statsFolder, "Query_AllStepTimes_" + queryName, "Superstep", "Time (ms)", 1,
-					new ColumnToPlot[] {
-							new ColumnToPlot(null, timesCsv, 0, 1),
-							new ColumnToPlot(null, timesCsv, 1, 1)
-			});
-			List<ColumnToPlot> timeColumns = new ArrayList<>();
-			for (int i = 2; i < timesCsv.Captions.length; i++) {
-				timeColumns.add(new ColumnToPlot(null, timesCsv, i, 1));
+				// Plot query times for all workers accumulated
+				CsvDataFile timesCsv = new CsvDataFile(statsFolder + File.separator + "query" + queryId + "_times_ms.csv");
+				plotCsvColumns(statsFolder, "Query_AllStepTimes_" + queryName, "Superstep", "Time (ms)", 1,
+						new ColumnToPlot[] {
+								new ColumnToPlot(null, timesCsv, 0, 1),
+								new ColumnToPlot(null, timesCsv, 1, 1)
+				});
+				List<ColumnToPlot> timeColumns = new ArrayList<>();
+				for (int i = 2; i < timesCsv.Captions.length; i++) {
+					timeColumns.add(new ColumnToPlot(null, timesCsv, i, 1));
+				}
+				plotCsvColumns(statsFolder, "Query_AllWorkerTimes_" + queryName, "Superstep", "Time (ms)", 1, timeColumns);
+
+
+				// Plot stats per worker
+				Map<Integer, CsvDataFile> workerCsvs = new HashMap<>();
+				String[] workerCsvCaptions = null;
+				for (Integer worker : workers) {
+					CsvDataFile csv = new CsvDataFile(statsFolder + File.separator + "query" + queryId + "_" + "worker" + worker + "_all.csv");
+					workerCsvs.put(worker, csv);
+					workerCsvCaptions = csv.Captions;
+				}
+
+				//			plotWorkerStats(statsFolder, "ActiveVertices_" + queryName, "ActiveVertices", workerCsvs, 0, 1);
+				//			plotWorkerStats(statsFolder, "WorkerTimes_" + queryName, "WorkerTimes", workerCsvs, 1, 1);
+				for (int iCol = 0; iCol < workerCsvCaptions.length; iCol++) {
+					plotWorkerQueryStats(statsFolder, "QueryWorker_" + workerCsvCaptions[iCol] + "_" + queryName, workerCsvCaptions[iCol],
+							workerCsvs,
+							iCol, 1);
+				}
 			}
-			plotCsvColumns(statsFolder, "Query_AllWorkerTimes_" + queryName, "Superstep", "Time (ms)", 1, timeColumns);
+			logger.info("Finished plotting single queries");
 
 
-			// Plot stats per worker
-			Map<Integer, CsvDataFile> workerCsvs = new HashMap<>();
-			String[] workerCsvCaptions = null;
-			for (Integer worker : workers) {
-				CsvDataFile csv = new CsvDataFile(statsFolder + File.separator + "query" + queryId + "_" + "worker" + worker + "_all.csv");
-				workerCsvs.put(worker, csv);
-				workerCsvCaptions = csv.Captions;
+			// Plot query compares
+			plotQueryComparisons(statsFolder, "all", queries, queriesStats);
+			for (Entry<Integer, List<Integer>> hashQueries : queriesByHash.entrySet()) {
+				plotQueryComparisons(statsFolder, "" + hashQueries.getKey(), hashQueries.getValue(), queriesStats);
 			}
-
-			//			plotWorkerStats(statsFolder, "ActiveVertices_" + queryName, "ActiveVertices", workerCsvs, 0, 1);
-			//			plotWorkerStats(statsFolder, "WorkerTimes_" + queryName, "WorkerTimes", workerCsvs, 1, 1);
-			for (int iCol = 0; iCol < workerCsvCaptions.length; iCol++) {
-				plotWorkerQueryStats(statsFolder, "QueryWorker_" + workerCsvCaptions[iCol] + "_" + queryName, workerCsvCaptions[iCol],
-						workerCsvs,
-						iCol, 1);
-			}
+			logger.info("Finished plotting query comparisons");
 		}
-		logger.info("Finished plotting single queries");
-
-
-		// Plot query compares
-		plotQueryComparisons(statsFolder, "all", queries, queriesStats);
-		for (Entry<Integer, List<Integer>> hashQueries : queriesByHash.entrySet()) {
-			plotQueryComparisons(statsFolder, "" + hashQueries.getKey(), hashQueries.getValue(), queriesStats);
-		}
-		logger.info("Finished plotting query comparisons");
 	}
 
 
