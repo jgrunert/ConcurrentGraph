@@ -113,7 +113,9 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 			return;
 		}
 
-		if (minDist > superstepNo * 6.0) { // TODO Dynamic limit step?
+		// TODO Dynamic limit step?
+		// TODO 6 would be faster
+		if (minDist > superstepNo * 10.0) {
 			// Come back later
 			if (minDist < mutableValue.Dist) {
 				mutableValue.Dist = minDist;

@@ -434,6 +434,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 
 		workerStats.ActiveVertices = activeVertices;
+		workerStats.WorkerVertices = localVertices.size();
 		workerStatsSamplesToSend.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
 		workerStats = new WorkerStats();
 	}

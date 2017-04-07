@@ -27,6 +27,7 @@ public class WorkerStats {
 	private final byte[] workerStatsBuffer = new byte[WorkerStatsMaxBytes];
 
 	// Direct variables for quick access of frequently changed variables
+	public long WorkerVertices;
 	public long ActiveVertices;
 	public long IdleTime;
 	public long QueryWaitTime;
@@ -66,6 +67,7 @@ public class WorkerStats {
 		bytesString.copyTo(bytes);
 		bytes.position(0);
 
+		WorkerVertices = bytes.getLong();
 		ActiveVertices = bytes.getLong();
 		IdleTime = bytes.getLong();
 		QueryWaitTime = bytes.getLong();
@@ -83,6 +85,7 @@ public class WorkerStats {
 
 
 	public void writeToBuffer(ByteBuffer buffer) {
+		buffer.putLong(WorkerVertices);
 		buffer.putLong(ActiveVertices);
 		buffer.putLong(IdleTime);
 		buffer.putLong(QueryWaitTime);
@@ -101,6 +104,7 @@ public class WorkerStats {
 	public Map<String, Double> getStatsMap() {
 		Map<String, Double> statsMap = new TreeMap<>();
 
+		statsMap.put("WorkerVertices", (double) WorkerVertices);
 		statsMap.put("ActiveVertices", (double) ActiveVertices);
 		statsMap.put("IdleTime", (double) IdleTime);
 		statsMap.put("QueryWaitTime", (double) QueryWaitTime);

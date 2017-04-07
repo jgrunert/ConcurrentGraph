@@ -52,6 +52,7 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 			for (Integer queryId : activeQueries.keySet()) {
 				for (Integer fromWorker : workerIds) {
 					for (Integer toWorker : workerIds) {
+						toWorker = 0; // TODO Test
 						if (fromWorker == toWorker) continue;
 
 						QueryDistribution newDistribution = bestDistribution.clone();
