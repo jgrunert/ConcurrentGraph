@@ -30,12 +30,6 @@ public class Configuration {
 	public static int MESSAGE_TIMEOUT;
 
 
-	/**
-	 * Enables moving of vertices while queries are running, without barrier.
-	 * TODO Broken/NotImplemented
-	 */
-	public static boolean VERTEX_LIVE_MOVE_ENABLED;
-
 	public static boolean VERTEX_BARRIER_MOVE_ENABLED;
 	public static long VERTEX_BARRIER_MOVE_INTERVAL;
 
@@ -85,7 +79,6 @@ public class Configuration {
 			TCP_NODELAY = Boolean.parseBoolean(Properties.getProperty("TCP_NODELAY"));
 			CONNECT_TIMEOUT = Integer.parseInt(Properties.getProperty("CONNECT_TIMEOUT"));
 			MESSAGE_TIMEOUT = Integer.parseInt(Properties.getProperty("MESSAGE_TIMEOUT"));
-			VERTEX_LIVE_MOVE_ENABLED = Boolean.parseBoolean(Properties.getProperty("VERTEX_LIVE_MOVE_ENABLED"));
 			VERTEX_BARRIER_MOVE_ENABLED = Boolean.parseBoolean(Properties.getProperty("VERTEX_BARRIER_MOVE_ENABLED"));
 			VERTEX_BARRIER_MOVE_INTERVAL = Long.parseLong(Properties.getProperty("VERTEX_BARRIER_MOVE_INTERVAL"));
 			VERTEX_MACHINE_DISCOVERY = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY"));
