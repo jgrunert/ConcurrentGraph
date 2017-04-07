@@ -1,6 +1,9 @@
 package mthesis.concurrent_graph.worker;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -59,7 +63,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -99,7 +103,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	// Global barrier coordination/control
 	private boolean globalBarrierRequested = false;// TODO Enum?
 	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
-	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>();
+	private final Set<Integer> globalBarrierStartPrematureSet = new HashSet<>();
+	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>(); // TODO Needed
 	// Global barrier commands to perform while barrier
 	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
 	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
@@ -115,6 +120,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	// Watchdog
 	private long lastWatchdogSignal;
 	private static boolean WatchdogEnabled = true;
+
+	private PrintWriter allVertexStatsFile = null;
+	private PrintWriter actVertexStatsFile = null;
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -338,15 +346,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				// Worker stats
 				if ((System.currentTimeMillis() - workerStatsLastSample) >= Configuration.WORKER_STATS_SAMPLING_INTERVAL) {
-					long activeVertices = 0;
-					for (WorkerQuery<V, E, M, Q> query : activeQueries.values())
-						activeVertices += query.ActiveVerticesThis.size();
-
-					workerStats.ActiveVertices = activeVertices;
-					workerStatsSamplesToSend
-							.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
+					sampleWorkerStats();
 					workerStatsLastSample = System.currentTimeMillis();
-					workerStats = new WorkerStats();
 				}
 			}
 
@@ -370,6 +371,73 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 			stop();
 		}
+	}
+
+	private void sampleWorkerStats() {
+		long activeVertices = 0;
+		for (WorkerQuery<V, E, M, Q> query : activeQueries.values())
+			activeVertices += query.ActiveVerticesThis.size();
+
+		// Output a sample of vertices on this machine
+		int allVertSampleRate = Configuration.getPropertyIntDefault("WorkerStatsAllVerticesSampleRate", 0);
+		if (allVertSampleRate > 0) {
+			if (allVertexStatsFile == null) {
+				try {
+					allVertexStatsFile = new PrintWriter(new FileWriter(outputDir + File.separator + "stats"
+							+ File.separator + "worker" + ownId + "_allVertexStats.txt"));
+				}
+				catch (IOException e) {
+					logger.error("Failed to create vertexStats file", e);
+				}
+			}
+
+			if (allVertexStatsFile != null) {
+				Random random = new Random(0);
+				StringBuilder sb = new StringBuilder();
+				for (int v : localVertices.keySet()) {
+					if (random.nextInt(allVertSampleRate) != 0) continue;
+					sb.append(v);
+					sb.append(';');
+				}
+				allVertexStatsFile.println(sb.toString());
+			}
+		}
+
+		int actVertSampleRate = Configuration.getPropertyIntDefault("WorkerStatsActiveVerticesSampleRate", 0);
+		if (actVertSampleRate > 0) {
+			if (actVertexStatsFile == null) {
+				try {
+					actVertexStatsFile = new PrintWriter(new FileWriter(outputDir + File.separator + "stats"
+							+ File.separator + "worker" + ownId + "_actVertexStats.txt"));
+				}
+				catch (IOException e) {
+					logger.error("Failed to create vertexStats file", e);
+				}
+			}
+
+			if (actVertexStatsFile != null) {
+				Random random = new Random(0);
+				StringBuilder sb = new StringBuilder();
+				Set<Integer> activeVerts = new HashSet<>();
+				for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
+					for (AbstractVertex<V, E, M, Q> v : query.ActiveVerticesThis.values()) {
+						activeVerts.add(v.ID);
+					}
+				}
+
+				for (int v : activeVerts) {
+					if (random.nextInt(actVertSampleRate) != 0) continue;
+					sb.append(v);
+					sb.append(';');
+				}
+				actVertexStatsFile.println(sb.toString());
+			}
+		}
+
+		workerStats.ActiveVertices = activeVertices;
+		workerStats.WorkerVertices = localVertices.size();
+		workerStatsSamplesToSend.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
+		workerStats = new WorkerStats();
 	}
 
 	/**
@@ -565,27 +633,28 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						lastWatchdogSignal = System.currentTimeMillis();
 						prepareNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: {
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
+						globalBarrierStartWaitSet.removeAll(globalBarrierStartPrematureSet);
 						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
 						globalBarrierSendVerts = message.getStartBarrier().getSendQueryVerticesList();
 						List<ReceiveQueryVerticesMessage> recvVerts = message.getStartBarrier().getReceiveQueryVerticesList();
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryVerticesMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
-									.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
+							.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
 						}
 						globalBarrierRequested = true;
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -606,29 +675,29 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-						return true;
+					return true;
 
 					case Worker_Barrier_Started: {
 						//						System.out.println("Worker_Barrier_Started");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
-						else logger.warn("Worker_Barrier_Started message from worker not waiting for: " + message);
+						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Finished: {
 						System.out.println(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker))
 							globalBarrierFinishWaitSet.remove(srcWorker);
-						else logger.warn("Worker_Barrier_Started message from worker not waiting for: " + message);
+						else logger.warn("Worker_Barrier_Finished message from worker not waiting for: " + srcWorker);
 					}
-						return true;
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -640,6 +709,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			logger.error("exception at incomingControlMessage", e);
 		}
 		return false;
+	}
+
+	@Override
+	public void stop() {
+		if (allVertexStatsFile != null) allVertexStatsFile.close();
+		if (actVertexStatsFile != null) actVertexStatsFile.close();
+
+		super.stop();
 	}
 
 	private void handleQuerySuperstepBarrierMsg(ControlMessage message, WorkerQuery<V, E, M, Q> activeQuery) {
@@ -657,7 +734,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		else {
 			// Completely wrong superstep
 			logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-					+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
+			+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
 		}
 	}
 
@@ -712,7 +789,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			if (activeQuery.VertexMovesWaitingFor.isEmpty()
 					|| activeQuery.VertexMovesReceived.size() == activeQuery.VertexMovesWaitingFor.size()) {
 				assert activeQuery.VertexMovesWaitingFor.isEmpty()
-						|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
+				|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
 				startNextSuperstep(activeQuery);
 			}
 		}
@@ -943,7 +1020,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		else if (message.superstepNo != (barrierSuperstepNo + 1)) {
 			logger.error(
 					"VertexMessage from wrong barrier superstepNo: " + message.superstepNo + " should be " + (barrierSuperstepNo + 1)
-							+ " from " + message.srcMachine);
+					+ " from " + message.srcMachine);
 		}
 		else {
 			for (final Pair<Integer, M> msg : message.vertexMessages) {

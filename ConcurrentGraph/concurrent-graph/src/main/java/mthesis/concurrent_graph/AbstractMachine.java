@@ -26,6 +26,11 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 
 	protected final MessageSenderAndReceiver<V, E, M, Q> messaging;
 	private Thread runThread;
+	private boolean stopRequested = false;
+
+	protected boolean getStopRequested() {
+		return stopRequested;
+	}
 
 
 
@@ -48,6 +53,8 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 			return;
 		}
 
+		stopRequested = false;
+
 		runThread = new Thread(new Runnable() {
 
 			@Override
@@ -56,7 +63,7 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 					AbstractMachine.this.run();
 				}
 				catch (Throwable e) {
-					logger.error("Exception at run", e);
+					if (!stopRequested) logger.error("Exception at run", e);
 				}
 				finally {
 					logger.debug("Finished run");
@@ -71,9 +78,11 @@ public abstract class AbstractMachine<V extends BaseWritable, E extends BaseWrit
 
 	public void stop() {
 		logger.info("Stopping machine");
+		stopRequested = true;
 		messaging.stop();
-		if (runThread != null)
+		if (runThread != null) {
 			runThread.interrupt();
+		}
 		logger.info("Machine stopped");
 	}
 

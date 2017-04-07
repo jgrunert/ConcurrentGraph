@@ -7,7 +7,7 @@ import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.master.MasterQuery;
 
-public class GreedyCostBasedVertexMoveDecider<Q extends BaseQuery> extends AbstractVertexMoveDecider<Q> {
+public class GreedyCostImbalanceBasedVertexMoveDecider<Q extends BaseQuery> extends AbstractVertexMoveDecider<Q> {
 
 	private long vertexBarrierMoveLastTime = System.currentTimeMillis();
 
@@ -23,9 +23,10 @@ public class GreedyCostBasedVertexMoveDecider<Q extends BaseQuery> extends Abstr
 		vertexBarrierMoveLastTime = System.currentTimeMillis();
 
 
-		QueryDistribution originalDistribution = new QueryDistribution(workerIds, actQueryWorkerActiveVerts);
+		QueryDistribution originalDistribution = new QueryDistribution(workerIds, actQueryWorkerActiveVerts,
+				actQueryWorkerIntersects);
 		QueryDistribution bestDistribution = originalDistribution;
-		System.out.println(bestDistribution.getCosts());
+		System.out.println(bestDistribution.getCostsWithImbalance());
 
 		System.out.println("/////////////////////////////////");
 		bestDistribution.printMoveDistribution();
@@ -55,8 +56,8 @@ public class GreedyCostBasedVertexMoveDecider<Q extends BaseQuery> extends Abstr
 						if (fromWorker == toWorker) continue;
 
 						QueryDistribution newDistribution = bestDistribution.clone();
-						boolean moveSuccess = newDistribution.moveVertices(queryId, fromWorker, toWorker);
-						if (moveSuccess && newDistribution.getCosts() < bestDistribution.getCosts()) {
+						boolean moveSuccess = newDistribution.moveVertices(queryId, fromWorker, toWorker, true) > 0;
+						if (moveSuccess && newDistribution.getCostsWithImbalance() < bestDistribution.getCostsWithImbalance()) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							//							System.out.println("## i " + i + ": " + newDistribution.getCosts());
@@ -76,7 +77,7 @@ public class GreedyCostBasedVertexMoveDecider<Q extends BaseQuery> extends Abstr
 
 		System.out.println("+++++++++++++");
 		bestDistribution.printMoveDistribution();
-		System.out.println(bestDistribution.getCosts());
+		System.out.println(bestDistribution.getCostsWithImbalance());
 		bestDistribution.printMoveDecissions();
 
 		return bestDistribution.toMoveDecision(workerIds);

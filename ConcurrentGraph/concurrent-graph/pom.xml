@@ -84,7 +84,7 @@
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
-										<Main-Class>mthesis.concurrent_graph.apps.sssp.SSSPSingleMasterMain</Main-Class>
+										<Main-Class>mthesis.concurrent_graph.apps.shortestpath.SPSingleMasterMain</Main-Class>
 										<addDefaultImplementationEntries>
 											true
 										</addDefaultImplementationEntries>
@@ -106,7 +106,7 @@
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
-										<Main-Class>mthesis.concurrent_graph.apps.sssp.SSSPSingleWorkerMain</Main-Class>
+										<Main-Class>mthesis.concurrent_graph.apps.shortestpath.SPSingleWorkerMain</Main-Class>
 										<addDefaultImplementationEntries>
 											true
 										</addDefaultImplementationEntries>

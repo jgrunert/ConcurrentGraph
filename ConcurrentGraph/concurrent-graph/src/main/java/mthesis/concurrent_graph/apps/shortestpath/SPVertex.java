@@ -74,16 +74,41 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 			if (!query.Query.InitializedReconstructionPhase) {
 				// Start reconstruction at target vertex
 				if (ID == query.Query.To) {
-					logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " start reconstructing");
-					mutableValue.OnShortestPath = true;
-					sendMessageToVertex(getPooledMessageValue().setup(ID, 0), mutableValue.Pre, query);
+					if (mutableValue.Dist != Double.POSITIVE_INFINITY) {
+						logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " start reconstructing");
+						mutableValue.OnShortestPath = true;
+						sendMessageToVertex(getPooledMessageValue().setup(ID, mutableValue.Dist), mutableValue.Pre,
+								query);
+					}
+					else {
+						logger.error(query.QueryId + " Unable to reconstruct from target " + ID + ": No pre node");
+					}
 				}
 			}
 			else {
 				// Send message to pre vertex until start vertex reached
 				mutableValue.OnShortestPath = true;
 				if (ID != query.Query.From) {
-					sendMessageToVertex(getPooledMessageValue().setup(ID, 0), mutableValue.Pre, query);
+					if (mutableValue.Dist != Double.POSITIVE_INFINITY) {
+						if (messages.size() == 1) {
+							if (messages.get(0).Dist >= mutableValue.Dist) {
+								sendMessageToVertex(getPooledMessageValue().setup(ID, mutableValue.Dist), mutableValue.Pre,
+										query);
+							}
+							else {
+								logger.error(query.QueryId + " "
+										+ "Reconstruct message distance smaller than own distance at node " + ID + ": "
+										+ messages.get(0).Dist + "<" + mutableValue.Dist);
+							}
+						}
+						else {
+							logger.error(query.QueryId + " " + "Incorrect reconstruct message count at node " + ID
+									+ ": " + messages.size());
+						}
+					}
+					else {
+						logger.error(query.QueryId + " " + "Unable to reconstruct from node " + ID + ": No pre node");
+					}
 				}
 			}
 			voteVertexHalt(query.QueryId);
@@ -113,7 +138,9 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 			return;
 		}
 
-		if (minDist > superstepNo * 6.0) { // TODO Dynamic limit step?
+		// TODO Dynamic limit step?
+		// TODO 6 would be faster
+		if (minDist > superstepNo * 10.0) {
 			// Come back later
 			if (minDist < mutableValue.Dist) {
 				mutableValue.Dist = minDist;

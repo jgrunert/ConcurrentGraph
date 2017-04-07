@@ -15,6 +15,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import org.jfree.util.Log;
 
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQuery;
@@ -32,7 +36,7 @@ import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.master.vertexmove.AbstractVertexMoveDecider;
-import mthesis.concurrent_graph.master.vertexmove.GreedyCostBasedVertexMoveDecider;
+import mthesis.concurrent_graph.master.vertexmove.GreedyNewVertexMoveDecider;
 import mthesis.concurrent_graph.master.vertexmove.VertexMoveDecision;
 import mthesis.concurrent_graph.plotting.JFreeChartPlotter;
 import mthesis.concurrent_graph.util.FileUtil;
@@ -55,6 +59,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final List<Integer> workerIds;
 	private final Set<Integer> workersToInitialize;
 	private Map<Integer, MasterQuery<Q>> activeQueries = new HashMap<>();
+	private int queuedQueries = 0;
 
 	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
 	private Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts = new HashMap<>();
@@ -81,7 +86,9 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final MasterOutputEvaluator<Q> outputCombiner;
 	private final BaseQueryGlobalValuesFactory<Q> queryValueFactory;
 
-	private final AbstractVertexMoveDecider<Q> vertexMoveDecider = new GreedyCostBasedVertexMoveDecider<>();
+	private final BlockingQueue<ChannelMessage> messageQueue = new LinkedBlockingQueue<>();
+
+	private final AbstractVertexMoveDecider<Q> vertexMoveDecider = new GreedyNewVertexMoveDecider<>();
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
@@ -120,10 +127,26 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	}
 
 
+	@Override
+	public void run() {
+		while (!getStopRequested() && !Thread.interrupted()) {
+			try {
+				ChannelMessage message = messageQueue.take();
+				handleMessage(message);
+			}
+			catch (InterruptedException e) {
+				if (!getStopRequested())
+					logger.error("interrupt", e);
+			}
+		}
+	}
+
+
+
 	/**
 	 * Starts a new query on this master and its workers
 	 */
-	public void startQuery(Q query) {
+	public synchronized void startQuery(Q query) {
 		// Get query ready
 		if (activeQueries.containsKey(query.QueryId))
 			throw new RuntimeException("There is already an active query with this ID: " + query.QueryId);
@@ -147,44 +170,41 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			queryStatsStepTimes.put(query.QueryId, new ArrayList<>());
 		}
 
-		if (activeQueries.size() >= Configuration.MAX_PARALLEL_QUERIES) {
+		if (getActiveQueryCount() >= Configuration.MAX_PARALLEL_QUERIES) {
 			logger.info("Wait for activeQueries<MAX_PARALLEL_QUERIES " + Configuration.MAX_PARALLEL_QUERIES
 					+ " before starting query: " + query.QueryId);
-			while (activeQueries.size() >= Configuration.MAX_PARALLEL_QUERIES) {
+			while (getActiveQueryCount() >= Configuration.MAX_PARALLEL_QUERIES) {
 				try {
 					Thread.sleep(100);
 				}
 				catch (InterruptedException e) {
+					logger.error("interrupt", e);
 					throw new RuntimeException(e);
 				}
 			}
 		}
 
-		synchronized (this) {
-			FileUtil.makeCleanDirectory(outputDir + File.separator + Integer.toString(query.QueryId));
-			query.setVertexCount(vertexCount);
-			MasterQuery<Q> activeQuery = new MasterQuery<>(query, workerIds, queryValueFactory);
-			activeQueries.put(query.QueryId, activeQuery);
-
-			Map<Integer, Integer> queryWorkerAVerts = new HashMap<>();
-			for (Integer worker : workerIds) {
-				queryWorkerAVerts.put(worker, 0);
-			}
-			actQueryWorkerActiveVerts.put(query.QueryId, queryWorkerAVerts);
-			actQueryWorkerIntersects.put(query.QueryId, new HashMap<>());
+		synchronized (activeQueries) {
+			queuedQueries++;
 		}
+		messageQueue.add(new StartQueryMessage<BaseQuery>(query));
 
-		// Start query on workers
-		signalWorkersQueryStart(query);
-		logger.info("Master started query " + query.QueryId);
+	}
+
+	private int getActiveQueryCount() {
+		synchronized (activeQueries) {
+			return activeQueries.size() + queuedQueries;
+		}
 	}
 
 	public boolean isQueryActive(int queryId) {
-		return activeQueries.containsKey(queryId);
+		synchronized (activeQueries) {
+			return activeQueries.containsKey(queryId);
+		}
 	}
 
 	public void waitForQueryFinish(int queryId) {
-		while (activeQueries.containsKey(queryId)) {
+		while (isQueryActive(queryId)) {
 			try {
 				Thread.sleep(100);
 			}
@@ -196,7 +216,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	}
 
 	public void waitForAllQueriesFinish() {
-		while (!activeQueries.isEmpty()) {
+		while (getActiveQueryCount() != 0) {
 			try {
 				Thread.sleep(100);
 			}
@@ -209,8 +229,18 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 
 	@Override
-	public synchronized void onIncomingMessage(ChannelMessage message) {
+	public void onIncomingMessage(ChannelMessage message) {
+		messageQueue.add(message);
+	}
+
+	@SuppressWarnings("unchecked")
+	public void handleMessage(ChannelMessage message) {
 		// TODO No more super.onIncomingControlMessage(message);
+
+		if(message.getTypeCode() == StartQueryMessage.ChannelMessageTypeCode) {
+			handleStartQuery(((StartQueryMessage<Q>) message).Query);
+			return;
+		}
 
 		if (message.getTypeCode() != 1) {
 			logger.error("Master machine can only handle ProtoEnvelopeMessage: " + message);
@@ -281,7 +311,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
 				for (WorkerStatSample sample : samples) {
 					workerStats.get(controlMsg.getSrcMachine())
-							.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
+					.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
 				}
 			}
 
@@ -400,7 +430,9 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					// All workers have query finished
 					logger.info("All workers finished query " + msgActiveQuery.BaseQuery.QueryId);
 					evaluateQueryResult(msgActiveQuery);
-					activeQueries.remove(msgActiveQuery.BaseQuery.QueryId);
+					synchronized (activeQueries) {
+						activeQueries.remove(msgActiveQuery.BaseQuery.QueryId);
+					}
 					actQueryWorkerActiveVerts.remove(msgActiveQuery.BaseQuery.QueryId);
 					long duration = System.nanoTime() - msgActiveQuery.StartTime;
 					queryDurations.put(msgActiveQuery.BaseQuery.QueryId, duration);
@@ -415,8 +447,12 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		}
 	}
 
+
+
 	@Override
 	public void stop() {
+		logger.info("Stopping master after " + (System.currentTimeMillis() - masterStartTimeMs) + "ms");
+
 		signalWorkersShutdown();
 		super.stop();
 		saveWorkerStats();
@@ -463,10 +499,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -630,7 +666,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private void plotStats() {
 
 		// Plotting
-		if (Configuration.getPropertyBool("OutputPlots")) {
+		if (Configuration.getPropertyBoolDefault("PlotWorkerStats", false)
+				|| Configuration.getPropertyBoolDefault("PlotQueryStats", false)) {
 			try {
 				JFreeChartPlotter.plotStats(outputDir);
 			}
@@ -669,13 +706,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	}
 
 
-
-	@Override
-	public void run() {
-		// TODO Remove
-	}
-
-
 	private void evaluateQueryResult(MasterQuery<Q> query) {
 		// Aggregate output
 		try {
@@ -685,6 +715,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			logger.error("writeOutput failed", e);
 		}
 	}
+
 
 
 	private void initializeWorkersAssignPartitions() {
@@ -707,6 +738,27 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					true);
 		}
 		logger.debug("Start input assigning");
+	}
+
+	private void handleStartQuery(Q query) {
+		FileUtil.makeCleanDirectory(outputDir + File.separator + Integer.toString(query.QueryId));
+		query.setVertexCount(vertexCount);
+		MasterQuery<Q> activeQuery = new MasterQuery<>(query, workerIds, queryValueFactory);
+		synchronized (activeQueries) {
+			activeQueries.put(query.QueryId, activeQuery);
+			queuedQueries--;
+		}
+
+		Map<Integer, Integer> queryWorkerAVerts = new HashMap<>();
+		for (Integer worker : workerIds) {
+			queryWorkerAVerts.put(worker, 0);
+		}
+		actQueryWorkerActiveVerts.put(query.QueryId, queryWorkerAVerts);
+		actQueryWorkerIntersects.put(query.QueryId, new HashMap<>());
+
+		// Start query on workers
+		signalWorkersQueryStart(query);
+		logger.info("Master started query " + query.QueryId);
 	}
 
 	private void signalWorkersQueryStart(Q query) {
@@ -735,7 +787,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				actQueryWorkerIntersects);
 
 		if (moveDecission != null) {
-			System.out.println("Decided in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
+			System.out.println("Decided to move in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
+			Log.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
 
 			// Send barrier move messages
 			for (int workerId : workerIds) {
