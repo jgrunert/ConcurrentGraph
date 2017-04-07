@@ -88,7 +88,14 @@ public class QueryDistribution {
 	 *  - TODO Queries not entirely local?
 	 *  - TODO Load imbalance?
 	 */
-	public double getCosts() {
+	public double getCostsNoImbalance() {
+		return moveCostsSoFar + getVerticesSeparatedCosts();
+	}
+
+	/**
+	 * Calculates the costs of this state, sum of mis-distribution, moveCosts so far and imbalance.
+	 */
+	public double getCostsWithImbalance() {
 		return moveCostsSoFar + getVerticesSeparatedCosts() + getLoadImbalanceCosts();
 	}
 
@@ -205,13 +212,13 @@ public class QueryDistribution {
 		for (VertexMoveOperation moveOperation : moveOperationsSoFar) {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
-							.setQueryId(moveOperation.QueryId)
-							.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
-							.build());
+					.setQueryId(moveOperation.QueryId)
+					.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
+					.build());
 			workerVertRecvMsgs.get(moveOperation.ToMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
-							.setQueryId(moveOperation.QueryId)
-							.setReceiveFromMachine(moveOperation.FromMachine).build());
+					.setQueryId(moveOperation.QueryId)
+					.setReceiveFromMachine(moveOperation.FromMachine).build());
 		}
 
 		return new VertexMoveDecision(workerVertSendMsgs, workerVertRecvMsgs);

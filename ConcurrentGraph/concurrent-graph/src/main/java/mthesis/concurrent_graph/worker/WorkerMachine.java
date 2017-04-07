@@ -120,7 +120,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private long lastWatchdogSignal;
 	private static boolean WatchdogEnabled = true;
 
-	private PrintWriter vertexStatsFile = null;
+	private PrintWriter allVertexStatsFile = null;
+	private PrintWriter actVertexStatsFile = null;
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -377,34 +378,58 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			activeVertices += query.ActiveVerticesThis.size();
 
 		// Output a sample of vertices on this machine
-		int vertexSamples = Configuration.getPropertyIntDefault("WorkerStatsVerticesSamples", 0);
-		if (vertexSamples > 0) {
-			if (vertexStatsFile == null) {
+		int allVertSampleRate = Configuration.getPropertyIntDefault("WorkerStatsAllVerticesSampleRate", 0);
+		if (allVertSampleRate > 0) {
+			if (allVertexStatsFile == null) {
 				try {
-					vertexStatsFile = new PrintWriter(new FileWriter(outputDir + File.separator + "stats"
-							+ File.separator + "worker" + ownId + "_vertexStats.txt"));
+					allVertexStatsFile = new PrintWriter(new FileWriter(outputDir + File.separator + "stats"
+							+ File.separator + "worker" + ownId + "_allVertexStats.txt"));
 				}
 				catch (IOException e) {
 					logger.error("Failed to create vertexStats file", e);
 				}
 			}
 
-			if (vertexStatsFile != null) {
-				HashSet<Integer> sampleIndices = new HashSet<>(vertexSamples);
-				int size = localVertices.size();
+			if (allVertexStatsFile != null) {
 				Random random = new Random(0);
-				for (int i = 0; i < vertexSamples; i++) {
-					sampleIndices.add(random.nextInt(size));
-				}
-
-				int i = 0;
 				StringBuilder sb = new StringBuilder();
 				for (int v : localVertices.keySet()) {
-					if (!sampleIndices.contains(i++)) continue;
+					if (random.nextInt(allVertSampleRate) != 0) continue;
 					sb.append(v);
 					sb.append(';');
 				}
-				vertexStatsFile.println(sb.toString());
+				allVertexStatsFile.println(sb.toString());
+			}
+		}
+
+		int actVertSampleRate = Configuration.getPropertyIntDefault("WorkerStatsActiveVerticesSampleRate", 0);
+		if (actVertSampleRate > 0) {
+			if (actVertexStatsFile == null) {
+				try {
+					actVertexStatsFile = new PrintWriter(new FileWriter(outputDir + File.separator + "stats"
+							+ File.separator + "worker" + ownId + "_actVertexStats.txt"));
+				}
+				catch (IOException e) {
+					logger.error("Failed to create vertexStats file", e);
+				}
+			}
+
+			if (actVertexStatsFile != null) {
+				Random random = new Random(0);
+				StringBuilder sb = new StringBuilder();
+				Set<Integer> activeVerts = new HashSet<>();
+				for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
+					for (AbstractVertex<V, E, M, Q> v : query.ActiveVerticesThis.values()) {
+						activeVerts.add(v.ID);
+					}
+				}
+
+				for (int v : activeVerts) {
+					if (random.nextInt(actVertSampleRate) != 0) continue;
+					sb.append(v);
+					sb.append(';');
+				}
+				actVertexStatsFile.println(sb.toString());
 			}
 		}
 
@@ -685,9 +710,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	@Override
 	public void stop() {
-		if (vertexStatsFile != null) {
-			vertexStatsFile.close();
-		}
+		if (allVertexStatsFile != null) allVertexStatsFile.close();
+		if (actVertexStatsFile != null) actVertexStatsFile.close();
+
 		super.stop();
 	}
 
