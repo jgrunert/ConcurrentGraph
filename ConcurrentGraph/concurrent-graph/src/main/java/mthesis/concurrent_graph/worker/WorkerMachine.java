@@ -103,7 +103,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	// Global barrier coordination/control
 	private boolean globalBarrierRequested = false;// TODO Enum?
 	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
-	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>();
+	private final Set<Integer> globalBarrierStartPrematureSet = new HashSet<>();
+	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>(); // TODO Needed
 	// Global barrier commands to perform while barrier
 	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
 	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
@@ -642,6 +643,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 					case Master_Start_Barrier: {
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
+						globalBarrierStartWaitSet.removeAll(globalBarrierStartPrematureSet);
 						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
 						globalBarrierSendVerts = message.getStartBarrier().getSendQueryVerticesList();
 						List<ReceiveQueryVerticesMessage> recvVerts = message.getStartBarrier().getReceiveQueryVerticesList();
@@ -679,7 +681,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						//						System.out.println("Worker_Barrier_Started");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
-						else logger.warn("Worker_Barrier_Started message from worker not waiting for: " + message);
+						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
 					return true;
 					case Worker_Barrier_Finished: {
@@ -687,7 +689,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker))
 							globalBarrierFinishWaitSet.remove(srcWorker);
-						else logger.warn("Worker_Barrier_Started message from worker not waiting for: " + message);
+						else logger.warn("Worker_Barrier_Finished message from worker not waiting for: " + srcWorker);
 					}
 					return true;
 

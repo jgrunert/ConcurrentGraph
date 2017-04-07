@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.jfree.util.Log;
+
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
@@ -738,7 +740,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				actQueryWorkerIntersects);
 
 		if (moveDecission != null) {
-			System.out.println("Decided in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
+			System.out.println("Decided to move in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
+			Log.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
 
 			// Send barrier move messages
 			for (int workerId : workerIds) {

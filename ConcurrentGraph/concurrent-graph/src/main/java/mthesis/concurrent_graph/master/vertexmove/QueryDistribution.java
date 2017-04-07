@@ -27,6 +27,8 @@ public class QueryDistribution {
 
 	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
 	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
+	/** Map<Machine, Map<QueryId, Map<IntersectWithWorkerId, IntersectingsCount>>> */
+	private final Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects;
 	private final List<Integer> workerIds;
 
 	// Move operations and costs so far
@@ -34,15 +36,18 @@ public class QueryDistribution {
 	private double moveCostsSoFar;
 
 
-	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts) {
-		this(workerIds, actQueryWorkerActiveVerts, new HashSet<>(), 0);
+	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts,
+			Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects) {
+		this(workerIds, actQueryWorkerActiveVerts, actQueryWorkerIntersects, new HashSet<>(), 0);
 	}
 
 	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts,
+			Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects,
 			Set<VertexMoveOperation> moveOperationsSoFar, double moveCostsSoFar) {
 		super();
 		this.workerIds = workerIds;
 		this.actQueryWorkerActiveVerts = actQueryWorkerActiveVerts;
+		this.actQueryWorkerIntersects = actQueryWorkerIntersects;
 		this.moveOperationsSoFar = moveOperationsSoFar;
 		this.moveCostsSoFar = moveCostsSoFar;
 	}
@@ -53,7 +58,8 @@ public class QueryDistribution {
 		for (Entry<Integer, Map<Integer, Integer>> entry : actQueryWorkerActiveVerts.entrySet()) {
 			actQueryWorkerActiveVertsClone.put(entry.getKey(), new HashMap<>(entry.getValue()));
 		}
-		return new QueryDistribution(workerIds, actQueryWorkerActiveVertsClone, new HashSet<>(moveOperationsSoFar), moveCostsSoFar);
+		return new QueryDistribution(workerIds, actQueryWorkerActiveVertsClone, actQueryWorkerIntersects,
+				new HashSet<>(moveOperationsSoFar), moveCostsSoFar);
 	}
 
 
@@ -62,21 +68,41 @@ public class QueryDistribution {
 	 * @param queryId
 	 * @param fromWorker
 	 * @param toWorker
-	 * @return True if this move operation is possible
+	 * @param moveIntersects If true, vertices of intersecting queries will be moved as well
+	 * @return Number ov moved vertices, 0 if no move possible
 	 */
-	public boolean moveVertices(int queryId, int fromWorker, int toWorker) {
+	public int moveVertices(int queryId, int fromWorker, int toWorker, boolean moveIntersects) {
 		VertexMoveOperation moveOperation = new VertexMoveOperation(queryId, fromWorker, toWorker);
 		if (moveOperationsSoFar.contains(moveOperation))
-			return false;
+			return 0;
 
+		// Vertices in this query moved
 		Map<Integer, Integer> queryWorkerVertices = actQueryWorkerActiveVerts.get(queryId);
 		int toMoveVerts = queryWorkerVertices.get(fromWorker);
+		if (!moveIntersects) {
+			throw new RuntimeException("NIY"); // TODO
+		}
 		queryWorkerVertices.put(fromWorker, 0);
 		queryWorkerVertices.put(toWorker, queryWorkerVertices.get(toWorker) + toMoveVerts);
 
+		if (moveIntersects) {
+			// TODO
+			//			Map<Integer, Map<Integer, Integer>> fromWorkerAllIntersects = actQueryWorkerIntersects.get(fromWorker);
+			//			Map<Integer, Map<Integer, Integer>> toWorkerAllIntersects = actQueryWorkerIntersects.get(fromWorker);
+			//
+			//			// Als moved intersecting vertices
+			//			Map<Integer, Integer> fromWorkerQueryIntersects = fromWorkerAllIntersects.get(queryId);
+			//			for (Entry<Integer, Integer> qInters : fromWorkerQueryIntersects.entrySet()) {
+			//				toWorkerAllIntersects.put(), value)
+			//				queryWorkerVertices.put(fromWorker, 0);
+			//				toMoveVerts += qInters.getValue();
+			//				fromWorkerQueryIntersects.put(qInters.getKey(), 0);
+			//			}
+		}
+
 		moveOperationsSoFar.add(moveOperation);
 		moveCostsSoFar += (double) toMoveVerts * vertexMoveCosts;
-		return true;
+		return toMoveVerts;
 	}
 
 
@@ -125,7 +151,9 @@ public class QueryDistribution {
 
 	/**
 	 * Calculates cost of imbalanced workload of active vertices
+	 * @deprecated
 	 */
+	@Deprecated
 	private double getLoadImbalanceCosts() {
 		// TODO Also queries per machine?
 		Map<Integer, Integer> workerVertices = new HashMap<>(workerIds.size());
@@ -138,7 +166,6 @@ public class QueryDistribution {
 			}
 		}
 
-		// TODO Other cost model?
 		long averageVerts = 0;
 		for (int workerId : workerIds) {
 			averageVerts += workerVertices.get(workerId);
@@ -152,6 +179,36 @@ public class QueryDistribution {
 
 		// Imalance factor, divide by two. Otherwise we would count a imbalanced vertex twice (to much and to few workload)
 		return imbalance * vertexImbalanceCosts / 2;
+	}
+
+
+	private long getWorkerActiveVertices(int workerId) {
+		long verts = 0;
+		for (Map<Integer, Integer> queryWorkerVertices : actQueryWorkerActiveVerts.values()) {
+			verts += queryWorkerVertices.get(workerId);
+		}
+		return verts;
+	}
+
+	private long getAverageWorkerActiveVertices() {
+		long verts = 0;
+		for (Entry<Integer, Map<Integer, Integer>> queryWorkerVertices : actQueryWorkerActiveVerts.entrySet()) {
+			for (Entry<Integer, Integer> partition : queryWorkerVertices.getValue().entrySet()) {
+				verts += partition.getValue();
+			}
+		}
+		return verts / workerIds.size();
+	}
+
+
+	/**
+	 * Fraction of vertices away from average vertices.
+	 */
+	public double getWorkerImbalanceFactor(int workerId) {
+		long workerVerts = getWorkerActiveVertices(workerId);
+		long avgVerts = getAverageWorkerActiveVertices();
+		if (avgVerts == 0) return 0;
+		return (double) Math.abs(workerVerts - avgVerts) / avgVerts;
 	}
 
 	//	private double getLoadImbalanceCosts() {

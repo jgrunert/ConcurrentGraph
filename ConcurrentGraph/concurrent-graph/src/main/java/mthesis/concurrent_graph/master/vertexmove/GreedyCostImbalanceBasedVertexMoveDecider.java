@@ -23,7 +23,8 @@ public class GreedyCostImbalanceBasedVertexMoveDecider<Q extends BaseQuery> exte
 		vertexBarrierMoveLastTime = System.currentTimeMillis();
 
 
-		QueryDistribution originalDistribution = new QueryDistribution(workerIds, actQueryWorkerActiveVerts);
+		QueryDistribution originalDistribution = new QueryDistribution(workerIds, actQueryWorkerActiveVerts,
+				actQueryWorkerIntersects);
 		QueryDistribution bestDistribution = originalDistribution;
 		System.out.println(bestDistribution.getCostsWithImbalance());
 
@@ -55,7 +56,7 @@ public class GreedyCostImbalanceBasedVertexMoveDecider<Q extends BaseQuery> exte
 						if (fromWorker == toWorker) continue;
 
 						QueryDistribution newDistribution = bestDistribution.clone();
-						boolean moveSuccess = newDistribution.moveVertices(queryId, fromWorker, toWorker);
+						boolean moveSuccess = newDistribution.moveVertices(queryId, fromWorker, toWorker, true) > 0;
 						if (moveSuccess && newDistribution.getCostsWithImbalance() < bestDistribution.getCostsWithImbalance()) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;

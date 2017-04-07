@@ -166,9 +166,6 @@ public class SPLocalTestClusterMain {
 			new SPTestSequenceRunner(master).runTestSequence("testplans" + File.separator + "bw1.txt");
 			master.waitForAllQueriesFinish();
 			master.stop();
-
-			master.waitForAllQueriesFinish();
-			master.stop();
 		}
 	}
 }

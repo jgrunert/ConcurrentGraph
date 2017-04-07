@@ -99,7 +99,7 @@ public class SPOutputEvaluator extends MasterOutputEvaluator<SPQuery> {
 				writer.println(nextVertex);
 			}
 			catch (final Exception e) {
-				logger.error("reconstruct path failed", e);
+				logger.error("reconstruct path query " + query.QueryId + " failed", e);
 				return;
 			}
 		}
