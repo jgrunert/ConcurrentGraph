@@ -193,7 +193,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	 */
 	public void prepareForNextSuperstep(Integer queryId, int finishedSuperstepNo) {
 		//		if (querySuperstepNumbers.get((int) queryId) != finishedSuperstepNo)
-		//			Log.warn("Invalid superstep to prepare for: " + finishedSuperstepNo + " should be " + querySuperstepNumbers.get((int) queryId));
+		//			logger.warn("Invalid superstep to prepare for: " + finishedSuperstepNo + " should be " + querySuperstepNumbers.get((int) queryId));
 		//		querySuperstepNumbers.put((int) queryId, finishedSuperstepNo + 1);
 
 		List<M> messagesLast = queryMessagesThisSuperstep.get(queryId);

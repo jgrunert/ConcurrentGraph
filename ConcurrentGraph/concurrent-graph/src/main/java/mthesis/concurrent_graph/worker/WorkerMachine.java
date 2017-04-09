@@ -260,6 +260,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					// Handle all messages before barrier
 					handleReceivedMessages(false);
 
+					// Checks
+					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
+						if (!query.ActiveVerticesNext.isEmpty())
+							logger.warn("Query is not ready for barrier, has ActiveVerticesNext: " + query.QueryId);
+					}
+
 					// Barrier tasks
 					startTime = System.nanoTime();
 					// Send vertices
@@ -815,10 +821,31 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		//		if (movedQueryVertices.containsKey(queryId))
 		//			logger.error("movedVerticesRedirections not cleaned up after last superstep");
 
+		int moved = 0;
+		int notMoved = 0;
+
 		if (query != null) {
 			//			if (getQueryIntersectionCount(queryId) == 0) { // Only move vertices if no intersection
+			Map<Integer, WorkerQuery<V, E, M, Q>> otherQueries = new HashMap<>(activeQueries);
+			otherQueries.remove(queryId);
+
 			for (AbstractVertex<V, E, M, Q> vertex : query.ActiveVerticesThis.values()) {
+				// TODO Currently only sending nonintersecting vertices. Handle ActiveVerticesThis
+				// Check for intersection, dont move
+				boolean dontMove = false;
+				for (WorkerQuery<V, E, M, Q> otherQuery : otherQueries.values()) {
+					if (otherQuery.ActiveVerticesThis.containsKey(vertex.ID)) {
+						dontMove = true;
+					}
+				}
+				if (dontMove) {
+					notMoved++;
+					continue;
+				}
+				moved++;
+
 				localVertices.remove(vertex.ID);
+				query.ActiveVerticesThis.remove(vertex.ID);
 				verticesToMove.add(vertex);
 				// Send vertices now if bucket full
 				if (verticesToMove.size() >= Configuration.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
@@ -831,8 +858,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					verticesMessagesSent += vertex.getBufferedMessageCount();
 				}
 			}
-			System.out.println(ownId + " Sent " + query.ActiveVerticesThis.size() + " to " + sendToWorker + " for " + queryId);
-			query.ActiveVerticesThis.clear();
+			logger.info(ownId + " Sent " + moved + " and skipped " + notMoved + " to " + sendToWorker + " for query " + queryId); // TODO logger.debug
 			//			}
 			//			else {
 			//				logger.info(queryId + " vertices not moved because has intersection now: "
@@ -1075,7 +1101,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			return;
 
 		for (AbstractVertex<V, E, M, Q> movedVert : message.vertices) {
-			activeQuery.ActiveVerticesThis.put(movedVert.ID, movedVert);
+			activeQuery.ActiveVerticesThis.put(movedVert.ID, movedVert); // TODO Handle if vertices of intersecting queries
 			localVertices.put(movedVert.ID, movedVert);
 		}
 

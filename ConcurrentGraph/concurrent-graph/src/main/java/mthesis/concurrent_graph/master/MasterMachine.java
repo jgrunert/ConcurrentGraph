@@ -18,8 +18,6 @@ import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.jfree.util.Log;
-
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
@@ -443,7 +441,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			}
 		}
 		else if (controlMsg.getType() == ControlMessageType.Worker_Barrier_Finished) {
-			Log.info("Worker finished barrier " + controlMsg.getSrcMachine());
+			logger.info("Worker finished barrier " + controlMsg.getSrcMachine());
 		}
 		else {
 			logger.error("Unexpected control message type in message " + message);
@@ -841,7 +839,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 		if (moveDecission != null) {
 			System.out.println("Decided to move in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
-			Log.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
+			logger.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
 
 			// Send barrier move messages
 			for (int workerId : workerIds) {

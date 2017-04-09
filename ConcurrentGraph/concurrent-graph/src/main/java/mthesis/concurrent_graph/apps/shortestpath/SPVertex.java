@@ -3,8 +3,6 @@ package mthesis.concurrent_graph.apps.shortestpath;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.jfree.util.Log;
-
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
@@ -55,10 +53,10 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		if (messages != null) {
 			for (SPMessageWritable msg : messages) {
 				if (msg.SuperstepNo != superstepNo) {
-					Log.warn("Message for wrong superstep: " + msg);
+					logger.warn("Message for wrong superstep: " + msg);
 				}
 				if (msg.DstVertex != ID) {
-					Log.warn("Message for vertex superstep: " + msg);
+					logger.warn("Message for vertex superstep: " + msg);
 				}
 			}
 		}
@@ -130,7 +128,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 						}
 						else {
 							logger.error(query.QueryId + ":" + superstepNo + " " + "Incorrect reconstruct message count at node " + ID
-									+ ": " + messages.size());
+									+ ": " + messages);
 						}
 					}
 					else {
