@@ -230,8 +230,8 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	protected abstract void compute(int superstepNo, List<M> messages, WorkerQuery<V, E, M, Q> query);
 
 
-	protected M getPooledMessageValue() {
-		return worker.getPooledMessageValue();
+	protected M getNewMessage() {
+		return worker.getNewMessage();
 	}
 
 	protected void freePooledMessageValue(M message) {

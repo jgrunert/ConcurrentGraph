@@ -11,7 +11,7 @@ public interface VertexWorkerInterface<V extends BaseWritable, E extends BaseWri
 	BaseWritableFactory<V> getVertexValueFactory();
 
 
-	M getPooledMessageValue();
+	M getNewMessage();
 
 	void freePooledMessageValue(M message);
 }

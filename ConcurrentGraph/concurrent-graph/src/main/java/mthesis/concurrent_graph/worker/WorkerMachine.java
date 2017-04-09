@@ -218,10 +218,34 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 				workerStats.IdleTime += (System.nanoTime() - startTime);
 
-				// Global barrier if requested
-				if (globalBarrierRequested) {
+
+				// Wait for ready queries
+				startTime = System.nanoTime();
+				activeQueriesThisStep.clear();
+				while (activeQueriesThisStep.isEmpty() && !globalBarrierRequested) {
+					handleReceivedMessages(true);
+
+					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
+						if ((activeQuery.getStartedSuperstepNo() > activeQuery.getCalculatedSuperstepNo()))
+							activeQueriesThisStep.add(activeQuery);
+						// TODO Directly finish superstep if no active vertices. Or even faster method?
+					}
+					if (!activeQueriesThisStep.isEmpty() || globalBarrierRequested)
+						break;
+					Thread.sleep(1); // TODO Sleep?
+					if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
+						logger.warn("Waiting long time for active queries");
+						Thread.sleep(2000);
+					}
+				}
+				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
+
+
+				// Global barrier if requested and no more outstanding queries
+				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
 					// Start barrier, notify other workers
 					logger.debug("Barrier started, waiting for other workers to start");
+					logger.info(ownId + " barrier " + activeQueriesThisStep.size());
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
@@ -251,9 +275,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
 
 
-					// Finish barrier, notify other workers
+					// Finish barrier, notify other workers and master
 					logger.debug("Barrier tasks done, waiting for other workers to finish");
 					messaging.sendControlMessageMulticast(otherWorkerIds,
+							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Finished(ownId), true);
+					messaging.sendControlMessageUnicast(masterId,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Finished(ownId), true);
 					startTime = System.nanoTime();
 					while (!globalBarrierFinishWaitSet.isEmpty()) {
@@ -267,30 +293,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					workerStats.BarrierFinishWaitTime += barrierFinishWaitTime;
 					globalBarrierRequested = false;
 				}
-
-
-				// Wait for ready queries
-				startTime = System.nanoTime();
-				activeQueriesThisStep.clear();
-				while (!globalBarrierRequested) {
-					handleReceivedMessages(true);
-
-					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
-						if ((activeQuery.getStartedSuperstepNo() > activeQuery.getCalculatedSuperstepNo()))
-							activeQueriesThisStep.add(activeQuery);
-						// TODO Directly finish superstep if no active vertices. Or even faster method?
-					}
-					if (!activeQueriesThisStep.isEmpty())
-						break;
-					Thread.sleep(1); // TODO Sleep?
-					if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
-						logger.warn("Waiting long time for active queries");
-						Thread.sleep(2000);
-					}
-				}
-				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
-
-				if (globalBarrierRequested) continue;
 
 
 				// Compute active queries
@@ -521,7 +523,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 	@Override
-	public M getPooledMessageValue() {
+	public M getNewMessage() {
 		return jobConfig.getPooledMessageValue();
 	}
 
@@ -898,7 +900,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 			if (!(activeQuery.VertexMovesWaitingFor.isEmpty()
 					|| activeQuery.VertexMovesWaitingFor.size() == activeQuery.VertexMovesReceived.size())) {
-				throw new RuntimeException("Nooooooooooooooooooo");
+				throw new RuntimeException("Error at vertex move");
 				//				assert activeQuery.VertexMovesWaitingFor.isEmpty() || activeQuery.VertexMovesWaitingFor.equals(activeQuery.VertexMovesReceived);
 				//				startNextSuperstep(activeQuery);
 			}

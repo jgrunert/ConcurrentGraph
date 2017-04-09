@@ -442,6 +442,9 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				}
 			}
 		}
+		else if (controlMsg.getType() == ControlMessageType.Worker_Barrier_Finished) {
+			Log.info("Worker finished barrier " + controlMsg.getSrcMachine());
+		}
 		else {
 			logger.error("Unexpected control message type in message " + message);
 		}
