@@ -17,35 +17,23 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 	public boolean broadcastFlag;
 	public int queryId;
 	public List<Pair<Integer, M>> vertexMessages;
-	//	private int referenceCounter;
-
-	//	private final VertexMessagePool<V, E, M, Q> messagePool;
 
 	public VertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
-			List<Pair<Integer, M>> vertexMessages
-	//				,VertexMessagePool<V, E, M, Q> messagePool, int referenceCounter
-	) {
-		//		this.messagePool = messagePool;
+			List<Pair<Integer, M>> vertexMessages) {
 		setup(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
 	}
 
 	public void setup(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
-			List<Pair<Integer, M>> vertexMessages
-	//			, int referenceCounter
-	) {
+			List<Pair<Integer, M>> vertexMessages) {
 		this.srcMachine = srcMachine;
 		this.superstepNo = superstepNo;
 		this.broadcastFlag = broadcastFlag;
 		this.queryId = queryId;
 		this.vertexMessages = vertexMessages;
-		//		this.referenceCounter = referenceCounter;
 	}
 
-	public VertexMessage(ByteBuffer buffer, JobConfiguration<V, E, M, Q> jobConfig
-	//			,VertexMessagePool<V, E, M, Q> messagePool,int referenceCounter,
-	) {
+	public VertexMessage(ByteBuffer buffer, JobConfiguration<V, E, M, Q> jobConfig) {
 		super();
-		//		this.messagePool = messagePool;
 		setup(buffer, jobConfig);
 	}
 
@@ -61,7 +49,6 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 			M msg = jobConfig.getMessageValueFactory().createFromBytes(buffer);
 			vertexMessages.add(new Pair<Integer, M>(msgId, msg));
 		}
-		//		this.referenceCounter = referenceCounter;
 	}
 
 	/**
@@ -70,12 +57,6 @@ public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M ext
 	 */
 	@Override
 	public void free(boolean freeMembers) {
-		//		referenceCounter--;
-		//		if (referenceCounter <= 0) {
-		//			if (messagePool != null) {
-		//				messagePool.freeVertexMessage(this, freeMembers);
-		//			}
-		//		}
 	}
 
 	@Override
