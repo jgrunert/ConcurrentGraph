@@ -832,12 +832,15 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	 * Let workers start next superstep of a query. Make decisions about vertices to move.
 	 */
 	private void startWorkersQueryNextSuperstep(Q queryToStart, int superstepNo) {
-
+		System.err.println("Start " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
 		long decideStartTime = System.currentTimeMillis();
 		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerIds, activeQueries, actQueryWorkerActiveVerts,
 				actQueryWorkerIntersects);
 
 		if (moveDecission != null) {
+			// TODO Start barrier, dont start any more supersteps until barrier finished
+
+			System.err.println("Decide move"); // TODO Testcode
 			System.out.println("Decided to move in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
 			logger.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
 
@@ -851,7 +854,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			logger.info("Starting barrier with vertex move");
 			// TODO Wait for barrier finish?
 		}
-		// No vertex move
+
+		// Start query superstep
 		for (Integer otherWorkerId : workerIds) {
 			messaging.sendControlMessageUnicast(otherWorkerId,
 					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, queryToStart), true);

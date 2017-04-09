@@ -249,21 +249,24 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
-					// wait for other workers barriers
+					// Handle all messages before barrier
+					handleReceivedMessages(false); // TODO Necessary?
+
+					// Wait for other workers barriers
 					startTime = System.nanoTime();
-					while (!globalBarrierStartWaitSet.isEmpty()) {
+					while (!globalBarrierStartWaitSet.isEmpty() || !allQueriesSynced()) {
 						//Thread.sleep(1);  // TODO sleep?
 						handleReceivedMessages(true);
 					}
+					boolean test0 = allQueriesSynced();
 					long barrierStartWaitTime = System.nanoTime() - startTime;
-
-					// Handle all messages before barrier
-					handleReceivedMessages(false);
 
 					// Checks
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
-						if (!query.ActiveVerticesNext.isEmpty())
+						if (!query.ActiveVerticesNext.isEmpty()) {
+							boolean test = allQueriesSynced();
 							logger.warn("Query is not ready for barrier, has ActiveVerticesNext: " + query.QueryId);
+						}
 					}
 
 					// Barrier tasks
@@ -379,6 +382,19 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 			stop();
 		}
+	}
+
+	/**
+	 * Checks if all active queries are barrier synced
+	 */
+	private boolean allQueriesSynced() {
+		for (WorkerQuery<V, E, M, Q> q : activeQueries.values()) {
+			if (q.getBarrierFinishedSuperstepNo() != q.getStartedSuperstepNo()) {
+				System.out.println(q.QueryId + " not ready " + q.getStartedSuperstepNo()); // TODO Testcode
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void sampleWorkerStats() {
