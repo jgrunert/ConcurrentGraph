@@ -846,6 +846,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				localVertices.remove(vertex.ID);
 				query.ActiveVerticesThis.remove(vertex.ID);
+				query.ActiveVerticesNext.remove(vertex.ID); // TODO Why ActiveVerticesNext?
 				verticesToMove.add(vertex);
 				// Send vertices now if bucket full
 				if (verticesToMove.size() >= Configuration.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
@@ -1102,6 +1103,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		for (AbstractVertex<V, E, M, Q> movedVert : message.vertices) {
 			activeQuery.ActiveVerticesThis.put(movedVert.ID, movedVert); // TODO Handle if vertices of intersecting queries
+			activeQuery.ActiveVerticesNext.put(movedVert.ID, movedVert); // TODO ActiveVerticesNext?
 			localVertices.put(movedVert.ID, movedVert);
 		}
 
