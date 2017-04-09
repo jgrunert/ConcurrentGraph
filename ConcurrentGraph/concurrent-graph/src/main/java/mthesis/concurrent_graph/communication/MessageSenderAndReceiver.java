@@ -56,8 +56,6 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	private ServerSocket serverSocket;
 	private boolean closingServer;
 
-	private final VertexMessagePool<V, E, M, Q> vertexMessagePool;
-
 
 
 	public MessageSenderAndReceiver(Map<Integer, MachineConfig> machines, int ownId,
@@ -69,7 +67,6 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		this.machine = machine;
 		this.workerMachine = workerMachine;
 		this.jobConfiguration = jobConfiguration;
-		this.vertexMessagePool = new VertexMessagePool<>(jobConfiguration);
 	}
 
 	//	public void setMessageListner(AbstractNode listener) {
@@ -125,7 +122,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		final long timeoutTime = System.currentTimeMillis() + Configuration.CONNECT_TIMEOUT;
 		while (System.currentTimeMillis() <= timeoutTime &&
 				!(channelAsyncReceivers.size() == (machineConfigs.size() - 1)
-				&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
+						&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
 			try {
 				Thread.sleep(1);
 			}
@@ -201,7 +198,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 			List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
 		sendUnicastMessageAsync(dstMachine,
-				vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, false, queryId, vertexMessages, 1));
+				//				new VertexMessage<>(superstepNo, ownId, false, queryId, vertexMessages, 1));
+				new VertexMessage<>(superstepNo, ownId, false, queryId, vertexMessages));
 	}
 
 	public void sendVertexMessageBroadcast(List<Integer> otherWorkers, int superstepNo, int srcMachine,
@@ -213,7 +211,8 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		//					vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages, 1));
 		//		}
 		sendMulticastMessageAsync(otherWorkers,
-				vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages, otherWorkers.size()));
+				//				new VertexMessage<>(superstepNo, ownId, true, queryId, vertexMessages, otherWorkers.size()));
+				new VertexMessage<>(superstepNo, ownId, true, queryId, vertexMessages));
 	}
 
 
@@ -245,7 +244,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		long connectStartTime = System.currentTimeMillis();
 		Socket socket = null;
 		while (true) {
-			try{
+			try {
 				socket = new Socket(host, port);
 				break;
 			}

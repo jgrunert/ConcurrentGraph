@@ -10,42 +10,46 @@ import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class VertexMessage<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-implements ChannelMessage {
+		implements ChannelMessage {
 
 	public int superstepNo;
 	public int srcMachine;
 	public boolean broadcastFlag;
 	public int queryId;
 	public List<Pair<Integer, M>> vertexMessages;
-	private int referenceCounter;
+	//	private int referenceCounter;
 
-	private final VertexMessagePool<V, E, M, Q> messagePool;
+	//	private final VertexMessagePool<V, E, M, Q> messagePool;
 
 	public VertexMessage(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
-			List<Pair<Integer, M>> vertexMessages, VertexMessagePool<V, E, M, Q> messagePool,
-			int referenceCounter) {
-		this.messagePool = messagePool;
-		setup(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages, referenceCounter);
+			List<Pair<Integer, M>> vertexMessages
+	//				,VertexMessagePool<V, E, M, Q> messagePool, int referenceCounter
+	) {
+		//		this.messagePool = messagePool;
+		setup(superstepNo, srcMachine, broadcastFlag, queryId, vertexMessages);
 	}
 
 	public void setup(int superstepNo, int srcMachine, boolean broadcastFlag, int queryId,
-			List<Pair<Integer, M>> vertexMessages, int referenceCounter) {
+			List<Pair<Integer, M>> vertexMessages
+	//			, int referenceCounter
+	) {
 		this.srcMachine = srcMachine;
 		this.superstepNo = superstepNo;
 		this.broadcastFlag = broadcastFlag;
 		this.queryId = queryId;
 		this.vertexMessages = vertexMessages;
-		this.referenceCounter = referenceCounter;
+		//		this.referenceCounter = referenceCounter;
 	}
 
-	public VertexMessage(ByteBuffer buffer, JobConfiguration<V, E, M, Q> jobConfig,
-			VertexMessagePool<V, E, M, Q> messagePool, int referenceCounter) {
+	public VertexMessage(ByteBuffer buffer, JobConfiguration<V, E, M, Q> jobConfig
+	//			,VertexMessagePool<V, E, M, Q> messagePool,int referenceCounter,
+	) {
 		super();
-		this.messagePool = messagePool;
-		setup(buffer, jobConfig, referenceCounter);
+		//		this.messagePool = messagePool;
+		setup(buffer, jobConfig);
 	}
 
-	public void setup(ByteBuffer buffer, JobConfiguration<V, E, M, Q> jobConfig, int referenceCounter) {
+	public void setup(ByteBuffer buffer, JobConfiguration<V, E, M, Q> jobConfig) {
 		this.superstepNo = buffer.getInt();
 		this.srcMachine = buffer.getInt();
 		this.broadcastFlag = (buffer.get() == 0);
@@ -54,11 +58,10 @@ implements ChannelMessage {
 		vertexMessages = new ArrayList<>(numVertices);
 		for (int i = 0; i < numVertices; i++) {
 			int msgId = buffer.getInt();
-			M msg = jobConfig.getPooledMessageValue();
-			msg.readFromBuffer(buffer);
+			M msg = jobConfig.getMessageValueFactory().createFromBytes(buffer);
 			vertexMessages.add(new Pair<Integer, M>(msgId, msg));
 		}
-		this.referenceCounter = referenceCounter;
+		//		this.referenceCounter = referenceCounter;
 	}
 
 	/**
@@ -67,12 +70,12 @@ implements ChannelMessage {
 	 */
 	@Override
 	public void free(boolean freeMembers) {
-		referenceCounter--;
-		if (referenceCounter <= 0) {
-			if (messagePool != null) {
-				messagePool.freeVertexMessage(this, freeMembers);
-			}
-		}
+		//		referenceCounter--;
+		//		if (referenceCounter <= 0) {
+		//			if (messagePool != null) {
+		//				messagePool.freeVertexMessage(this, freeMembers);
+		//			}
+		//		}
 	}
 
 	@Override

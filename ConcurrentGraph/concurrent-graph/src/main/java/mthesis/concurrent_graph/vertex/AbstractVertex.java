@@ -234,9 +234,9 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			compute(superstepNo, messagesThisSuperstep, query);
 			if (messagesThisSuperstep != null) {
 				// Free and clear messages
-				for (M msg : messagesThisSuperstep) {
-					worker.freePooledMessageValue(msg);
-				}
+				//				for (M msg : messagesThisSuperstep) {
+				//					worker.freePooledMessageValue(msg);
+				//				}
 				messagesThisSuperstep.clear();
 			}
 
@@ -249,13 +249,13 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	protected abstract void compute(int superstepNo, List<M> messages, WorkerQuery<V, E, M, Q> query);
 
 
-	protected M getNewMessage() {
-		return worker.getNewMessage();
-	}
-
-	protected void freePooledMessageValue(M message) {
-		worker.freePooledMessageValue(message);
-	}
+	//	protected M getNewMessage() {
+	//		return worker.getNewMessage();
+	//	}
+	//
+	//	protected void freePooledMessageValue(M message) {
+	//		worker.freePooledMessageValue(message);
+	//	}
 
 	protected void sendMessageToAllOutgoingEdges(M message, WorkerQuery<V, E, M, Q> query) {
 		for (final Edge<E> edge : edges) {

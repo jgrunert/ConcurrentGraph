@@ -53,7 +53,7 @@ public class Configuration {
 	/** Maximum number parallel active of queries */
 	public static int MAX_PARALLEL_QUERIES;
 
-	public static boolean VERTEX_MESSAGE_POOLING;
+	//	public static boolean VERTEX_MESSAGE_POOLING;
 	public static int VERTEX_MESSAGE_POOL_SIZE;
 
 	public static int WORKER_WATCHDOG_TIME;
@@ -86,7 +86,7 @@ public class Configuration {
 			LOG_LEVEL_MAIN = Level.valueOf(Properties.getProperty("LOG_LEVEL_MAIN")).levelInt;
 			DEFAULT_QUERY_SLOTS = Integer.parseInt(Properties.getProperty("DEFAULT_QUERY_SLOTS"));
 			MAX_PARALLEL_QUERIES = Integer.parseInt(Properties.getProperty("MAX_PARALLEL_QUERIES"));
-			VERTEX_MESSAGE_POOLING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MESSAGE_POOLING"));
+			//			VERTEX_MESSAGE_POOLING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MESSAGE_POOLING"));
 			VERTEX_MESSAGE_POOL_SIZE = Integer.parseInt(Properties.getProperty("VERTEX_MESSAGE_POOL_SIZE"));
 			WORKER_WATCHDOG_TIME = Integer.parseInt(Properties.getProperty("WORKER_WATCHDOG_TIME"));
 			DETAILED_STATS = Boolean.parseBoolean(Properties.getProperty("DETAILED_STATS"));

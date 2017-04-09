@@ -522,15 +522,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 
-	@Override
-	public M getNewMessage() {
-		return jobConfig.getPooledMessageValue();
-	}
-
-	@Override
-	public void freePooledMessageValue(M message) {
-		jobConfig.freePooledMessageValue(message);
-	}
+	//	@Override
+	//	public M getNewMessage() {
+	//		return jobConfig.getPooledMessageValue();
+	//	}
+	//
+	//	@Override
+	//	public void freePooledMessageValue(M message) {
+	//		jobConfig.freePooledMessageValue(message);
+	//	}
 
 	/**
 	 * Sends a vertex message. If local vertex, direct loopback. It remote vertex try to lookup machine. If machine not known broadcast message.
@@ -1040,11 +1040,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 								+ " with no redirection");
 						//								Integer machineMb = remoteVertexMachineRegistry.lookupEntry(msg.first);
 						//								System.err.println(machineMb);
-						freePooledMessageValue(msg.second);
+						//						freePooledMessageValue(msg.second);
 						//						}
 					}
 					else {
-						freePooledMessageValue(msg.second);
+						//						freePooledMessageValue(msg.second);
 					}
 					activeQuery.QueryLocal.Stats.MessagesReceivedWrongVertex++;
 				}

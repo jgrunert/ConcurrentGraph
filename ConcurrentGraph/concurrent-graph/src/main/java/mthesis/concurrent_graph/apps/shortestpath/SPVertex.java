@@ -73,7 +73,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 				SPVertexWritable mutableValue = new SPVertexWritable(-1, 0, false, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
-					sendMessageToVertex(getNewMessage().setup(ID, edge.Value.Value, superstepNo + 1, edge.TargetVertexId),
+					sendMessageToVertex(new SPMessageWritable(ID, edge.Value.Value, superstepNo + 1, edge.TargetVertexId),
 							edge.TargetVertexId,
 							query);
 				}
@@ -93,7 +93,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 						logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " start reconstructing");
 						mutableValue.OnShortestPath = true;
 						//						logger.info(query.QueryId + ":" + superstepNo + " " + ID + " to0 " + mutableValue.Pre);
-						sendMessageToVertex(getNewMessage().setup(ID, 0, superstepNo + 1, mutableValue.Pre), //mutableValue.Dist),
+						sendMessageToVertex(new SPMessageWritable(ID, 0, superstepNo + 1, mutableValue.Pre), //mutableValue.Dist),
 								mutableValue.Pre, query);
 					}
 					else {
@@ -112,7 +112,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 							if (preMsg.DstVertex == ID) {
 								if (preMsg.Dist >= mutableValue.Dist) {
 									//									logger.info(query.QueryId + ":" + superstepNo + " " + ID + " to " + mutableValue.Pre);
-									sendMessageToVertex(getNewMessage().setup(ID, 0, superstepNo + 1, mutableValue.Pre), //mutableValue.Dist),
+									sendMessageToVertex(new SPMessageWritable(ID, 0, superstepNo + 1, mutableValue.Pre), //mutableValue.Dist),
 											mutableValue.Pre,
 											query);
 								}
@@ -185,7 +185,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		}
 		if (sendMessages) {
 			for (Edge<DoubleWritable> edge : getEdges()) {
-				sendMessageToVertex(getNewMessage().setup(ID, mutableValue.Dist + edge.Value.Value, superstepNo + 1, edge.TargetVertexId),
+				sendMessageToVertex(new SPMessageWritable(ID, mutableValue.Dist + edge.Value.Value, superstepNo + 1, edge.TargetVertexId),
 						edge.TargetVertexId,
 						query);
 			}
