@@ -57,6 +57,9 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 				if (msg.SuperstepNo != superstepNo) {
 					Log.warn("Message for wrong superstep: " + msg);
 				}
+				if (msg.DstVertex != ID) {
+					Log.warn("Message for vertex superstep: " + msg);
+				}
 			}
 		}
 
@@ -70,7 +73,8 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 				SPVertexWritable mutableValue = new SPVertexWritable(-1, 0, false, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
-					sendMessageToVertex(getNewMessage().setup(ID, edge.Value.Value, superstepNo + 1), edge.TargetVertexId,
+					sendMessageToVertex(getNewMessage().setup(ID, edge.Value.Value, superstepNo + 1, edge.TargetVertexId),
+							edge.TargetVertexId,
 							query);
 				}
 				voteVertexHalt(query.QueryId);
@@ -89,7 +93,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 						logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " start reconstructing");
 						mutableValue.OnShortestPath = true;
 						//						logger.info(query.QueryId + ":" + superstepNo + " " + ID + " to0 " + mutableValue.Pre);
-						sendMessageToVertex(getNewMessage().setup(mutableValue.Pre, ID, superstepNo + 1), //mutableValue.Dist),
+						sendMessageToVertex(getNewMessage().setup(ID, 0, superstepNo + 1, mutableValue.Pre), //mutableValue.Dist),
 								mutableValue.Pre, query);
 					}
 					else {
@@ -105,10 +109,10 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 						if (messages.size() == 1) {
 							SPMessageWritable preMsg = messages.get(0);
 							//							System.out.println(preMsg);
-							if (preMsg.SrcVertex == ID) {
+							if (preMsg.DstVertex == ID) {
 								if (preMsg.Dist >= mutableValue.Dist) {
 									//									logger.info(query.QueryId + ":" + superstepNo + " " + ID + " to " + mutableValue.Pre);
-									sendMessageToVertex(getNewMessage().setup(mutableValue.Pre, ID, superstepNo + 1), //mutableValue.Dist),
+									sendMessageToVertex(getNewMessage().setup(ID, 0, superstepNo + 1, mutableValue.Pre), //mutableValue.Dist),
 											mutableValue.Pre,
 											query);
 								}
@@ -120,7 +124,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 							}
 							else {
 								logger.error(query.QueryId + ":" + superstepNo + " "
-										+ "Reconstruct message for wrong vertex. Should be " + ID + " but is " + preMsg.SrcVertex
+										+ "Reconstruct message for wrong vertex. Should be " + ID + " but is " + preMsg.DstVertex
 										+ " from " + preMsg.Dist + " " + preMsg); // TODO Test
 							}
 						}
@@ -181,7 +185,8 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		}
 		if (sendMessages) {
 			for (Edge<DoubleWritable> edge : getEdges()) {
-				sendMessageToVertex(getNewMessage().setup(ID, mutableValue.Dist + edge.Value.Value, superstepNo + 1), edge.TargetVertexId,
+				sendMessageToVertex(getNewMessage().setup(ID, mutableValue.Dist + edge.Value.Value, superstepNo + 1, edge.TargetVertexId),
+						edge.TargetVertexId,
 						query);
 			}
 			mutableValue.SendMsgsLater = false;

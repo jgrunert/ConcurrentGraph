@@ -2,6 +2,9 @@ package mthesis.concurrent_graph.writable;
 
 import java.nio.ByteBuffer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Base class for writable objects. Used for fast serialization.
  *
@@ -9,6 +12,8 @@ import java.nio.ByteBuffer;
  *
  */
 public abstract class BaseWritable {
+
+	protected static final Logger logger = LoggerFactory.getLogger(BaseWritable.class);
 
 	public abstract void readFromBuffer(ByteBuffer buffer);
 
