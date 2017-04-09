@@ -3,6 +3,8 @@ package mthesis.concurrent_graph.apps.shortestpath;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.jfree.util.Log;
+
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
@@ -49,6 +51,15 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		//				System.out.println(reVisits + "/" + firstVisits + " " + vis + " " + maxVisits);
 		//		}
 
+		// TODO Testcode
+		if (messages != null) {
+			for (SPMessageWritable msg : messages) {
+				if (msg.SuperstepNo != superstepNo) {
+					Log.warn("Message for wrong superstep: " + msg);
+				}
+			}
+		}
+
 		if (superstepNo == 0) {
 			if (ID != query.Query.From) {
 				voteVertexHalt(query.QueryId);
@@ -59,7 +70,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 				SPVertexWritable mutableValue = new SPVertexWritable(-1, 0, false, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
-					sendMessageToVertex(getNewMessage().setup(ID, edge.Value.Value), edge.TargetVertexId,
+					sendMessageToVertex(getNewMessage().setup(ID, edge.Value.Value, superstepNo + 1), edge.TargetVertexId,
 							query);
 				}
 				voteVertexHalt(query.QueryId);
@@ -77,8 +88,8 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 					if (mutableValue.Dist != Double.POSITIVE_INFINITY) {
 						logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " start reconstructing");
 						mutableValue.OnShortestPath = true;
-						//						logger.info("Q" + query.QueryId + " " + ID + " to0 " + mutableValue.Pre);
-						sendMessageToVertex(getNewMessage().setup(mutableValue.Pre, ID), //mutableValue.Dist),
+						//						logger.info(query.QueryId + ":" + superstepNo + " " + ID + " to0 " + mutableValue.Pre);
+						sendMessageToVertex(getNewMessage().setup(mutableValue.Pre, ID, superstepNo + 1), //mutableValue.Dist),
 								mutableValue.Pre, query);
 					}
 					else {
@@ -96,30 +107,30 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 							//							System.out.println(preMsg);
 							if (preMsg.SrcVertex == ID) {
 								if (preMsg.Dist >= mutableValue.Dist) {
-									//									logger.info("Q" + query.QueryId + " " + ID + " to " + mutableValue.Pre);
-									sendMessageToVertex(getNewMessage().setup(mutableValue.Pre, ID), //mutableValue.Dist),
+									//									logger.info(query.QueryId + ":" + superstepNo + " " + ID + " to " + mutableValue.Pre);
+									sendMessageToVertex(getNewMessage().setup(mutableValue.Pre, ID, superstepNo + 1), //mutableValue.Dist),
 											mutableValue.Pre,
 											query);
 								}
 								else {
-									logger.error("Q" + query.QueryId + " "
+									logger.error(query.QueryId + ":" + superstepNo + " "
 											+ "Reconstruct message distance smaller than own distance at node " + ID + ": "
-											+ messages.get(0).Dist + "<" + mutableValue.Dist);
+											+ messages.get(0).Dist + "<" + mutableValue.Dist + " " + preMsg);
 								}
 							}
 							else {
-								logger.error("Q" + query.QueryId + " "
+								logger.error(query.QueryId + ":" + superstepNo + " "
 										+ "Reconstruct message for wrong vertex. Should be " + ID + " but is " + preMsg.SrcVertex
-										+ " from " + preMsg.Dist); // TODO Test
+										+ " from " + preMsg.Dist + " " + preMsg); // TODO Test
 							}
 						}
 						else {
-							logger.error("Q" + query.QueryId + " " + "Incorrect reconstruct message count at node " + ID
+							logger.error(query.QueryId + ":" + superstepNo + " " + "Incorrect reconstruct message count at node " + ID
 									+ ": " + messages.size());
 						}
 					}
 					else {
-						logger.error("Q" + query.QueryId + " " + "Unable to reconstruct from node " + ID + ": No pre node");
+						logger.error(query.QueryId + ":" + superstepNo + " " + "Unable to reconstruct from node " + ID + ": No pre node");
 					}
 				}
 			}
@@ -170,7 +181,8 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		}
 		if (sendMessages) {
 			for (Edge<DoubleWritable> edge : getEdges()) {
-				sendMessageToVertex(getNewMessage().setup(ID, mutableValue.Dist + edge.Value.Value), edge.TargetVertexId, query);
+				sendMessageToVertex(getNewMessage().setup(ID, mutableValue.Dist + edge.Value.Value, superstepNo + 1), edge.TargetVertexId,
+						query);
 			}
 			mutableValue.SendMsgsLater = false;
 		}

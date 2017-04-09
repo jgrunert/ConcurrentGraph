@@ -38,6 +38,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	// Message double buffer
 	public Int2ObjectMap<List<M>> queryMessagesThisSuperstep = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
 	public Int2ObjectMap<List<M>> queryMessagesNextSuperstep = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
+	//	public Int2IntMap querySuperstepNumbers = new Int2IntOpenHashMap(Configuration.DEFAULT_QUERY_SLOTS); // For consistency check
 
 	private final VertexWorkerInterface<V, E, M, Q> worker;
 
@@ -104,6 +105,13 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			}
 			queryMessagesNextSuperstep.put(key, msgs);
 		}
+
+		//		int querSuperstepNumbersCount = bufferToRead.getInt();
+		//		for (int i = 0; i < querSuperstepNumbersCount; i++) {
+		//			int key = bufferToRead.getInt();
+		//			int value = bufferToRead.getInt();
+		//			querySuperstepNumbers.put(key, value);
+		//		}
 	}
 
 	/**
@@ -162,6 +170,12 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 				msg.writeToBuffer(buffer);
 			}
 		}
+
+		//		buffer.putInt(querySuperstepNumbers.size());
+		//		for (Entry<Integer, Integer> qMsgs : querySuperstepNumbers.entrySet()) {
+		//			buffer.putInt(qMsgs.getKey());
+		//			buffer.putInt(qMsgs.getValue());
+		//		}
 	}
 
 	public void finishQuery(int queryId) {
@@ -169,6 +183,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		queriesVertexInactive.remove(queryId);
 		queryMessagesThisSuperstep.remove(queryId);
 		queryMessagesNextSuperstep.remove(queryId);
+		//		querySuperstepNumbers.remove(queryId);
 	}
 
 	/**
@@ -176,7 +191,11 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	 * Prepares received messages for next superstep, swaps double buffer.
 	 * @return isActive
 	 */
-	public void prepareForNextSuperstep(Integer queryId) {
+	public void prepareForNextSuperstep(Integer queryId, int finishedSuperstepNo) {
+		//		if (querySuperstepNumbers.get((int) queryId) != finishedSuperstepNo)
+		//			Log.warn("Invalid superstep to prepare for: " + finishedSuperstepNo + " should be " + querySuperstepNumbers.get((int) queryId));
+		//		querySuperstepNumbers.put((int) queryId, finishedSuperstepNo + 1);
+
 		List<M> messagesLast = queryMessagesThisSuperstep.get(queryId);
 		List<M> messagesNext = queryMessagesNextSuperstep.get(queryId);
 
