@@ -119,6 +119,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 				logger.warn("Wrong overwritten length, " + testLen + " instead of " + (msgLength - 4));
 			}
 		}
+
 		if (message.flushAfter()) {
 			//			synchronized (writer)
 			{
@@ -127,6 +128,8 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 		}
 
 		// ACK
+		//		int ack = reader.read();
+		//		if (ack != 123) logger.error("Invalid ACK: " + ack);
 	}
 
 	public void close() {

@@ -125,13 +125,19 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 							inBuffer.clear();
 							readIndex = 0;
 							while (readIndex < msgContentLength) {
-								readIndex += reader.read(inBytes, readIndex, msgContentLength - readIndex);
-								if (readIndex == -1) {
-									logger.debug("Reader returned -1, exiting reader");
+								int read = reader.read(inBytes, readIndex, msgContentLength - readIndex);
+								if (read <= 0) {
+									logger.debug("Reader returned " + read + ", exiting reader");
 									socket.close();
 									return;
 								}
+								readIndex += read;
 							} // TODO Check length correct. CHECK FOR Newline
+							if (readIndex != msgContentLength) logger.error(
+									"Read wrong number of bytes: " + readIndex + " instead of " + msgContentLength);
+
+							// Send ACK
+							//							writer.write(123);
 						}
 
 						final byte msgType = inBuffer.get();
