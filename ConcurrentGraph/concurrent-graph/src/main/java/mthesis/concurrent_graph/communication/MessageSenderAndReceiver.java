@@ -122,7 +122,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		final long timeoutTime = System.currentTimeMillis() + Configuration.CONNECT_TIMEOUT;
 		while (System.currentTimeMillis() <= timeoutTime &&
 				!(channelAsyncReceivers.size() == (machineConfigs.size() - 1)
-						&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
+				&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
 			try {
 				Thread.sleep(1);
 			}
@@ -240,13 +240,37 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 
 	private void connectToMachine(String host, int port, int machineId) throws Exception {
+
+		{
+			Socket socket = connectSocket(host, port, machineId);
+			logger.debug("Connected to: " + host + ":" + port + " for receive channel " + machineId);
+			final OutputStream writer = socket.getOutputStream();
+			final InputStream reader = new BufferedInputStream(socket.getInputStream());
+			final DataOutputStream streamWriter = new DataOutputStream(writer);
+			streamWriter.writeBoolean(true);
+			streamWriter.writeInt(ownId);
+			startSenderConnection(machineId, socket, writer, reader);
+			logger.debug("Handshaked and established receiver connection channel: " + machineId + " <- " + ownId);
+		}
+		{
+			Socket socket = connectSocket(host, port, machineId);
+			logger.debug("Connected to: " + host + ":" + port + " for send channel " + machineId);
+			final OutputStream writer = socket.getOutputStream();
+			final InputStream reader = new BufferedInputStream(socket.getInputStream());
+			final DataOutputStream streamWriter = new DataOutputStream(writer);
+			streamWriter.writeBoolean(false);
+			streamWriter.writeInt(ownId);
+			startReceiverConnection(machineId, socket, writer, reader);
+			logger.debug("Handshaked and established receiver sender channel: " + machineId + " <- " + ownId);
+		}
+	}
+
+	private Socket connectSocket(String host, int port, int machineId) throws Exception {
 		int tries = 0;
 		long connectStartTime = System.currentTimeMillis();
-		Socket socket = null;
 		while (true) {
 			try {
-				socket = new Socket(host, port);
-				break;
+				return new Socket(host, port);
 			}
 			catch (ConnectException e) {
 				tries++;
@@ -261,13 +285,6 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 				}
 			}
 		}
-		logger.debug("Connected to: " + host + ":" + port + " for machine channel " + machineId);
-
-		final OutputStream writer = socket.getOutputStream();
-		final InputStream reader = new BufferedInputStream(socket.getInputStream());
-		new DataOutputStream(writer).writeInt(ownId);
-		startConnection(machineId, socket, writer, reader);
-		logger.debug("Handshaked and established connection channel: " + machineId + " <- " + ownId);
 	}
 
 	private void runServer() throws Exception {
@@ -295,8 +312,12 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 				final InputStream reader = new BufferedInputStream(clientSocket.getInputStream());
 				final OutputStream writer = clientSocket.getOutputStream();
 
-				final int connectedMachineId = new DataInputStream(reader).readInt();
-				startConnection(connectedMachineId, clientSocket, writer, reader);
+				DataInputStream inStream = new DataInputStream(reader);
+				final boolean clientSendConnection = inStream.readBoolean();
+				final int connectedMachineId = inStream.readInt();
+				if (clientSendConnection)
+					startReceiverConnection(connectedMachineId, clientSocket, writer, reader);
+				else startSenderConnection(connectedMachineId, clientSocket, writer, reader);
 				logger.debug("Handshaked and established connection channel: " + connectedMachineId + " -> " + ownId + " " + clientSocket);
 			}
 			logger.debug("connection server loop finished");
@@ -317,7 +338,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	}
 
 
-	private void startConnection(int machineId, final Socket socket, final OutputStream writer,
+	private void startReceiverConnection(int machineId, final Socket socket, final OutputStream writer,
 			final InputStream reader) {
 		try {
 			socket.setTcpNoDelay(Configuration.TCP_NODELAY);
@@ -325,11 +346,22 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		catch (final SocketException e) {
 			logger.error("set socket configs", e);
 		}
-		final ChannelAsyncMessageReceiver<V, E, M, Q> receiver = new ChannelAsyncMessageReceiver<>(socket, reader, ownId,
-				machine, workerMachine, jobConfiguration);
+		final ChannelAsyncMessageReceiver<V, E, M, Q> receiver = new ChannelAsyncMessageReceiver<>(socket, reader,
+				writer, ownId, machine, workerMachine, jobConfiguration);
 		receiver.startReceiver(machineId);
 		channelAsyncReceivers.add(receiver);
-		final ChannelAsyncMessageSender<V, E, M, Q> sender = new ChannelAsyncMessageSender<>(socket, writer, ownId);
+	}
+
+	private void startSenderConnection(int machineId, final Socket socket, final OutputStream writer,
+			final InputStream reader) {
+		try {
+			socket.setTcpNoDelay(Configuration.TCP_NODELAY);
+		}
+		catch (final SocketException e) {
+			logger.error("set socket configs", e);
+		}
+		final ChannelAsyncMessageSender<V, E, M, Q> sender = new ChannelAsyncMessageSender<>(socket, reader, writer,
+				ownId);
 		sender.startSender(ownId, machineId);
 		channelAsyncSenders.put(machineId, sender);
 	}

@@ -866,7 +866,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			//			System.err.println("Decide move for start " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
 			//			System.out.println("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
 			// TODO Master stats decide time
-			logger.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
+			logger.info("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
 
 			// Send barrier move messages
 			for (int workerId : workerIds) {

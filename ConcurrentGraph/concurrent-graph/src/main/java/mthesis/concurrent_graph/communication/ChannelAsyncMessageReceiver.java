@@ -2,6 +2,7 @@ package mthesis.concurrent_graph.communication;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
@@ -33,6 +34,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 	private final int ownId;
 	private final Socket socket;
 	private final InputStream reader;
+	private final OutputStream writer;
 	private final byte[] inBytes = new byte[Configuration.MAX_MESSAGE_SIZE];
 	private final ByteBuffer inBuffer = ByteBuffer.wrap(inBytes);
 	private final AbstractMachine<V, E, M, Q> inMsgHandler;
@@ -42,13 +44,14 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 	private final JobConfiguration<V, E, M, Q> jobConfig;
 	private final VertexFactory<V, E, M, Q> vertexFactory;
 
-	public ChannelAsyncMessageReceiver(Socket socket, InputStream reader, int ownId,
+	public ChannelAsyncMessageReceiver(Socket socket, InputStream reader, OutputStream writer, int ownId,
 			AbstractMachine<V, E, M, Q> inMsgHandler,
 			VertexWorkerInterface<V, E, M, Q> worker, JobConfiguration<V, E, M, Q> jobConfig) {
 		this.ownId = ownId;
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;
 		this.reader = reader;
+		this.writer = writer;
 		this.inMsgHandler = inMsgHandler;
 		this.worker = worker;
 		this.jobConfig = jobConfig;
@@ -128,14 +131,14 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 									socket.close();
 									return;
 								}
-							}
+							} // TODO Check length correct. CHECK FOR Newline
 						}
 
 						final byte msgType = inBuffer.get();
 						switch (msgType) {
 							case 0:
 								inMsgHandler
-										.onIncomingMessage(new VertexMessage<>(inBuffer, jobConfig));
+								.onIncomingMessage(new VertexMessage<>(inBuffer, jobConfig));
 								break;
 							case 1:
 								readIncomingMessageEnvelope(1, msgContentLength - 1);

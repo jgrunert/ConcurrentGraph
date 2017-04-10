@@ -1,6 +1,7 @@
 package mthesis.concurrent_graph.communication;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -27,6 +28,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 
 	private final Logger logger;
 	private final Socket socket;
+	private final InputStream reader;
 	private final OutputStream writer;
 	private final byte[] outBytes = new byte[Configuration.MAX_MESSAGE_SIZE];
 	private final ByteBuffer outBuffer = ByteBuffer.wrap(outBytes);
@@ -35,9 +37,10 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	private boolean isClosing = false;
 
 
-	public ChannelAsyncMessageSender(Socket socket, OutputStream writer, int ownId) {
+	public ChannelAsyncMessageSender(Socket socket, InputStream reader, OutputStream writer, int ownId) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;
+		this.reader = reader;
 		this.writer = writer;
 	}
 
@@ -86,7 +89,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	private void sendMessageViaStream(final ChannelMessage message) throws IOException {
 		if (message.hasContent()) {
 			outBuffer.clear();
-			outBuffer.position(4); // Leave 2 bytes for content length
+			outBuffer.position(4); // Leave 4 bytes for content length
 			outBuffer.put(message.getTypeCode());
 			message.writeMessageToBuffer(outBuffer);
 
@@ -105,7 +108,8 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 			//			synchronized (writer)
 			{
 				// Send message
-				writer.write(outBytes, 0, msgLength);
+				writer.write(outBytes, 0, msgLength); // TODO Flush, overflow etc
+				// TODO Test with object stream
 			}
 
 			// TODO Temporary check to find messaging issues
@@ -118,9 +122,11 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 		if (message.flushAfter()) {
 			//			synchronized (writer)
 			{
-				writer.flush();
+				writer.flush(); // TODO test with and without
 			}
 		}
+
+		// ACK
 	}
 
 	public void close() {
