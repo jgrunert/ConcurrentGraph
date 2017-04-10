@@ -314,7 +314,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
 				for (WorkerStatSample sample : samples) {
 					workerStats.get(controlMsg.getSrcMachine())
-							.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
+					.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
 				}
 			}
 
@@ -511,10 +511,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -564,10 +564,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -863,9 +863,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			globalBarrierWaitSet.addAll(workerIds);
 			globalBarrierActive = true;
 
-			System.err.println("Decide move for start " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
-			System.out.println("Decided to move in " + (System.currentTimeMillis() - decideStartTime)); // TODO Testcode
-			logger.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
+			//			System.err.println("Decide move for start " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
+			//			System.out.println("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
+			// TODO Master stats decide time
+			logger.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
 
 			// Send barrier move messages
 			for (int workerId : workerIds) {
@@ -876,8 +877,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			}
 			logger.info("Starting barrier with vertex move");
 
-			System.err.println("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
-			logger.debug("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
+			//			System.err.println("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
+			logger.debug("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
 			barrierDelayedQueryNextSteps.add(new Pair<>(queryToStart, superstepNo));
 		}
 		else {
@@ -898,9 +899,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		globalBarrierActive = false;
 		for (Pair<Q, Integer> delayedQueryNextStep : barrierDelayedQueryNextSteps) {
 			logger.debug("Start delayed query superstep " + delayedQueryNextStep.first.QueryId + ":" + delayedQueryNextStep.second);
-			System.err.println("Start delayed query superstep " + delayedQueryNextStep.first.QueryId + ":" + delayedQueryNextStep.second); // TODO testcode
+			//			System.err.println("Start delayed query superstep " + delayedQueryNextStep.first.QueryId + ":" + delayedQueryNextStep.second);
 			startQueryNextSuperstep(delayedQueryNextStep.first, delayedQueryNextStep.second);
 		}
+		barrierDelayedQueryNextSteps.clear();
 		// TODO Delayed starts
 	}
 
