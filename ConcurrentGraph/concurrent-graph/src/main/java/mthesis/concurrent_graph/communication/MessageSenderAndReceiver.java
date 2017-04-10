@@ -244,22 +244,24 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		{
 			Socket socket = connectSocket(host, port, machineId);
 			logger.debug("Connected to: " + host + ":" + port + " for receive channel " + machineId);
-			final OutputStream writer = socket.getOutputStream();
 			final InputStream reader = new BufferedInputStream(socket.getInputStream());
-			final DataOutputStream streamWriter = new DataOutputStream(writer);
-			streamWriter.writeBoolean(true);
-			streamWriter.writeInt(ownId);
+			//final InputStream reader = socket.getInputStream();
+			final OutputStream writer = socket.getOutputStream();
+			DataOutputStream outWriter = new DataOutputStream(writer);
+			outWriter.writeBoolean(true);
+			outWriter.writeInt(ownId);
 			startSenderConnection(machineId, socket, writer, reader);
 			logger.debug("Handshaked and established receiver connection channel: " + machineId + " <- " + ownId);
 		}
 		{
 			Socket socket = connectSocket(host, port, machineId);
 			logger.debug("Connected to: " + host + ":" + port + " for send channel " + machineId);
-			final OutputStream writer = socket.getOutputStream();
 			final InputStream reader = new BufferedInputStream(socket.getInputStream());
-			final DataOutputStream streamWriter = new DataOutputStream(writer);
-			streamWriter.writeBoolean(false);
-			streamWriter.writeInt(ownId);
+			//final InputStream reader = socket.getInputStream();
+			final OutputStream writer = socket.getOutputStream();
+			DataOutputStream outWriter = new DataOutputStream(writer);
+			outWriter.writeBoolean(false);
+			outWriter.writeInt(ownId);
 			startReceiverConnection(machineId, socket, writer, reader);
 			logger.debug("Handshaked and established receiver sender channel: " + machineId + " <- " + ownId);
 		}
@@ -310,6 +312,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 				logger.debug("Accepted connection: " + clientSocket);
 				final InputStream reader = new BufferedInputStream(clientSocket.getInputStream());
+				//final InputStream reader = clientSocket.getInputStream();
 				final OutputStream writer = clientSocket.getOutputStream();
 
 				DataInputStream inStream = new DataInputStream(reader);

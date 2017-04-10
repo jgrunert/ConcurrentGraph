@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.communication;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,7 +51,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 		this.ownId = ownId;
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;
-		this.reader = reader;
+		this.reader = new DataInputStream(reader);
 		this.writer = writer;
 		this.inMsgHandler = inMsgHandler;
 		this.worker = worker;
@@ -80,6 +81,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 							inBuffer.clear();
 							reader.read(inBytes, 0, 4);
 							msgContentLength = inBuffer.getInt();
+							//msgContentLength = inBuffer.getInt() + 4; // TODO Test to doublecheck length
 						}
 
 						// Check for closed socket or message error
@@ -165,6 +167,11 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 								logger.warn("Unknown incoming message id: " + msgType);
 								break;
 						}
+
+
+						//						int msgContentLengthCheck = inBuffer.getInt(); // TODO Test to doublecheck length
+						//						if (msgContentLengthCheck != msgContentLength) logger.error("Wrong message length check: "
+						//								+ msgContentLengthCheck + " should be " + msgContentLength);
 					}
 				}
 				catch (final Throwable e) {

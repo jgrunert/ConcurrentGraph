@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.communication;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,7 +42,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;
 		this.reader = reader;
-		this.writer = writer;
+		this.writer = new DataOutputStream(writer);
 	}
 
 	// TODO Testcode
@@ -85,7 +86,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 
 	// Sends message via stream.
 	// THREADING NOTE: Not threadsafe
-	// Format: short MsgLength, byte MsgType, byte[] MsgContent
+	// Format: int MsgLength, byte MsgType, byte[] MsgContent
 	private void sendMessageViaStream(final ChannelMessage message) throws IOException {
 		if (message.hasContent()) {
 			outBuffer.clear();
@@ -103,12 +104,17 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 				return;
 			}
 
+			//			outBuffer.putInt(msgLength); // TODO Test to doublecheck length
+
 			outBuffer.position(0);
 			outBuffer.putInt((msgLength - 4));
+
 			//			synchronized (writer)
 			{
 				// Send message
-				writer.write(outBytes, 0, msgLength); // TODO Flush, overflow etc
+				//writer.write(outBytes, 0, msgLength + 4); // TODO Test to doublecheck length
+				writer.write(outBytes, 0, msgLength);
+				// TODO Flush, overflow etc
 				// TODO Test with object stream
 			}
 
