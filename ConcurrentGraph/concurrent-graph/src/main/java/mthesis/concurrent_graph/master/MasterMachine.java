@@ -85,6 +85,11 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final BaseQueryGlobalValuesFactory<Q> queryValueFactory;
 
 	private final BlockingQueue<ChannelMessage> messageQueue = new LinkedBlockingQueue<>();
+	private volatile boolean globalBarrierActive = false;
+	private final Set<Integer> globalBarrierWaitSet = new HashSet<>();
+	// Queries that are delayed because of the active global barrier
+	private final Set<Pair<Q, Integer>> barrierDelayedQueryNextSteps = new HashSet<>();
+	private final Set<Integer> barrierDelayedQueryStarts = new HashSet<>();
 
 	private final AbstractVertexMoveDecider<Q> vertexMoveDecider = new GreedyNewVertexMoveDecider<>();
 
@@ -384,7 +389,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					if (!queryFinished) {
 						// Active workers, start next superstep
 						msgActiveQuery.nextSuperstep(workerIds);
-						startWorkersQueryNextSuperstep(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
+						queryNextSuperstepReady(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
 						msgActiveQuery.resetValueAggregator(queryValueFactory);
 						msgActiveQuery.LastStepTime = System.nanoTime();
 						logger.debug("Workers finished superstep " + msgActiveQuery.BaseQuery.QueryId + ":"
@@ -441,7 +446,16 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			}
 		}
 		else if (controlMsg.getType() == ControlMessageType.Worker_Barrier_Finished) {
-			logger.info("Worker finished barrier " + controlMsg.getSrcMachine());
+			if (globalBarrierWaitSet.contains(controlMsg.getSrcMachine())) {
+				logger.info("Worker finished global barrier " + controlMsg.getSrcMachine());
+				globalBarrierWaitSet.remove(controlMsg.getSrcMachine());
+				if (globalBarrierWaitSet.isEmpty()) {
+					globalBarrierFinished();
+				}
+			}
+			else {
+				logger.error("Worker_Barrier_Finished from worker not waiting for " + controlMsg.getSrcMachine() + " " + controlMsg);
+			}
 		}
 		else {
 			logger.error("Unexpected control message type in message " + message);
@@ -831,18 +845,27 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	/**
 	 * Let workers start next superstep of a query. Make decisions about vertices to move.
 	 */
-	private void startWorkersQueryNextSuperstep(Q queryToStart, int superstepNo) {
-		System.err.println("Start " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
+	private void queryNextSuperstepReady(Q queryToStart, int superstepNo) {
+
+		if (globalBarrierActive) {
+			System.err.println("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
+			logger.debug("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
+			barrierDelayedQueryNextSteps.add(new Pair<>(queryToStart, superstepNo));
+			return;
+		}
+
 		long decideStartTime = System.currentTimeMillis();
 		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerIds, activeQueries, actQueryWorkerActiveVerts,
 				actQueryWorkerIntersects);
 
 		if (moveDecission != null) {
 			// TODO Start barrier, dont start any more supersteps until barrier finished
+			globalBarrierWaitSet.addAll(workerIds);
+			globalBarrierActive = true;
 
-			System.err.println("Decide move"); // TODO Testcode
-			System.out.println("Decided to move in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
-			logger.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
+			System.err.println("Decide move for start " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
+			System.out.println("Decided to move in " + (System.currentTimeMillis() - decideStartTime)); // TODO Testcode
+			logger.debug("Decided to move in " + (System.currentTimeMillis() - decideStartTime)); // TODO Master stats
 
 			// Send barrier move messages
 			for (int workerId : workerIds) {
@@ -852,14 +875,33 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 						true);
 			}
 			logger.info("Starting barrier with vertex move");
-			// TODO Wait for barrier finish?
-		}
 
+			System.err.println("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
+			logger.debug("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
+			barrierDelayedQueryNextSteps.add(new Pair<>(queryToStart, superstepNo));
+		}
+		else {
+			startQueryNextSuperstep(queryToStart, superstepNo);
+		}
+	}
+
+	private void startQueryNextSuperstep(Q queryToStart, int superstepNo) {
 		// Start query superstep
 		for (Integer otherWorkerId : workerIds) {
 			messaging.sendControlMessageUnicast(otherWorkerId,
 					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, queryToStart), true);
 		}
+	}
+
+	private void globalBarrierFinished() {
+		logger.info("Global barrier finished");
+		globalBarrierActive = false;
+		for (Pair<Q, Integer> delayedQueryNextStep : barrierDelayedQueryNextSteps) {
+			logger.debug("Start delayed query superstep " + delayedQueryNextStep.first.QueryId + ":" + delayedQueryNextStep.second);
+			System.err.println("Start delayed query superstep " + delayedQueryNextStep.first.QueryId + ":" + delayedQueryNextStep.second); // TODO testcode
+			startQueryNextSuperstep(delayedQueryNextStep.first, delayedQueryNextStep.second);
+		}
+		// TODO Delayed starts
 	}
 
 

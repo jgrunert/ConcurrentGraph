@@ -245,7 +245,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
 					// Start barrier, notify other workers
 					logger.debug("Barrier started, waiting for other workers to start");
-					logger.info(ownId + " barrier " + activeQueriesThisStep.size());
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
@@ -777,7 +776,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 		if (message.getSuperstepNo() != activeQuery.getCalculatedSuperstepNo() + 1) {
 			logger.error("Received Master_Next_Superstep with wrong superstepNo: " + message.getSuperstepNo() + " at step "
-					+ activeQuery.getCalculatedSuperstepNo());
+					+ activeQuery.QueryId + ":" + activeQuery.getCalculatedSuperstepNo());
 			return;
 		}
 
