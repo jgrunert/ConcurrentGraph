@@ -34,8 +34,8 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 	private final Logger logger;
 	private final int ownId;
 	private final Socket socket;
-	private final InputStream reader;
-	private final OutputStream writer;
+	private final DataInputStream reader;
+	//	private final OutputStream writer;
 	private final byte[] inBytes = new byte[Configuration.MAX_MESSAGE_SIZE];
 	private final ByteBuffer inBuffer = ByteBuffer.wrap(inBytes);
 	private final AbstractMachine<V, E, M, Q> inMsgHandler;
@@ -52,7 +52,7 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;
 		this.reader = new DataInputStream(reader);
-		this.writer = writer;
+		//		this.writer = writer;
 		this.inMsgHandler = inMsgHandler;
 		this.worker = worker;
 		this.jobConfig = jobConfig;
@@ -76,13 +76,12 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 						//							Thread.sleep(200);
 						//						}
 
-						//						synchronized (reader)
-						{
-							inBuffer.clear();
-							reader.read(inBytes, 0, 4);
-							msgContentLength = inBuffer.getInt();
-							//msgContentLength = inBuffer.getInt() + 4; // TODO Test to doublecheck length
-						}
+						//							inBuffer.clear();
+						//							reader.read(inBytes, 0, 4);
+						//							msgContentLength = inBuffer.getInt();
+						msgContentLength = reader.readInt();
+						//msgContentLength = inBuffer.getInt() + 4; // TODO Test to doublecheck length
+
 
 						// Check for closed socket or message error
 						if (msgContentLength == ChannelAsyncMessageSender.ChannelCloseSignal) {
@@ -105,7 +104,8 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 							}
 							return;
 						}
-						if ((msgContentLength + 4) > Configuration.MAX_MESSAGE_SIZE) {
+						//						if ((msgContentLength + 4) > Configuration.MAX_MESSAGE_SIZE) {
+						if (msgContentLength > Configuration.MAX_MESSAGE_SIZE) {
 							Thread.sleep(100); // Sleep to wait wait until socket is closed when shutting down
 							if (socket.isClosed()) {
 								if (!readyForClose) {
@@ -122,25 +122,22 @@ public class ChannelAsyncMessageReceiver<V extends BaseWritable, E extends BaseW
 							return;
 						}
 
-						//						synchronized (reader)
-						{
-							inBuffer.clear();
-							readIndex = 0;
-							while (readIndex < msgContentLength) {
-								int read = reader.read(inBytes, readIndex, msgContentLength - readIndex);
-								if (read <= 0) {
-									logger.debug("Reader returned " + read + ", exiting reader");
-									socket.close();
-									return;
-								}
-								readIndex += read;
-							} // TODO Check length correct. CHECK FOR Newline
-							if (readIndex != msgContentLength) logger.error(
-									"Read wrong number of bytes: " + readIndex + " instead of " + msgContentLength);
+						inBuffer.clear();
+						readIndex = 0;
+						while (readIndex < msgContentLength) {
+							int read = reader.read(inBytes, readIndex, msgContentLength - readIndex);
+							if (read <= 0) {
+								logger.debug("Reader returned " + read + ", exiting reader");
+								socket.close();
+								return;
+							}
+							readIndex += read;
+						} // TODO Check length correct. CHECK FOR Newline
+						if (readIndex != msgContentLength) logger.error(
+								"Read wrong number of bytes: " + readIndex + " instead of " + msgContentLength);
 
-							// Send ACK
-							//							writer.write(123);
-						}
+						// Send ACK
+						//							writer.write(123);
 
 						final byte msgType = inBuffer.get();
 						switch (msgType) {

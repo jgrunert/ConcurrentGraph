@@ -29,8 +29,8 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 
 	private final Logger logger;
 	private final Socket socket;
-	private final InputStream reader;
-	private final OutputStream writer;
+	//	private final InputStream reader;
+	private final DataOutputStream writer;
 	private final byte[] outBytes = new byte[Configuration.MAX_MESSAGE_SIZE];
 	private final ByteBuffer outBuffer = ByteBuffer.wrap(outBytes);
 	private final BlockingQueue<ChannelMessage> outMessages = new LinkedBlockingQueue<>();
@@ -41,7 +41,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	public ChannelAsyncMessageSender(Socket socket, InputStream reader, OutputStream writer, int ownId) {
 		this.logger = LoggerFactory.getLogger(this.getClass().getCanonicalName() + "[" + ownId + "]");
 		this.socket = socket;
-		this.reader = reader;
+		//		this.reader = reader;
 		this.writer = new DataOutputStream(writer);
 	}
 
@@ -90,7 +90,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	private void sendMessageViaStream(final ChannelMessage message) throws IOException {
 		if (message.hasContent()) {
 			outBuffer.clear();
-			outBuffer.position(4); // Leave 4 bytes for content length
+			//			outBuffer.position(4); // Leave 4 bytes for content length
 			outBuffer.put(message.getTypeCode());
 			message.writeMessageToBuffer(outBuffer);
 
@@ -99,38 +99,35 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 				logger.error("Unable to send message with non positive length " + msgLength);
 				return;
 			}
-			if ((msgLength + 4) > Configuration.MAX_MESSAGE_SIZE) {
+			//			if ((msgLength + 4) > Configuration.MAX_MESSAGE_SIZE) {
+			if (msgLength > Configuration.MAX_MESSAGE_SIZE) {
 				logger.error("Unable to send message with too long length " + msgLength);
 				return;
 			}
 
 			//			outBuffer.putInt(msgLength); // TODO Test to doublecheck length
 
-			outBuffer.position(0);
-			outBuffer.putInt((msgLength - 4));
+			//			outBuffer.position(0);
+			//			outBuffer.putInt((msgLength - 4));
+			writer.writeInt(msgLength);
 
-			//			synchronized (writer)
-			{
-				// Send message
-				//writer.write(outBytes, 0, msgLength + 4); // TODO Test to doublecheck length
-				writer.write(outBytes, 0, msgLength);
-				// TODO Flush, overflow etc
-				// TODO Test with object stream
-			}
+			// Send message
+			//writer.write(outBytes, 0, msgLength + 4); // TODO Test to doublecheck length
+			writer.write(outBytes, 0, msgLength);
+			// TODO Flush, overflow etc
+			// TODO Test with object stream
+
 
 			// TODO Temporary check to find messaging issues
-			outBuffer.position(0);
-			int testLen = outBuffer.getInt();
-			if (testLen != msgLength - 4) {
-				logger.warn("Wrong overwritten length, " + testLen + " instead of " + (msgLength - 4));
-			}
+			//			outBuffer.position(0);
+			//			int testLen = outBuffer.getInt();
+			//			if (testLen != msgLength - 4) {
+			//				logger.warn("Wrong overwritten length, " + testLen + " instead of " + (msgLength - 4));
+			//			}
 		}
 
 		if (message.flushAfter()) {
-			//			synchronized (writer)
-			{
-				writer.flush(); // TODO test with and without
-			}
+			writer.flush(); // TODO test with and without
 		}
 
 		// ACK
