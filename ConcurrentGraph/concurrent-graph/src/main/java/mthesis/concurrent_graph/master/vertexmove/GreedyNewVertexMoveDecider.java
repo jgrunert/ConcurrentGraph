@@ -3,11 +3,16 @@ package mthesis.concurrent_graph.master.vertexmove;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.master.MasterQuery;
 
 public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVertexMoveDecider<Q> {
+
+	private static final Logger logger = LoggerFactory.getLogger(GreedyNewVertexMoveDecider.class);
 
 	// TODO Configuration
 	private static final double WorkerImbalanceThreshold = 0.3;
@@ -102,8 +107,11 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 		System.out.println(bestDistribution.getCostsNoImbalance());
 		bestDistribution.printMoveDecissions();
 
-		System.out.println("# MOVE " + totalVerticesMoved);
-		if (totalVerticesMoved < MinMoveTotalVertices) return null;
+		if (totalVerticesMoved < MinMoveTotalVertices) {
+			logger.info("Decided not move, not enough vertices: " + totalVerticesMoved);
+			return null;
+		}
+		logger.info("Decided move, vertices: " + totalVerticesMoved);
 		return bestDistribution.toMoveDecision(workerIds);
 	}
 

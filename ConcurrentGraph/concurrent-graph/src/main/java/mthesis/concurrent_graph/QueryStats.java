@@ -38,7 +38,7 @@ public class QueryStats {
 	public long MoveRecvVerticesTime;
 
 	// Detailed stats
-	public long MoveSendVerticesMessages; // TODO
+	public long MoveSendVerticesMessages;
 
 
 

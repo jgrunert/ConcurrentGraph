@@ -715,7 +715,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					}
 					return true;
 					case Worker_Barrier_Finished: {
-						System.out.println(ownId + " Worker_Barrier_Finished");
+						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker))
 							globalBarrierFinishWaitSet.remove(srcWorker);

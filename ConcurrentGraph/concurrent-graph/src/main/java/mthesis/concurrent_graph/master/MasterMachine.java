@@ -848,8 +848,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private void queryNextSuperstepReady(Q queryToStart, int superstepNo) {
 
 		if (globalBarrierActive) {
-			System.err.println("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
-			logger.debug("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo); // TODO Testcode
+			//			System.err.println("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
+			logger.debug("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
 			barrierDelayedQueryNextSteps.add(new Pair<>(queryToStart, superstepNo));
 			return;
 		}
