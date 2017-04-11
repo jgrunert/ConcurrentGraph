@@ -847,7 +847,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private void sendMasterQueryFinishedMessage(WorkerQuery<V, E, M, Q> workerQuery) {
 		messaging.sendControlMessageUnicast(masterId,
-				ControlMessageBuildUtil.Build_Worker_QueryFinished(workerQuery.getNextComputeSuperstep(), ownId, workerQuery.QueryLocal),
+				ControlMessageBuildUtil.Build_Worker_QueryFinished(workerQuery.getFinishedSuperstepNo(), ownId, workerQuery.QueryLocal),
 				true);
 	}
 

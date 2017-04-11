@@ -38,4 +38,9 @@ public class ProtoEnvelopeMessage implements ChannelMessage {
 	public boolean flushAfter() {
 		return flushAfter;
 	}
+
+	@Override
+	public String toString() {
+		return message.toString();
+	}
 }
