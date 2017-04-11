@@ -58,10 +58,12 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		if (messages != null) {
 			for (SPMessageWritable msg : messages) {
 				if (msg.SuperstepNo != superstepNo) {
-					logger.warn("Message for wrong superstep, not " + superstepNo + " " + msg);
+					logger.warn(query.QueryId + ":" + superstepNo + "  Message for wrong superstep, not " + superstepNo
+							+ " " + msg);
 				}
 				if (msg.DstVertex != ID) {
-					logger.warn("Message for vertex dst vertex, not " + msg.DstVertex + " " + msg);
+					logger.warn(query.QueryId + ":" + superstepNo + " Message for vertex dst vertex, not "
+							+ msg.DstVertex + " " + msg);
 				}
 			}
 		}

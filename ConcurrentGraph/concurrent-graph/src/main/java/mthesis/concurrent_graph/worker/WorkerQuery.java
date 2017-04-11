@@ -24,15 +24,11 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public Q Query;
 	/** Local query values, are sent to the master after superstep and then aggregated */
 	public Q QueryLocal;
-	/** Query values from master for next superstep */
-	public Q NextStepQuery;
 
 	// Supersteps: Start with -1, the prepare step
 	private static final int firstSuperstep = -1;
 	// Last superstep with finished worker barrier sync
 	private volatile int workerBarrierSyncSuperstepNo = firstSuperstep - 1;
-	// Next superstep allowed by master
-	private volatile int masterAllowedSuperstepNo = firstSuperstep;
 	// Last superstep completely finished: compute, worker and master sync
 	private volatile int finishedSuperstepNo = firstSuperstep - 1;
 	// Number of next superstep to compute, incremented when superstep compute is finished.
@@ -58,8 +54,6 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public void finishedCompute() {
 		// Compute can be finished before or after barrier sync
 		assert nextComputeSuperstepNo == workerBarrierSyncSuperstepNo || nextComputeSuperstepNo == workerBarrierSyncSuperstepNo + 1;
-		// Master sync can only be finished after compute finished
-		assert nextComputeSuperstepNo == masterAllowedSuperstepNo;
 		assert nextComputeSuperstepNo == finishedSuperstepNo + 1;
 		nextComputeSuperstepNo++;
 	}
@@ -70,24 +64,11 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	}
 
 	/**
-	 * Finished query master sync
-	 */
-	public void finishedMasterNextSuperstep() {
-		// Master sync can only be finished after compute finished
-		assert masterAllowedSuperstepNo == nextComputeSuperstepNo - 1;
-		assert masterAllowedSuperstepNo == finishedSuperstepNo + 1;
-		masterAllowedSuperstepNo++;
-	}
-
-	/**
 	 * Finished a superstep completely: compute, worker and master sync
 	 */
 	public void finishedSuperstep() {
 		assert nextComputeSuperstepNo == finishedSuperstepNo + 2;
-		assert masterAllowedSuperstepNo == finishedSuperstepNo + 2;
 		assert workerBarrierSyncSuperstepNo == finishedSuperstepNo + 1;
-		Query = NextStepQuery;
-		QueryLocal = globalValueFactory.createClone(NextStepQuery);
 		finishedSuperstepNo++;
 	}
 
@@ -107,13 +88,6 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	}
 
 	/**
-	 * Returns last superstep with master sync finished
-	 */
-	public int getMasterAllowedSuperstep() {
-		return masterAllowedSuperstepNo;
-	}
-
-	/**
 	 * Returns last completely finished superstep: finished compute, master and worker barrier sync
 	 */
 	public int getFinishedSuperstepNo() {
@@ -126,14 +100,5 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public boolean isSuperstepReadyForMaster() {
 		return nextComputeSuperstepNo == finishedSuperstepNo + 2
 				&& workerBarrierSyncSuperstepNo == finishedSuperstepNo + 1;
-	}
-
-	/**
-	 * Returns if next superstep is ready, if compute, master and worker barrier sync finished
-	 */
-	public boolean isSuperstepReadyForFinish() {
-		return nextComputeSuperstepNo == finishedSuperstepNo + 2 &&
-				masterAllowedSuperstepNo == finishedSuperstepNo + 2 &&
-				workerBarrierSyncSuperstepNo == finishedSuperstepNo + 1;
 	}
 }
