@@ -145,6 +145,45 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 	}
 
+	@Override
+	public void stop() {
+		if (allVertexStatsFile != null) allVertexStatsFile.close();
+		if (actVertexStatsFile != null) actVertexStatsFile.close();
+
+		super.stop();
+	}
+
+
+	private void startQuery(Q query) {
+		if (activeQueries.containsKey(query.QueryId))
+			throw new RuntimeException("Thready with this ID already active: " + query.QueryId);
+		WorkerQuery<V, E, M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory, localVertices.keySet());
+		activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
+
+		activeQueries.put(query.QueryId, activeQuery);
+
+		// Handle postponed barrier messages if there are any
+		List<ControlMessage> postponedBarrierMsgs = postponedBarrierMessages.get(query.QueryId);
+		if (postponedBarrierMsgs != null) {
+			for (ControlMessage message : postponedBarrierMsgs) {
+				handleQuerySuperstepBarrierMsg(message, activeQuery);
+			}
+		}
+
+		logger.info("Worker started query " + query.QueryId);
+	}
+
+	private void finishQuery(WorkerQuery<V, E, M, Q> activeQuery) {
+		new VertexTextOutputWriter<V, E, M, Q>().writeOutput(
+				outputDir + File.separator + activeQuery.Query.QueryId + File.separator + ownId + ".txt", localVertices.values(),
+				activeQuery.Query.QueryId);
+		sendMasterQueryFinishedMessage(activeQuery);
+		for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
+			vertex.finishQuery(activeQuery.Query.QueryId);
+		}
+		logger.info("Worker finished query " + activeQuery.Query.QueryId);
+		activeQueries.remove(activeQuery.Query.QueryId);
+	}
 
 
 	@Override
@@ -204,7 +243,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Execution loop
 			final List<WorkerQuery<V, E, M, Q>> activeQueriesThisStep = new ArrayList<>();
 			while (!stopRequested && !(interrupted = Thread.interrupted())) {
-				// Wait for queries
+				// ++++++++++ Wait for active queries ++++++++++
 				long startTime = System.nanoTime();
 				while (activeQueries.isEmpty()) {
 					handleReceivedMessages();
@@ -212,7 +251,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				workerStats.IdleTime += (System.nanoTime() - startTime);
 
 
-				// Wait for ready queries
+				// ++++++++++ Wait for ready queries ++++++++++
 				startTime = System.nanoTime();
 				activeQueriesThisStep.clear();
 				while (!stopRequested && activeQueriesThisStep.isEmpty() && !globalBarrierRequested) {
@@ -234,22 +273,21 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
 
 
-				// Global barrier if requested and no more outstanding queries
+				// ++++++++++ Global barrier if requested and no more outstanding queries ++++++++++
 				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
 					// Start barrier, notify other workers
 					logger.debug("Barrier started, waiting for other workers to start");
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
-					// Handle all messages before barrier
+					// --- Handle all messages before barrier ---
 					handleReceivedMessages(); // TODO Necessary?
 
-					// Wait for other workers barriers
+					// --- Wait for other workers barriers ---
 					startTime = System.nanoTime();
 					while (!globalBarrierStartWaitSet.isEmpty()) {
 						handleReceivedMessages();
 					}
-					//boolean test0 = allQueriesSynced();
 					long barrierStartWaitTime = System.nanoTime() - startTime;
 
 					// Checks
@@ -267,7 +305,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						}
 					}
 
-					// Barrier tasks
+					// --- Barrier tasks ---
 					startTime = System.nanoTime();
 					// Send vertices
 					for (SendQueryVerticesMessage sendVert : globalBarrierSendVerts) {
@@ -281,7 +319,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
 
 
-					// Finish barrier, notify other workers and master
+					// --- Finish barrier, notify other workers and master ---
 					logger.debug("Barrier tasks done, waiting for other workers to finish");
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Finished(ownId), true);
@@ -300,7 +338,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 
 
-				// Compute active queries
+				// ++++++++++ Compute active and ready queries ++++++++++
 				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisStep) {
 					int queryId = activeQuery.Query.QueryId;
 					int superstepNo = activeQuery.getStartedSuperstepNo();
@@ -349,7 +387,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				}
 
 
-				// Worker stats
+				// ++++++++++ Worker stats ++++++++++
 				if ((System.currentTimeMillis() - workerStatsLastSample) >= Configuration.WORKER_STATS_SAMPLING_INTERVAL) {
 					sampleWorkerStats();
 					workerStatsLastSample = System.currentTimeMillis();
@@ -371,7 +409,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			messaging.getReadyForClose();
 			if (!stopRequested) {
 				try {
-					Thread.sleep(200); // TODO Cleaner solution, for example a final message from master
+					Thread.sleep(200);
 				}
 				catch (final InterruptedException e) {
 					e.printStackTrace();
@@ -379,86 +417,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				stop();
 			}
 		}
-	}
-
-	//	/**
-	//	 * Checks if all active queries are barrier synced
-	//	 */
-	//	private boolean allQueriesSynced() {
-	//		for (WorkerQuery<V, E, M, Q> q : activeQueries.values()) {
-	//			if (q.getBarrierFinishedSuperstepNo() != q.getStartedSuperstepNo()) {
-	//				System.out.println(q.QueryId + " not ready " + q.getStartedSuperstepNo()); // TODO Testcode
-	//				return false;
-	//			}
-	//		}
-	//		return true;
-	//	}
-
-	private void sampleWorkerStats() {
-		long activeVertices = 0;
-		for (WorkerQuery<V, E, M, Q> query : activeQueries.values())
-			activeVertices += query.ActiveVerticesThis.size();
-
-		// Output a sample of vertices on this machine
-		int allVertSampleRate = Configuration.getPropertyIntDefault("WorkerStatsAllVerticesSampleRate", 0);
-		if (allVertSampleRate > 0) {
-			if (allVertexStatsFile == null) {
-				try {
-					allVertexStatsFile = new PrintWriter(new FileWriter(outputDir + File.separator + "stats"
-							+ File.separator + "worker" + ownId + "_allVertexStats.txt"));
-				}
-				catch (IOException e) {
-					logger.error("Failed to create vertexStats file", e);
-				}
-			}
-
-			if (allVertexStatsFile != null) {
-				Random random = new Random(0);
-				StringBuilder sb = new StringBuilder();
-				for (int v : localVertices.keySet()) {
-					if (random.nextInt(allVertSampleRate) != 0) continue;
-					sb.append(v);
-					sb.append(';');
-				}
-				allVertexStatsFile.println(sb.toString());
-			}
-		}
-
-		int actVertSampleRate = Configuration.getPropertyIntDefault("WorkerStatsActiveVerticesSampleRate", 0);
-		if (actVertSampleRate > 0) {
-			if (actVertexStatsFile == null) {
-				try {
-					actVertexStatsFile = new PrintWriter(new FileWriter(outputDir + File.separator + "stats"
-							+ File.separator + "worker" + ownId + "_actVertexStats.txt"));
-				}
-				catch (IOException e) {
-					logger.error("Failed to create vertexStats file", e);
-				}
-			}
-
-			if (actVertexStatsFile != null) {
-				Random random = new Random(0);
-				StringBuilder sb = new StringBuilder();
-				Set<Integer> activeVerts = new HashSet<>();
-				for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
-					for (AbstractVertex<V, E, M, Q> v : query.ActiveVerticesThis.values()) {
-						activeVerts.add(v.ID);
-					}
-				}
-
-				for (int v : activeVerts) {
-					if (random.nextInt(actVertSampleRate) != 0) continue;
-					sb.append(v);
-					sb.append(';');
-				}
-				actVertexStatsFile.println(sb.toString());
-			}
-		}
-
-		workerStats.ActiveVertices = activeVertices;
-		workerStats.WorkerVertices = localVertices.size();
-		workerStatsSamplesToSend.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
-		workerStats = new WorkerStats();
 	}
 
 	/**
@@ -469,7 +427,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		long startTime = System.nanoTime();
 		ChannelMessage message;
 		while ((message = receivedMessages.poll()) != null) {
-			//while ((message = receivedMessages.poll()) != null) {
 			switch (message.getTypeCode()) {
 				case 0:
 					handleVertexMessage((VertexMessage<V, E, M, Q>) message);
@@ -478,7 +435,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					ProtoEnvelopeMessage msgEnvelope = ((ProtoEnvelopeMessage) message);
 					if (msgEnvelope.message.hasControlMessage()) {
 						handleControlMessage(msgEnvelope);
-						//interruptedMsgHandling = handleControlMessage(msgEnvelope);
 					}
 					break;
 				case 2:
@@ -537,16 +493,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 
-
-	//	@Override
-	//	public M getNewMessage() {
-	//		return jobConfig.getPooledMessageValue();
-	//	}
-	//
-	//	@Override
-	//	public void freePooledMessageValue(M message) {
-	//		jobConfig.freePooledMessageValue(message);
-	//	}
 
 	/**
 	 * Sends a vertex message. If local vertex, direct loopback. It remote vertex try to lookup machine. If machine not known broadcast message.
@@ -728,14 +674,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			logger.error("exception at incomingControlMessage", e);
 		}
 		return false;
-	}
-
-	@Override
-	public void stop() {
-		if (allVertexStatsFile != null) allVertexStatsFile.close();
-		if (actVertexStatsFile != null) actVertexStatsFile.close();
-
-		super.stop();
 	}
 
 	private void handleQuerySuperstepBarrierMsg(ControlMessage message, WorkerQuery<V, E, M, Q> activeQuery) {
@@ -975,16 +913,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 
 
-			//			// Clean up redirections
-			//			List<Integer> redirections = movedQueryVertices.get(activeQuery.QueryId);
-			//			if (redirections != null) {
-			//				for (Integer redir : redirections) {
-			//					movedVerticesRedirections.remove(redir);
-			//				}
-			//				movedQueryVertices.remove(activeQuery.QueryId);
-			//			}
-
-
 			sendMasterSuperstepFinished(activeQuery, queryIntersects);
 			activeQuery.finishedBarrierSync();
 			logger.trace(
@@ -1127,40 +1055,73 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 
-	private void startQuery(Q query) {
-		if (activeQueries.containsKey(query.QueryId))
-			throw new RuntimeException("Thready with this ID already active: " + query.QueryId);
-		WorkerQuery<V, E, M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory, localVertices.keySet());
-		activeQuery.ChannelBarrierWaitSet.addAll(otherWorkerIds);
 
-		activeQueries.put(query.QueryId, activeQuery);
+	private void sampleWorkerStats() {
+		long activeVertices = 0;
+		for (WorkerQuery<V, E, M, Q> query : activeQueries.values())
+			activeVertices += query.ActiveVerticesThis.size();
 
-		// Handle postponed barrier messages if there are any
-		List<ControlMessage> postponedBarrierMsgs = postponedBarrierMessages.get(query.QueryId);
-		if (postponedBarrierMsgs != null) {
-			for (ControlMessage message : postponedBarrierMsgs) {
-				handleQuerySuperstepBarrierMsg(message, activeQuery);
+		// Output a sample of vertices on this machine
+		int allVertSampleRate = Configuration.getPropertyIntDefault("WorkerStatsAllVerticesSampleRate", 0);
+		if (allVertSampleRate > 0) {
+			if (allVertexStatsFile == null) {
+				try {
+					allVertexStatsFile = new PrintWriter(new FileWriter(outputDir + File.separator + "stats"
+							+ File.separator + "worker" + ownId + "_allVertexStats.txt"));
+				}
+				catch (IOException e) {
+					logger.error("Failed to create vertexStats file", e);
+				}
+			}
+
+			if (allVertexStatsFile != null) {
+				Random random = new Random(0);
+				StringBuilder sb = new StringBuilder();
+				for (int v : localVertices.keySet()) {
+					if (random.nextInt(allVertSampleRate) != 0) continue;
+					sb.append(v);
+					sb.append(';');
+				}
+				allVertexStatsFile.println(sb.toString());
 			}
 		}
 
-		logger.info("Worker started query " + query.QueryId);
-	}
+		int actVertSampleRate = Configuration.getPropertyIntDefault("WorkerStatsActiveVerticesSampleRate", 0);
+		if (actVertSampleRate > 0) {
+			if (actVertexStatsFile == null) {
+				try {
+					actVertexStatsFile = new PrintWriter(new FileWriter(outputDir + File.separator + "stats"
+							+ File.separator + "worker" + ownId + "_actVertexStats.txt"));
+				}
+				catch (IOException e) {
+					logger.error("Failed to create vertexStats file", e);
+				}
+			}
 
-	private void finishQuery(WorkerQuery<V, E, M, Q> activeQuery) {
-		new VertexTextOutputWriter<V, E, M, Q>().writeOutput(
-				outputDir + File.separator + activeQuery.Query.QueryId + File.separator + ownId + ".txt", localVertices.values(),
-				activeQuery.Query.QueryId);
-		sendMasterQueryFinishedMessage(activeQuery);
-		for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
-			vertex.finishQuery(activeQuery.Query.QueryId);
+			if (actVertexStatsFile != null) {
+				Random random = new Random(0);
+				StringBuilder sb = new StringBuilder();
+				Set<Integer> activeVerts = new HashSet<>();
+				for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
+					for (AbstractVertex<V, E, M, Q> v : query.ActiveVerticesThis.values()) {
+						activeVerts.add(v.ID);
+					}
+				}
+
+				for (int v : activeVerts) {
+					if (random.nextInt(actVertSampleRate) != 0) continue;
+					sb.append(v);
+					sb.append(';');
+				}
+				actVertexStatsFile.println(sb.toString());
+			}
 		}
-		logger.info("Worker finished query " + activeQuery.Query.QueryId);
-		activeQueries.remove(activeQuery.Query.QueryId);
 
-		//		if (movedQueryVertices.containsKey(activeQuery.QueryId))
-		//			logger.error("movedVerticesRedirections not cleaned up after last superstep");
+		workerStats.ActiveVertices = activeVertices;
+		workerStats.WorkerVertices = localVertices.size();
+		workerStatsSamplesToSend.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
+		workerStats = new WorkerStats();
 	}
-
 
 	@Override
 	public BaseWritableFactory<V> getVertexValueFactory() {
@@ -1170,19 +1131,4 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private Q deserializeQuery(ByteString bytes) {
 		return globalValueFactory.createFromBytes(ByteBuffer.wrap(bytes.toByteArray()));
 	}
-
-
-	//	/**
-	//	 * @return number of active vertices of this query intersecting with other queries.
-	//	 */
-	//	private int getQueryIntersectionCount(int queryId) {
-	//		int totalIntersects = 0;
-	//		Map<Integer, Integer> intersects = currentQueryIntersects.get(queryId);
-	//		if (intersects != null) {
-	//			for (Integer qInters : intersects.values()) {
-	//				totalIntersects += qInters;
-	//			}
-	//		}
-	//		return totalIntersects;
-	//	}
 }
