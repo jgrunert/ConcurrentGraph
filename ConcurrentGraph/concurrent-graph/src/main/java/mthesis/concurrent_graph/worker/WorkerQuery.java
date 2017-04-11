@@ -27,13 +27,13 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	// Supersteps: Start with -1, the prepare step
 	private static final int firstSuperstep = -1;
 	// Last superstep with finished worker barrier sync
-	private volatile int workerBarrierSyncSuperstepNo = firstSuperstep - 1;
+	private volatile int barrierSyncedSuperstepNo = firstSuperstep - 1;
 	// Number of last superstep compute, incremented when superstep compute is finished.
 	private volatile int finishedComputeSuperstepNo = firstSuperstep - 1;
-	// Last superstep completely finished: compute, worker and master sync
-	private volatile int lastFinishedSuperstepNo = firstSuperstep - 1;
+	// Last superstep locally finished: compute, and barrier sync
+	private volatile int localFinishedSuperstepNo = firstSuperstep - 1;
 	// Number of next superstep to compute, incremented when master starts next superstep.
-	private volatile int nextComputeSuperstepNo = firstSuperstep;
+	private volatile int masterStartedSuperstepNo = firstSuperstep;
 
 	/** Workers to wait for barrier sync */
 	public final Set<Integer> BarrierSyncWaitSet = new HashSet<>();
@@ -52,39 +52,49 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	}
 
 
-	public void finishedCompute() {
+	/**
+	 * Finished compute superstep
+	 */
+	public void onFinishedSuperstepCompute(int superstepFinished) {
 		// Compute can be finished before or after barrier sync
-		assert finishedComputeSuperstepNo == workerBarrierSyncSuperstepNo - 1
-				|| finishedComputeSuperstepNo == workerBarrierSyncSuperstepNo;
-		assert finishedComputeSuperstepNo == lastFinishedSuperstepNo;
-		assert finishedComputeSuperstepNo == nextComputeSuperstepNo + 1;
-		finishedComputeSuperstepNo++;
-	}
-
-	public void finishedWorkerBarrierSync() {
-		assert workerBarrierSyncSuperstepNo == lastFinishedSuperstepNo
-				|| workerBarrierSyncSuperstepNo == lastFinishedSuperstepNo + 1;
-		workerBarrierSyncSuperstepNo++;
+		assert superstepFinished == finishedComputeSuperstepNo + 1;
+		assert superstepFinished == masterStartedSuperstepNo;
+		finishedComputeSuperstepNo = superstepFinished;
 	}
 
 	/**
-	 * Finished a superstep completely: compute, worker and master sync
+	 * Finished barrier sync with other workers
 	 */
-	public void finishedSuperstep() {
-		assert finishedComputeSuperstepNo == lastFinishedSuperstepNo + 1;
-		assert workerBarrierSyncSuperstepNo == lastFinishedSuperstepNo + 1
-				|| workerBarrierSyncSuperstepNo == lastFinishedSuperstepNo + 2;
-		lastFinishedSuperstepNo++;
-		nextComputeSuperstepNo++;
+	public void onFinishedWorkerSuperstepBarrierSync(int superstepSynced) {
+		assert superstepSynced == barrierSyncedSuperstepNo + 1;
+		barrierSyncedSuperstepNo = superstepSynced;
 	}
-
 
 	/**
-	 * Number of next superstep to compute, incremented when master starts next superstep.
+	 * Finished superstep locally and notifying master: both barrier sync and compute finished
 	 */
-	public int getCurrentComputeSuperstep() {
-		return nextComputeSuperstepNo;
+	public void onLocalFinishSuperstep(int superstepFinished) {
+		assert superstepFinished == localFinishedSuperstepNo + 1;
+		assert superstepFinished == finishedComputeSuperstepNo;
+		assert barrierSyncedSuperstepNo == superstepFinished || barrierSyncedSuperstepNo == superstepFinished + 1;
+		localFinishedSuperstepNo = superstepFinished;
 	}
+
+	/**
+	 * Master sent message to start next superstep
+	 */
+	public void onMasterNextSuperstep(int nextSuperstep) {
+		assert nextSuperstep == masterStartedSuperstepNo + 1;
+		assert nextSuperstep == localFinishedSuperstepNo + 1;
+		//		assert finishedComputeSuperstepNo2 == lastFinishedSuperstepNo + 1;
+		//		assert workerBarrierSyncSuperstepNo == lastFinishedSuperstepNo + 1
+		//				|| workerBarrierSyncSuperstepNo == lastFinishedSuperstepNo + 2;
+		//		assert workerBarrierSyncSuperstepNo == finishedComputeSuperstepNo2;
+		//		assert superstep == lastFinishedSuperstepNo + 1;
+		//		assert superstep == nextComputeSuperstepNo;
+		masterStartedSuperstepNo = nextSuperstep;
+	}
+
 
 	/**
 	 * Number of last finished superstep, incremented when superstep is finished.
@@ -96,29 +106,37 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	/**
 	 * Returns last superstep with all worker barrier syncs finished
 	 */
-	public int getWorkerBarrierFinishedSuperstep() {
-		return workerBarrierSyncSuperstepNo;
+	public int getBarrierSyncedSuperstep() {
+		return barrierSyncedSuperstepNo;
 	}
 
 	/**
-	 * Returns last completely finished superstep: finished compute, master and worker barrier sync
+	 * Returns last locally finished superstep: finished compute, master and worker barrier sync
 	 */
-	public int getFinishedSuperstepNo() {
-		return lastFinishedSuperstepNo;
+	public int getLocalFinishedSuperstepNo() {
+		return localFinishedSuperstepNo;
 	}
+
+	/**
+	 * Number of current superstep to compute, incremented when master starts next superstep.
+	 */
+	public int getMasterStartedSuperstep() {
+		return masterStartedSuperstepNo;
+	}
+
 
 	/**
 	 * Returns if next superstep is ready for notify master, if compute worker barrier sync finished
 	 */
-	public boolean isSuperstepLocallyReady() {
-		return finishedComputeSuperstepNo == lastFinishedSuperstepNo + 1
-				&& (workerBarrierSyncSuperstepNo == lastFinishedSuperstepNo + 1
-				|| workerBarrierSyncSuperstepNo == lastFinishedSuperstepNo + 2);
+	public boolean isNextSuperstepLocallyReady() {
+		return finishedComputeSuperstepNo == localFinishedSuperstepNo + 1
+				&& (barrierSyncedSuperstepNo == localFinishedSuperstepNo + 1
+				|| barrierSyncedSuperstepNo == localFinishedSuperstepNo + 2);
 	}
 
 
 	public String getSuperstepNosLog() {
-		return workerBarrierSyncSuperstepNo + " " + finishedComputeSuperstepNo + " " + lastFinishedSuperstepNo + " "
-				+ nextComputeSuperstepNo;
+		return finishedComputeSuperstepNo + " " + barrierSyncedSuperstepNo + " " + localFinishedSuperstepNo + " "
+				+ masterStartedSuperstepNo;
 	}
 }
