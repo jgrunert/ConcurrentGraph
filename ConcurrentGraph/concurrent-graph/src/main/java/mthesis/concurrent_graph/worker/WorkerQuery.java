@@ -34,6 +34,7 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	// Number of next superstep to compute, incremented when superstep compute is finished.
 	private volatile int nextComputeSuperstepNo = firstSuperstep;
 
+	/** Workers to wait for barrier sync */
 	public final Set<Integer> BarrierSyncWaitSet = new HashSet<>();
 
 	// Active vertices for next superstep
@@ -59,7 +60,8 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	}
 
 	public void finishedWorkerBarrierSync() {
-		assert workerBarrierSyncSuperstepNo == finishedSuperstepNo;
+		assert workerBarrierSyncSuperstepNo == finishedSuperstepNo
+				|| workerBarrierSyncSuperstepNo == finishedSuperstepNo + 1;
 		workerBarrierSyncSuperstepNo++;
 	}
 
@@ -97,7 +99,7 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	/**
 	 * Returns if next superstep is ready for notify master, if compute worker barrier sync finished
 	 */
-	public boolean isSuperstepReadyForMaster() {
+	public boolean isSuperstepLocallyReady() {
 		return nextComputeSuperstepNo == finishedSuperstepNo + 2
 				&& workerBarrierSyncSuperstepNo == finishedSuperstepNo + 1;
 	}
