@@ -121,7 +121,15 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	}
 
 	/**
-	 * Returns if next superstep is ready, if master and worker barrier sync finished
+	 * Returns if next superstep is ready for notify master, if compute worker barrier sync finished
+	 */
+	public boolean isSuperstepReadyForMaster() {
+		return nextComputeSuperstepNo == finishedSuperstepNo + 2
+				&& workerBarrierSyncSuperstepNo == finishedSuperstepNo + 1;
+	}
+
+	/**
+	 * Returns if next superstep is ready, if compute, master and worker barrier sync finished
 	 */
 	public boolean isSuperstepReadyForFinish() {
 		return nextComputeSuperstepNo == finishedSuperstepNo + 2 &&

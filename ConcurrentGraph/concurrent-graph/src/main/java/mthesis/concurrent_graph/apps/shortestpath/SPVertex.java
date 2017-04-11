@@ -3,6 +3,9 @@ package mthesis.concurrent_graph.apps.shortestpath;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
@@ -18,6 +21,8 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
  *
  */
 public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> {
+
+	private static final Logger logger = LoggerFactory.getLogger(SPVertex.class);
 
 	//	private final Map<Integer, Integer> visits = new HashMap<>(4);
 	//	private static int firstVisits = 0;
