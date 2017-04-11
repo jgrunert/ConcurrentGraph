@@ -42,11 +42,6 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> ActiveVerticesThis = new ConcurrentHashMap<>();
 	//	public IntSet ActiveVertices = new IntOpenHashSet();
 
-	// Set of machines to wait for to move vertices here, for the current superstep.
-	public Set<Integer> VertexMovesWaitingFor = new HashSet<>();
-	// Machine received vertices from, for the current superstep.
-	public Set<Integer> VertexMovesReceived = new HashSet<>();
-
 
 	public WorkerQuery(Q globalQueryValues, BaseQueryGlobalValuesFactory<Q> globalValueFactory,
 			Collection<Integer> vertexIds) {

@@ -63,7 +63,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -531,10 +531,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	}
 
 	private void sendMasterSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery, Map<Integer, Integer> queryIntersects) {
-		// Clear vertex move waits before
-		workerQuery.VertexMovesWaitingFor.clear();
-		workerQuery.VertexMovesReceived.clear();
-
 		messaging.sendControlMessageUnicast(masterId,
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(workerQuery.getStartedSuperstepNo(), ownId,
 						workerQuery.QueryLocal, queryIntersects, workerStatsSamplesToSend),
@@ -663,13 +659,13 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						lastWatchdogSignal = System.currentTimeMillis();
 						prepareNextSuperstep(message);
 					}
-					break;
+						break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-					break;
+						break;
 
 					case Master_Start_Barrier: {
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
@@ -680,11 +676,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryVerticesMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
-							.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
+									.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
 						}
 						globalBarrierRequested = true;
 					}
-					break;
+						break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -705,7 +701,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-					return true;
+						return true;
 
 					case Worker_Barrier_Started: {
 						//						System.out.println("Worker_Barrier_Started");
@@ -713,7 +709,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 					case Worker_Barrier_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
@@ -721,14 +717,14 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							globalBarrierFinishWaitSet.remove(srcWorker);
 						else logger.warn("Worker_Barrier_Finished message from worker not waiting for: " + srcWorker);
 					}
-					return true;
+						return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-					break;
+						break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -765,7 +761,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		else {
 			// Completely wrong superstep
 			logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-			+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
+					+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getStartedSuperstepNo());
 		}
 	}
 
@@ -805,12 +801,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		// Start next superstep if waiting for no vertices to move
 		activeQuery.preparedSuperstep();
 
-		if (activeQuery.VertexMovesWaitingFor.isEmpty()
-				|| activeQuery.VertexMovesReceived.size() == activeQuery.VertexMovesWaitingFor.size()) {
-			assert activeQuery.VertexMovesWaitingFor.isEmpty()
-			|| activeQuery.VertexMovesReceived.containsAll(activeQuery.VertexMovesWaitingFor);
-			startNextSuperstep(activeQuery);
-		}
+		startNextSuperstep(activeQuery);
 	}
 
 	/**
@@ -948,13 +939,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				return;
 			}
 
-			if (!(activeQuery.VertexMovesWaitingFor.isEmpty()
-					|| activeQuery.VertexMovesWaitingFor.size() == activeQuery.VertexMovesReceived.size())) {
-				throw new RuntimeException("Error at vertex move");
-				//				assert activeQuery.VertexMovesWaitingFor.isEmpty() || activeQuery.VertexMovesWaitingFor.equals(activeQuery.VertexMovesReceived);
-				//				startNextSuperstep(activeQuery);
-			}
-
 			// Flush active vertices
 			long startTime = System.nanoTime();
 
@@ -1059,7 +1043,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		else if (message.superstepNo != (barrierSuperstepNo + 1)) {
 			logger.error(
 					"VertexMessage from wrong barrier superstepNo: " + message.superstepNo + " should be " + (barrierSuperstepNo + 1)
-					+ " from " + message.srcMachine);
+							+ " from " + message.srcMachine);
 		}
 		else {
 			for (final Pair<Integer, M> msg : message.vertexMessages) {
@@ -1130,11 +1114,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			localVertices.put(movedVert.ID, movedVert);
 		}
 
-		if (message.lastSegment) {
-			// Mark that received all vertices from machine. Start next superstep if ready
-			assert !activeQuery.VertexMovesReceived.contains(message.srcMachine);
-			activeQuery.VertexMovesReceived.add(message.srcMachine);
-		}
+		//		if (message.lastSegment) {
+		//		}
 
 		long moveTime = (System.nanoTime() - startTime);
 		activeQuery.QueryLocal.Stats.MoveRecvVertices += message.vertices.size();
