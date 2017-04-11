@@ -124,6 +124,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private PrintWriter allVertexStatsFile = null;
 	private PrintWriter actVertexStatsFile = null;
 
+	private boolean stopRequested = false;
+
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
 			JobConfiguration<V, E, M, Q> jobConfig,
@@ -158,8 +160,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		boolean interrupted = false;
 		try {
 			while (!started) {
-				Thread.sleep(100);
-				handleReceivedMessages(false);
+				Thread.sleep(1);
+				handleReceivedMessages();
 			}
 
 			// Initialize, load assigned partitions
@@ -209,13 +211,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 			// Execution loop
 			final List<WorkerQuery<V, E, M, Q>> activeQueriesThisStep = new ArrayList<>();
-			while (!(interrupted = Thread.interrupted())) {
+			while (!stopRequested && !(interrupted = Thread.interrupted())) {
 				// Wait for queries
 				long startTime = System.nanoTime();
 				while (activeQueries.isEmpty()) {
-					if (!handleReceivedMessages(true)) {
-						Thread.sleep(1); // Sleep if no more messages
-					}
+					handleReceivedMessages();
 				}
 				workerStats.IdleTime += (System.nanoTime() - startTime);
 
@@ -223,8 +223,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				// Wait for ready queries
 				startTime = System.nanoTime();
 				activeQueriesThisStep.clear();
-				while (activeQueriesThisStep.isEmpty() && !globalBarrierRequested) {
-					boolean interruptedHandleMessages = handleReceivedMessages(true);
+				while (!stopRequested && activeQueriesThisStep.isEmpty() && !globalBarrierRequested) {
+					handleReceivedMessages();
 
 					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 						if ((activeQuery.getStartedSuperstepNo() > activeQuery.getCalculatedSuperstepNo()))
@@ -233,9 +233,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					}
 					if (!activeQueriesThisStep.isEmpty() || globalBarrierRequested)
 						break;
-					if (!interruptedHandleMessages) {
-						Thread.sleep(1); // Sleep if no more messages
-					}
 					if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
 						logger.warn("Waiting long time for active queries");
 						Thread.sleep(2000);
@@ -252,14 +249,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
 					// Handle all messages before barrier
-					handleReceivedMessages(false); // TODO Necessary?
+					handleReceivedMessages(); // TODO Necessary?
 
 					// Wait for other workers barriers
 					startTime = System.nanoTime();
 					while (!globalBarrierStartWaitSet.isEmpty()) {
-						if (!handleReceivedMessages(true)) {
-							Thread.sleep(1); // Sleep if no more messages
-						}
+						handleReceivedMessages();
 					}
 					//boolean test0 = allQueriesSynced();
 					long barrierStartWaitTime = System.nanoTime() - startTime;
@@ -288,9 +283,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					}
 					// Receive vertices
 					while (!globalBarrierRecvVerts.isEmpty()) {
-						if (!handleReceivedMessages(true)) {
-							Thread.sleep(1); // Sleep if no more messages
-						}
+						handleReceivedMessages();
 					}
 					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
 
@@ -303,9 +296,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Finished(ownId), true);
 					startTime = System.nanoTime();
 					while (!globalBarrierFinishWaitSet.isEmpty()) {
-						if (!handleReceivedMessages(true)) {
-							Thread.sleep(1); // Sleep if no more messages
-						}
+						handleReceivedMessages();
 					}
 					long barrierFinishWaitTime = System.nanoTime() - startTime;
 
@@ -362,8 +353,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						checkSuperstepBarrierFinished(activeQuery);
 					}
 
-					// Handle received messages after each query
-					handleReceivedMessages(false);
+					// TODO Handle received messages after each query?
+					handleReceivedMessages();
 				}
 
 
@@ -386,13 +377,15 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		finally {
 			logger.info("Worker closing, interrupted: " + interrupted);
 			messaging.getReadyForClose();
-			try {
-				Thread.sleep(200); // TODO Cleaner solution, for example a final message from master
+			if (!stopRequested) {
+				try {
+					Thread.sleep(200); // TODO Cleaner solution, for example a final message from master
+				}
+				catch (final InterruptedException e) {
+					e.printStackTrace();
+				}
+				stop();
 			}
-			catch (final InterruptedException e) {
-				e.printStackTrace();
-			}
-			stop();
 		}
 	}
 
@@ -480,11 +473,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	 * Handles all messages in received queues.
 	 */
 	@SuppressWarnings("unchecked")
-	private boolean handleReceivedMessages(boolean interruptOnBarrierFinished) {
+	private void handleReceivedMessages() {
 		long startTime = System.nanoTime();
 		ChannelMessage message;
-		boolean interruptedMsgHandling = false;
-		while (!(interruptOnBarrierFinished && interruptedMsgHandling) && (message = receivedMessages.poll()) != null) {
+		while ((message = receivedMessages.poll()) != null) {
 			//while ((message = receivedMessages.poll()) != null) {
 			switch (message.getTypeCode()) {
 				case 0:
@@ -493,7 +485,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				case 1:
 					ProtoEnvelopeMessage msgEnvelope = ((ProtoEnvelopeMessage) message);
 					if (msgEnvelope.message.hasControlMessage()) {
-						interruptedMsgHandling = handleControlMessage(msgEnvelope);
+						handleControlMessage(msgEnvelope);
+						//interruptedMsgHandling = handleControlMessage(msgEnvelope);
 					}
 					break;
 				case 2:
@@ -512,7 +505,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			}
 		}
 		workerStats.HandleMessagesTime += (System.nanoTime() - startTime);
-		return interruptedMsgHandling;
 	}
 
 
@@ -733,6 +725,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
+						stopRequested = true;
 						stop();
 					}
 					break;
