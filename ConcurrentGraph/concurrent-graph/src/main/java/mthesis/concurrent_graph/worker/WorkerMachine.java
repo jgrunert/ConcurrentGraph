@@ -69,12 +69,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private final int masterId;
 	private final String outputDir;
 	private volatile boolean started = false;
+	private boolean stopRequested = false;
 	private List<String> assignedPartitions;
 
 	private final JobConfiguration<V, E, M, Q> jobConfig;
 	private final BaseVertexInputReader<V, E, M, Q> vertexReader;
 
-	//private List<AbstractVertex<V, E, M, Q>> localVerticesList;
 	private final Int2ObjectMap<AbstractVertex<V, E, M, Q>> localVertices = new Int2ObjectOpenHashMap<>();
 
 	private final BaseWritableFactory<V> vertexValueFactory;
@@ -96,15 +96,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	// Most recent calculated query intersections
 	private Map<Integer, Map<Integer, Integer>> currentQueryIntersects = new HashMap<>();
 
-	// Vertex redirections for vertex moved away from this machine
-	//	private final Map<Integer, Integer> movedVerticesRedirections = new HashMap<>();
-	//	private final Map<Integer, List<Integer>> movedQueryVertices = new HashMap<>();
-
 	// Global barrier coordination/control
-	private boolean globalBarrierRequested = false;// TODO Enum?
+	private boolean globalBarrierRequested = false;
 	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
 	private final Set<Integer> globalBarrierStartPrematureSet = new HashSet<>();
-	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>(); // TODO Needed
+	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>();
 	// Global barrier commands to perform while barrier
 	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
 	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
@@ -116,15 +112,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private WorkerStats workerStats = new WorkerStats();
 	// Samples that are finished but not sent to master yet
 	private List<WorkerStatSample> workerStatsSamplesToSend = new ArrayList<>();
+	private PrintWriter allVertexStatsFile = null;
+	private PrintWriter actVertexStatsFile = null;
 
 	// Watchdog
 	private long lastWatchdogSignal;
 	private static boolean WatchdogEnabled = true;
 
-	private PrintWriter allVertexStatsFile = null;
-	private PrintWriter actVertexStatsFile = null;
-
-	private boolean stopRequested = false;
 
 
 	public WorkerMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, int masterId, String outputDir,
@@ -167,8 +161,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Initialize, load assigned partitions
 			loadVertices(assignedPartitions);
 			logger.debug("Worker loaded partitions.");
-			//			System.gc();
-			//			logger.debug("Worker pre-partition-load GC finished");
 			sendMasterInitialized();
 
 			// Start watchdog
@@ -229,10 +221,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 						if ((activeQuery.getStartedSuperstepNo() > activeQuery.getCalculatedSuperstepNo()))
 							activeQueriesThisStep.add(activeQuery);
-						// TODO Directly finish superstep if no active vertices. Or even faster method?
 					}
 					if (!activeQueriesThisStep.isEmpty() || globalBarrierRequested)
 						break;
+					if (Configuration.WORKER_SLEEP_QUERY_WAIT > 0)
+						Thread.sleep(Configuration.WORKER_SLEEP_QUERY_WAIT);
 					if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
 						logger.warn("Waiting long time for active queries");
 						Thread.sleep(2000);
@@ -309,8 +302,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				// Compute active queries
 				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisStep) {
-					//					System.out.println(ownId + " compute " + activeQuery.QueryId + ":" + activeQuery.getStartedSuperstepNo());
-
 					int queryId = activeQuery.Query.QueryId;
 					int superstepNo = activeQuery.getStartedSuperstepNo();
 					boolean allVerticesActivate = activeQuery.QueryLocal.onWorkerSuperstepStart(superstepNo);
@@ -354,7 +345,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					}
 
 					// TODO Handle received messages after each query?
-					handleReceivedMessages();
+					//handleReceivedMessages();
 				}
 
 
@@ -368,7 +359,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			logger.info("Finished worker execution");
 		}
 		catch (final InterruptedException e) {
-			logger.info("worker interrupted");
+			if (!stopRequested)
+				logger.info("worker interrupted");
 			return;
 		}
 		catch (final Throwable e) {
