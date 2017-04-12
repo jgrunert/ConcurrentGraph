@@ -54,19 +54,18 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		//				System.out.println(reVisits + "/" + firstVisits + " " + vis + " " + maxVisits);
 		//		}
 
-		// TODO Testcode
-		if (messages != null) {
-			for (SPMessageWritable msg : messages) {
-				if (msg.SuperstepNo != superstepNo) {
-					logger.warn(query.QueryId + ":" + superstepNo + "  Message for wrong superstep, not " + superstepNo
-							+ " " + msg);
-				}
-				if (msg.DstVertex != ID) {
-					logger.warn(query.QueryId + ":" + superstepNo + " Message for vertex dst vertex, not "
-							+ msg.DstVertex + " " + msg);
-				}
-			}
-		}
+		//		if (messages != null) {
+		//			for (SPMessageWritable msg : messages) {
+		//				if (msg.SuperstepNo != superstepNo) {
+		//					logger.warn(query.QueryId + ":" + superstepNo + "  Message for wrong superstep, not " + superstepNo
+		//							+ " " + msg);
+		//				}
+		//				if (msg.DstVertex != ID) {
+		//					logger.warn(query.QueryId + ":" + superstepNo + " Message for vertex dst vertex, not "
+		//							+ msg.DstVertex + " " + msg);
+		//				}
+		//			}
+		//		}
 
 		if (superstepNo == 0) {
 			if (ID != query.Query.From) {
@@ -97,8 +96,8 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 					if (mutableValue.Dist != Double.POSITIVE_INFINITY) {
 						logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " start reconstructing");
 						mutableValue.OnShortestPath = true;
-						//						logger.info(query.QueryId + ":" + superstepNo + " " + ID + " to0 " + mutableValue.Pre);
-						sendMessageToVertex(new SPMessageWritable(ID, mutableValue.Dist, mutableValue.Pre, superstepNo + 1), //mutableValue.Dist),
+						sendMessageToVertex(
+								new SPMessageWritable(ID, mutableValue.Dist, mutableValue.Pre, superstepNo + 1),
 								mutableValue.Pre, query);
 					}
 					else {
@@ -113,13 +112,10 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 					if (mutableValue.Dist != Double.POSITIVE_INFINITY) {
 						if (messages.size() == 1) {
 							SPMessageWritable preMsg = messages.get(0);
-							//							System.out.println(preMsg);
 							if (preMsg.DstVertex == ID) {
 								if (preMsg.Dist >= mutableValue.Dist) {
-									//									logger.info(query.QueryId + ":" + superstepNo + " " + ID + " to " + mutableValue.Pre);
-									sendMessageToVertex(new SPMessageWritable(ID, mutableValue.Dist, mutableValue.Pre, superstepNo + 1), //mutableValue.Dist),
-											mutableValue.Pre,
-											query);
+									sendMessageToVertex(new SPMessageWritable(ID, mutableValue.Dist, mutableValue.Pre,
+											superstepNo + 1), mutableValue.Pre, query);
 								}
 								else {
 									logger.error(query.QueryId + ":" + superstepNo + " "
@@ -130,7 +126,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 							else {
 								logger.error(query.QueryId + ":" + superstepNo + " "
 										+ "Reconstruct message for wrong vertex. Should be " + ID + " but is " + preMsg.DstVertex
-										+ " from " + preMsg.Dist + " " + preMsg); // TODO Test
+										+ " from " + preMsg.Dist + " " + preMsg);
 							}
 						}
 						else {

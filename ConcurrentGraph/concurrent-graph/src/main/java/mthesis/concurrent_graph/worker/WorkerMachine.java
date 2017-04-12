@@ -28,7 +28,6 @@ import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.QueryStats;
-import mthesis.concurrent_graph.apps.shortestpath.SPMessageWritable;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.GetToKnowMessage;
@@ -102,6 +101,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
 	private final Set<Integer> globalBarrierStartPrematureSet = new HashSet<>();
 	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>();
+	private final Set<Integer> globalBarrierFinishPrematureSet = new HashSet<>();
 	// Global barrier commands to perform while barrier
 	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
 	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
@@ -300,14 +300,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					// Checks
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
 						// TODO
-						//						if (query.isSuperstepFinished(query.getLastComputedSuperstep())) {
-						//							logger.warn(
-						//									"Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
-						//											+ query.getLastComputedSuperstep());
-						//						}
+						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()) {
+							logger.warn("Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
+									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
+						}
 						if (!query.ActiveVerticesNext.isEmpty()) {
-							logger.warn("Query " + query.QueryId
-									+ " is not ready for global barrier, has ActiveVerticesNext: "
+							logger.warn("Query " + query.QueryId + " is not ready for global barrier, has ActiveVerticesNext: "
 									+ query.ActiveVerticesNext.size());
 						}
 					}
@@ -502,6 +500,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
 						globalBarrierStartWaitSet.removeAll(globalBarrierStartPrematureSet);
 						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
+						globalBarrierFinishWaitSet.removeAll(globalBarrierFinishPrematureSet);
 						globalBarrierSendVerts = message.getStartBarrier().getSendQueryVerticesList();
 						List<ReceiveQueryVerticesMessage> recvVerts = message.getStartBarrier().getReceiveQueryVerticesList();
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
@@ -546,7 +545,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker))
 							globalBarrierFinishWaitSet.remove(srcWorker);
-						else logger.warn("Worker_Barrier_Finished message from worker not waiting for: " + srcWorker);
+						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
 					return true;
 
@@ -843,9 +842,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	@Override
 	public void sendVertexMessage(int dstVertex, M messageContent, WorkerQuery<V, E, M, Q> query) {
 		final AbstractVertex<V, E, M, Q> msgVert = localVertices.get(dstVertex);
-		SPMessageWritable msg = (SPMessageWritable) messageContent; // TODO Testcode
-		if (query.getMasterStartedSuperstep() + 1 != msg.SuperstepNo)
-			System.err.println(query.getMasterStartedSuperstep() + " " + msg.SuperstepNo);
 		if (msgVert != null) {
 			// Local message
 			query.QueryLocal.Stats.MessagesTransmittedLocal++;
@@ -901,7 +897,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	}
 
 	private void sendBroadcastVertexMessageBucket(WorkerQuery<V, E, M, Q> query, int superstepNo) {
-		//if (vertexMessageBroadcastBucket.messages.isEmpty()) return; TODO
+		if (vertexMessageBroadcastBucket.messages.isEmpty()) return;
 		final List<Pair<Integer, M>> msgList = packVertexMessage(vertexMessageBroadcastBucket);
 		messaging.sendVertexMessageBroadcast(otherWorkerIds, superstepNo, ownId, query.QueryId, msgList);
 		query.QueryLocal.Stats.MessageBucketsSentBroadcast++;

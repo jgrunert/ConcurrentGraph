@@ -15,3 +15,4 @@ ConcurrentGraph/concurrent-graph/output*
 ConcurrentGraph/concurrent-graph/build+upload_capps.bat
 log*.txt
 ConcurrentGraph/concurrent-graph/archive
+*_output*

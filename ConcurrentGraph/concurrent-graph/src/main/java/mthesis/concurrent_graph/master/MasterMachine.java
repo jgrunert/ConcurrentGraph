@@ -65,7 +65,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects = new HashMap<>();
 
 	// Query logging for later evaluation
-	private final boolean enableQueryStats = true;
+	private final boolean enableQueryStats = true; // TODO Config
 	private final String queryStatsDir;
 	private final Map<Integer, List<SortedMap<Integer, Q>>> queryStatsStepMachines = new HashMap<>();
 	private final Map<Integer, List<Q>> queryStatsSteps = new HashMap<>();
@@ -88,7 +88,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private volatile boolean globalBarrierActive = false;
 	private final Set<Integer> globalBarrierWaitSet = new HashSet<>();
 	// Queries that are delayed because of the active global barrier
-	private final Set<Pair<Q, Integer>> barrierDelayedQueryNextSteps = new HashSet<>();
+	private final Set<MasterQuery<Q>> barrierDelayedQueryNextSteps = new HashSet<>();
 	private final Set<Integer> barrierDelayedQueryStarts = new HashSet<>();
 
 	private final AbstractVertexMoveDecider<Q> vertexMoveDecider = new GreedyNewVertexMoveDecider<>();
@@ -297,8 +297,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				throw new RuntimeException("Control message without ungknown query: " + message);
 
 			// Check superstep
-			if (controlMsg.getSuperstepNo() != msgActiveQuery.SuperstepNo) {
-				logger.error("Message for wrong superstep. not " + msgActiveQuery.SuperstepNo + ": " + message);
+			if (controlMsg.getSuperstepNo() != msgActiveQuery.StartedSuperstepNo) {
+				logger.error("Message for wrong superstep. not " + msgActiveQuery.StartedSuperstepNo + ": " + message);
 				return;
 			}
 
@@ -314,7 +314,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
 				for (WorkerStatSample sample : samples) {
 					workerStats.get(controlMsg.getSrcMachine())
-							.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
+					.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
 				}
 			}
 
@@ -388,28 +388,15 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					// All workers have superstep finished
 					if (!queryFinished) {
 						// Active workers, start next superstep
-						msgActiveQuery.nextSuperstep(workerIds);
-						queryNextSuperstepReady(msgActiveQuery.QueryStepAggregator, msgActiveQuery.SuperstepNo);
-						msgActiveQuery.resetValueAggregator(queryValueFactory);
-						msgActiveQuery.LastStepTime = System.nanoTime();
-						logger.debug("Workers finished superstep " + msgActiveQuery.BaseQuery.QueryId + ":"
-								+ (msgActiveQuery.SuperstepNo - 1) + " after "
-								+ ((System.nanoTime() - msgActiveQuery.LastStepTime) / 1000000) + "ms. Total "
-								+ ((System.nanoTime() - msgActiveQuery.StartTime) / 1000000) + "ms. Active: "
-								+ msgActiveQuery.QueryStepAggregator.getActiveVertices());
-						logger.trace("Next master superstep query " + msgActiveQuery.BaseQuery.QueryId + ": "
-								+ msgActiveQuery.SuperstepNo);
-
-						// TODO Testcode
-						// Time: 6623ms/5900ms
-						//						System.out.println(msgActiveQuery.SuperstepNo);
+						msgActiveQuery.LastFinishedSuperstepNo++;
+						queryNextSuperstepReady(msgActiveQuery, msgActiveQuery.StartedSuperstepNo);
 					}
 					else {
 						// All workers finished, finish query
 						msgActiveQuery.workersFinished(workerIds);
 						signalWorkersQueryFinish(msgActiveQuery.BaseQuery);
 						logger.info("All workers no more active for query " + msgActiveQuery.BaseQuery.QueryId + ":"
-								+ msgActiveQuery.SuperstepNo + " after "
+								+ msgActiveQuery.StartedSuperstepNo + " after "
 								+ (System.nanoTime() - msgActiveQuery.StartTime) / 1000000 + "ms");
 
 						// Log query total stats
@@ -440,7 +427,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					long duration = System.nanoTime() - msgActiveQuery.StartTime;
 					queryDurations.put(msgActiveQuery.BaseQuery.QueryId, duration);
 					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
-							+ (duration / 1000000) + "ms, " + msgActiveQuery.SuperstepNo + " steps, "
+							+ (duration / 1000000) + "ms, " + msgActiveQuery.StartedSuperstepNo + " steps, "
 							+ msgActiveQuery.QueryTotalAggregator.toString());
 				}
 			}
@@ -463,7 +450,133 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	}
 
 
+	private void initializeWorkersAssignPartitions() {
+		Map<Integer, List<String>> assignedPartitions;
+		try {
+			logger.debug("Start input partitioning/assigning");
+			assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir, workerIds);
+			logger.debug("Finished input partitioning");
+		}
+		catch (IOException e) {
+			logger.error("Error at partitioning", e);
+			return;
+		}
+		for (final Integer workerId : workerIds) {
+			List<String> partitions = assignedPartitions.get(workerId);
+			logger.debug("Assign partitions to " + workerId + ": " + partitions);
+			messaging.sendControlMessageUnicast(workerId,
+					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, partitions, masterStartTimeMs), true);
+		}
+		logger.debug("Start input assigning");
+	}
 
+	private void handleStartQuery(Q query) {
+		FileUtil.makeCleanDirectory(outputDir + File.separator + Integer.toString(query.QueryId));
+		query.setVertexCount(vertexCount);
+		MasterQuery<Q> activeQuery = new MasterQuery<>(query, workerIds, queryValueFactory);
+		synchronized (activeQueries) {
+			activeQueries.put(query.QueryId, activeQuery);
+			queuedQueries--;
+		}
+
+		Map<Integer, Integer> queryWorkerAVerts = new HashMap<>();
+		for (Integer worker : workerIds) {
+			queryWorkerAVerts.put(worker, 0);
+		}
+		actQueryWorkerActiveVerts.put(query.QueryId, queryWorkerAVerts);
+		actQueryWorkerIntersects.put(query.QueryId, new HashMap<>());
+
+		// Start query on workers
+		signalWorkersQueryStart(query);
+		logger.info("Master started query " + query.QueryId);
+	}
+
+	private void signalWorkersQueryStart(Q query) {
+		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryStart(ownId, query), true);
+	}
+
+	/**
+	 * Let workers start next superstep of a query. Make decisions about vertices to move.
+	 */
+	private void queryNextSuperstepReady(MasterQuery<Q> queryToStart, int superstepNo) {
+
+		Q queryStats = queryToStart.QueryStepAggregator;
+
+		if (globalBarrierActive) {
+			logger.debug("Delay query superstep " + queryStats.QueryId + ":" + superstepNo);
+			barrierDelayedQueryNextSteps.add(queryToStart);
+			return;
+		}
+
+		long decideStartTime = System.currentTimeMillis();
+		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerIds, activeQueries, actQueryWorkerActiveVerts,
+				actQueryWorkerIntersects);
+		// TODO Master stats decide time
+
+		if (moveDecission != null) {
+			globalBarrierWaitSet.addAll(workerIds);
+			globalBarrierActive = true;
+
+			// Map of query finished supersteps for this barrier
+			Map<Integer, Integer> queryFinishedSupersteps = new HashMap<>(activeQueries.size());
+			for (MasterQuery<Q> q : activeQueries.values()) {
+				queryFinishedSupersteps.put(q.BaseQuery.QueryId, q.StartedSuperstepNo);
+			}
+
+			logger.info(
+					"Decided to move in " + (System.currentTimeMillis() - decideStartTime) + " with queries " + queryFinishedSupersteps);
+
+			// Send barrier move messages
+			for (int workerId : workerIds) {
+				messaging.sendControlMessageUnicast(workerId, ControlMessageBuildUtil.Build_Master_StartBarrier_VertexMove(ownId,
+						moveDecission.WorkerVertSendMsgs.get(workerId), moveDecission.WorkerVertRecvMsgs.get(workerId)), true);
+			}
+			logger.info("Starting barrier with vertex move");
+
+			logger.debug("Delay query superstep " + queryToStart.BaseQuery.QueryId + ":" + superstepNo);
+			barrierDelayedQueryNextSteps.add(queryToStart);
+		}
+		else {
+			startQueryNextSuperstep(queryToStart);
+		}
+	}
+
+	private void startQueryNextSuperstep(MasterQuery<Q> queryToStart) {
+		queryToStart.startNextSuperstep(workerIds);
+		// Start query superstep
+		for (Integer otherWorkerId : workerIds) {
+			messaging.sendControlMessageUnicast(otherWorkerId,
+					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(queryToStart.StartedSuperstepNo, ownId,
+							queryToStart.BaseQuery),
+					true);
+		}
+	}
+
+	private void globalBarrierFinished() {
+		logger.info("Global barrier finished");
+		globalBarrierActive = false;
+		for (MasterQuery<Q> delayedQueryNextStep : barrierDelayedQueryNextSteps) {
+			logger.debug(
+					"Start delayed query superstep " + delayedQueryNextStep.BaseQuery.QueryId);
+			startQueryNextSuperstep(delayedQueryNextStep);
+		}
+		barrierDelayedQueryNextSteps.clear();
+		// TODO Delayed query starts
+	}
+
+
+
+	private void signalWorkersQueryFinish(Q query) {
+		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryFinish(ownId, query), true);
+	}
+
+	private void signalWorkersShutdown() {
+		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_Shutdown(ownId), true);
+	}
+
+
+
+	// #################### Stop, save and print #################### //
 	@Override
 	public void stop() {
 		logger.info("Stopping master after " + (System.currentTimeMillis() - masterStartTimeMs) + "ms");
@@ -511,10 +624,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -564,10 +677,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -779,126 +892,5 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		catch (final Exception e) {
 			logger.error("writeOutput failed", e);
 		}
-	}
-
-
-
-	private void initializeWorkersAssignPartitions() {
-		Map<Integer, List<String>> assignedPartitions;
-		try {
-			logger.debug("Start input partitioning/assigning");
-			assignedPartitions = inputPartitioner.partition(inputFile, inputPartitionDir,
-					workerIds);
-			logger.debug("Finished input partitioning");
-		}
-		catch (IOException e) {
-			logger.error("Error at partitioning", e);
-			return;
-		}
-		for (final Integer workerId : workerIds) {
-			List<String> partitions = assignedPartitions.get(workerId);
-			logger.debug("Assign partitions to " + workerId + ": " + partitions);
-			messaging.sendControlMessageUnicast(workerId,
-					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, partitions, masterStartTimeMs),
-					true);
-		}
-		logger.debug("Start input assigning");
-	}
-
-	private void handleStartQuery(Q query) {
-		FileUtil.makeCleanDirectory(outputDir + File.separator + Integer.toString(query.QueryId));
-		query.setVertexCount(vertexCount);
-		MasterQuery<Q> activeQuery = new MasterQuery<>(query, workerIds, queryValueFactory);
-		synchronized (activeQueries) {
-			activeQueries.put(query.QueryId, activeQuery);
-			queuedQueries--;
-		}
-
-		Map<Integer, Integer> queryWorkerAVerts = new HashMap<>();
-		for (Integer worker : workerIds) {
-			queryWorkerAVerts.put(worker, 0);
-		}
-		actQueryWorkerActiveVerts.put(query.QueryId, queryWorkerAVerts);
-		actQueryWorkerIntersects.put(query.QueryId, new HashMap<>());
-
-		// Start query on workers
-		signalWorkersQueryStart(query);
-		logger.info("Master started query " + query.QueryId);
-	}
-
-	private void signalWorkersQueryStart(Q query) {
-		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryStart(ownId, query),
-				true);
-	}
-
-	/**
-	 * Let workers start next superstep of a query. Make decisions about vertices to move.
-	 */
-	private void queryNextSuperstepReady(Q queryToStart, int superstepNo) {
-
-		if (globalBarrierActive) {
-			logger.debug("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
-			barrierDelayedQueryNextSteps.add(new Pair<>(queryToStart, superstepNo));
-			return;
-		}
-
-		long decideStartTime = System.currentTimeMillis();
-		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerIds, activeQueries, actQueryWorkerActiveVerts,
-				actQueryWorkerIntersects);
-
-		if (moveDecission != null) {
-			globalBarrierWaitSet.addAll(workerIds);
-			globalBarrierActive = true;
-
-			// TODO Master stats decide time
-			logger.info("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
-
-			// Send barrier move messages
-			for (int workerId : workerIds) {
-				messaging.sendControlMessageUnicast(workerId,
-						ControlMessageBuildUtil.Build_Master_StartBarrier_VertexMove(ownId,
-								moveDecission.WorkerVertSendMsgs.get(workerId), moveDecission.WorkerVertRecvMsgs.get(workerId)),
-						true);
-			}
-			logger.info("Starting barrier with vertex move");
-
-			logger.debug("Delay query superstep " + queryToStart.QueryId + ":" + superstepNo);
-			barrierDelayedQueryNextSteps.add(new Pair<>(queryToStart, superstepNo));
-		}
-		else {
-			startQueryNextSuperstep(queryToStart, superstepNo);
-		}
-	}
-
-	private void startQueryNextSuperstep(Q queryToStart, int superstepNo) {
-		// Start query superstep
-		for (Integer otherWorkerId : workerIds) {
-			messaging.sendControlMessageUnicast(otherWorkerId,
-					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(superstepNo, ownId, queryToStart), true);
-		}
-	}
-
-	private void globalBarrierFinished() {
-		logger.info("Global barrier finished");
-		globalBarrierActive = false;
-		for (Pair<Q, Integer> delayedQueryNextStep : barrierDelayedQueryNextSteps) {
-			logger.debug("Start delayed query superstep " + delayedQueryNextStep.first.QueryId + ":" + delayedQueryNextStep.second);
-			//			System.err.println("Start delayed query superstep " + delayedQueryNextStep.first.QueryId + ":" + delayedQueryNextStep.second);
-			startQueryNextSuperstep(delayedQueryNextStep.first, delayedQueryNextStep.second);
-		}
-		barrierDelayedQueryNextSteps.clear();
-		// TODO Delayed query starts
-	}
-
-
-
-	private void signalWorkersQueryFinish(Q query) {
-		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_QueryFinish(ownId, query),
-				true);
-	}
-
-	private void signalWorkersShutdown() {
-		messaging.sendControlMessageMulticast(workerIds, ControlMessageBuildUtil.Build_Master_Shutdown(ownId),
-				true);
 	}
 }

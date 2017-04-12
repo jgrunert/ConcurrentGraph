@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.BaseQuery;
+import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
 
 public class MasterQuery<Q extends BaseQuery> {
 
@@ -16,8 +17,12 @@ public class MasterQuery<Q extends BaseQuery> {
 	public final Q BaseQuery;
 	public final long StartTime;
 	public long LastStepTime;
+	private final BaseQueryGlobalValuesFactory<Q> queryValueFactory;
 
-	public int SuperstepNo;
+	/** Number of the last superstep finished by all workers */
+	public int LastFinishedSuperstepNo;
+	/** Number of the current superstep, latest started superstep */
+	public int StartedSuperstepNo;
 	// Value aggregation of one superstep
 	public Q QueryStepAggregator;
 	// Value aggregation of all supersteps
@@ -29,19 +34,28 @@ public class MasterQuery<Q extends BaseQuery> {
 
 	public MasterQuery(Q query, Collection<Integer> workersToWait, BaseQuery.BaseQueryGlobalValuesFactory<Q> queryFactory) {
 		super();
+		this.queryValueFactory = queryFactory;
 		BaseQuery = query;
-		SuperstepNo = -2;
+		StartedSuperstepNo = -2;
+		LastFinishedSuperstepNo = -2;
 		StartTime = System.nanoTime();
 		LastStepTime = StartTime;
 		workersWaitingFor = new HashSet<>(workersToWait.size());
-		nextSuperstep(workersToWait);
+		startNextSuperstep(workersToWait);
 		resetValueAggregator(queryFactory);
 		QueryTotalAggregator = queryFactory.createClone(BaseQuery);
 	}
 
-	public void nextSuperstep(Collection<Integer> workersToWait) {
+	public void startNextSuperstep(Collection<Integer> workersToWait) {
 		workersWaitingFor.addAll(workersToWait);
-		SuperstepNo++;
+		StartedSuperstepNo++;
+
+		resetValueAggregator(queryValueFactory);
+		LastStepTime = System.nanoTime();
+		logger.debug("Workers finished superstep " + BaseQuery.QueryId + ":" + (StartedSuperstepNo - 1) + " after "
+				+ ((System.nanoTime() - LastStepTime) / 1000000) + "ms. Total " + ((System.nanoTime() - StartTime) / 1000000)
+				+ "ms. Active: " + QueryStepAggregator.getActiveVertices());
+		logger.trace("Next master superstep query " + BaseQuery.QueryId + ": " + StartedSuperstepNo);
 	}
 
 	public void resetValueAggregator(BaseQuery.BaseQueryGlobalValuesFactory<Q> queryFactory) {
