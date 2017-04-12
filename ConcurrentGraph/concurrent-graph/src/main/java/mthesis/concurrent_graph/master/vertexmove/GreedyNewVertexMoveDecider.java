@@ -30,8 +30,6 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 		if (!Configuration.VERTEX_BARRIER_MOVE_ENABLED
 				|| (System.currentTimeMillis() - vertexBarrierMoveLastTime) < Configuration.VERTEX_BARRIER_MOVE_INTERVAL)
 			return null;
-		vertexBarrierMoveLastTime = System.currentTimeMillis();
-
 
 		QueryDistribution originalDistribution = new QueryDistribution(workerIds, actQueryWorkerActiveVerts,
 				actQueryWorkerIntersects);
@@ -106,6 +104,8 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 		//		bestDistribution.printMoveDistribution();
 		System.out.println(bestDistribution.getCostsNoImbalance());
 		bestDistribution.printMoveDecissions();
+
+		vertexBarrierMoveLastTime = System.currentTimeMillis();
 
 		if (totalVerticesMoved < MinMoveTotalVertices) {
 			logger.info("Decided not move, not enough vertices: " + totalVerticesMoved);

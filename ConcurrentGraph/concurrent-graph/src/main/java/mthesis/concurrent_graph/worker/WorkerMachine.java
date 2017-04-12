@@ -281,7 +281,19 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 
 				// ++++++++++ Global barrier if requested and no more outstanding queries ++++++++++
-				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) { // TODO Wait until all queries ready?
+				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
+					// Checks
+					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
+						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()) {
+							logger.warn("Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
+									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
+						}
+						if (!query.ActiveVerticesNext.isEmpty()) {
+							logger.warn("Query " + query.QueryId + " is not ready for global barrier, has ActiveVerticesNext: "
+									+ query.ActiveVerticesNext.size());
+						}
+					}
+
 					// Start barrier, notify other workers
 					logger.debug("Barrier started, waiting for other workers to start");
 					messaging.sendControlMessageMulticast(otherWorkerIds,
@@ -296,19 +308,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						handleReceivedMessages();
 					}
 					long barrierStartWaitTime = System.nanoTime() - startTime;
-
-					// Checks
-					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
-						// TODO
-						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()) {
-							logger.warn("Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
-									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
-						}
-						if (!query.ActiveVerticesNext.isEmpty()) {
-							logger.warn("Query " + query.QueryId + " is not ready for global barrier, has ActiveVerticesNext: "
-									+ query.ActiveVerticesNext.size());
-						}
-					}
 
 					// --- Barrier tasks ---
 					startTime = System.nanoTime();
@@ -699,7 +698,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 		for (AbstractVertex<V, E, M, Q> movedVert : message.vertices) {
 			activeQuery.ActiveVerticesThis.put(movedVert.ID, movedVert); // TODO Handle if vertices of intersecting queries
-			activeQuery.ActiveVerticesNext.put(movedVert.ID, movedVert); // TODO ActiveVerticesNext?
 			localVertices.put(movedVert.ID, movedVert);
 		}
 
@@ -934,6 +932,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			Map<Integer, WorkerQuery<V, E, M, Q>> otherQueries = new HashMap<>(activeQueries);
 			otherQueries.remove(queryId);
 
+			if (!query.ActiveVerticesNext.isEmpty()) {
+				logger.error("Query ActiveVerticesNext when moving " + query.QueryId + ":" + query.getMasterStartedSuperstep());
+			}
+
 			for (AbstractVertex<V, E, M, Q> vertex : query.ActiveVerticesThis.values()) {
 				// TODO Currently only sending nonintersecting vertices. Handle ActiveVerticesThis
 				// Check for intersection, dont move
@@ -951,7 +953,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 				localVertices.remove(vertex.ID);
 				query.ActiveVerticesThis.remove(vertex.ID);
-				query.ActiveVerticesNext.remove(vertex.ID); // TODO Why ActiveVerticesNext?
 				verticesToMove.add(vertex);
 				// Send vertices now if bucket full
 				if (verticesToMove.size() >= Configuration.VERTEX_MOVE_BUCKET_MAX_VERTICES) {

@@ -542,14 +542,15 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	}
 
 	private void startQueryNextSuperstep(MasterQuery<Q> queryToStart) {
-		queryToStart.startNextSuperstep(workerIds);
+		queryToStart.beginStartNextSuperstep(workerIds);
 		// Start query superstep
 		for (Integer otherWorkerId : workerIds) {
 			messaging.sendControlMessageUnicast(otherWorkerId,
 					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(queryToStart.StartedSuperstepNo, ownId,
-							queryToStart.BaseQuery),
+							queryToStart.QueryStepAggregator),
 					true);
 		}
+		queryToStart.finishStartNextSuperstep();
 	}
 
 	private void globalBarrierFinished() {

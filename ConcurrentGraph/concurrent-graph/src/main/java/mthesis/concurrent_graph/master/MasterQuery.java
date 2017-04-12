@@ -41,15 +41,17 @@ public class MasterQuery<Q extends BaseQuery> {
 		StartTime = System.nanoTime();
 		LastStepTime = StartTime;
 		workersWaitingFor = new HashSet<>(workersToWait.size());
-		startNextSuperstep(workersToWait);
+		beginStartNextSuperstep(workersToWait);
 		resetValueAggregator(queryFactory);
 		QueryTotalAggregator = queryFactory.createClone(BaseQuery);
 	}
 
-	public void startNextSuperstep(Collection<Integer> workersToWait) {
+	public void beginStartNextSuperstep(Collection<Integer> workersToWait) {
 		workersWaitingFor.addAll(workersToWait);
 		StartedSuperstepNo++;
+	}
 
+	public void finishStartNextSuperstep() {
 		resetValueAggregator(queryValueFactory);
 		LastStepTime = System.nanoTime();
 		logger.debug("Workers finished superstep " + BaseQuery.QueryId + ":" + (StartedSuperstepNo - 1) + " after "
@@ -58,7 +60,7 @@ public class MasterQuery<Q extends BaseQuery> {
 		logger.trace("Next master superstep query " + BaseQuery.QueryId + ": " + StartedSuperstepNo);
 	}
 
-	public void resetValueAggregator(BaseQuery.BaseQueryGlobalValuesFactory<Q> queryFactory) {
+	private void resetValueAggregator(BaseQuery.BaseQueryGlobalValuesFactory<Q> queryFactory) {
 		QueryStepAggregator = queryFactory.createClone(BaseQuery);
 		QueryStepAggregator.setVertexCount(0);
 		QueryStepAggregator.setActiveVertices(0);
