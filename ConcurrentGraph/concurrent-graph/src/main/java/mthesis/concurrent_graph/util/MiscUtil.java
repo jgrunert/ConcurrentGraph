@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 public class MiscUtil {
 
 	public static <T> int getIntersectCount(Set<T> a, Set<T> b) {
@@ -32,6 +35,73 @@ public class MiscUtil {
 		}
 		return intersects;
 	}
+
+	public static int getIntersectCount(IntSet a, IntSet b) {
+		if (a.isEmpty() || b.isEmpty()) return 0;
+
+		// Iterate over smaller set to be faster
+		IntSet smaller;
+		IntSet bigger;
+		if (a.size() > b.size()) {
+			bigger = a;
+			smaller = b;
+		}
+		else {
+			bigger = b;
+			smaller = a;
+		}
+
+		int intersects = 0;
+		for (IntIterator it = smaller.iterator(); it.hasNext();) {
+			if (bigger.contains(it.nextInt())) intersects++;
+		}
+		return intersects;
+	}
+
+	// More than 2x slower
+	//	public static int getIntersectCount2(IntSet a, IntSet b) {
+	//		if (a.isEmpty() || b.isEmpty()) return 0;
+	//
+	//		// Iterate over smaller set to be faster
+	//		IntSet smaller;
+	//		IntSet bigger;
+	//		if (a.size() > b.size()) {
+	//			bigger = a;
+	//			smaller = b;
+	//		}
+	//		else {
+	//			bigger = b;
+	//			smaller = a;
+	//		}
+	//
+	//		IntSet cloneSet = new IntOpenHashSet(smaller);
+	//		cloneSet.retainAll(bigger);
+	//		return cloneSet.size();
+	//	}
+
+	//	 Performance test
+	//	public static void main(String[] args) {
+	//		int numRuns = 10;
+	//		int setASize = 20000;
+	//		int setBSize = 400000;
+	//		int setIntersectSize = 2000;
+	//
+	//		IntSet a = new IntOpenHashSet();
+	//		IntSet b = new IntOpenHashSet();
+	//		for (int i = 0; i < setASize; i++) {
+	//			a.add(i);
+	//		}
+	//		for (int i = setASize - setIntersectSize, c = setBSize + setASize - setIntersectSize; i < c; i++) {
+	//			b.add(i);
+	//		}
+	//
+	//		long startTime = System.nanoTime();
+	//		for (int i = 0; i < 1000; i++) {
+	//			int inters = getIntersectCount(a, b);
+	//		}
+	//		long endTime = System.nanoTime();
+	//		System.out.println("Intersect " + numRuns + "x intersect in " + (endTime - startTime) / 1000000 + "ms");
+	//	}
 
 
 	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {

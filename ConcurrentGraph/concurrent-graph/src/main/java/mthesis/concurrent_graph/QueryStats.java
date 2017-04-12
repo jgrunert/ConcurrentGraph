@@ -1,5 +1,7 @@
 package mthesis.concurrent_graph;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.TreeMap;
@@ -29,7 +31,6 @@ public class QueryStats {
 	// Query Worker states
 	public long ComputeTime;
 	public long StepFinishTime;
-	public long IntersectCalcTime;
 	public long UpdateVertexRegisters;
 	public long RedirectedMessages;
 	public long MoveSendVertices;
@@ -70,7 +71,6 @@ public class QueryStats {
 
 		ComputeTime = bytes.getLong();
 		StepFinishTime = bytes.getLong();
-		IntersectCalcTime = bytes.getLong();
 		UpdateVertexRegisters = bytes.getLong();
 		RedirectedMessages = bytes.getLong();
 		MoveSendVertices = bytes.getLong();
@@ -82,27 +82,26 @@ public class QueryStats {
 	}
 
 
-	public void writeToBuffer(ByteBuffer buffer) {
-		buffer.putLong(MessagesTransmittedLocal);
-		buffer.putLong(MessagesSentUnicast);
-		buffer.putLong(MessagesSentBroadcast);
-		buffer.putLong(MessageBucketsSentUnicast);
-		buffer.putLong(MessageBucketsSentBroadcast);
-		buffer.putLong(MessagesReceivedWrongVertex);
-		buffer.putLong(MessagesReceivedCorrectVertex);
-		buffer.putLong(DiscoveredNewVertexMachines);
+	public void writeToStream(DataOutputStream stream) throws IOException {
+		stream.writeLong(MessagesTransmittedLocal);
+		stream.writeLong(MessagesSentUnicast);
+		stream.writeLong(MessagesSentBroadcast);
+		stream.writeLong(MessageBucketsSentUnicast);
+		stream.writeLong(MessageBucketsSentBroadcast);
+		stream.writeLong(MessagesReceivedWrongVertex);
+		stream.writeLong(MessagesReceivedCorrectVertex);
+		stream.writeLong(DiscoveredNewVertexMachines);
 
-		buffer.putLong(ComputeTime);
-		buffer.putLong(StepFinishTime);
-		buffer.putLong(IntersectCalcTime);
-		buffer.putLong(UpdateVertexRegisters);
-		buffer.putLong(RedirectedMessages);
-		buffer.putLong(MoveSendVertices);
-		buffer.putLong(MoveRecvVertices);
-		buffer.putLong(MoveSendVerticesTime);
-		buffer.putLong(MoveRecvVerticesTime);
+		stream.writeLong(ComputeTime);
+		stream.writeLong(StepFinishTime);
+		stream.writeLong(UpdateVertexRegisters);
+		stream.writeLong(RedirectedMessages);
+		stream.writeLong(MoveSendVertices);
+		stream.writeLong(MoveRecvVertices);
+		stream.writeLong(MoveSendVerticesTime);
+		stream.writeLong(MoveRecvVerticesTime);
 
-		buffer.putLong(MoveSendVerticesMessages);
+		stream.writeLong(MoveSendVerticesMessages);
 	}
 
 
@@ -120,7 +119,6 @@ public class QueryStats {
 
 		statsMap.put("ComputeTime", (double) ComputeTime);
 		statsMap.put("StepFinishTime", (double) StepFinishTime);
-		statsMap.put("IntersectCalcTime", (double) IntersectCalcTime);
 		statsMap.put("UpdateVertexRegisters", (double) UpdateVertexRegisters);
 		statsMap.put("RedirectedMessages", (double) RedirectedMessages);
 		statsMap.put("MoveSendVertices", (double) MoveSendVertices);
@@ -146,7 +144,6 @@ public class QueryStats {
 
 		ComputeTime += v.ComputeTime;
 		StepFinishTime += v.StepFinishTime;
-		IntersectCalcTime += v.IntersectCalcTime;
 		UpdateVertexRegisters += v.UpdateVertexRegisters;
 		RedirectedMessages += v.RedirectedMessages;
 		MoveSendVertices += v.MoveSendVertices;
@@ -175,6 +172,6 @@ public class QueryStats {
 
 
 	public long getWorkersTime() {
-		return ComputeTime + IntersectCalcTime + StepFinishTime + MoveSendVerticesTime + MoveRecvVerticesTime;
+		return ComputeTime + StepFinishTime + MoveSendVerticesTime + MoveRecvVerticesTime;
 	}
 }

@@ -48,7 +48,7 @@ message MessageEnvelope {
 		optional AssignPartitionsMessage AssignPartitions = 5;
 		optional bytes QueryValues = 6;
 		optional WorkerInitializedMessage WorkerInitialized = 7;
-		optional QueryIntersectionsMessage QueryIntersections = 8;
+		//optional QueriesIntersectionsMessage QueriesIntersections = 8;
 		optional SendQueryVerticesMessage SendQueryVertices = 9;
 		optional ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;
 		optional StartBarrierMessage StartBarrier = 11;
@@ -59,25 +59,17 @@ message MessageEnvelope {
 			repeated string PartitionFiles = 2;
 		}
 		
-		//message WorkerStatsMessage {
-		//	optional int32 SentControlMessages = 2;
-		//	optional int32 SentVertexMessagesLocal = 3;
-		//	optional int32 SentVertexMessagesUnicast = 4;
-		//	optional int32 SentVertexMessagesBroadcast = 5;
-		//	optional int32 SentVertexMessagesBuckets = 11;
-		//	optional int32 ReceivedCorrectVertexMessages = 6;
-		//	optional int32 ReceivedWrongVertexMessages = 7;
-		//	optional int32 NewVertexMachinesDiscovered = 8;
-		//	optional int32 TotalVertexMachinesDiscovered = 9;
-		//}
-		
 		message WorkerInitializedMessage {
 			optional int32 VertexCount = 1;
 		}
 		
-		message QueryIntersectionsMessage {
-			map<int32, int32> Intersections = 1;
-		}
+		//message QueriesIntersectionsMessage {
+		//	map<int32, SingelQueryIntersectionsMessage> QueriesIntersections = 1;
+		//}
+		
+		//message SingelQueryIntersectionsMessage {
+		//	map<int32, int32> Intersections = 1;
+		//}
 		
 		message SendQueryVerticesMessage {
 			optional int32 SendToMachine = 1;

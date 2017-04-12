@@ -1,14 +1,12 @@
 package mthesis.concurrent_graph.communication;
 
 import java.util.List;
-import java.util.Map;
 
 import com.google.protobuf.ByteString;
 
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryIntersectionsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
@@ -134,14 +132,12 @@ public class ControlMessageBuildUtil {
 	}
 
 	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId, //SuperstepStats stats,
-			BaseQuery localQuery, Map<Integer, Integer> queryIntersects, List<WorkerStatSample> workerStats) {
-		final QueryIntersectionsMessage intersectMsg = QueryIntersectionsMessage.newBuilder().putAllIntersections(queryIntersects).build();
+			BaseQuery localQuery, List<WorkerStatSample> workerStats) {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Superstep_Finished)
 						.setQueryValues(ByteString.copyFrom(localQuery.getBytes()))
 						.setSuperstepNo(superstepNo)
 						.setSrcMachine(srcMachineId)
-						.setQueryIntersections(intersectMsg)
 						.setWorkerStats(WorkerStatsMessage.newBuilder().addAllSamples(workerStats))
 						.build())
 				.build();

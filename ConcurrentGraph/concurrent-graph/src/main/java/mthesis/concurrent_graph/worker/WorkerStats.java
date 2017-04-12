@@ -1,8 +1,13 @@
 package mthesis.concurrent_graph.worker;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import com.google.protobuf.ByteString;
@@ -23,9 +28,6 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStat
 @SuppressWarnings("restriction")
 public class WorkerStats {
 
-	private static final int WorkerStatsMaxBytes = 2048;
-	private final byte[] workerStatsBuffer = new byte[WorkerStatsMaxBytes];
-
 	// Direct variables for quick access of frequently changed variables
 	public long WorkerVertices;
 	public long ActiveVertices;
@@ -35,10 +37,15 @@ public class WorkerStats {
 	public long BarrierStartWaitTime;
 	public long BarrierFinishWaitTime;
 	public long BarrierVertexMoveTime;
+	public long IntersectCalcTime;
+	public long SuperstepsFinished;
 
 	public double SystemCpuLoad;
 	public double ProcessCpuTime;
 	public double ProcessCpuLoad;
+
+	/** All queries, their active vertices and intersections since last vertex move barrier */
+	public Map<Integer, Map<Integer, Integer>> QueryIntersectsSinceBarrier;
 
 	private QueryStats aggregatedQueryStats;
 
@@ -63,7 +70,7 @@ public class WorkerStats {
 
 	public WorkerStats(ByteString bytesString) {
 		super();
-		ByteBuffer bytes = ByteBuffer.allocate(WorkerStatsMaxBytes);
+		ByteBuffer bytes = ByteBuffer.allocate(bytesString.size());
 		bytesString.copyTo(bytes);
 		bytes.position(0);
 
@@ -75,30 +82,55 @@ public class WorkerStats {
 		BarrierStartWaitTime = bytes.getLong();
 		BarrierFinishWaitTime = bytes.getLong();
 		BarrierVertexMoveTime = bytes.getLong();
+		IntersectCalcTime = bytes.getLong();
+		SuperstepsFinished = bytes.getLong();
 
 		SystemCpuLoad = bytes.getDouble();
 		ProcessCpuTime = bytes.getDouble();
 		ProcessCpuLoad = bytes.getDouble();
 
+		int qICount = bytes.getInt();
+		QueryIntersectsSinceBarrier = new HashMap<>(qICount);
+		for (int iQi = 0; iQi < qICount; iQi++) {
+			Integer qiKey = bytes.getInt();
+			Integer qiCount = bytes.getInt();
+			Map<Integer, Integer> qiIntMap = new HashMap<>(qiCount);
+			for (int iQiInt = 0; iQiInt < qiCount; iQiInt++) {
+				qiIntMap.put(bytes.getInt(), bytes.getInt());
+			}
+			QueryIntersectsSinceBarrier.put(qiKey, qiIntMap);
+		}
+
 		aggregatedQueryStats = new QueryStats(bytes);
 	}
 
+	private void writeToStream(DataOutputStream stream) throws IOException {
+		stream.writeLong(WorkerVertices);
+		stream.writeLong(ActiveVertices);
+		stream.writeLong(IdleTime);
+		stream.writeLong(QueryWaitTime);
+		stream.writeLong(HandleMessagesTime);
+		stream.writeLong(BarrierStartWaitTime);
+		stream.writeLong(BarrierFinishWaitTime);
+		stream.writeLong(BarrierVertexMoveTime);
+		stream.writeLong(IntersectCalcTime);
+		stream.writeLong(SuperstepsFinished);
 
-	public void writeToBuffer(ByteBuffer buffer) {
-		buffer.putLong(WorkerVertices);
-		buffer.putLong(ActiveVertices);
-		buffer.putLong(IdleTime);
-		buffer.putLong(QueryWaitTime);
-		buffer.putLong(HandleMessagesTime);
-		buffer.putLong(BarrierStartWaitTime);
-		buffer.putLong(BarrierFinishWaitTime);
-		buffer.putLong(BarrierVertexMoveTime);
+		stream.writeDouble(SystemCpuLoad);
+		stream.writeDouble(ProcessCpuTime);
+		stream.writeDouble(ProcessCpuLoad);
 
-		buffer.putDouble(SystemCpuLoad);
-		buffer.putDouble(ProcessCpuTime);
-		buffer.putDouble(ProcessCpuLoad);
+		stream.writeInt(QueryIntersectsSinceBarrier.size());
+		for (Entry<Integer, Map<Integer, Integer>> qI : QueryIntersectsSinceBarrier.entrySet()) {
+			stream.writeInt(qI.getKey());
+			stream.writeInt(qI.getValue().size());
+			for (Entry<Integer, Integer> inters : qI.getValue().entrySet()) {
+				stream.writeInt(inters.getKey());
+				stream.writeInt(inters.getValue());
+			}
+		}
 
-		aggregatedQueryStats.writeToBuffer(buffer);
+		aggregatedQueryStats.writeToStream(stream);
 	}
 
 	public Map<String, Double> getStatsMap() {
@@ -112,6 +144,8 @@ public class WorkerStats {
 		statsMap.put("BarrierStartWaitTime", (double) BarrierStartWaitTime);
 		statsMap.put("BarrierFinishWaitTime", (double) BarrierFinishWaitTime);
 		statsMap.put("BarrierVertexMoveTime", (double) BarrierVertexMoveTime);
+		statsMap.put("IntersectCalcTime", (double) IntersectCalcTime);
+		statsMap.put("SuperstepsFinished", (double) SuperstepsFinished);
 
 		statsMap.put("SystemCpuLoad", SystemCpuLoad);
 		statsMap.put("ProcessCpuTime", ProcessCpuTime);
@@ -128,18 +162,16 @@ public class WorkerStats {
 	}
 
 
-	public WorkerStatSample getSample(long sampleTime) {
+	public WorkerStatSample getSample(long sampleTime) throws IOException {
 		if (cpuStatsActive) {
 			SystemCpuLoad = operatingSystemMXBean.getSystemCpuLoad() * 100;
 			ProcessCpuTime = operatingSystemMXBean.getProcessCpuTime();
 			ProcessCpuLoad = operatingSystemMXBean.getProcessCpuLoad() * 100;
 		}
 
-		ByteBuffer buffer = ByteBuffer.wrap(workerStatsBuffer);
-		writeToBuffer(buffer);
-		int byteCount = buffer.position();
-		buffer.position(0);
-		ByteString bs = ByteString.copyFrom(buffer, byteCount);
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+		writeToStream(new DataOutputStream(outStream));
+		ByteString bs = ByteString.copyFrom(outStream.toByteArray());
 		return WorkerStatSample.newBuilder().setTime(sampleTime).setStatsBytes(bs).build();
 	}
 }

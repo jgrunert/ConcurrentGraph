@@ -768,8 +768,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					sb.append(';');
 					sb.append(step.Stats.ComputeTime / 1000000);
 					sb.append(';');
-					sb.append(step.Stats.IntersectCalcTime / 1000000);
-					sb.append(';');
 					sb.append(step.Stats.StepFinishTime / 1000000);
 					sb.append(';');
 					sb.append(step.Stats.MoveSendVerticesTime / 1000000);

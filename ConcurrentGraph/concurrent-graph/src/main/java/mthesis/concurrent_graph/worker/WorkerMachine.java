@@ -21,6 +21,8 @@ import com.google.protobuf.ByteString;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
@@ -93,9 +95,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	private final ConcurrentLinkedQueue<ChannelMessage> receivedMessages = new ConcurrentLinkedQueue<>();
 
-	// Most recent calculated query intersections
-	private Map<Integer, Map<Integer, Integer>> currentQueryIntersects = new HashMap<>();
-
 	// Global barrier coordination/control
 	private boolean globalBarrierRequested = false;
 	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
@@ -115,6 +114,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private List<WorkerStatSample> workerStatsSamplesToSend = new ArrayList<>();
 	private PrintWriter allVertexStatsFile = null;
 	private PrintWriter actVertexStatsFile = null;
+	/** Map of all queries active vertices since the last barrier/move. Disabled if no vertex barrier move enabled */
+	private Int2ObjectMap<IntSet> queryActiveVerticesSinceBarrier = new Int2ObjectOpenHashMap<>();
+
+	// Most recent calculated query intersections
+	//	private Map<Integer, Map<Integer, Integer>> currentQueryIntersects = new HashMap<>();
 
 	// Watchdog
 	private long lastWatchdogSignal;
@@ -316,6 +320,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
 								sendVert.getMaxMoveCount());
 					}
+					// Clear queryActiveVerticesSinceBarrier after sending
+					queryActiveVerticesSinceBarrier.clear();
 					// Receive vertices
 					while (!globalBarrierRecvVerts.isEmpty()) {
 						handleReceivedMessages();
@@ -768,6 +774,15 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		query.ActiveVerticesNext = swap;
 		query.ActiveVerticesNext.clear();
 
+		if (Configuration.VERTEX_BARRIER_MOVE_ENABLED) {
+			IntSet queryVertexSet = queryActiveVerticesSinceBarrier.get(query.QueryId);
+			if (queryVertexSet == null) {
+				queryVertexSet = new IntOpenHashSet();
+				queryActiveVerticesSinceBarrier.put(query.QueryId, queryVertexSet);
+			}
+			queryVertexSet.addAll(query.ActiveVerticesThis.keySet());
+		}
+
 		// Prepare active vertices, now we have all vertex messages and compute is finished
 		Integer queryId = query.Query.QueryId;
 		for (AbstractVertex<V, E, M, Q> vert : query.ActiveVerticesThis.values()) {
@@ -781,8 +796,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		query.QueryLocal.Stats.StepFinishTime += System.nanoTime() - startTime;
 
 		// Notify master that superstep finished
-		Map<Integer, Integer> queryIntersects = calculateQueryIntersects(query); // TODO Optimize, dont calculate always?
-		sendMasterSuperstepFinished(query, queryIntersects);
+		sendMasterSuperstepFinished(query);
 		query.onLocalFinishSuperstep(query.getMasterStartedSuperstep());
 
 		logger.trace("Worker finished local superstep " + query.Query.QueryId + ":"
@@ -816,13 +830,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				true);
 	}
 
-	private void sendMasterSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery, Map<Integer, Integer> queryIntersects) {
+	private void sendMasterSuperstepFinished(WorkerQuery<V, E, M, Q> workerQuery) {
 		messaging.sendControlMessageUnicast(masterId,
-				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(
-						workerQuery.getMasterStartedSuperstep(),
-						ownId,
-						workerQuery.QueryLocal, queryIntersects, workerStatsSamplesToSend),
+				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(workerQuery.getMasterStartedSuperstep(), ownId,
+						workerQuery.QueryLocal, workerStatsSamplesToSend),
 				true);
+		workerStats.SuperstepsFinished++;
 		workerStatsSamplesToSend.clear();
 	}
 
@@ -991,36 +1004,40 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 
 	// #################### Others #################### //
-	private Map<Integer, Integer> calculateQueryIntersects(WorkerQuery<V, E, M, Q> activeQuery) {
-		Map<Integer, Integer> queryIntersects = new HashMap<>();
-		long startTime2 = System.nanoTime();
-		for (WorkerQuery<V, E, M, Q> otherQuery : activeQueries.values()) {
-			if (otherQuery.QueryId == activeQuery.QueryId) continue;
-			int intersects;
-			intersects = MiscUtil.getIntersectCount(activeQuery.ActiveVerticesThis.keySet(),
-					otherQuery.ActiveVerticesThis.keySet());
-			queryIntersects.put(otherQuery.QueryId, intersects);
-		}
-		activeQuery.QueryLocal.Stats.IntersectCalcTime += System.nanoTime() - startTime2;
+	/**
+	 * TODO Explain
+	 */
+	private Map<Integer, Map<Integer, Integer>> calculateQueryIntersectsSinceBarrier() {
+		long startTime = System.nanoTime();
 
-		// Update currentQueryIntersects
-		currentQueryIntersects.put(activeQuery.QueryId, queryIntersects);
-		for (Entry<Integer, Integer> intersection : queryIntersects.entrySet()) {
-			Map<Integer, Integer> otherIntersects = currentQueryIntersects.get(intersection.getKey());
-			if (otherIntersects == null) {
-				otherIntersects = new HashMap<>();
-				currentQueryIntersects.put(intersection.getKey(), otherIntersects);
-			}
-			otherIntersects.put(activeQuery.QueryId, intersection.getValue());
+		// Create empty query intersect maps
+		Map<Integer, Map<Integer, Integer>> allIntersects = new HashMap<>(queryActiveVerticesSinceBarrier.size());
+		for (Entry<Integer, IntSet> q : queryActiveVerticesSinceBarrier.entrySet()) {
+			Map<Integer, Integer> qIntersects = new HashMap<>(queryActiveVerticesSinceBarrier.size());
+			allIntersects.put(q.getKey(), qIntersects);
 		}
-		return queryIntersects;
+
+		for (Entry<Integer, IntSet> q : queryActiveVerticesSinceBarrier.entrySet()) {
+			Map<Integer, Integer> qIntersects = allIntersects.get(q.getKey());
+			// Add own count (intersect with itself = own count)
+			qIntersects.put(q.getKey(), q.getValue().size());
+
+			// Calculate intersects with others
+			for (Entry<Integer, IntSet> qOther : queryActiveVerticesSinceBarrier.entrySet()) {
+				if (qOther.getKey().equals(q.getKey())) continue;
+				if (qIntersects.containsKey(qOther)) continue; // Dont calculate same intersection twice
+				int intersection = MiscUtil.getIntersectCount(q.getValue(), qOther.getValue());
+				qIntersects.put(qOther.getKey(), intersection);
+				allIntersects.get(qOther.getKey()).put(q.getKey(), intersection);
+			}
+		}
+
+		workerStats.IntersectCalcTime += System.nanoTime() - startTime;
+
+		return allIntersects;
 	}
 
 	private void sampleWorkerStats() {
-		long activeVertices = 0;
-		for (WorkerQuery<V, E, M, Q> query : activeQueries.values())
-			activeVertices += query.ActiveVerticesThis.size();
-
 		// Output a sample of vertices on this machine
 		int allVertSampleRate = Configuration.getPropertyIntDefault("WorkerStatsAllVerticesSampleRate", 0);
 		if (allVertSampleRate > 0) {
@@ -1077,9 +1094,24 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			}
 		}
 
+		// Worker stats active vertices
+		long activeVertices = 0;
+		for (WorkerQuery<V, E, M, Q> query : activeQueries.values())
+			activeVertices += query.ActiveVerticesThis.size();
 		workerStats.ActiveVertices = activeVertices;
 		workerStats.WorkerVertices = localVertices.size();
-		workerStatsSamplesToSend.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
+
+		// If barrier move enabled: Calculation of query intersections
+		if (Configuration.VERTEX_BARRIER_MOVE_ENABLED) {
+			workerStats.QueryIntersectsSinceBarrier = calculateQueryIntersectsSinceBarrier();
+		}
+
+		try {
+			workerStatsSamplesToSend.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
+		}
+		catch (Exception e) {
+			logger.error("Failure at sample worker stats", e);
+		}
 		workerStats = new WorkerStats();
 	}
 
