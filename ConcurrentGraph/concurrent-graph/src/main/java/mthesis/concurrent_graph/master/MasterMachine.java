@@ -59,11 +59,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private Map<Integer, MasterQuery<Q>> activeQueries = new HashMap<>();
 	private int queuedQueries = 0;
 
-	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
-	private Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts = new HashMap<>();
-	/** Map<Machine, Map<QueryId, Map<IntersectWithWorkerId, IntersectingsCount>>> */
-	private Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects = new HashMap<>();
-
 	// Query logging for later evaluation
 	private final boolean enableQueryStats = true; // TODO Config
 	private final String queryStatsDir;
@@ -75,6 +70,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	// Map WorkerId->(timestamp, workerStatsSample)
 	private Map<Integer, List<Pair<Long, WorkerStats>>> workerStats = new HashMap<>();
+	/** Map<Machine, Map<QueryId, Map<IntersectQueryId, IntersectingsCount>>> */
+	private Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects = new HashMap<>();
 
 	private final String inputFile;
 	private final String inputPartitionDir;
@@ -115,6 +112,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 		for (Integer workerId : workerIds) {
 			workerStats.put(workerId, new ArrayList<>());
+			workerQueryIntersects.put(workerId, new HashMap<>());
 		}
 	}
 
@@ -313,14 +311,12 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			if (controlMsg.hasWorkerStats()) {
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
 				for (WorkerStatSample sample : samples) {
+					WorkerStats stats = new WorkerStats(sample.getStatsBytes());
 					workerStats.get(controlMsg.getSrcMachine())
-					.add(new Pair<Long, WorkerStats>(sample.getTime(), new WorkerStats(sample.getStatsBytes())));
+					.add(new Pair<Long, WorkerStats>(sample.getTime(), stats));
+					workerQueryIntersects.put(controlMsg.getSrcMachine(), stats.QueryIntersectsSinceBarrier);
 				}
 			}
-
-			// Query intersects on machine
-			Map<Integer, Integer> queryIntersects = controlMsg.getQueryIntersections().getIntersectionsMap();
-			actQueryWorkerIntersects.get(msgQueryOnWorker.QueryId).put(srcMachine, queryIntersects);
 
 			if (controlMsg.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
 				if (!msgActiveQuery.IsComputing) {
@@ -329,8 +325,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					return;
 				}
 
-				actQueryWorkerActiveVerts.get(msgQueryOnWorker.QueryId).put(srcMachine,
-						msgQueryOnWorker.getActiveVertices());
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
 
 				// Log worker superstep stats
@@ -423,7 +417,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					synchronized (activeQueries) {
 						activeQueries.remove(msgActiveQuery.BaseQuery.QueryId);
 					}
-					actQueryWorkerActiveVerts.remove(msgActiveQuery.BaseQuery.QueryId);
 					long duration = System.nanoTime() - msgActiveQuery.StartTime;
 					queryDurations.put(msgActiveQuery.BaseQuery.QueryId, duration);
 					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
@@ -483,8 +476,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		for (Integer worker : workerIds) {
 			queryWorkerAVerts.put(worker, 0);
 		}
-		actQueryWorkerActiveVerts.put(query.QueryId, queryWorkerAVerts);
-		actQueryWorkerIntersects.put(query.QueryId, new HashMap<>());
 
 		// Start query on workers
 		signalWorkersQueryStart(query);
@@ -509,8 +500,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		}
 
 		long decideStartTime = System.currentTimeMillis();
-		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerIds, activeQueries, actQueryWorkerActiveVerts,
-				actQueryWorkerIntersects);
+		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerIds, activeQueries, workerQueryIntersects);
 		// TODO Master stats decide time
 
 		if (moveDecission != null) {

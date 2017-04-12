@@ -16,6 +16,5 @@ import mthesis.concurrent_graph.master.MasterQuery;
 public abstract class AbstractVertexMoveDecider<Q extends BaseQuery> {
 
 	public abstract VertexMoveDecision decide(List<Integer> workerIds, Map<Integer, MasterQuery<Q>> activeQueries,
-			Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts,
-			Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects);
+			Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects);
 }
