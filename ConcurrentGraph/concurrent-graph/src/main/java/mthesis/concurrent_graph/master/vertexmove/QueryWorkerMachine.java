@@ -50,7 +50,7 @@ public class QueryWorkerMachine {
 	 */
 	public Map<Integer, QueryVerticesOnMachine> removeQueryVertices(int queryId, boolean moveIntersecting) {
 		QueryVerticesOnMachine query = queries.get(queryId);
-		if (query == null) {
+		if (query == null || query.totalVertices == 0) {
 			// Query not on machine
 			return new HashMap<>();
 		}
@@ -69,8 +69,9 @@ public class QueryWorkerMachine {
 				 * not be removed.
 				 */
 				for (Entry<Integer, Integer> intersection : query.intersections.entrySet()) {
-					int intersectingQueryId = intersection.getKey();
 					int intersectSize = intersection.getValue();
+					if (intersectSize <= 0) continue;
+					int intersectingQueryId = intersection.getKey();
 					QueryVerticesOnMachine intersectingQuery = queries.get(intersectingQueryId);
 					if (intersectingQuery.totalVertices <= intersectSize) {
 						// Total overlap, remove entire query

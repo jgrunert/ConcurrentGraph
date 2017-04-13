@@ -2,7 +2,6 @@ package mthesis.concurrent_graph.master.vertexmove;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,7 +29,7 @@ public class QueryDistribution {
 	private final Set<Integer> queryIds;
 
 	// Move operations and costs so far
-	private final Set<VertexMoveOperation> moveOperationsSoFar;
+	private final Map<VertexMoveOperation, Integer> moveOperationsSoFar;
 	private double moveCostsSoFar;
 	private double distributionCosts;
 
@@ -39,14 +38,14 @@ public class QueryDistribution {
 	 * Constructor for initial state, no moves so far.
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		this(queryIds, queryMachines, new HashSet<>(), 0, calculateVerticesSeparatedCosts(queryIds, queryMachines));
+		this(queryIds, queryMachines, new HashMap<>(), 0, calculateVerticesSeparatedCosts(queryIds, queryMachines));
 	}
 
 	/**
 	 * Copy constructor
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines,
-			Set<VertexMoveOperation> moveOperationsSoFar, double moveCostsSoFar, double distributionCosts) {
+			Map<VertexMoveOperation, Integer> moveOperationsSoFar, double moveCostsSoFar, double distributionCosts) {
 		super();
 		this.queryIds = queryIds;
 		this.queryMachines = queryMachines;
@@ -62,7 +61,7 @@ public class QueryDistribution {
 			queryMachinesClone.put(entry.getKey(), entry.getValue().createClone());
 		}
 		return new QueryDistribution(queryIds, queryMachinesClone,
-				new HashSet<>(moveOperationsSoFar), moveCostsSoFar, distributionCosts);
+				new HashMap<>(moveOperationsSoFar), moveCostsSoFar, distributionCosts);
 	}
 
 
@@ -76,7 +75,7 @@ public class QueryDistribution {
 	 */
 	public int moveVertices(int queryId, int fromWorkerId, int toWorkerId, boolean moveIntersecting) {
 		VertexMoveOperation moveOperation = new VertexMoveOperation(queryId, fromWorkerId, toWorkerId);
-		if (moveOperationsSoFar.contains(moveOperation))
+		if (moveOperationsSoFar.containsKey(moveOperation))
 			return 0; // Cant do same move twice?
 
 		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
@@ -90,7 +89,7 @@ public class QueryDistribution {
 			movedCount += movedQ.totalVertices;
 		}
 
-		moveOperationsSoFar.add(moveOperation);
+		moveOperationsSoFar.put(moveOperation, movedCount);
 		moveCostsSoFar += (double) movedCount * vertexMoveCosts;
 		distributionCosts = calculateVerticesSeparatedCosts(queryIds, queryMachines);
 		return movedCount;
@@ -197,8 +196,10 @@ public class QueryDistribution {
 	}
 
 	public void printMoveDecissions() {
-		for (VertexMoveOperation moveOperation : moveOperationsSoFar) {
-			System.out.println(moveOperation.QueryId + ": " + moveOperation.FromMachine + "->" + moveOperation.ToMachine);
+		for (Entry<VertexMoveOperation, Integer> moveOperationEntry : moveOperationsSoFar.entrySet()) {
+			VertexMoveOperation moveOperation = moveOperationEntry.getKey();
+			System.out.println(moveOperation.QueryId + ": " + moveOperation.FromMachine + "->" + moveOperation.ToMachine + " "
+					+ moveOperationEntry.getValue());
 		}
 	}
 
@@ -213,7 +214,7 @@ public class QueryDistribution {
 			workerVertRecvMsgs.put(workerId, new ArrayList<>());
 		}
 
-		for (VertexMoveOperation moveOperation : moveOperationsSoFar) {
+		for (VertexMoveOperation moveOperation : moveOperationsSoFar.keySet()) {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
 					.setQueryId(moveOperation.QueryId)

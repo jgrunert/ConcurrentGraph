@@ -41,6 +41,7 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 			Map<Integer, QueryVerticesOnMachine> machineQueries = new HashMap<>();
 			for (Entry<Integer, Map<Integer, Integer>> machineQuery : machine.getValue().entrySet()) {
 				int queryId = machineQuery.getKey();
+				queryIds.add(queryId);
 				int totalVertices = machineQuery.getValue().get(queryId);
 				Map<Integer, Integer> intersects = new HashMap<>(machineQuery.getValue());
 				intersects.remove(queryId);
@@ -118,7 +119,7 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 		}
 
 		System.out.println("+++++++++++++");
-		//		bestDistribution.printMoveDistribution();
+		bestDistribution.printMoveDistribution();
 		bestDistribution.printMoveDecissions();
 
 		vertexBarrierMoveLastTime = System.currentTimeMillis();
