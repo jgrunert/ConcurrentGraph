@@ -33,8 +33,8 @@ import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
-import mthesis.concurrent_graph.master.vertexmove.AbstractVertexMoveDecider;
 import mthesis.concurrent_graph.master.vertexmove.GreedyNewVertexMoveDecider;
+import mthesis.concurrent_graph.master.vertexmove.VertexMoveDeciderService;
 import mthesis.concurrent_graph.master.vertexmove.VertexMoveDecision;
 import mthesis.concurrent_graph.plotting.JFreeChartPlotter;
 import mthesis.concurrent_graph.util.FileUtil;
@@ -70,7 +70,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	// Map WorkerId->(timestamp, workerStatsSample)
 	private Map<Integer, List<Pair<Long, WorkerStats>>> workerStats = new HashMap<>();
-	/** Map<Machine, Map<QueryId, Map<IntersectQueryId, IntersectingsCount>>> */
 	private Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects = new HashMap<>();
 
 	private final String inputFile;
@@ -86,9 +85,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final Set<Integer> globalBarrierWaitSet = new HashSet<>();
 	// Queries that are delayed because of the active global barrier
 	private final Set<MasterQuery<Q>> barrierDelayedQueryNextSteps = new HashSet<>();
+	@SuppressWarnings("unused") // TODO
 	private final Set<Integer> barrierDelayedQueryStarts = new HashSet<>();
 
-	private final AbstractVertexMoveDecider<Q> vertexMoveDecider = new GreedyNewVertexMoveDecider<>();
+	private final VertexMoveDeciderService<Q> vertexMoveDeciderService = new VertexMoveDeciderService<>(new GreedyNewVertexMoveDecider<>());
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
@@ -125,6 +125,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		initializeWorkersAssignPartitions(); // Signal workers to initialize
 		logger.info("Workers partitions assigned and initialize starting after "
 				+ ((System.nanoTime() - masterStartTimeNano) / 1000000) + "ms");
+		if (Configuration.VERTEX_BARRIER_MOVE_ENABLED)
+			vertexMoveDeciderService.start();
 	}
 
 
@@ -316,6 +318,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					.add(new Pair<Long, WorkerStats>(sample.getTime(), stats));
 					workerQueryIntersects.put(controlMsg.getSrcMachine(), stats.QueryIntersectsSinceBarrier);
 				}
+				vertexMoveDeciderService.updateQueryIntersects(workerQueryIntersects);
 			}
 
 			if (controlMsg.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
@@ -499,10 +502,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			return;
 		}
 
-		long decideStartTime = System.currentTimeMillis();
-		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerQueryIntersects);
-		// TODO Master stats decide time
-
+		VertexMoveDecision moveDecission = null;
+		if (vertexMoveDeciderService.hasNewDecission()) {
+			moveDecission = vertexMoveDeciderService.getNewDecission();
+		}
 		if (moveDecission != null) {
 			globalBarrierWaitSet.addAll(workerIds);
 			globalBarrierActive = true;
@@ -512,9 +515,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			for (MasterQuery<Q> q : activeQueries.values()) {
 				queryFinishedSupersteps.put(q.BaseQuery.QueryId, q.StartedSuperstepNo);
 			}
-
-			logger.info(
-					"Decided to move in " + (System.currentTimeMillis() - decideStartTime) + " with queries " + queryFinishedSupersteps);
 
 			// Send barrier move messages
 			for (int workerId : workerIds) {
@@ -573,6 +573,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		logger.info("Stopping master after " + (System.currentTimeMillis() - masterStartTimeMs) + "ms");
 
 		signalWorkersShutdown();
+		vertexMoveDeciderService.stop();
 		super.stop();
 		saveWorkerStats();
 		saveQueryStats();
@@ -591,12 +592,12 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private void printErrorCount() {
 		ErrWarnCounter.Enabled = false;
-			if (ErrWarnCounter.Warnings > 0)
-				logger.warn("Warnings: " + ErrWarnCounter.Warnings);
-			else logger.info("No warnings");
-			if (ErrWarnCounter.Errors > 0)
-				logger.warn("Errors: " + ErrWarnCounter.Errors);
-			else logger.info("No errors");
+		if (ErrWarnCounter.Warnings > 0)
+			logger.warn("Warnings: " + ErrWarnCounter.Warnings);
+		else logger.info("No warnings");
+		if (ErrWarnCounter.Errors > 0)
+			logger.warn("Errors: " + ErrWarnCounter.Errors);
+		else logger.info("No errors");
 	}
 
 	private void saveWorkerStats() {
