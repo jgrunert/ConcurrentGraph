@@ -27,32 +27,32 @@ public class QueryDistribution {
 	//	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
 	/** Map<Machine, Map<QueryId, QueryVerticesOnMachine>> */
 	private final Map<Integer, QueryWorkerMachine> queryMachines;
-	private final List<Integer> workerIds;
+	private final Set<Integer> queryIds;
 
 	// Move operations and costs so far
 	private final Set<VertexMoveOperation> moveOperationsSoFar;
 	private double moveCostsSoFar;
-	private final double distributionCosts;
+	private double distributionCosts;
 
 
 	/**
 	 * Constructor for initial state, no moves so far.
 	 */
-	public QueryDistribution(List<Integer> workerIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		this(workerIds, queryMachines, new HashSet<>(), 0);
+	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+		this(queryIds, queryMachines, new HashSet<>(), 0, calculateVerticesSeparatedCosts(queryIds, queryMachines));
 	}
 
 	/**
 	 * Copy constructor
 	 */
-	public QueryDistribution(List<Integer> workerIds, Map<Integer, QueryWorkerMachine> queryMachines,
-			Set<VertexMoveOperation> moveOperationsSoFar, double moveCostsSoFar) {
+	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines,
+			Set<VertexMoveOperation> moveOperationsSoFar, double moveCostsSoFar, double distributionCosts) {
 		super();
-		this.workerIds = workerIds;
+		this.queryIds = queryIds;
 		this.queryMachines = queryMachines;
 		this.moveOperationsSoFar = moveOperationsSoFar;
 		this.moveCostsSoFar = moveCostsSoFar;
-		this.distributionCosts = calculateVerticesSeparatedCosts();
+		this.distributionCosts = distributionCosts;
 	}
 
 	@Override
@@ -61,8 +61,8 @@ public class QueryDistribution {
 		for (Entry<Integer, QueryWorkerMachine> entry : queryMachines.entrySet()) {
 			queryMachinesClone.put(entry.getKey(), entry.getValue().createClone());
 		}
-		return new QueryDistribution(workerIds, queryMachinesClone,
-				new HashSet<>(moveOperationsSoFar), moveCostsSoFar);
+		return new QueryDistribution(queryIds, queryMachinesClone,
+				new HashSet<>(moveOperationsSoFar), moveCostsSoFar, distributionCosts);
 	}
 
 
@@ -72,40 +72,28 @@ public class QueryDistribution {
 	 * @param fromWorker
 	 * @param toWorker
 	 * @param moveIntersects If true, vertices of intersecting queries will be moved as well
-	 * @return Number ov moved vertices, 0 if no move possible
+	 * @return Number of moved vertices, 0 if no move possible
 	 */
-	public int moveVertices(int queryId, int fromWorker, int toWorker, boolean moveIntersects) {
-		VertexMoveOperation moveOperation = new VertexMoveOperation(queryId, fromWorker, toWorker);
+	public int moveVertices(int queryId, int fromWorkerId, int toWorkerId, boolean moveIntersecting) {
+		VertexMoveOperation moveOperation = new VertexMoveOperation(queryId, fromWorkerId, toWorkerId);
 		if (moveOperationsSoFar.contains(moveOperation))
-			return 0;
+			return 0; // Cant do same move twice?
 
-		// Vertices in this query moved
-		Map<Integer, Integer> queryWorkerVertices = actQueryWorkerActiveVerts.get(queryId);
-		int toMoveVerts = queryWorkerVertices.get(fromWorker);
-		if (moveIntersects) {
-			throw new RuntimeException("NIY"); // TODO
-		}
-		queryWorkerVertices.put(fromWorker, 0);
-		queryWorkerVertices.put(toWorker, queryWorkerVertices.get(toWorker) + toMoveVerts);
+		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
+		QueryWorkerMachine toWorker = queryMachines.get(toWorkerId);
 
-		if (moveIntersects) {
-			// TODO
-			//			Map<Integer, Map<Integer, Integer>> fromWorkerAllIntersects = actQueryWorkerIntersects.get(fromWorker);
-			//			Map<Integer, Map<Integer, Integer>> toWorkerAllIntersects = actQueryWorkerIntersects.get(fromWorker);
-			//
-			//			// Als moved intersecting vertices
-			//			Map<Integer, Integer> fromWorkerQueryIntersects = fromWorkerAllIntersects.get(queryId);
-			//			for (Entry<Integer, Integer> qInters : fromWorkerQueryIntersects.entrySet()) {
-			//				toWorkerAllIntersects.put(), value)
-			//				queryWorkerVertices.put(fromWorker, 0);
-			//				toMoveVerts += qInters.getValue();
-			//				fromWorkerQueryIntersects.put(qInters.getKey(), 0);
-			//			}
+		Map<Integer, QueryVerticesOnMachine> moved = fromWorker.removeQueryVertices(queryId, moveIntersecting);
+		toWorker.addQueryVertices(moved);
+
+		int movedCount  = 0;
+		for (QueryVerticesOnMachine movedQ : moved.values()) {
+			movedCount += movedQ.totalVertices;
 		}
 
 		moveOperationsSoFar.add(moveOperation);
-		moveCostsSoFar += (double) toMoveVerts * vertexMoveCosts;
-		return toMoveVerts;
+		moveCostsSoFar += (double) movedCount * vertexMoveCosts;
+		distributionCosts = calculateVerticesSeparatedCosts(queryIds, queryMachines);
+		return movedCount;
 	}
 
 
@@ -121,23 +109,27 @@ public class QueryDistribution {
 		return moveCostsSoFar + distributionCosts;
 	}
 
-	private double calculateVerticesSeparatedCosts() {
+	private static double calculateVerticesSeparatedCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
 		double costs = 0;
-		for (Map<Integer, Integer> queryWorkerVertices : actQueryWorkerActiveVerts.values()) {
+		for (Integer queryId : queryIds) {
 			// Find largest partition
-			Integer largestPartition = null;
+			Integer largestPartitionMachine = null;
 			int largestPartitionSize = -1;
-			for (Entry<Integer, Integer> partition : queryWorkerVertices.entrySet()) {
-				if (partition.getValue() > largestPartitionSize) {
-					largestPartition = partition.getKey();
-					largestPartitionSize = partition.getValue();
+			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+				QueryVerticesOnMachine q = machine.getValue().queries.get(queryId);
+				if (q != null && q.totalVertices > largestPartitionSize) {
+					largestPartitionMachine = machine.getKey();
+					largestPartitionSize = q.totalVertices;
 				}
 			}
 
 			// Calculate vertices separated from largest partition
-			for (Entry<Integer, Integer> partition : queryWorkerVertices.entrySet()) {
-				if (partition.getKey() != largestPartition) {
-					costs += partition.getValue();
+			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+				if (machine.getKey() != largestPartitionMachine) {
+					QueryVerticesOnMachine q = machine.getValue().queries.get(queryId);
+					if (q != null) {
+						costs += q.totalVertices;
+					}
 				}
 			}
 		}
@@ -146,35 +138,25 @@ public class QueryDistribution {
 
 
 
-
-	private long getWorkerActiveVertices(int workerId) {
-		long verts = 0;
-		for (Map<Integer, Integer> queryWorkerVertices : actQueryWorkerActiveVerts.values()) {
-			verts += queryWorkerVertices.get(workerId);
-		}
-		return verts;
-	}
-
-	private long getAverageWorkerActiveVertices() {
-		long verts = 0;
-		for (Entry<Integer, Map<Integer, Integer>> queryWorkerVertices : actQueryWorkerActiveVerts.entrySet()) {
-			for (Entry<Integer, Integer> partition : queryWorkerVertices.getValue().entrySet()) {
-				verts += partition.getValue();
-			}
-		}
-		return verts / workerIds.size();
-	}
-
-
 	/**
 	 * Fraction of vertices away from average vertices.
 	 */
 	public double getWorkerImbalanceFactor(int workerId) {
-		long workerVerts = getWorkerActiveVertices(workerId);
+		long workerVerts = queryMachines.get(workerId).activeVertices;
 		long avgVerts = getAverageWorkerActiveVertices();
 		if (avgVerts == 0) return 0;
 		return (double) Math.abs(workerVerts - avgVerts) / avgVerts;
 	}
+
+	private long getAverageWorkerActiveVertices() {
+		long verts = 0;
+		for (QueryWorkerMachine machine : queryMachines.values()) {
+			verts += machine.activeVertices;
+		}
+		return verts / queryMachines.size();
+	}
+
+
 
 	//	private double getLoadImbalanceCosts() {
 	//		// TODO Also queries per machine?
@@ -206,10 +188,10 @@ public class QueryDistribution {
 
 
 	public void printMoveDistribution() {
-		for (Entry<Integer, Map<Integer, Integer>> queryWorkerVertices : actQueryWorkerActiveVerts.entrySet()) {
-			System.out.println(queryWorkerVertices.getKey());
-			for (Entry<Integer, Integer> partition : queryWorkerVertices.getValue().entrySet()) {
-				System.out.println("  " + partition.getKey() + ": " + partition.getValue());
+		for (Entry<Integer, QueryWorkerMachine> queryWorkerMachine : queryMachines.entrySet()) {
+			System.out.println(queryWorkerMachine.getKey());
+			for (Entry<Integer, QueryVerticesOnMachine> query : queryWorkerMachine.getValue().queries.entrySet()) {
+				System.out.println("  " + query.getKey() + ": " + query.getValue().totalVertices);
 			}
 		}
 	}

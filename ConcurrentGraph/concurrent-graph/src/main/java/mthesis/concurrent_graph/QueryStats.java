@@ -83,27 +83,33 @@ public class QueryStats {
 
 
 	public void writeToStream(DataOutputStream stream) throws IOException {
-		stream.writeLong(MessagesTransmittedLocal);
-		stream.writeLong(MessagesSentUnicast);
-		stream.writeLong(MessagesSentBroadcast);
-		stream.writeLong(MessageBucketsSentUnicast);
-		stream.writeLong(MessageBucketsSentBroadcast);
-		stream.writeLong(MessagesReceivedWrongVertex);
-		stream.writeLong(MessagesReceivedCorrectVertex);
-		stream.writeLong(DiscoveredNewVertexMachines);
-
-		stream.writeLong(ComputeTime);
-		stream.writeLong(StepFinishTime);
-		stream.writeLong(UpdateVertexRegisters);
-		stream.writeLong(RedirectedMessages);
-		stream.writeLong(MoveSendVertices);
-		stream.writeLong(MoveRecvVertices);
-		stream.writeLong(MoveSendVerticesTime);
-		stream.writeLong(MoveRecvVerticesTime);
-
-		stream.writeLong(MoveSendVerticesMessages);
+		ByteBuffer buffer = ByteBuffer.allocate(getBytesLength());
+		writeToBuffer(buffer);
+		stream.write(buffer.array(), 0, buffer.position());
 	}
 
+
+	public void writeToBuffer(ByteBuffer buffer) {
+		buffer.putLong(MessagesTransmittedLocal);
+		buffer.putLong(MessagesSentUnicast);
+		buffer.putLong(MessagesSentBroadcast);
+		buffer.putLong(MessageBucketsSentUnicast);
+		buffer.putLong(MessageBucketsSentBroadcast);
+		buffer.putLong(MessagesReceivedWrongVertex);
+		buffer.putLong(MessagesReceivedCorrectVertex);
+		buffer.putLong(DiscoveredNewVertexMachines);
+
+		buffer.putLong(ComputeTime);
+		buffer.putLong(StepFinishTime);
+		buffer.putLong(UpdateVertexRegisters);
+		buffer.putLong(RedirectedMessages);
+		buffer.putLong(MoveSendVertices);
+		buffer.putLong(MoveRecvVertices);
+		buffer.putLong(MoveSendVerticesTime);
+		buffer.putLong(MoveRecvVerticesTime);
+
+		buffer.putLong(MoveSendVerticesMessages);
+	}
 
 	public Map<String, Double> getStatsMap() {
 		Map<String, Double> statsMap = new TreeMap<>();

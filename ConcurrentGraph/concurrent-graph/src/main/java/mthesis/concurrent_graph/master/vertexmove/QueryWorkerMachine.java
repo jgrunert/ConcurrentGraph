@@ -27,54 +27,112 @@ public class QueryWorkerMachine {
 		}
 	}
 
+	public QueryWorkerMachine(Map<Integer, QueryVerticesOnMachine> queries, int activeVertices) {
+		super();
+		this.queries = queries;
+		this.activeVertices = activeVertices;
+	}
+
 	public QueryWorkerMachine createClone() {
 		Map<Integer, QueryVerticesOnMachine> queriesClone = new HashMap<>(queries);
 		for (Entry<Integer, QueryVerticesOnMachine> query : queries.entrySet()) {
 			queriesClone.put(query.getKey(), query.getValue().createClone());
 		}
-		return new QueryWorkerMachine(queriesClone);
+		return new QueryWorkerMachine(queriesClone, activeVertices);
 	}
 
 
 	/**
-	 * Removes all vertices of a query that are not active in an other query
-	 * @return Number of removed vertices
+	 * Removes vertices of a query
+	 * @param queryId ID of the query to remove
+	 * @param moveIntersecting If false only moves vertices that are not active in an other query
+	 * @return Map<QueryId, Removed vertices and intersections (if any)>
 	 */
-	public int removeNonIntersecting(int queryId) {
+	public Map<Integer, QueryVerticesOnMachine> removeQueryVertices(int queryId, boolean moveIntersecting) {
 		QueryVerticesOnMachine query = queries.get(queryId);
 		if (query == null) {
 			// Query not on machine
-			return 0;
+			return new HashMap<>();
 		}
 
-		if (query.nonIntersectingVertices == query.totalVertices) {
-			// Query has no intersections
-			queries.remove(queryId);
-			return query.totalVertices;
+		Map<Integer, QueryVerticesOnMachine> removed = new HashMap<>();
+		if (query.intersectingVertices > 0) {
+			// Query has intersections
+			if (moveIntersecting) {
+				// Move all vertices of this query
+				queries.remove(queryId);
+				activeVertices -= query.totalVertices;
+				removed.put(queryId, query);
+				/* Also move vertices of intersected queries.
+				 * IMPORTANT: Only removes intersections with this query. If a query has an intersection
+				 * with another query and this query at the same time this intersection will
+				 * not be removed.
+				 */
+				for (Entry<Integer, Integer> intersection : query.intersections.entrySet()) {
+					int intersectingQueryId = intersection.getKey();
+					int intersectSize = intersection.getValue();
+					QueryVerticesOnMachine intersectingQuery = queries.get(intersectingQueryId);
+					if (intersectingQuery.totalVertices <= intersectSize) {
+						// Total overlap, remove entire query
+						queries.remove(intersectingQueryId);
+						activeVertices -= query.totalVertices;
+						removed.put(intersectingQueryId, intersectingQuery);
+					}
+					else {
+						// Partial overlap
+						intersectingQuery.totalVertices -= intersectSize;
+						intersectingQuery.intersectingVertices -= intersectSize;
+						intersectingQuery.intersections.remove(queryId);
+						Map<Integer, Integer> intersectingIntersections = new HashMap<>();
+						intersectingIntersections.put(queryId, intersectSize);
+						activeVertices -= intersectSize;
+						removed.put(intersection.getKey(), new QueryVerticesOnMachine(intersectSize, intersectingIntersections));
+					}
+				}
+			}
+			else {
+				// Only remove non intersecting vertices
+				int nonIntersecting = query.totalVertices - query.intersectingVertices;
+				activeVertices -= nonIntersecting;
+				removed.put(queryId, new QueryVerticesOnMachine(nonIntersecting, new HashMap<>()));
+				query.totalVertices = query.intersectingVertices;
+			}
 		}
 		else {
-			// Only remove non intersecting vertices
-			int nonIntersecting = query.nonIntersectingVertices;
-			query.totalVertices -= nonIntersecting;
-			query.nonIntersectingVertices = 0;
-			return nonIntersecting;
+			// Query has no intersections, remove entire query
+			queries.remove(queryId);
+			activeVertices -= query.totalVertices;
+			removed.put(queryId, query);
 		}
+		return removed;
 	}
 
 	/**
-	 * Adds non intersecting vertices for a query
+	 * Adds query vertices to this machine
 	 * @param addVertexCount Number of vertices to add
 	 */
-	public void addNonIntersecting(int queryId, int addVertexCount) {
-		QueryVerticesOnMachine query = queries.get(queryId);
-		if (query == null) {
-			// Query not on machine, add it
-			query = new QueryVerticesOnMachine(addVertexCount, addVertexCount, new HashMap<>());
-			queries.put(queryId, query);
-		}
-		else {
-			query.totalVertices += addVertexCount;
-			query.nonIntersectingVertices += addVertexCount;
+	public void addQueryVertices(Map<Integer, QueryVerticesOnMachine> queriesToAdd) {
+		for (Entry<Integer, QueryVerticesOnMachine> query : queriesToAdd.entrySet()) {
+			QueryVerticesOnMachine queryToAdd = query.getValue();
+			QueryVerticesOnMachine existingQuery = queries.get(query.getKey());
+			if (existingQuery == null) {
+				// New query
+				queries.put(query.getKey(), queryToAdd);
+			}
+			else {
+				// Merge with existing query
+				existingQuery.totalVertices += queryToAdd.totalVertices;
+				existingQuery.intersectingVertices += queryToAdd.intersectingVertices;
+				for (Entry<Integer, Integer> qAddInters : queryToAdd.intersections.entrySet()) {
+					if(existingQuery.intersections.containsKey(qAddInters.getKey())){
+						existingQuery.intersections.put(qAddInters.getKey(),
+								existingQuery.intersections.get(qAddInters.getKey()) + qAddInters.getValue());
+					}
+					else {
+						existingQuery.intersections.put(qAddInters.getKey(), qAddInters.getValue());
+					}
+				}
+			}
 		}
 	}
 }

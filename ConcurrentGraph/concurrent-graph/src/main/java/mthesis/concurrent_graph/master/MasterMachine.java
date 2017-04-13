@@ -500,7 +500,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		}
 
 		long decideStartTime = System.currentTimeMillis();
-		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerIds, activeQueries, workerQueryIntersects);
+		VertexMoveDecision moveDecission = vertexMoveDecider.decide(workerQueryIntersects);
 		// TODO Master stats decide time
 
 		if (moveDecission != null) {

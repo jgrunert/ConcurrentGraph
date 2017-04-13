@@ -1,14 +1,18 @@
 package mthesis.concurrent_graph.master.vertexmove;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.Configuration;
-import mthesis.concurrent_graph.master.MasterQuery;
 
 public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVertexMoveDecider<Q> {
 
@@ -23,16 +27,31 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 
 
 	@Override
-	public VertexMoveDecision decide(List<Integer> workerIds, Map<Integer, MasterQuery<Q>> activeQueries,
-			Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects) {
+	public VertexMoveDecision decide(Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects) {
 
 		if (!Configuration.VERTEX_BARRIER_MOVE_ENABLED
 				|| (System.currentTimeMillis() - vertexBarrierMoveLastTime) < Configuration.VERTEX_BARRIER_MOVE_INTERVAL)
 			return null;
 
-		QueryDistribution originalDistribution = new QueryDistribution(workerIds, workerQueryIntersects);
+		// Transform into queryMachines dataset
+		Set<Integer> queryIds = new HashSet<>();
+		List<Integer> workerIds = new ArrayList<>(workerQueryIntersects.keySet());
+		Map<Integer, QueryWorkerMachine> queryMachines = new HashMap<>();
+		for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> machine : workerQueryIntersects.entrySet()) {
+			Map<Integer, QueryVerticesOnMachine> machineQueries = new HashMap<>();
+			for (Entry<Integer, Map<Integer, Integer>> machineQuery : machine.getValue().entrySet()) {
+				int queryId = machineQuery.getKey();
+				int totalVertices = machineQuery.getValue().get(queryId);
+				Map<Integer, Integer> intersects = new HashMap<>(machineQuery.getValue());
+				intersects.remove(queryId);
+				machineQueries.put(queryId, new QueryVerticesOnMachine(totalVertices, intersects));
+			}
+			queryMachines.put(machine.getKey(), new QueryWorkerMachine(machineQueries));
+		}
+
+		QueryDistribution originalDistribution = new QueryDistribution(queryIds, queryMachines);
 		QueryDistribution bestDistribution = originalDistribution;
-		System.out.println(bestDistribution.getCostsNoImbalance());
+		System.out.println(bestDistribution.getCosts());
 
 		System.out.println("/////////////////////////////////");
 		//		bestDistribution.printMoveDistribution();
@@ -59,7 +78,7 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 
 			//			System.out.println(i + " iteration");
 
-			for (Integer queryId : activeQueries.keySet()) {
+			for (Integer queryId : queryIds) {
 				for (Integer fromWorker : workerIds) {
 					for (Integer toWorker : workerIds) {
 						if (fromWorker == toWorker) continue;
@@ -77,7 +96,7 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 						boolean newToBalanceOk = newToImbalance < WorkerImbalanceThreshold;
 
 						if (movedVerts > MinMoveWorkerVertices
-								&& newDistribution.getCostsNoImbalance() < iterBestDistribution.getCostsNoImbalance()
+								&& newDistribution.getCosts() < iterBestDistribution.getCosts()
 								&& (newFmBalanceBetter || newFmBalanceOk) && (newToBalanceBetter || newToBalanceOk)) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
@@ -100,7 +119,6 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 
 		System.out.println("+++++++++++++");
 		//		bestDistribution.printMoveDistribution();
-		System.out.println(bestDistribution.getCostsNoImbalance());
 		bestDistribution.printMoveDecissions();
 
 		vertexBarrierMoveLastTime = System.currentTimeMillis();
