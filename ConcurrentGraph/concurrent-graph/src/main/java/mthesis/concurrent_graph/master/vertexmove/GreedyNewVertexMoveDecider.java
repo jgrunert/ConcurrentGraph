@@ -24,15 +24,13 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 
 	@Override
 	public VertexMoveDecision decide(List<Integer> workerIds, Map<Integer, MasterQuery<Q>> activeQueries,
-			Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts,
-			Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects) {
+			Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects) {
 
 		if (!Configuration.VERTEX_BARRIER_MOVE_ENABLED
 				|| (System.currentTimeMillis() - vertexBarrierMoveLastTime) < Configuration.VERTEX_BARRIER_MOVE_INTERVAL)
 			return null;
 
-		QueryDistribution originalDistribution = new QueryDistribution(workerIds, actQueryWorkerActiveVerts,
-				actQueryWorkerIntersects);
+		QueryDistribution originalDistribution = new QueryDistribution(workerIds, workerQueryIntersects);
 		QueryDistribution bestDistribution = originalDistribution;
 		System.out.println(bestDistribution.getCostsNoImbalance());
 
@@ -114,5 +112,4 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 		logger.info("Decided move, vertices: " + totalVerticesMoved);
 		return bestDistribution.toMoveDecision(workerIds);
 	}
-
 }

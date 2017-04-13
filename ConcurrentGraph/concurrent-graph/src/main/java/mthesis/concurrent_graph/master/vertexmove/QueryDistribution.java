@@ -26,39 +26,39 @@ public class QueryDistribution {
 	private static final double vertexImbalanceCosts = 5.0;
 
 	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
-	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
+	//	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
 	/** Map<Machine, Map<QueryId, Map<IntersectWithWorkerId, IntersectingsCount>>> */
-	private final Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects;
+	private final Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects;
 	private final List<Integer> workerIds;
 
 	// Move operations and costs so far
 	private final Set<VertexMoveOperation> moveOperationsSoFar;
 	private double moveCostsSoFar;
+	private final double distributionCosts;
 
 
-	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts,
-			Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects) {
-		this(workerIds, actQueryWorkerActiveVerts, actQueryWorkerIntersects, new HashSet<>(), 0);
+	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects) {
+		this(workerIds, workerQueryIntersects, new HashSet<>(), 0);
 	}
 
-	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts,
-			Map<Integer, Map<Integer, Map<Integer, Integer>>> actQueryWorkerIntersects,
+	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects,
 			Set<VertexMoveOperation> moveOperationsSoFar, double moveCostsSoFar) {
 		super();
 		this.workerIds = workerIds;
-		this.actQueryWorkerActiveVerts = actQueryWorkerActiveVerts;
-		this.actQueryWorkerIntersects = actQueryWorkerIntersects;
+		//		this.actQueryWorkerActiveVerts = actQueryWorkerActiveVerts;
+		this.workerQueryIntersects = workerQueryIntersects;
 		this.moveOperationsSoFar = moveOperationsSoFar;
 		this.moveCostsSoFar = moveCostsSoFar;
+		this.distributionCosts = calculateVerticesSeparatedCosts();
 	}
 
 	@Override
 	public QueryDistribution clone() {
-		Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVertsClone = new HashMap<>(moveOperationsSoFar.size());
-		for (Entry<Integer, Map<Integer, Integer>> entry : actQueryWorkerActiveVerts.entrySet()) {
+		Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersectsClone = new HashMap<>(moveOperationsSoFar.size());
+		for (Entry<Integer, Map<Integer, Integer>> entry : workerQueryIntersects.entrySet()) {
 			actQueryWorkerActiveVertsClone.put(entry.getKey(), new HashMap<>(entry.getValue()));
 		}
-		return new QueryDistribution(workerIds, actQueryWorkerActiveVertsClone, actQueryWorkerIntersects,
+		return new QueryDistribution(workerIds, workerQueryIntersectsClone,
 				new HashSet<>(moveOperationsSoFar), moveCostsSoFar);
 	}
 
@@ -114,18 +114,11 @@ public class QueryDistribution {
 	 *  - TODO Queries not entirely local?
 	 *  - TODO Load imbalance?
 	 */
-	public double getCostsNoImbalance() {
-		return moveCostsSoFar + getVerticesSeparatedCosts();
+	public double getCosts() {
+		return moveCostsSoFar + distributionCosts;
 	}
 
-	/**
-	 * Calculates the costs of this state, sum of mis-distribution, moveCosts so far and imbalance.
-	 */
-	public double getCostsWithImbalance() {
-		return moveCostsSoFar + getVerticesSeparatedCosts() + getLoadImbalanceCosts();
-	}
-
-	private double getVerticesSeparatedCosts() {
+	private double calculateVerticesSeparatedCosts() {
 		double costs = 0;
 		for (Map<Integer, Integer> queryWorkerVertices : actQueryWorkerActiveVerts.values()) {
 			// Find largest partition
@@ -149,37 +142,6 @@ public class QueryDistribution {
 	}
 
 
-	/**
-	 * Calculates cost of imbalanced workload of active vertices
-	 * @deprecated
-	 */
-	@Deprecated
-	private double getLoadImbalanceCosts() {
-		// TODO Also queries per machine?
-		Map<Integer, Integer> workerVertices = new HashMap<>(workerIds.size());
-		for (int workerId : workerIds) {
-			workerVertices.put(workerId, 0);
-		}
-		for (Entry<Integer, Map<Integer, Integer>> queryWorkerVertices : actQueryWorkerActiveVerts.entrySet()) {
-			for (Entry<Integer, Integer> partition : queryWorkerVertices.getValue().entrySet()) {
-				workerVertices.put(partition.getKey(), workerVertices.get(partition.getKey()) + partition.getValue());
-			}
-		}
-
-		long averageVerts = 0;
-		for (int workerId : workerIds) {
-			averageVerts += workerVertices.get(workerId);
-		}
-		averageVerts /= workerIds.size();
-
-		double imbalance = 0;
-		for (int workerId : workerIds) {
-			imbalance += Math.abs(workerVertices.get(workerId) - averageVerts);
-		}
-
-		// Imalance factor, divide by two. Otherwise we would count a imbalanced vertex twice (to much and to few workload)
-		return imbalance * vertexImbalanceCosts / 2;
-	}
 
 
 	private long getWorkerActiveVertices(int workerId) {
