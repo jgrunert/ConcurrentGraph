@@ -21,14 +21,12 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
 public class QueryDistribution {
 
 	// Move costs per vertex to move, relative to a vertex separated from its larger partition
-	private static final double vertexMoveCosts = 0.7;
-	// Relative cost of a vertex imbalanced workload
-	private static final double vertexImbalanceCosts = 5.0;
+	private static final double vertexMoveCosts = 0.7; // TODO smarter
 
 	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
 	//	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
-	/** Map<Machine, Map<QueryId, Map<IntersectWithWorkerId, IntersectingsCount>>> */
-	private final Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects;
+	/** Map<Machine, Map<QueryId, QueryVerticesOnMachine>> */
+	private final Map<Integer, QueryWorkerMachine> queryMachines;
 	private final List<Integer> workerIds;
 
 	// Move operations and costs so far
@@ -37,16 +35,21 @@ public class QueryDistribution {
 	private final double distributionCosts;
 
 
-	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects) {
-		this(workerIds, workerQueryIntersects, new HashSet<>(), 0);
+	/**
+	 * Constructor for initial state, no moves so far.
+	 */
+	public QueryDistribution(List<Integer> workerIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+		this(workerIds, queryMachines, new HashSet<>(), 0);
 	}
 
-	public QueryDistribution(List<Integer> workerIds, Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects,
+	/**
+	 * Copy constructor
+	 */
+	public QueryDistribution(List<Integer> workerIds, Map<Integer, QueryWorkerMachine> queryMachines,
 			Set<VertexMoveOperation> moveOperationsSoFar, double moveCostsSoFar) {
 		super();
 		this.workerIds = workerIds;
-		//		this.actQueryWorkerActiveVerts = actQueryWorkerActiveVerts;
-		this.workerQueryIntersects = workerQueryIntersects;
+		this.queryMachines = queryMachines;
 		this.moveOperationsSoFar = moveOperationsSoFar;
 		this.moveCostsSoFar = moveCostsSoFar;
 		this.distributionCosts = calculateVerticesSeparatedCosts();
@@ -54,11 +57,11 @@ public class QueryDistribution {
 
 	@Override
 	public QueryDistribution clone() {
-		Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersectsClone = new HashMap<>(moveOperationsSoFar.size());
-		for (Entry<Integer, Map<Integer, Integer>> entry : workerQueryIntersects.entrySet()) {
-			actQueryWorkerActiveVertsClone.put(entry.getKey(), new HashMap<>(entry.getValue()));
+		Map<Integer, QueryWorkerMachine> queryMachinesClone = new HashMap<>(queryMachines.size());
+		for (Entry<Integer, QueryWorkerMachine> entry : queryMachines.entrySet()) {
+			queryMachinesClone.put(entry.getKey(), entry.getValue().createClone());
 		}
-		return new QueryDistribution(workerIds, workerQueryIntersectsClone,
+		return new QueryDistribution(workerIds, queryMachinesClone,
 				new HashSet<>(moveOperationsSoFar), moveCostsSoFar);
 	}
 
@@ -79,7 +82,7 @@ public class QueryDistribution {
 		// Vertices in this query moved
 		Map<Integer, Integer> queryWorkerVertices = actQueryWorkerActiveVerts.get(queryId);
 		int toMoveVerts = queryWorkerVertices.get(fromWorker);
-		if (!moveIntersects) {
+		if (moveIntersects) {
 			throw new RuntimeException("NIY"); // TODO
 		}
 		queryWorkerVertices.put(fromWorker, 0);
