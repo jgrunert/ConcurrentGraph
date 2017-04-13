@@ -120,15 +120,18 @@ public class WorkerStats {
 		stream.writeDouble(ProcessCpuTime);
 		stream.writeDouble(ProcessCpuLoad);
 
-		stream.writeInt(QueryIntersectsSinceBarrier.size());
-		for (Entry<Integer, Map<Integer, Integer>> qI : QueryIntersectsSinceBarrier.entrySet()) {
-			stream.writeInt(qI.getKey());
-			stream.writeInt(qI.getValue().size());
-			for (Entry<Integer, Integer> inters : qI.getValue().entrySet()) {
-				stream.writeInt(inters.getKey());
-				stream.writeInt(inters.getValue());
+		if (QueryIntersectsSinceBarrier != null) {
+			stream.writeInt(QueryIntersectsSinceBarrier.size());
+			for (Entry<Integer, Map<Integer, Integer>> qI : QueryIntersectsSinceBarrier.entrySet()) {
+				stream.writeInt(qI.getKey());
+				stream.writeInt(qI.getValue().size());
+				for (Entry<Integer, Integer> inters : qI.getValue().entrySet()) {
+					stream.writeInt(inters.getKey());
+					stream.writeInt(inters.getValue());
+				}
 			}
 		}
+		else stream.writeInt(0);
 
 		aggregatedQueryStats.writeToStream(stream);
 	}

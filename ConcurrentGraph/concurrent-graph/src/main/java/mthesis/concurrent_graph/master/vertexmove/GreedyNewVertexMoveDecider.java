@@ -119,8 +119,8 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 		}
 
 		System.out.println("+++++++++++++");
-		bestDistribution.printMoveDistribution();
-		bestDistribution.printMoveDecissions();
+		//		bestDistribution.printMoveDistribution();
+		//		bestDistribution.printMoveDecissions();
 
 		vertexBarrierMoveLastTime = System.currentTimeMillis();
 

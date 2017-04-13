@@ -73,6 +73,7 @@ public class QueryWorkerMachine {
 					if (intersectSize <= 0) continue;
 					int intersectingQueryId = intersection.getKey();
 					QueryVerticesOnMachine intersectingQuery = queries.get(intersectingQueryId);
+					if (intersectingQuery == null) continue; // TODO Why?
 					if (intersectingQuery.totalVertices <= intersectSize) {
 						// Total overlap, remove entire query
 						queries.remove(intersectingQueryId);

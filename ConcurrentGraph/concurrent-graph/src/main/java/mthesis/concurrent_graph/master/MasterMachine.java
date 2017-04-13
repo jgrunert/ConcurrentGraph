@@ -591,12 +591,12 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private void printErrorCount() {
 		ErrWarnCounter.Enabled = false;
-		if (ErrWarnCounter.Warnings > 0)
-			logger.warn("Warnings: " + ErrWarnCounter.Warnings);
-		if (ErrWarnCounter.Errors > 0)
-			logger.warn("Errors: " + ErrWarnCounter.Errors);
-		if (ErrWarnCounter.Warnings == 0 && ErrWarnCounter.Errors == 0)
-			logger.info("No warnings or errors");
+			if (ErrWarnCounter.Warnings > 0)
+				logger.warn("Warnings: " + ErrWarnCounter.Warnings);
+			else logger.info("No warnings");
+			if (ErrWarnCounter.Errors > 0)
+				logger.warn("Errors: " + ErrWarnCounter.Errors);
+			else logger.info("No errors");
 	}
 
 	private void saveWorkerStats() {
