@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.BaseQuery;
+import mthesis.concurrent_graph.Configuration;
 
 public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVertexMoveDecider<Q> {
 
@@ -18,6 +19,8 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 	private static final double WorkerImbalanceThreshold = 0.3;
 	private static final long MinMoveWorkerVertices = 50;
 	private static final long MinMoveTotalVertices = 500;
+	private static final int MaxImproveIterations = 30;
+	private static final long MaxImproveTime = Configuration.VERTEX_BARRIER_MOVE_INTERVAL / 2;
 
 
 
@@ -48,12 +51,15 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 
 		int totalVerticesMoved = 0;
 
-		for (int i = 0; i < 100; i++) {
+		int i = 0;
+		long startTime = System.currentTimeMillis();
+		for (; i < MaxImproveIterations && (System.currentTimeMillis() - startTime) < MaxImproveTime; i++) {
 			QueryDistribution iterBestDistribution = bestDistribution.clone();
 			boolean anyImproves = false;
 			int verticesMovedIter = 0;
 
 			//			System.out.println(i + " iteration");
+			//			long startTime = System.currentTimeMillis();
 
 			for (Integer queryId : queryIds) {
 				for (Integer fromWorker : workerIds) {
@@ -87,12 +93,13 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 			}
 
 			if (!anyImproves) {
-				System.out.println("No more improves after " + i);
+				logger.info("No more improves after " + i);
 				break;
 			}
 			bestDistribution = iterBestDistribution;
 			totalVerticesMoved += verticesMovedIter;
 		}
+		logger.info("Stopped deciding after " + i + " iterations in " + (System.currentTimeMillis() - startTime) + "ms");
 
 		System.out.println("+++++++++++++");
 		//		bestDistribution.printMoveDistribution();
