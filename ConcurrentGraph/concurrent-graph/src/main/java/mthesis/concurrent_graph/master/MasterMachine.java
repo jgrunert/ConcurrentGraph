@@ -328,7 +328,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					return;
 				}
 
-				msgActiveQuery.aggregateQuery(msgQueryOnWorker);
+				msgActiveQuery.aggregateQuery(msgQueryOnWorker, controlMsg.getSrcMachine());
 
 				// Log worker superstep stats
 				if (enableQueryStats && controlMsg.getSuperstepNo() >= 0) {
@@ -370,14 +370,18 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					//										msgsSentUnicast, msgsExpectedCorrectBroadcast));
 					//					}
 
+					int superstepNo = controlMsg.getSuperstepNo();
+
 					// Log query superstep stats
-					if (enableQueryStats && controlMsg.getSuperstepNo() >= 0) {
+					if (enableQueryStats && superstepNo >= 0) {
 						queryStatsSteps.get(msgQueryOnWorker.QueryId).add(msgActiveQuery.QueryStepAggregator);
 						queryStatsStepTimes.get(msgQueryOnWorker.QueryId).add((System.nanoTime() - msgActiveQuery.LastStepTime));
 					}
 
 					boolean queryFinished;
-					if (msgActiveQuery.ActiveWorkers == 0 && controlMsg.getSuperstepNo() >= 0)
+					if (msgActiveQuery.QueryStepAggregator.masterForceWorkersActive(superstepNo))
+						msgActiveQuery.ActiveWorkers.addAll(workerIds);
+					if (msgActiveQuery.ActiveWorkers.isEmpty())
 						queryFinished = msgActiveQuery.QueryStepAggregator.onMasterAllVerticesFinished();
 					else
 						queryFinished = false;
@@ -532,24 +536,30 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		}
 	}
 
+
 	private void startQueryNextSuperstep(MasterQuery<Q> queryToStart) {
 		queryToStart.beginStartNextSuperstep(workerIds);
 
-		List<Integer> queryActiveWorkers = new ArrayList<>(workerIds);
-		System.out.println(
-				queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo + " " + queryActiveWorkers.size() + "/"
-						+ workerIds.size());
+		boolean skipInactiveWorkers = Configuration.getPropertyBoolDefault("SkipInactiveWorkers", true);
+
+		Set<Integer> queryActiveWorkers;
+		if (skipInactiveWorkers)
+			queryActiveWorkers = new HashSet<>(queryToStart.ActiveWorkers);
+		else queryActiveWorkers = new HashSet<>(workerIds);
+
+		// TODO Query stat and master/worker stat: Active workers
 
 		// Start query superstep
-		for (Integer otherWorkerId : workerIds) {
+		for (Integer workerId : workerIds) {
 			List<Integer> otherActiveWorkers = new ArrayList<>(queryActiveWorkers.size());
 			for (Integer activeWorkerId : queryActiveWorkers) {
-				if (otherWorkerId != activeWorkerId) otherActiveWorkers.add(activeWorkerId);
+				if (workerId != activeWorkerId) otherActiveWorkers.add(activeWorkerId);
 			}
 
-			messaging.sendControlMessageUnicast(otherWorkerId,
+			boolean skipWorker = skipInactiveWorkers && !queryActiveWorkers.contains(workerId);
+			messaging.sendControlMessageUnicast(workerId,
 					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo, ownId,
-							queryToStart.QueryStepAggregator, otherActiveWorkers),
+							queryToStart.QueryStepAggregator, skipWorker, otherActiveWorkers),
 					true);
 		}
 		queryToStart.finishStartNextSuperstep();

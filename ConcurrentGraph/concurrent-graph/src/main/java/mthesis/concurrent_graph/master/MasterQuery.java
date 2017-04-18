@@ -27,7 +27,10 @@ public class MasterQuery<Q extends BaseQuery> {
 	public Q QueryStepAggregator;
 	// Value aggregation of all supersteps
 	public Q QueryTotalAggregator;
-	public int ActiveWorkers;
+	// Aggregates active workers for next superstep
+	public Set<Integer> ActiveWorkers = new HashSet<>();
+	// Active workers for this superstep
+	//	public List<Integer> ActiveWorkersNow = new ArrayList<>();
 	public final Set<Integer> workersWaitingFor;
 	public boolean IsComputing = true;
 
@@ -64,19 +67,21 @@ public class MasterQuery<Q extends BaseQuery> {
 		QueryStepAggregator = queryFactory.createClone(BaseQuery);
 		QueryStepAggregator.setVertexCount(0);
 		QueryStepAggregator.setActiveVertices(0);
-		ActiveWorkers = 0;
+		//		ActiveWorkersNow.clear();
+		//		ActiveWorkersNow.addAll(ActiveWorkersAggregator);
+		ActiveWorkers.clear();
 	}
 
-	public void aggregateQuery(Q workerQueryMsg) {
+	public void aggregateQuery(Q workerQueryMsg, int workerMachineId) {
 		QueryStepAggregator.combine(workerQueryMsg);
 		QueryTotalAggregator.combine(workerQueryMsg);
-		if (workerQueryMsg.getActiveVertices() > 0) ActiveWorkers++;
+		if (workerQueryMsg.getActiveVertices() > 0) ActiveWorkers.add(workerMachineId);
 	}
 
 	public void workersFinished(Collection<Integer> workersToWait) {
 		workersWaitingFor.addAll(workersToWait);
 		IsComputing = false;
-		if (ActiveWorkers != 0) logger.warn("Finishing query with active workers: " + ActiveWorkers);
+		if (!ActiveWorkers.isEmpty()) logger.warn("Finishing query with active workers: " + ActiveWorkers);
 		if (QueryStepAggregator.getActiveVertices() != 0)
 			logger.warn("Finishing query with active vertices: " + QueryStepAggregator.getActiveVertices());
 	}

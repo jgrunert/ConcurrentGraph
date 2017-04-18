@@ -62,6 +62,18 @@ public class SPQuery extends BaseQuery {
 	}
 
 	/**
+	 * Called by master if all workers must be forced active in the next superstep.
+	 * @return TRUE if force all workers to be active.
+	 */
+	@Override
+	public boolean masterForceWorkersActive(int superstepNo) {
+		if (ReconstructionPhaseActive && !InitializedReconstructionPhase) {
+			return true;
+		}
+		return superstepNo <= 0;
+	}
+
+	/**
 	 * Called by worker before the computation of a new superstep is started
 	 * @return TRUE if all vertices should be activated this superstep.
 	 */

@@ -53,7 +53,7 @@ message MessageEnvelope {
 		optional ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;
 		optional StartBarrierMessage StartBarrier = 11;
 		optional WorkerStatsMessage WorkerStats = 12;
-		repeated int32 WorkersWaitFor = 13;
+		optional StartSuperstepMessage StartSuperstep = 13;
 		
 		message AssignPartitionsMessage {	
 			optional int64 MasterStartTime = 1;
@@ -62,6 +62,11 @@ message MessageEnvelope {
 		
 		message WorkerInitializedMessage {
 			optional int32 VertexCount = 1;
+		}
+		
+		message StartSuperstepMessage {
+			optional bool SkipBarrierAndCompute = 1;
+			repeated int32 WorkersWaitFor = 2;
 		}
 		
 		//message QueriesIntersectionsMessage {

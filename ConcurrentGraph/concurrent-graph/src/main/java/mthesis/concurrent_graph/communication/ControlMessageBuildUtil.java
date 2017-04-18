@@ -8,6 +8,7 @@ import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartSuperstepMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
@@ -47,13 +48,15 @@ public class ControlMessageBuildUtil {
 
 	// Normal next superstep message, no vertex transfer
 	public static MessageEnvelope Build_Master_QueryNextSuperstep(int superstepNo, int srcMachineId,
-			BaseQuery query, List<Integer> workersWaitFor) {
+			BaseQuery query, boolean skipBarrierAndCompute, List<Integer> workersWaitFor) {
+		StartSuperstepMessage.Builder ssmBuilder = StartSuperstepMessage.newBuilder().setSkipBarrierAndCompute(skipBarrierAndCompute)
+				.addAllWorkersWaitFor(workersWaitFor);
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
 						.setType(ControlMessageType.Master_Query_Next_Superstep)
 						.setQueryValues(ByteString.copyFrom(query.getBytes()))
 						.setSuperstepNo(superstepNo)
-						.addAllWorkersWaitFor(workersWaitFor)
+						.setStartSuperstep(ssmBuilder)
 						.setSrcMachine(srcMachineId).setQueryValues(ByteString.copyFrom(query.getBytes())).build())
 				.build();
 	}

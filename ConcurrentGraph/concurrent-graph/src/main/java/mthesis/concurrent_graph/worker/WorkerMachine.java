@@ -429,6 +429,18 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 	}
 
+	private void skipSuperstepCompute(WorkerQuery<V, E, M, Q> activeQuery) {
+		int superstepNo = activeQuery.getMasterStartedSuperstep();
+
+		activeQuery.onFinishedSuperstepCompute(superstepNo);
+		logger.trace("Worker skipped compute " + activeQuery.Query.QueryId + ":" + superstepNo);
+
+		// Notify master if compute and barrier sync finished
+		if (activeQuery.isNextSuperstepLocallyReady()) {
+			superstepLocalFinishNotifyMaster(activeQuery);
+		}
+	}
+
 
 
 	// #################### Handle incoming messages #################### //
@@ -544,7 +556,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					return true;
 
 					case Worker_Barrier_Started: {
-						//						System.out.println("Worker_Barrier_Started");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
@@ -599,7 +610,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		else {
 			// Completely wrong superstep
 			logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-			+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getBarrierSyncedSuperstep());
+			+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getBarrierSyncedSuperstep() + " from "
+			+ message.getSrcMachine());
 		}
 	}
 
@@ -679,7 +691,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 		else {
 			logger.error("VertexMessage from wrong barrier superstepNo: " + message.superstepNo + " should be "
-					+ (barrierSuperstepNo + 1) + " from " + message.srcMachine);
+					+ (barrierSuperstepNo + 1) + " from " + message.srcMachine + " query " + activeQuery.QueryId);
 		}
 		message.free(false);
 	}
@@ -744,6 +756,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			logger.error("Received Master_Next_Superstep for unknown query: " + message);
 			return;
 		}
+		if (!message.hasStartSuperstep()) {
+			logger.error("Received Master_Next_Superstep without StartSuperstep information: " + message);
+			return;
+		}
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
 			+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
@@ -752,11 +768,14 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 
 		// Wait for next barrier, apply all postponed premature barrier syncs
-		//		query.BarrierSyncWaitSet.addAll(message.getWorkersWaitForList());
-		query.BarrierSyncWaitSet.addAll(otherWorkerIds);
+		query.BarrierSyncWaitSet.addAll(message.getStartSuperstep().getWorkersWaitForList());
 		for (Integer postponed : query.BarrierSyncPostponedSet) {
 			if (!query.BarrierSyncWaitSet.remove(postponed))
-				logger.error("Postponed worker barrier sync for worker not waiting for: " + message.getSrcMachine());
+				logger.error("Postponed worker barrier sync for worker not waiting for: " + postponed);
+		}
+		query.BarrierSyncPostponedSet.clear();
+		if (query.BarrierSyncWaitSet.isEmpty()) {
+			query.onFinishedWorkerSuperstepBarrierSync(query.getBarrierSyncedSuperstep() + 1);
 		}
 
 		// New query stats for next superstep
@@ -771,6 +790,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				"Worker finished superstep, ready for next " + query.Query.QueryId + ":"
 						+ query.getMasterStartedSuperstep()
 						+ ". Active: " + query.QueryLocal.getActiveVertices());
+
+		// Skip superstep if master says so
+		if (message.getStartSuperstep().getSkipBarrierAndCompute()) {
+			skipSuperstepCompute(query);
+		}
 	}
 
 	/**
