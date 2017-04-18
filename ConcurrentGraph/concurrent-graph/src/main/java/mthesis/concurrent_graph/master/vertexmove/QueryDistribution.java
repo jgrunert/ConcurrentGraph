@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
@@ -20,7 +21,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
 public class QueryDistribution {
 
 	// Move costs per vertex to move, relative to a vertex separated from its larger partition
-	private static final double vertexMoveCosts = 0.7; // TODO smarter
+	private static final double VertexMoveCosts = Configuration.getPropertyDoubleDefault("VertexMoveCosts", 0.7); // TODO smarter
 
 	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
 	//	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
@@ -90,7 +91,7 @@ public class QueryDistribution {
 		}
 
 		moveOperationsSoFar.put(moveOperation, movedCount);
-		moveCostsSoFar += (double) movedCount * vertexMoveCosts;
+		moveCostsSoFar += (double) movedCount * VertexMoveCosts;
 		distributionCosts = calculateVerticesSeparatedCosts(queryIds, queryMachines);
 		return movedCount;
 	}

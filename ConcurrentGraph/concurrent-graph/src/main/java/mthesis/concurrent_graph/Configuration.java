@@ -18,7 +18,7 @@ public class Configuration {
 	public static String ConfigFile;
 	public static Properties Properties = new Properties();
 
-	public static final String VERSION = "0.1.64";
+	public static final String VERSION = "0.1.65";
 
 	/** Maximum size of a message in bytes */
 	public static int MAX_MESSAGE_SIZE;
@@ -137,5 +137,14 @@ public class Configuration {
 	public static long getPropertyLongDefault(String propName, long defaultValue) {
 		if (!Properties.containsKey(propName)) return defaultValue;
 		return Long.parseLong(Properties.getProperty(propName));
+	}
+
+	public static double getPropertyDouble(String propName) {
+		return Double.parseDouble(Properties.getProperty(propName));
+	}
+
+	public static double getPropertyDoubleDefault(String propName, double defaultValue) {
+		if (!Properties.containsKey(propName)) return defaultValue;
+		return Double.parseDouble(Properties.getProperty(propName));
 	}
 }
