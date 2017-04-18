@@ -3,6 +3,8 @@ package mthesis.concurrent_graph;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -16,7 +18,7 @@ public class Configuration {
 	public static String ConfigFile;
 	public static Properties Properties = new Properties();
 
-	public static final String VERSION = "0.1.60";
+	public static final String VERSION = "0.1.62";
 
 	/** Maximum size of a message in bytes */
 	public static int MAX_MESSAGE_SIZE;
@@ -65,12 +67,17 @@ public class Configuration {
 
 
 
-	public static void loadConfig(String configFile) {
+	public static void loadConfig(String configFile, Map<String, String> overrideConfigs) {
 		// Load configuration
 		if (!(new File(configFile)).exists())
 			throw new RuntimeException("Unable to start without configuration: No file found at " + configFile);
 		try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(configFile))) {
 			Properties.load(stream);
+
+			// Override with manually defined properties
+			for (Entry<String, String> config : overrideConfigs.entrySet()) {
+				Properties.put(config.getKey(), config.getValue());
+			}
 
 			// Write important values from properties file to constants to improve performance.
 			// We dont want to do a map lookup on every message.

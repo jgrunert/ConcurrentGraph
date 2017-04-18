@@ -507,6 +507,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			moveDecission = vertexMoveDeciderService.getNewDecission();
 		}
 		if (moveDecission != null) {
+			logger.info("New move decission");
 			globalBarrierWaitSet.addAll(workerIds);
 			globalBarrierActive = true;
 
@@ -521,7 +522,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				messaging.sendControlMessageUnicast(workerId, ControlMessageBuildUtil.Build_Master_StartBarrier_VertexMove(ownId,
 						moveDecission.WorkerVertSendMsgs.get(workerId), moveDecission.WorkerVertRecvMsgs.get(workerId)), true);
 			}
-			logger.info("Starting barrier with vertex move");
+			logger.info("Started barrier with vertex move");
 
 			logger.debug("Delay query superstep " + queryToStart.BaseQuery.QueryId + ":" + superstepNo);
 			barrierDelayedQueryNextSteps.add(queryToStart);

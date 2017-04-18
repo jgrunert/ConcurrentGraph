@@ -1,5 +1,7 @@
 package mthesis.concurrent_graph.apps.shortestpath;
 
+import java.util.HashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +23,7 @@ public class SPSingleWorkerMain {
 		final int workerId = Integer.parseInt(args[2]);
 		logger.info("Starting SSSP SingleWorker " + Configuration.VERSION + " " + workerId);
 
-		Configuration.loadConfig(args[0]);
+		Configuration.loadConfig(args[0], new HashMap<>());
 		final MachineClusterConfiguration config = new MachineClusterConfiguration(args[1]);
 
 

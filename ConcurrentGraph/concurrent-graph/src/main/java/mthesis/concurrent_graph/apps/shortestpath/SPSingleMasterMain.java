@@ -1,5 +1,8 @@
 package mthesis.concurrent_graph.apps.shortestpath;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +26,19 @@ public class SPSingleMasterMain {
 			return;
 		}
 
-		Configuration.loadConfig(args[0]);
+		// Manual override configs
+		Map<String, String> overrideConfigs = new HashMap<>();
+		for (int i = 4; i < args.length; i++) {
+			String[] split = args[i].split("=");
+			if (split.length >= 2) {
+				String cfgName = split[0].trim();
+				String cfgValue = split[1].trim();
+				overrideConfigs.put(cfgName, cfgValue);
+				logger.info("Overide config: " + cfgName + "=" + cfgValue);
+			}
+		}
+		Configuration.loadConfig(args[0], overrideConfigs);
+
 		final MachineClusterConfiguration config = new MachineClusterConfiguration(args[1]);
 		final String inputFile = args[2];
 		final String testSequenceFile = args[3];
