@@ -1026,6 +1026,19 @@ public final class Messages {
      * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.WorkerStatsMessage WorkerStats = 12;</code>
      */
     mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessageOrBuilder getWorkerStatsOrBuilder();
+
+    /**
+     * <code>repeated int32 WorkersWaitFor = 13;</code>
+     */
+    java.util.List<java.lang.Integer> getWorkersWaitForList();
+    /**
+     * <code>repeated int32 WorkersWaitFor = 13;</code>
+     */
+    int getWorkersWaitForCount();
+    /**
+     * <code>repeated int32 WorkersWaitFor = 13;</code>
+     */
+    int getWorkersWaitFor(int index);
   }
   /**
    * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage}
@@ -1043,6 +1056,7 @@ public final class Messages {
       superstepNo_ = 0;
       srcMachine_ = 0;
       queryValues_ = com.google.protobuf.ByteString.EMPTY;
+      workersWaitFor_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -1177,6 +1191,27 @@ public final class Messages {
               bitField0_ |= 0x00000200;
               break;
             }
+            case 104: {
+              if (!((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
+                workersWaitFor_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000400;
+              }
+              workersWaitFor_.add(input.readInt32());
+              break;
+            }
+            case 106: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000400) == 0x00000400) && input.getBytesUntilLimit() > 0) {
+                workersWaitFor_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000400;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                workersWaitFor_.add(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1185,6 +1220,9 @@ public final class Messages {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
+          workersWaitFor_ = java.util.Collections.unmodifiableList(workersWaitFor_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -7316,6 +7354,28 @@ public final class Messages {
       return workerStats_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.getDefaultInstance() : workerStats_;
     }
 
+    public static final int WORKERSWAITFOR_FIELD_NUMBER = 13;
+    private java.util.List<java.lang.Integer> workersWaitFor_;
+    /**
+     * <code>repeated int32 WorkersWaitFor = 13;</code>
+     */
+    public java.util.List<java.lang.Integer>
+        getWorkersWaitForList() {
+      return workersWaitFor_;
+    }
+    /**
+     * <code>repeated int32 WorkersWaitFor = 13;</code>
+     */
+    public int getWorkersWaitForCount() {
+      return workersWaitFor_.size();
+    }
+    /**
+     * <code>repeated int32 WorkersWaitFor = 13;</code>
+     */
+    public int getWorkersWaitFor(int index) {
+      return workersWaitFor_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -7357,6 +7417,9 @@ public final class Messages {
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         output.writeMessage(12, getWorkerStats());
+      }
+      for (int i = 0; i < workersWaitFor_.size(); i++) {
+        output.writeInt32(13, workersWaitFor_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -7405,6 +7468,15 @@ public final class Messages {
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(12, getWorkerStats());
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < workersWaitFor_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(workersWaitFor_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getWorkersWaitForList().size();
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -7472,6 +7544,8 @@ public final class Messages {
         result = result && getWorkerStats()
             .equals(other.getWorkerStats());
       }
+      result = result && getWorkersWaitForList()
+          .equals(other.getWorkersWaitForList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -7522,6 +7596,10 @@ public final class Messages {
       if (hasWorkerStats()) {
         hash = (37 * hash) + WORKERSTATS_FIELD_NUMBER;
         hash = (53 * hash) + getWorkerStats().hashCode();
+      }
+      if (getWorkersWaitForCount() > 0) {
+        hash = (37 * hash) + WORKERSWAITFOR_FIELD_NUMBER;
+        hash = (53 * hash) + getWorkersWaitForList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -7691,6 +7769,8 @@ public final class Messages {
           workerStatsBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000200);
+        workersWaitFor_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
 
@@ -7779,6 +7859,11 @@ public final class Messages {
         } else {
           result.workerStats_ = workerStatsBuilder_.build();
         }
+        if (((bitField0_ & 0x00000400) == 0x00000400)) {
+          workersWaitFor_ = java.util.Collections.unmodifiableList(workersWaitFor_);
+          bitField0_ = (bitField0_ & ~0x00000400);
+        }
+        result.workersWaitFor_ = workersWaitFor_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7850,6 +7935,16 @@ public final class Messages {
         }
         if (other.hasWorkerStats()) {
           mergeWorkerStats(other.getWorkerStats());
+        }
+        if (!other.workersWaitFor_.isEmpty()) {
+          if (workersWaitFor_.isEmpty()) {
+            workersWaitFor_ = other.workersWaitFor_;
+            bitField0_ = (bitField0_ & ~0x00000400);
+          } else {
+            ensureWorkersWaitForIsMutable();
+            workersWaitFor_.addAll(other.workersWaitFor_);
+          }
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -8793,6 +8888,72 @@ public final class Messages {
         }
         return workerStatsBuilder_;
       }
+
+      private java.util.List<java.lang.Integer> workersWaitFor_ = java.util.Collections.emptyList();
+      private void ensureWorkersWaitForIsMutable() {
+        if (!((bitField0_ & 0x00000400) == 0x00000400)) {
+          workersWaitFor_ = new java.util.ArrayList<java.lang.Integer>(workersWaitFor_);
+          bitField0_ |= 0x00000400;
+         }
+      }
+      /**
+       * <code>repeated int32 WorkersWaitFor = 13;</code>
+       */
+      public java.util.List<java.lang.Integer>
+          getWorkersWaitForList() {
+        return java.util.Collections.unmodifiableList(workersWaitFor_);
+      }
+      /**
+       * <code>repeated int32 WorkersWaitFor = 13;</code>
+       */
+      public int getWorkersWaitForCount() {
+        return workersWaitFor_.size();
+      }
+      /**
+       * <code>repeated int32 WorkersWaitFor = 13;</code>
+       */
+      public int getWorkersWaitFor(int index) {
+        return workersWaitFor_.get(index);
+      }
+      /**
+       * <code>repeated int32 WorkersWaitFor = 13;</code>
+       */
+      public Builder setWorkersWaitFor(
+          int index, int value) {
+        ensureWorkersWaitForIsMutable();
+        workersWaitFor_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 WorkersWaitFor = 13;</code>
+       */
+      public Builder addWorkersWaitFor(int value) {
+        ensureWorkersWaitForIsMutable();
+        workersWaitFor_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 WorkersWaitFor = 13;</code>
+       */
+      public Builder addAllWorkersWaitFor(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureWorkersWaitForIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, workersWaitFor_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 WorkersWaitFor = 13;</code>
+       */
+      public Builder clearWorkersWaitFor() {
+        workersWaitFor_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000400);
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
@@ -8910,7 +9071,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\320\r\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\350\r\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022q\n\020" +
@@ -8931,40 +9092,41 @@ public final class Messages {
       "s.ControlMessage.StartBarrierMessage\022g\n\013" +
       "WorkerStats\030\014 \001(\0132R.mthesis.concurrent_g" +
       "raph.communication.messages.ControlMessa" +
-      "ge.WorkerStatsMessage\032J\n\027AssignPartition" +
-      "sMessage\022\027\n\017MasterStartTime\030\001 \001(\003\022\026\n\016Par" +
-      "titionFiles\030\002 \003(\t\032/\n\030WorkerInitializedMe" +
-      "ssage\022\023\n\013VertexCount\030\001 \001(\005\0321\n\030SendQueryV" +
-      "erticesMessage\022\025\n\rSendToMachine\030\001 \001(\005\0326\n",
-      "\033ReceiveQueryVerticesMessage\022\027\n\017RecvFrom" +
-      "Machine\030\001 \003(\005\032\325\003\n\023StartBarrierMessage\022\207\001" +
-      "\n\021SendQueryVertices\030\001 \003(\0132l.mthesis.conc" +
-      "urrent_graph.communication.messages.Cont" +
-      "rolMessage.StartBarrierMessage.SendQuery" +
-      "VerticesMessage\022\215\001\n\024ReceiveQueryVertices" +
-      "\030\002 \003(\0132o.mthesis.concurrent_graph.commun" +
-      "ication.messages.ControlMessage.StartBar" +
-      "rierMessage.ReceiveQueryVerticesMessage\032" +
-      "X\n\030SendQueryVerticesMessage\022\017\n\007QueryId\030\001",
-      " \001(\005\022\025\n\rMoveToMachine\030\002 \001(\005\022\024\n\014MaxMoveCo" +
-      "unt\030\003 \001(\005\032J\n\033ReceiveQueryVerticesMessage" +
-      "\022\017\n\007QueryId\030\001 \001(\005\022\032\n\022ReceiveFromMachine\030" +
-      "\002 \001(\005\032\300\001\n\022WorkerStatsMessage\022t\n\007Samples\030" +
-      "\001 \003(\0132c.mthesis.concurrent_graph.communi" +
-      "cation.messages.ControlMessage.WorkerSta" +
-      "tsMessage.WorkerStatSample\0324\n\020WorkerStat" +
-      "Sample\022\014\n\004Time\030\001 \001(\003\022\022\n\nStatsBytes\030\002 \001(\014" +
-      "*\201\003\n\022ControlMessageType\022\025\n\021Channel_Hands" +
-      "hake\020\001\022\026\n\022Worker_Initialized\020\002\022\"\n\036Worker",
-      "_Query_Superstep_Barrier\020\003\022#\n\037Worker_Que" +
-      "ry_Superstep_Finished\020\004\022\031\n\025Worker_Query_" +
-      "Finished\020\005\022\032\n\026Worker_Barrier_Started\020\014\022\033" +
-      "\n\027Worker_Barrier_Finished\020\r\022\034\n\030Master_Wo" +
-      "rker_Initialize\020\006\022\026\n\022Master_Query_Start\020" +
-      "\007\022\037\n\033Master_Query_Next_Superstep\020\010\022\031\n\025Ma" +
-      "ster_Query_Finished\020\t\022\023\n\017Master_Shutdown" +
-      "\020\n\022\030\n\024Master_Start_Barrier\020\013B2\n&mthesis." +
-      "concurrent_graph.communicationB\010Messages"
+      "ge.WorkerStatsMessage\022\026\n\016WorkersWaitFor\030" +
+      "\r \003(\005\032J\n\027AssignPartitionsMessage\022\027\n\017Mast" +
+      "erStartTime\030\001 \001(\003\022\026\n\016PartitionFiles\030\002 \003(" +
+      "\t\032/\n\030WorkerInitializedMessage\022\023\n\013VertexC" +
+      "ount\030\001 \001(\005\0321\n\030SendQueryVerticesMessage\022\025",
+      "\n\rSendToMachine\030\001 \001(\005\0326\n\033ReceiveQueryVer" +
+      "ticesMessage\022\027\n\017RecvFromMachine\030\001 \003(\005\032\325\003" +
+      "\n\023StartBarrierMessage\022\207\001\n\021SendQueryVerti" +
+      "ces\030\001 \003(\0132l.mthesis.concurrent_graph.com" +
+      "munication.messages.ControlMessage.Start" +
+      "BarrierMessage.SendQueryVerticesMessage\022" +
+      "\215\001\n\024ReceiveQueryVertices\030\002 \003(\0132o.mthesis" +
+      ".concurrent_graph.communication.messages" +
+      ".ControlMessage.StartBarrierMessage.Rece" +
+      "iveQueryVerticesMessage\032X\n\030SendQueryVert",
+      "icesMessage\022\017\n\007QueryId\030\001 \001(\005\022\025\n\rMoveToMa" +
+      "chine\030\002 \001(\005\022\024\n\014MaxMoveCount\030\003 \001(\005\032J\n\033Rec" +
+      "eiveQueryVerticesMessage\022\017\n\007QueryId\030\001 \001(" +
+      "\005\022\032\n\022ReceiveFromMachine\030\002 \001(\005\032\300\001\n\022Worker" +
+      "StatsMessage\022t\n\007Samples\030\001 \003(\0132c.mthesis." +
+      "concurrent_graph.communication.messages." +
+      "ControlMessage.WorkerStatsMessage.Worker" +
+      "StatSample\0324\n\020WorkerStatSample\022\014\n\004Time\030\001" +
+      " \001(\003\022\022\n\nStatsBytes\030\002 \001(\014*\201\003\n\022ControlMess" +
+      "ageType\022\025\n\021Channel_Handshake\020\001\022\026\n\022Worker",
+      "_Initialized\020\002\022\"\n\036Worker_Query_Superstep" +
+      "_Barrier\020\003\022#\n\037Worker_Query_Superstep_Fin" +
+      "ished\020\004\022\031\n\025Worker_Query_Finished\020\005\022\032\n\026Wo" +
+      "rker_Barrier_Started\020\014\022\033\n\027Worker_Barrier" +
+      "_Finished\020\r\022\034\n\030Master_Worker_Initialize\020" +
+      "\006\022\026\n\022Master_Query_Start\020\007\022\037\n\033Master_Quer" +
+      "y_Next_Superstep\020\010\022\031\n\025Master_Query_Finis" +
+      "hed\020\t\022\023\n\017Master_Shutdown\020\n\022\030\n\024Master_Sta" +
+      "rt_Barrier\020\013B2\n&mthesis.concurrent_graph" +
+      ".communicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -8989,7 +9151,7 @@ public final class Messages {
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor,
-        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "AssignPartitions", "QueryValues", "WorkerInitialized", "SendQueryVertices", "ReceiveQueryVertices", "StartBarrier", "WorkerStats", });
+        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "AssignPartitions", "QueryValues", "WorkerInitialized", "SendQueryVertices", "ReceiveQueryVertices", "StartBarrier", "WorkerStats", "WorkersWaitFor", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(0);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_fieldAccessorTable = new

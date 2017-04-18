@@ -37,6 +37,8 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 
 	/** Workers to wait for barrier sync */
 	public final Set<Integer> BarrierSyncWaitSet = new HashSet<>();
+	/** Workers received barrier sync from before waiting for it */
+	public final Set<Integer> BarrierSyncPostponedSet = new HashSet<>();
 
 	// Active vertices for next superstep
 	public ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> ActiveVerticesNext = new ConcurrentHashMap<>();

@@ -534,11 +534,22 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private void startQueryNextSuperstep(MasterQuery<Q> queryToStart) {
 		queryToStart.beginStartNextSuperstep(workerIds);
+
+		List<Integer> queryActiveWorkers = new ArrayList<>(workerIds);
+		System.out.println(
+				queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo + " " + queryActiveWorkers.size() + "/"
+						+ workerIds.size());
+
 		// Start query superstep
 		for (Integer otherWorkerId : workerIds) {
+			List<Integer> otherActiveWorkers = new ArrayList<>(queryActiveWorkers.size());
+			for (Integer activeWorkerId : queryActiveWorkers) {
+				if (otherWorkerId != activeWorkerId) otherActiveWorkers.add(activeWorkerId);
+			}
+
 			messaging.sendControlMessageUnicast(otherWorkerId,
-					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep_NoVertMove(queryToStart.StartedSuperstepNo, ownId,
-							queryToStart.QueryStepAggregator),
+					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo, ownId,
+							queryToStart.QueryStepAggregator, otherActiveWorkers),
 					true);
 		}
 		queryToStart.finishStartNextSuperstep();

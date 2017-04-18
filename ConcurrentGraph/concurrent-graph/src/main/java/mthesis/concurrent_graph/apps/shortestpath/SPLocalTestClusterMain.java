@@ -50,10 +50,10 @@ public class SPLocalTestClusterMain {
 			// master.startQuery(new SPQuery(i, from, to, 100));
 			// }
 
-			int queryIndex = 0;
+			//			int queryIndex = 0;
 
 			// Warm up queries
-			master.startQuery(new SPQuery(queryIndex++, 4304982, 7031164)); // Very short ST-Echterdingen->ST-HBF
+			//			master.startQuery(new SPQuery(queryIndex++, 4304982, 7031164)); // Very short ST-Echterdingen->ST-HBF
 			//			master.startQuery(new SPQuery(queryIndex++, 4304982, 7031164));
 			//			master.startQuery(new SPQuery(queryIndex++, 4304982, 7031164));
 			//			master.startQuery(new SPQuery(queryIndex++, 4304982, 7031164));

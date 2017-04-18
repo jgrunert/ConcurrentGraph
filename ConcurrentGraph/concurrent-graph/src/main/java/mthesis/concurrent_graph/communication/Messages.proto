@@ -53,6 +53,7 @@ message MessageEnvelope {
 		optional ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;
 		optional StartBarrierMessage StartBarrier = 11;
 		optional WorkerStatsMessage WorkerStats = 12;
+		repeated int32 WorkersWaitFor = 13;
 		
 		message AssignPartitionsMessage {	
 			optional int64 MasterStartTime = 1;

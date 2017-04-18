@@ -163,7 +163,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	// #################### Query start/finish #################### //
 	private void startQuery(Q query) {
 		if (activeQueries.containsKey(query.QueryId))
-			throw new RuntimeException("Thready with this ID already active: " + query.QueryId);
+			throw new RuntimeException("Query with this ID already active: " + query.QueryId);
 		WorkerQuery<V, E, M, Q> activeQuery = new WorkerQuery<>(query, globalValueFactory, localVertices.keySet());
 		activeQuery.BarrierSyncWaitSet.addAll(otherWorkerIds);
 
@@ -375,20 +375,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					long computeTime = System.nanoTime() - startTime;
 					activeQuery.QueryLocal.Stats.ComputeTime += computeTime;
 
-
-					// Send barrier sync with other workers
-					if (!otherWorkerIds.isEmpty()) {
-						flushVertexMessages(activeQuery);
-						sendWorkersSuperstepFinished(activeQuery);
-					}
-
-					activeQuery.onFinishedSuperstepCompute(superstepNo);
-					logger.trace("Worker finished compute " + queryId + ":" + superstepNo);
-
-					// Notify master if compute and barrier sync finished
-					if (activeQuery.isNextSuperstepLocallyReady()) {
-						superstepLocalFinishNotifyMaster(activeQuery);
-					}
+					finishSuperstepCompute(activeQuery);
 				}
 
 
@@ -421,6 +408,24 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				}
 				stop();
 			}
+		}
+	}
+
+	private void finishSuperstepCompute(WorkerQuery<V, E, M, Q> activeQuery) {
+		int superstepNo = activeQuery.getMasterStartedSuperstep();
+
+		// Send barrier sync with other workers
+		if (!otherWorkerIds.isEmpty()) {
+			flushVertexMessages(activeQuery);
+			sendWorkersSuperstepFinished(activeQuery);
+		}
+
+		activeQuery.onFinishedSuperstepCompute(superstepNo);
+		logger.trace("Worker finished compute " + activeQuery.Query.QueryId + ":" + superstepNo);
+
+		// Notify master if compute and barrier sync finished
+		if (activeQuery.isNextSuperstepLocallyReady()) {
+			superstepLocalFinishNotifyMaster(activeQuery);
 		}
 	}
 
@@ -580,8 +585,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			if (activeQuery.BarrierSyncWaitSet.remove(message.getSrcMachine())) {
 				if (activeQuery.BarrierSyncWaitSet.isEmpty()) {
 					activeQuery.onFinishedWorkerSuperstepBarrierSync(activeQuery.getBarrierSyncedSuperstep() + 1);
-					// Wait for next barrier, apply all postponed premature barrier syncs
-					activeQuery.BarrierSyncWaitSet.addAll(otherWorkerIds);
 
 					// Notify master if compute and barrier sync finished
 					if (activeQuery.isNextSuperstepLocallyReady()) {
@@ -590,7 +593,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				}
 			}
 			else {
-				logger.error("Received worker barrier sync for worker not waiting for: " + message.getSrcMachine());
+				activeQuery.BarrierSyncPostponedSet.add(message.getSrcMachine());
 			}
 		}
 		else {
@@ -746,6 +749,14 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
 			+ query.getSuperstepNosLog());
 			return;
+		}
+
+		// Wait for next barrier, apply all postponed premature barrier syncs
+		//		query.BarrierSyncWaitSet.addAll(message.getWorkersWaitForList());
+		query.BarrierSyncWaitSet.addAll(otherWorkerIds);
+		for (Integer postponed : query.BarrierSyncPostponedSet) {
+			if (!query.BarrierSyncWaitSet.remove(postponed))
+				logger.error("Postponed worker barrier sync for worker not waiting for: " + message.getSrcMachine());
 		}
 
 		// New query stats for next superstep

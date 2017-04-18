@@ -7,8 +7,6 @@ import com.google.protobuf.ByteString;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.ReceiveQueryVerticesMessage;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
@@ -48,48 +46,49 @@ public class ControlMessageBuildUtil {
 
 
 	// Normal next superstep message, no vertex transfer
-	public static MessageEnvelope Build_Master_QueryNextSuperstep_NoVertMove(int superstepNo, int srcMachineId,
-			BaseQuery query) {
+	public static MessageEnvelope Build_Master_QueryNextSuperstep(int superstepNo, int srcMachineId,
+			BaseQuery query, List<Integer> workersWaitFor) {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()
 						.setType(ControlMessageType.Master_Query_Next_Superstep)
 						.setQueryValues(ByteString.copyFrom(query.getBytes()))
 						.setSuperstepNo(superstepNo)
+						.addAllWorkersWaitFor(workersWaitFor)
 						.setSrcMachine(srcMachineId).setQueryValues(ByteString.copyFrom(query.getBytes())).build())
 				.build();
 	}
 
-	// Transfer Vertices: Send to other worker
-	public static MessageEnvelope Build_Master_QueryNextSuperstep_VertSend(int superstepNo, int srcMachineId, BaseQuery query,
-			int sendTo) {
-		SendQueryVerticesMessage.Builder sendVertMsg = SendQueryVerticesMessage.newBuilder().setSendToMachine(sendTo);
-		return MessageEnvelope.newBuilder()
-				.setControlMessage(ControlMessage.newBuilder()
-						.setType(ControlMessageType.Master_Query_Next_Superstep)
-						.setQueryValues(ByteString.copyFrom(query.getBytes()))
-						.setSuperstepNo(superstepNo)
-						.setSrcMachine(srcMachineId).setQueryValues(ByteString.copyFrom(query.getBytes()))
-						.setSendQueryVertices(sendVertMsg)
-						.build())
-				.build();
-	}
+	//	// Transfer Vertices: Send to other worker
+	//	public static MessageEnvelope Build_Master_QueryNextSuperstep_VertSend(int superstepNo, int srcMachineId, BaseQuery query,
+	//			int sendTo) {
+	//		SendQueryVerticesMessage.Builder sendVertMsg = SendQueryVerticesMessage.newBuilder().setSendToMachine(sendTo);
+	//		return MessageEnvelope.newBuilder()
+	//				.setControlMessage(ControlMessage.newBuilder()
+	//						.setType(ControlMessageType.Master_Query_Next_Superstep)
+	//						.setQueryValues(ByteString.copyFrom(query.getBytes()))
+	//						.setSuperstepNo(superstepNo)
+	//						.setSrcMachine(srcMachineId).setQueryValues(ByteString.copyFrom(query.getBytes()))
+	//						.setSendQueryVertices(sendVertMsg)
+	//						.build())
+	//				.build();
+	//	}
 
-	// Transfer vertices: Receive vertices from one ore more workers before next superstep
-	public static MessageEnvelope Build_Master_QueryNextSuperstep_VertReceive(int superstepNo, int srcMachineId,
-			BaseQuery query,
-			List<Integer> receiveFrom) {
-		ReceiveQueryVerticesMessage.Builder recvVertMsg = ReceiveQueryVerticesMessage.newBuilder().addAllRecvFromMachine(receiveFrom);
-		return MessageEnvelope.newBuilder()
-				.setControlMessage(ControlMessage.newBuilder()
-						.setType(ControlMessageType.Master_Query_Next_Superstep)
-						.setQueryValues(ByteString.copyFrom(query.getBytes()))
-						.setSuperstepNo(superstepNo)
-						.setSrcMachine(srcMachineId)
-						.setQueryValues(ByteString.copyFrom(query.getBytes()))
-						.setReceiveQueryVertices(recvVertMsg)
-						.build())
-				.build();
-	}
+	//	// Transfer vertices: Receive vertices from one ore more workers before next superstep
+	//	public static MessageEnvelope Build_Master_QueryNextSuperstep_VertReceive(int superstepNo, int srcMachineId,
+	//			BaseQuery query,
+	//			List<Integer> receiveFrom) {
+	//		ReceiveQueryVerticesMessage.Builder recvVertMsg = ReceiveQueryVerticesMessage.newBuilder().addAllRecvFromMachine(receiveFrom);
+	//		return MessageEnvelope.newBuilder()
+	//				.setControlMessage(ControlMessage.newBuilder()
+	//						.setType(ControlMessageType.Master_Query_Next_Superstep)
+	//						.setQueryValues(ByteString.copyFrom(query.getBytes()))
+	//						.setSuperstepNo(superstepNo)
+	//						.setSrcMachine(srcMachineId)
+	//						.setQueryValues(ByteString.copyFrom(query.getBytes()))
+	//						.setReceiveQueryVertices(recvVertMsg)
+	//						.build())
+	//				.build();
+	//	}
 
 	public static MessageEnvelope Build_Master_QueryFinish(int srcMachineId, BaseQuery query) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
