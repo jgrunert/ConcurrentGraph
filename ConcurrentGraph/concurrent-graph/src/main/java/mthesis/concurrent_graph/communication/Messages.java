@@ -3984,49 +3984,83 @@ public final class Messages {
         com.google.protobuf.MessageOrBuilder {
 
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+       */
+      int getQuerySuperstepsCount();
+      /**
+       * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+       */
+      boolean containsQuerySupersteps(
+          int key);
+      /**
+       * Use {@link #getQuerySuperstepsMap()} instead.
+       */
+      @java.lang.Deprecated
+      java.util.Map<java.lang.Integer, java.lang.Integer>
+      getQuerySupersteps();
+      /**
+       * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+       */
+      java.util.Map<java.lang.Integer, java.lang.Integer>
+      getQuerySuperstepsMap();
+      /**
+       * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+       */
+
+      int getQuerySuperstepsOrDefault(
+          int key,
+          int defaultValue);
+      /**
+       * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+       */
+
+      int getQuerySuperstepsOrThrow(
+          int key);
+
+      /**
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> 
           getSendQueryVerticesList();
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage getSendQueryVertices(int index);
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       int getSendQueryVerticesCount();
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessageOrBuilder> 
           getSendQueryVerticesOrBuilderList();
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder(
           int index);
 
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> 
           getReceiveQueryVerticesList();
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage getReceiveQueryVertices(int index);
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       int getReceiveQueryVerticesCount();
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessageOrBuilder> 
           getReceiveQueryVerticesOrBuilderList();
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder(
           int index);
@@ -4077,17 +4111,29 @@ public final class Messages {
               }
               case 10: {
                 if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                  sendQueryVertices_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage>();
+                  querySupersteps_ = com.google.protobuf.MapField.newMapField(
+                      QuerySuperstepsDefaultEntryHolder.defaultEntry);
                   mutable_bitField0_ |= 0x00000001;
+                }
+                com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
+                querySupersteps = input.readMessage(
+                    QuerySuperstepsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                querySupersteps_.getMutableMap().put(querySupersteps.getKey(), querySupersteps.getValue());
+                break;
+              }
+              case 18: {
+                if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                  sendQueryVertices_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage>();
+                  mutable_bitField0_ |= 0x00000002;
                 }
                 sendQueryVertices_.add(
                     input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.PARSER, extensionRegistry));
                 break;
               }
-              case 18: {
-                if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              case 26: {
+                if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
                   receiveQueryVertices_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage>();
-                  mutable_bitField0_ |= 0x00000002;
+                  mutable_bitField0_ |= 0x00000004;
                 }
                 receiveQueryVertices_.add(
                     input.readMessage(mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.PARSER, extensionRegistry));
@@ -4101,10 +4147,10 @@ public final class Messages {
           throw new com.google.protobuf.InvalidProtocolBufferException(
               e).setUnfinishedMessage(this);
         } finally {
-          if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
             sendQueryVertices_ = java.util.Collections.unmodifiableList(sendQueryVertices_);
           }
-          if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
             receiveQueryVertices_ = java.util.Collections.unmodifiableList(receiveQueryVertices_);
           }
           this.unknownFields = unknownFields.build();
@@ -4116,6 +4162,17 @@ public final class Messages {
         return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_descriptor;
       }
 
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMapField(
+          int number) {
+        switch (number) {
+          case 1:
+            return internalGetQuerySupersteps();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_fieldAccessorTable
@@ -5492,70 +5549,146 @@ public final class Messages {
 
       }
 
-      public static final int SENDQUERYVERTICES_FIELD_NUMBER = 1;
+      public static final int QUERYSUPERSTEPS_FIELD_NUMBER = 1;
+      private static final class QuerySuperstepsDefaultEntryHolder {
+        static final com.google.protobuf.MapEntry<
+            java.lang.Integer, java.lang.Integer> defaultEntry =
+                com.google.protobuf.MapEntry
+                .<java.lang.Integer, java.lang.Integer>newDefaultInstance(
+                    mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_QuerySuperstepsEntry_descriptor, 
+                    com.google.protobuf.WireFormat.FieldType.INT32,
+                    0,
+                    com.google.protobuf.WireFormat.FieldType.INT32,
+                    0);
+      }
+      private com.google.protobuf.MapField<
+          java.lang.Integer, java.lang.Integer> querySupersteps_;
+      private com.google.protobuf.MapField<java.lang.Integer, java.lang.Integer>
+      internalGetQuerySupersteps() {
+        if (querySupersteps_ == null) {
+          return com.google.protobuf.MapField.emptyMapField(
+              QuerySuperstepsDefaultEntryHolder.defaultEntry);
+        }
+        return querySupersteps_;
+      }
+
+      public int getQuerySuperstepsCount() {
+        return internalGetQuerySupersteps().getMap().size();
+      }
+      /**
+       * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+       */
+
+      public boolean containsQuerySupersteps(
+          int key) {
+        
+        return internalGetQuerySupersteps().getMap().containsKey(key);
+      }
+      /**
+       * Use {@link #getQuerySuperstepsMap()} instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.Integer, java.lang.Integer> getQuerySupersteps() {
+        return getQuerySuperstepsMap();
+      }
+      /**
+       * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+       */
+
+      public java.util.Map<java.lang.Integer, java.lang.Integer> getQuerySuperstepsMap() {
+        return internalGetQuerySupersteps().getMap();
+      }
+      /**
+       * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+       */
+
+      public int getQuerySuperstepsOrDefault(
+          int key,
+          int defaultValue) {
+        
+        java.util.Map<java.lang.Integer, java.lang.Integer> map =
+            internalGetQuerySupersteps().getMap();
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+      }
+      /**
+       * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+       */
+
+      public int getQuerySuperstepsOrThrow(
+          int key) {
+        
+        java.util.Map<java.lang.Integer, java.lang.Integer> map =
+            internalGetQuerySupersteps().getMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return map.get(key);
+      }
+
+      public static final int SENDQUERYVERTICES_FIELD_NUMBER = 2;
       private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> sendQueryVertices_;
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> getSendQueryVerticesList() {
         return sendQueryVertices_;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessageOrBuilder> 
           getSendQueryVerticesOrBuilderList() {
         return sendQueryVertices_;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       public int getSendQueryVerticesCount() {
         return sendQueryVertices_.size();
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage getSendQueryVertices(int index) {
         return sendQueryVertices_.get(index);
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
        */
       public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder(
           int index) {
         return sendQueryVertices_.get(index);
       }
 
-      public static final int RECEIVEQUERYVERTICES_FIELD_NUMBER = 2;
+      public static final int RECEIVEQUERYVERTICES_FIELD_NUMBER = 3;
       private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> receiveQueryVertices_;
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> getReceiveQueryVerticesList() {
         return receiveQueryVertices_;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessageOrBuilder> 
           getReceiveQueryVerticesOrBuilderList() {
         return receiveQueryVertices_;
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       public int getReceiveQueryVerticesCount() {
         return receiveQueryVertices_.size();
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage getReceiveQueryVertices(int index) {
         return receiveQueryVertices_.get(index);
       }
       /**
-       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+       * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
        */
       public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder(
           int index) {
@@ -5574,11 +5707,20 @@ public final class Messages {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
+        for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
+             : internalGetQuerySupersteps().getMap().entrySet()) {
+          com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
+          querySupersteps = QuerySuperstepsDefaultEntryHolder.defaultEntry.newBuilderForType()
+              .setKey(entry.getKey())
+              .setValue(entry.getValue())
+              .build();
+          output.writeMessage(1, querySupersteps);
+        }
         for (int i = 0; i < sendQueryVertices_.size(); i++) {
-          output.writeMessage(1, sendQueryVertices_.get(i));
+          output.writeMessage(2, sendQueryVertices_.get(i));
         }
         for (int i = 0; i < receiveQueryVertices_.size(); i++) {
-          output.writeMessage(2, receiveQueryVertices_.get(i));
+          output.writeMessage(3, receiveQueryVertices_.get(i));
         }
         unknownFields.writeTo(output);
       }
@@ -5588,13 +5730,23 @@ public final class Messages {
         if (size != -1) return size;
 
         size = 0;
+        for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
+             : internalGetQuerySupersteps().getMap().entrySet()) {
+          com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
+          querySupersteps = QuerySuperstepsDefaultEntryHolder.defaultEntry.newBuilderForType()
+              .setKey(entry.getKey())
+              .setValue(entry.getValue())
+              .build();
+          size += com.google.protobuf.CodedOutputStream
+              .computeMessageSize(1, querySupersteps);
+        }
         for (int i = 0; i < sendQueryVertices_.size(); i++) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(1, sendQueryVertices_.get(i));
+            .computeMessageSize(2, sendQueryVertices_.get(i));
         }
         for (int i = 0; i < receiveQueryVertices_.size(); i++) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(2, receiveQueryVertices_.get(i));
+            .computeMessageSize(3, receiveQueryVertices_.get(i));
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -5613,6 +5765,8 @@ public final class Messages {
         mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage) obj;
 
         boolean result = true;
+        result = result && internalGetQuerySupersteps().equals(
+            other.internalGetQuerySupersteps());
         result = result && getSendQueryVerticesList()
             .equals(other.getSendQueryVerticesList());
         result = result && getReceiveQueryVerticesList()
@@ -5628,6 +5782,10 @@ public final class Messages {
         }
         int hash = 41;
         hash = (19 * hash) + getDescriptorForType().hashCode();
+        if (!internalGetQuerySupersteps().getMap().isEmpty()) {
+          hash = (37 * hash) + QUERYSUPERSTEPS_FIELD_NUMBER;
+          hash = (53 * hash) + internalGetQuerySupersteps().hashCode();
+        }
         if (getSendQueryVerticesCount() > 0) {
           hash = (37 * hash) + SENDQUERYVERTICES_FIELD_NUMBER;
           hash = (53 * hash) + getSendQueryVerticesList().hashCode();
@@ -5730,6 +5888,28 @@ public final class Messages {
           return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_descriptor;
         }
 
+        @SuppressWarnings({"rawtypes"})
+        protected com.google.protobuf.MapField internalGetMapField(
+            int number) {
+          switch (number) {
+            case 1:
+              return internalGetQuerySupersteps();
+            default:
+              throw new RuntimeException(
+                  "Invalid map field number: " + number);
+          }
+        }
+        @SuppressWarnings({"rawtypes"})
+        protected com.google.protobuf.MapField internalGetMutableMapField(
+            int number) {
+          switch (number) {
+            case 1:
+              return internalGetMutableQuerySupersteps();
+            default:
+              throw new RuntimeException(
+                  "Invalid map field number: " + number);
+          }
+        }
         protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
           return mthesis.concurrent_graph.communication.Messages.internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_fieldAccessorTable
@@ -5756,15 +5936,16 @@ public final class Messages {
         }
         public Builder clear() {
           super.clear();
+          internalGetMutableQuerySupersteps().clear();
           if (sendQueryVerticesBuilder_ == null) {
             sendQueryVertices_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             sendQueryVerticesBuilder_.clear();
           }
           if (receiveQueryVerticesBuilder_ == null) {
             receiveQueryVertices_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
           } else {
             receiveQueryVerticesBuilder_.clear();
           }
@@ -5791,19 +5972,21 @@ public final class Messages {
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage buildPartial() {
           mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage result = new mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage(this);
           int from_bitField0_ = bitField0_;
+          result.querySupersteps_ = internalGetQuerySupersteps();
+          result.querySupersteps_.makeImmutable();
           if (sendQueryVerticesBuilder_ == null) {
-            if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            if (((bitField0_ & 0x00000002) == 0x00000002)) {
               sendQueryVertices_ = java.util.Collections.unmodifiableList(sendQueryVertices_);
-              bitField0_ = (bitField0_ & ~0x00000001);
+              bitField0_ = (bitField0_ & ~0x00000002);
             }
             result.sendQueryVertices_ = sendQueryVertices_;
           } else {
             result.sendQueryVertices_ = sendQueryVerticesBuilder_.build();
           }
           if (receiveQueryVerticesBuilder_ == null) {
-            if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            if (((bitField0_ & 0x00000004) == 0x00000004)) {
               receiveQueryVertices_ = java.util.Collections.unmodifiableList(receiveQueryVertices_);
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000004);
             }
             result.receiveQueryVertices_ = receiveQueryVertices_;
           } else {
@@ -5850,11 +6033,13 @@ public final class Messages {
 
         public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage other) {
           if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.getDefaultInstance()) return this;
+          internalGetMutableQuerySupersteps().mergeFrom(
+              other.internalGetQuerySupersteps());
           if (sendQueryVerticesBuilder_ == null) {
             if (!other.sendQueryVertices_.isEmpty()) {
               if (sendQueryVertices_.isEmpty()) {
                 sendQueryVertices_ = other.sendQueryVertices_;
-                bitField0_ = (bitField0_ & ~0x00000001);
+                bitField0_ = (bitField0_ & ~0x00000002);
               } else {
                 ensureSendQueryVerticesIsMutable();
                 sendQueryVertices_.addAll(other.sendQueryVertices_);
@@ -5867,7 +6052,7 @@ public final class Messages {
                 sendQueryVerticesBuilder_.dispose();
                 sendQueryVerticesBuilder_ = null;
                 sendQueryVertices_ = other.sendQueryVertices_;
-                bitField0_ = (bitField0_ & ~0x00000001);
+                bitField0_ = (bitField0_ & ~0x00000002);
                 sendQueryVerticesBuilder_ = 
                   com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                      getSendQueryVerticesFieldBuilder() : null;
@@ -5880,7 +6065,7 @@ public final class Messages {
             if (!other.receiveQueryVertices_.isEmpty()) {
               if (receiveQueryVertices_.isEmpty()) {
                 receiveQueryVertices_ = other.receiveQueryVertices_;
-                bitField0_ = (bitField0_ & ~0x00000002);
+                bitField0_ = (bitField0_ & ~0x00000004);
               } else {
                 ensureReceiveQueryVerticesIsMutable();
                 receiveQueryVertices_.addAll(other.receiveQueryVertices_);
@@ -5893,7 +6078,7 @@ public final class Messages {
                 receiveQueryVerticesBuilder_.dispose();
                 receiveQueryVerticesBuilder_ = null;
                 receiveQueryVertices_ = other.receiveQueryVertices_;
-                bitField0_ = (bitField0_ & ~0x00000002);
+                bitField0_ = (bitField0_ & ~0x00000004);
                 receiveQueryVerticesBuilder_ = 
                   com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                      getReceiveQueryVerticesFieldBuilder() : null;
@@ -5930,12 +6115,131 @@ public final class Messages {
         }
         private int bitField0_;
 
+        private com.google.protobuf.MapField<
+            java.lang.Integer, java.lang.Integer> querySupersteps_;
+        private com.google.protobuf.MapField<java.lang.Integer, java.lang.Integer>
+        internalGetQuerySupersteps() {
+          if (querySupersteps_ == null) {
+            return com.google.protobuf.MapField.emptyMapField(
+                QuerySuperstepsDefaultEntryHolder.defaultEntry);
+          }
+          return querySupersteps_;
+        }
+        private com.google.protobuf.MapField<java.lang.Integer, java.lang.Integer>
+        internalGetMutableQuerySupersteps() {
+          onChanged();;
+          if (querySupersteps_ == null) {
+            querySupersteps_ = com.google.protobuf.MapField.newMapField(
+                QuerySuperstepsDefaultEntryHolder.defaultEntry);
+          }
+          if (!querySupersteps_.isMutable()) {
+            querySupersteps_ = querySupersteps_.copy();
+          }
+          return querySupersteps_;
+        }
+
+        public int getQuerySuperstepsCount() {
+          return internalGetQuerySupersteps().getMap().size();
+        }
+        /**
+         * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+         */
+
+        public boolean containsQuerySupersteps(
+            int key) {
+          
+          return internalGetQuerySupersteps().getMap().containsKey(key);
+        }
+        /**
+         * Use {@link #getQuerySuperstepsMap()} instead.
+         */
+        @java.lang.Deprecated
+        public java.util.Map<java.lang.Integer, java.lang.Integer> getQuerySupersteps() {
+          return getQuerySuperstepsMap();
+        }
+        /**
+         * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+         */
+
+        public java.util.Map<java.lang.Integer, java.lang.Integer> getQuerySuperstepsMap() {
+          return internalGetQuerySupersteps().getMap();
+        }
+        /**
+         * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+         */
+
+        public int getQuerySuperstepsOrDefault(
+            int key,
+            int defaultValue) {
+          
+          java.util.Map<java.lang.Integer, java.lang.Integer> map =
+              internalGetQuerySupersteps().getMap();
+          return map.containsKey(key) ? map.get(key) : defaultValue;
+        }
+        /**
+         * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+         */
+
+        public int getQuerySuperstepsOrThrow(
+            int key) {
+          
+          java.util.Map<java.lang.Integer, java.lang.Integer> map =
+              internalGetQuerySupersteps().getMap();
+          if (!map.containsKey(key)) {
+            throw new java.lang.IllegalArgumentException();
+          }
+          return map.get(key);
+        }
+
+        public Builder clearQuerySupersteps() {
+          getMutableQuerySupersteps().clear();
+          return this;
+        }
+        /**
+         * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+         */
+
+        public Builder removeQuerySupersteps(
+            int key) {
+          
+          getMutableQuerySupersteps().remove(key);
+          return this;
+        }
+        /**
+         * Use alternate mutation accessors instead.
+         */
+        @java.lang.Deprecated
+        public java.util.Map<java.lang.Integer, java.lang.Integer>
+        getMutableQuerySupersteps() {
+          return internalGetMutableQuerySupersteps().getMutableMap();
+        }
+        /**
+         * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+         */
+        public Builder putQuerySupersteps(
+            int key,
+            int value) {
+          
+          
+          getMutableQuerySupersteps().put(key, value);
+          return this;
+        }
+        /**
+         * <code>map&lt;int32, int32&gt; QuerySupersteps = 1;</code>
+         */
+
+        public Builder putAllQuerySupersteps(
+            java.util.Map<java.lang.Integer, java.lang.Integer> values) {
+          getMutableQuerySupersteps().putAll(values);
+          return this;
+        }
+
         private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> sendQueryVertices_ =
           java.util.Collections.emptyList();
         private void ensureSendQueryVerticesIsMutable() {
-          if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (!((bitField0_ & 0x00000002) == 0x00000002)) {
             sendQueryVertices_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage>(sendQueryVertices_);
-            bitField0_ |= 0x00000001;
+            bitField0_ |= 0x00000002;
            }
         }
 
@@ -5943,7 +6247,7 @@ public final class Messages {
             mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessageOrBuilder> sendQueryVerticesBuilder_;
 
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> getSendQueryVerticesList() {
           if (sendQueryVerticesBuilder_ == null) {
@@ -5953,7 +6257,7 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public int getSendQueryVerticesCount() {
           if (sendQueryVerticesBuilder_ == null) {
@@ -5963,7 +6267,7 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage getSendQueryVertices(int index) {
           if (sendQueryVerticesBuilder_ == null) {
@@ -5973,7 +6277,7 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public Builder setSendQueryVertices(
             int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage value) {
@@ -5990,7 +6294,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public Builder setSendQueryVertices(
             int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.Builder builderForValue) {
@@ -6004,7 +6308,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public Builder addSendQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage value) {
           if (sendQueryVerticesBuilder_ == null) {
@@ -6020,7 +6324,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public Builder addSendQueryVertices(
             int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage value) {
@@ -6037,7 +6341,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public Builder addSendQueryVertices(
             mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.Builder builderForValue) {
@@ -6051,7 +6355,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public Builder addSendQueryVertices(
             int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.Builder builderForValue) {
@@ -6065,7 +6369,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public Builder addAllSendQueryVertices(
             java.lang.Iterable<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> values) {
@@ -6080,12 +6384,12 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public Builder clearSendQueryVertices() {
           if (sendQueryVerticesBuilder_ == null) {
             sendQueryVertices_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
             onChanged();
           } else {
             sendQueryVerticesBuilder_.clear();
@@ -6093,7 +6397,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public Builder removeSendQueryVertices(int index) {
           if (sendQueryVerticesBuilder_ == null) {
@@ -6106,14 +6410,14 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.Builder getSendQueryVerticesBuilder(
             int index) {
           return getSendQueryVerticesFieldBuilder().getBuilder(index);
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessageOrBuilder getSendQueryVerticesOrBuilder(
             int index) {
@@ -6123,7 +6427,7 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessageOrBuilder> 
              getSendQueryVerticesOrBuilderList() {
@@ -6134,14 +6438,14 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.Builder addSendQueryVerticesBuilder() {
           return getSendQueryVerticesFieldBuilder().addBuilder(
               mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.getDefaultInstance());
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.Builder addSendQueryVerticesBuilder(
             int index) {
@@ -6149,7 +6453,7 @@ public final class Messages {
               index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.getDefaultInstance());
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 1;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage SendQueryVertices = 2;</code>
          */
         public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.Builder> 
              getSendQueryVerticesBuilderList() {
@@ -6162,7 +6466,7 @@ public final class Messages {
             sendQueryVerticesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
                 mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessageOrBuilder>(
                     sendQueryVertices_,
-                    ((bitField0_ & 0x00000001) == 0x00000001),
+                    ((bitField0_ & 0x00000002) == 0x00000002),
                     getParentForChildren(),
                     isClean());
             sendQueryVertices_ = null;
@@ -6173,9 +6477,9 @@ public final class Messages {
         private java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> receiveQueryVertices_ =
           java.util.Collections.emptyList();
         private void ensureReceiveQueryVerticesIsMutable() {
-          if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (!((bitField0_ & 0x00000004) == 0x00000004)) {
             receiveQueryVertices_ = new java.util.ArrayList<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage>(receiveQueryVertices_);
-            bitField0_ |= 0x00000002;
+            bitField0_ |= 0x00000004;
            }
         }
 
@@ -6183,7 +6487,7 @@ public final class Messages {
             mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessageOrBuilder> receiveQueryVerticesBuilder_;
 
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> getReceiveQueryVerticesList() {
           if (receiveQueryVerticesBuilder_ == null) {
@@ -6193,7 +6497,7 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public int getReceiveQueryVerticesCount() {
           if (receiveQueryVerticesBuilder_ == null) {
@@ -6203,7 +6507,7 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage getReceiveQueryVertices(int index) {
           if (receiveQueryVerticesBuilder_ == null) {
@@ -6213,7 +6517,7 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public Builder setReceiveQueryVertices(
             int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage value) {
@@ -6230,7 +6534,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public Builder setReceiveQueryVertices(
             int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.Builder builderForValue) {
@@ -6244,7 +6548,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public Builder addReceiveQueryVertices(mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage value) {
           if (receiveQueryVerticesBuilder_ == null) {
@@ -6260,7 +6564,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public Builder addReceiveQueryVertices(
             int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage value) {
@@ -6277,7 +6581,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public Builder addReceiveQueryVertices(
             mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.Builder builderForValue) {
@@ -6291,7 +6595,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public Builder addReceiveQueryVertices(
             int index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.Builder builderForValue) {
@@ -6305,7 +6609,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public Builder addAllReceiveQueryVertices(
             java.lang.Iterable<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> values) {
@@ -6320,12 +6624,12 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public Builder clearReceiveQueryVertices() {
           if (receiveQueryVerticesBuilder_ == null) {
             receiveQueryVertices_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
             onChanged();
           } else {
             receiveQueryVerticesBuilder_.clear();
@@ -6333,7 +6637,7 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public Builder removeReceiveQueryVertices(int index) {
           if (receiveQueryVerticesBuilder_ == null) {
@@ -6346,14 +6650,14 @@ public final class Messages {
           return this;
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.Builder getReceiveQueryVerticesBuilder(
             int index) {
           return getReceiveQueryVerticesFieldBuilder().getBuilder(index);
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessageOrBuilder getReceiveQueryVerticesOrBuilder(
             int index) {
@@ -6363,7 +6667,7 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public java.util.List<? extends mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessageOrBuilder> 
              getReceiveQueryVerticesOrBuilderList() {
@@ -6374,14 +6678,14 @@ public final class Messages {
           }
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.Builder addReceiveQueryVerticesBuilder() {
           return getReceiveQueryVerticesFieldBuilder().addBuilder(
               mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.getDefaultInstance());
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.Builder addReceiveQueryVerticesBuilder(
             int index) {
@@ -6389,7 +6693,7 @@ public final class Messages {
               index, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.getDefaultInstance());
         }
         /**
-         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;</code>
+         * <code>repeated .mthesis.concurrent_graph.communication.messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;</code>
          */
         public java.util.List<mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.Builder> 
              getReceiveQueryVerticesBuilderList() {
@@ -6402,7 +6706,7 @@ public final class Messages {
             receiveQueryVerticesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
                 mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.Builder, mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessageOrBuilder>(
                     receiveQueryVertices_,
-                    ((bitField0_ & 0x00000002) == 0x00000002),
+                    ((bitField0_ & 0x00000004) == 0x00000004),
                     getParentForChildren(),
                     isClean());
             receiveQueryVertices_ = null;
@@ -9710,6 +10014,11 @@ public final class Messages {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_QuerySuperstepsEntry_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_QuerySuperstepsEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_SendQueryVerticesMessage_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -9742,7 +10051,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\217\017\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\313\020\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022q\n\020" +
@@ -9774,34 +10083,39 @@ public final class Messages {
       "kersWaitFor\030\002 \003(\005\0321\n\030SendQueryVerticesMe" +
       "ssage\022\025\n\rSendToMachine\030\001 \001(\005\0326\n\033ReceiveQ" +
       "ueryVerticesMessage\022\027\n\017RecvFromMachine\030\001" +
-      " \003(\005\032\325\003\n\023StartBarrierMessage\022\207\001\n\021SendQue" +
-      "ryVertices\030\001 \003(\0132l.mthesis.concurrent_gr" +
-      "aph.communication.messages.ControlMessag" +
-      "e.StartBarrierMessage.SendQueryVerticesM",
-      "essage\022\215\001\n\024ReceiveQueryVertices\030\002 \003(\0132o." +
-      "mthesis.concurrent_graph.communication.m" +
-      "essages.ControlMessage.StartBarrierMessa" +
-      "ge.ReceiveQueryVerticesMessage\032X\n\030SendQu" +
-      "eryVerticesMessage\022\017\n\007QueryId\030\001 \001(\005\022\025\n\rM" +
-      "oveToMachine\030\002 \001(\005\022\024\n\014MaxMoveCount\030\003 \001(\005" +
-      "\032J\n\033ReceiveQueryVerticesMessage\022\017\n\007Query" +
-      "Id\030\001 \001(\005\022\032\n\022ReceiveFromMachine\030\002 \001(\005\032\300\001\n" +
-      "\022WorkerStatsMessage\022t\n\007Samples\030\001 \003(\0132c.m" +
-      "thesis.concurrent_graph.communication.me",
-      "ssages.ControlMessage.WorkerStatsMessage" +
-      ".WorkerStatSample\0324\n\020WorkerStatSample\022\014\n" +
-      "\004Time\030\001 \001(\003\022\022\n\nStatsBytes\030\002 \001(\014*\201\003\n\022Cont" +
-      "rolMessageType\022\025\n\021Channel_Handshake\020\001\022\026\n" +
-      "\022Worker_Initialized\020\002\022\"\n\036Worker_Query_Su" +
-      "perstep_Barrier\020\003\022#\n\037Worker_Query_Supers" +
-      "tep_Finished\020\004\022\031\n\025Worker_Query_Finished\020" +
-      "\005\022\032\n\026Worker_Barrier_Started\020\014\022\033\n\027Worker_" +
-      "Barrier_Finished\020\r\022\034\n\030Master_Worker_Init" +
-      "ialize\020\006\022\026\n\022Master_Query_Start\020\007\022\037\n\033Mast",
-      "er_Query_Next_Superstep\020\010\022\031\n\025Master_Quer" +
-      "y_Finished\020\t\022\023\n\017Master_Shutdown\020\n\022\030\n\024Mas" +
-      "ter_Start_Barrier\020\013B2\n&mthesis.concurren" +
-      "t_graph.communicationB\010Messages"
+      " \003(\005\032\221\005\n\023StartBarrierMessage\022\201\001\n\017QuerySu" +
+      "persteps\030\001 \003(\0132h.mthesis.concurrent_grap" +
+      "h.communication.messages.ControlMessage." +
+      "StartBarrierMessage.QuerySuperstepsEntry",
+      "\022\207\001\n\021SendQueryVertices\030\002 \003(\0132l.mthesis.c" +
+      "oncurrent_graph.communication.messages.C" +
+      "ontrolMessage.StartBarrierMessage.SendQu" +
+      "eryVerticesMessage\022\215\001\n\024ReceiveQueryVerti" +
+      "ces\030\003 \003(\0132o.mthesis.concurrent_graph.com" +
+      "munication.messages.ControlMessage.Start" +
+      "BarrierMessage.ReceiveQueryVerticesMessa" +
+      "ge\0326\n\024QuerySuperstepsEntry\022\013\n\003key\030\001 \001(\005\022" +
+      "\r\n\005value\030\002 \001(\005:\0028\001\032X\n\030SendQueryVerticesM" +
+      "essage\022\017\n\007QueryId\030\001 \001(\005\022\025\n\rMoveToMachine",
+      "\030\002 \001(\005\022\024\n\014MaxMoveCount\030\003 \001(\005\032J\n\033ReceiveQ" +
+      "ueryVerticesMessage\022\017\n\007QueryId\030\001 \001(\005\022\032\n\022" +
+      "ReceiveFromMachine\030\002 \001(\005\032\300\001\n\022WorkerStats" +
+      "Message\022t\n\007Samples\030\001 \003(\0132c.mthesis.concu" +
+      "rrent_graph.communication.messages.Contr" +
+      "olMessage.WorkerStatsMessage.WorkerStatS" +
+      "ample\0324\n\020WorkerStatSample\022\014\n\004Time\030\001 \001(\003\022" +
+      "\022\n\nStatsBytes\030\002 \001(\014*\201\003\n\022ControlMessageTy" +
+      "pe\022\025\n\021Channel_Handshake\020\001\022\026\n\022Worker_Init" +
+      "ialized\020\002\022\"\n\036Worker_Query_Superstep_Barr",
+      "ier\020\003\022#\n\037Worker_Query_Superstep_Finished" +
+      "\020\004\022\031\n\025Worker_Query_Finished\020\005\022\032\n\026Worker_" +
+      "Barrier_Started\020\014\022\033\n\027Worker_Barrier_Fini" +
+      "shed\020\r\022\034\n\030Master_Worker_Initialize\020\006\022\026\n\022" +
+      "Master_Query_Start\020\007\022\037\n\033Master_Query_Nex" +
+      "t_Superstep\020\010\022\031\n\025Master_Query_Finished\020\t" +
+      "\022\023\n\017Master_Shutdown\020\n\022\030\n\024Master_Start_Ba" +
+      "rrier\020\013B2\n&mthesis.concurrent_graph.comm" +
+      "unicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -9862,15 +10176,21 @@ public final class Messages {
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_descriptor,
-        new java.lang.String[] { "SendQueryVertices", "ReceiveQueryVertices", });
-    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_SendQueryVerticesMessage_descriptor =
+        new java.lang.String[] { "QuerySupersteps", "SendQueryVertices", "ReceiveQueryVertices", });
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_QuerySuperstepsEntry_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_descriptor.getNestedTypes().get(0);
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_QuerySuperstepsEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_QuerySuperstepsEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_SendQueryVerticesMessage_descriptor =
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_descriptor.getNestedTypes().get(1);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_SendQueryVerticesMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_SendQueryVerticesMessage_descriptor,
         new java.lang.String[] { "QueryId", "MoveToMachine", "MaxMoveCount", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryVerticesMessage_descriptor =
-      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_descriptor.getNestedTypes().get(1);
+      internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_descriptor.getNestedTypes().get(2);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryVerticesMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryVerticesMessage_descriptor,

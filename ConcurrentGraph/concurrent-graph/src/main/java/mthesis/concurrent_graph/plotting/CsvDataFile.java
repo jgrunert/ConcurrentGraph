@@ -27,7 +27,7 @@ public class CsvDataFile {
 		while ((line = reader.readLine()) != null) {
 			String[] lineSplit = line.split(";");
 			double[] dataLine = new double[NumDataColumns];
-			for (int i = 0; i < NumDataColumns; i++) {
+			for (int i = 0; i < NumDataColumns && i < lineSplit.length; i++) {
 				dataLine[i] = Double.parseDouble(lineSplit[i]);
 			}
 			dataLines.add(dataLine);

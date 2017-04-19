@@ -86,8 +86,9 @@ message MessageEnvelope {
 		}
 		
 		message StartBarrierMessage {
-			repeated SendQueryVerticesMessage SendQueryVertices = 1;
-			repeated ReceiveQueryVerticesMessage ReceiveQueryVertices = 2;
+    		map<int32, int32> QuerySupersteps = 1;
+			repeated SendQueryVerticesMessage SendQueryVertices = 2;
+			repeated ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;
 			
 			// Message to signal workers to make a system wide barrier to perform tasks
 			message SendQueryVerticesMessage {

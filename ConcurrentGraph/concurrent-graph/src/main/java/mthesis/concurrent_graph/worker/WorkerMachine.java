@@ -35,6 +35,7 @@ import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.GetToKnowMessage;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
@@ -97,6 +98,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	// Global barrier coordination/control
 	private boolean globalBarrierRequested = false;
+	private Map<Integer, Integer> globalBarrierQuerySupersteps;
 	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
 	private final Set<Integer> globalBarrierStartPrematureSet = new HashSet<>();
 	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>();
@@ -286,16 +288,30 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 				// ++++++++++ Global barrier if requested and no more outstanding queries ++++++++++
 				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
+					//					Map<Integer, Integer> queryFinishedSupersteps = new HashMap<>(activeQueries.size());
+					//					for (WorkerQuery<V, E, M, Q> q : activeQueries.values()) {
+					//						queryFinishedSupersteps.put(q.QueryId, q.getLastFinishedComputeSuperstep());
+					//					}
+					//					logger.info("W " + queryFinishedSupersteps);
+					//					logger.info("M " + globalBarrierQuerySupersteps);
+
+					System.out.println("#BR " + ownId + " " + globalBarrierStartWaitSet);
 					// Checks
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
+						if (globalBarrierQuerySupersteps.containsKey(query.QueryId)
+								&& !globalBarrierQuerySupersteps.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
+							logger.warn("Query " + query.QueryId + " is not ready for global barrier, wrong superstep: "
+									+ query.getLastFinishedComputeSuperstep() + " should be "
+									+ globalBarrierQuerySupersteps.get(query.QueryId));
+						}
 						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()) {
 							logger.warn("Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
 									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
 						}
-						if (!query.ActiveVerticesNext.isEmpty()) {
-							logger.warn("Query " + query.QueryId + " is not ready for global barrier, has ActiveVerticesNext: "
-									+ query.ActiveVerticesNext.size());
-						}
+						//						if (!query.ActiveVerticesNext.isEmpty()) {
+						//							logger.warn("Query " + query.QueryId + " is not ready for global barrier, has ActiveVerticesNext: "
+						//									+ query.ActiveVerticesNext.size() + " superstep " + query.getLastFinishedComputeSuperstep());
+						//						}
 					}
 
 					// Start barrier, notify other workers
@@ -519,17 +535,19 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					break;
 
 					case Master_Start_Barrier: { // Start global barrier
+						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
 						globalBarrierStartWaitSet.removeAll(globalBarrierStartPrematureSet);
 						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
 						globalBarrierFinishWaitSet.removeAll(globalBarrierFinishPrematureSet);
-						globalBarrierSendVerts = message.getStartBarrier().getSendQueryVerticesList();
-						List<ReceiveQueryVerticesMessage> recvVerts = message.getStartBarrier().getReceiveQueryVerticesList();
+						globalBarrierSendVerts = startBarrierMsg.getSendQueryVerticesList();
+						List<ReceiveQueryVerticesMessage> recvVerts = startBarrierMsg.getReceiveQueryVerticesList();
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryVerticesMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
 							.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
 						}
+						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
 					break;
@@ -982,13 +1000,19 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			otherQueries.remove(queryId);
 
 			if (!query.ActiveVerticesNext.isEmpty()) {
-				logger.error("Query ActiveVerticesNext when moving " + query.QueryId + ":" + query.getMasterStartedSuperstep());
+				logger.error("Query has ActiveVerticesNext when moving " + query.QueryId + ":" + query.getMasterStartedSuperstep());
 			}
 
 			for (Integer vertexId : queryVertices) {
 				AbstractVertex<V, E, M, Q> vertex = localVertices.get(vertexId);
 				if (vertex == null) {
 					// Vertex to move not found here anymore
+					notMoved++;
+					continue;
+				}
+
+				if (moved >= maxVertices) {
+					// Reached max move limit
 					notMoved++;
 					continue;
 				}

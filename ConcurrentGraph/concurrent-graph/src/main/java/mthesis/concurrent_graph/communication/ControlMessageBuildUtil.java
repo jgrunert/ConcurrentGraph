@@ -1,6 +1,7 @@
 package mthesis.concurrent_graph.communication;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.protobuf.ByteString;
 
@@ -108,10 +109,14 @@ public class ControlMessageBuildUtil {
 
 	public static MessageEnvelope Build_Master_StartBarrier_VertexMove(int srcMachineId,
 			List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> sendVerts,
-			List<Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> recvVerts) {
+			List<Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> recvVerts,
+			Map<Integer, Integer> queryFinishedSupersteps) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Master_Start_Barrier)
-				.setStartBarrier(StartBarrierMessage.newBuilder().addAllSendQueryVertices(sendVerts).addAllReceiveQueryVertices(recvVerts))
+				.setStartBarrier(StartBarrierMessage.newBuilder()
+						.addAllSendQueryVertices(sendVerts)
+						.addAllReceiveQueryVertices(recvVerts)
+						.putAllQuerySupersteps(queryFinishedSupersteps))
 				.setSrcMachine(srcMachineId).build()).build();
 	}
 

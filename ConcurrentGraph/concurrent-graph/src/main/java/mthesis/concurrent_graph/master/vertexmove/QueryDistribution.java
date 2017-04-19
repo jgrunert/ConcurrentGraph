@@ -218,6 +218,7 @@ public class QueryDistribution {
 		for (VertexMoveOperation moveOperation : moveOperationsSoFar.keySet()) {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
+							.setMaxMoveCount(Integer.MAX_VALUE)
 					.setQueryId(moveOperation.QueryId)
 					.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
 					.build());

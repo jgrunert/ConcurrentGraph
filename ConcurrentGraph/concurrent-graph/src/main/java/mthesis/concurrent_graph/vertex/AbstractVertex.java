@@ -24,7 +24,6 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 
 public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery> {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(AbstractVertex.class);
 
 	public final int ID;

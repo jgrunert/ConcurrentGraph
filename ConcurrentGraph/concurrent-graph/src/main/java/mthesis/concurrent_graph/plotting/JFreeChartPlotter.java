@@ -319,6 +319,7 @@ public class JFreeChartPlotter {
 		try {
 			// By default only worker stats
 			Configuration.Properties.put("PlotWorkerStats", "true");
+			//			Configuration.Properties.put("PlotQueryStats", "true");
 			plotStats(args[0]);
 			System.out.println("Plot finished");
 		}

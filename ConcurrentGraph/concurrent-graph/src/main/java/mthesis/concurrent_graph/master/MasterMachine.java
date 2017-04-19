@@ -524,9 +524,11 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			// Send barrier move messages
 			for (int workerId : workerIds) {
 				messaging.sendControlMessageUnicast(workerId, ControlMessageBuildUtil.Build_Master_StartBarrier_VertexMove(ownId,
-						moveDecission.WorkerVertSendMsgs.get(workerId), moveDecission.WorkerVertRecvMsgs.get(workerId)), true);
+						moveDecission.WorkerVertSendMsgs.get(workerId), moveDecission.WorkerVertRecvMsgs.get(workerId),
+						queryFinishedSupersteps), true);
 			}
 			logger.info("Started barrier with vertex move");
+			logger.debug("Supersteps at vertex move: " + queryFinishedSupersteps);
 
 			logger.debug("Delay query superstep " + queryToStart.BaseQuery.QueryId + ":" + superstepNo);
 			barrierDelayedQueryNextSteps.add(queryToStart);
@@ -773,7 +775,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + "query" + querySteps.getKey() + "_times_ms.csv"))) {
 				writer.println(
-						"StepTime;WorkerTime;ComputeTime;StepFinishTime;IntersectCalcTime;MoveSendVerticsTime;MoveRecvVerticsTime;");
+						"StepTime;WorkerTime;ComputeTime;StepFinishTime;MoveSendVerticsTime;MoveRecvVerticsTime;");
 
 				for (int i = 0; i < querySteps.getValue().size(); i++) {
 					Q step = querySteps.getValue().get(i);
