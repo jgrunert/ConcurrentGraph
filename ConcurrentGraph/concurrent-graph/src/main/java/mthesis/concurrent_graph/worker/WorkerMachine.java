@@ -1049,7 +1049,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 				// Send vertices now if bucket full
 				if (verticesToMove.size() >= Configuration.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
-					// TODO Send all queries this vertex is active in
 					handleVerticesMoving(verticesToMove, sendToWorker);
 					messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
 					verticesSent += verticesToMove.size();
