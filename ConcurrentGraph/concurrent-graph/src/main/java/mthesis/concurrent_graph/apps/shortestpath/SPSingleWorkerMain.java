@@ -1,6 +1,7 @@
 package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,19 @@ public class SPSingleWorkerMain {
 		final int workerId = Integer.parseInt(args[2]);
 		logger.info("Starting SSSP SingleWorker " + Configuration.VERSION + " " + workerId);
 
-		Configuration.loadConfig(args[0], new HashMap<>());
+		// Manual override configs
+		Map<String, String> overrideConfigs = new HashMap<>();
+		for (int i = 3; i < args.length; i++) {
+			String[] split = args[i].split("=");
+			if (split.length >= 2) {
+				String cfgName = split[0].trim();
+				String cfgValue = split[1].trim();
+				overrideConfigs.put(cfgName, cfgValue);
+				logger.info("Overide config: " + cfgName + "=" + cfgValue);
+			}
+		}
+		Configuration.loadConfig(args[0], overrideConfigs);
+
 		final MachineClusterConfiguration config = new MachineClusterConfiguration(args[1]);
 
 

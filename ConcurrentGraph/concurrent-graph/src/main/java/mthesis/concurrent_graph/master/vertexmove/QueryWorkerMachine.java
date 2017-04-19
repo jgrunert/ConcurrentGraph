@@ -137,4 +137,9 @@ public class QueryWorkerMachine {
 			}
 		}
 	}
+
+	@Override
+	public String toString() {
+		return QueryWorkerMachine.class.getSimpleName() + "(" + activeVertices + " activeVertices)";
+	}
 }

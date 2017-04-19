@@ -34,6 +34,9 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 		System.out.println(bestDistribution.getCosts());
 
 		System.out.println("/////////////////////////////////");
+		System.out.println(queryIds);
+		System.out.println(queryMachines);
+		System.out.println("/////////////////////////////////");
 		//		bestDistribution.printMoveDistribution();
 
 		//		QueryDistribution test = bestDistribution.clone();
