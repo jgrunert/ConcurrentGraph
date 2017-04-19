@@ -304,7 +304,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
 					// --- Handle all messages before barrier ---
-					handleReceivedMessages(); // TODO Necessary?
+					handleReceivedMessages();
 
 					// --- Wait for other workers barriers ---
 					startTime = System.nanoTime();
@@ -421,7 +421,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 
 		activeQuery.onFinishedSuperstepCompute(superstepNo);
-		logger.trace("Worker finished compute " + activeQuery.Query.QueryId + ":" + superstepNo);
+		logger.trace("Worker finished compute {}:{}", new Object[] { activeQuery.Query.QueryId, superstepNo });
 
 		// Notify master if compute and barrier sync finished
 		if (activeQuery.isNextSuperstepLocallyReady()) {
@@ -433,7 +433,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		int superstepNo = activeQuery.getMasterStartedSuperstep();
 
 		activeQuery.onFinishedSuperstepCompute(superstepNo);
-		logger.trace("Worker skipped compute " + activeQuery.Query.QueryId + ":" + superstepNo);
+		logger.trace("Worker skipped compute {}:{}", new Object[] { activeQuery.Query.QueryId, superstepNo });
 
 		// Notify master if compute and barrier sync finished
 		if (activeQuery.isNextSuperstepLocallyReady()) {
@@ -787,7 +787,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		// Finish superstep, start next
 		query.onMasterNextSuperstep(message.getSuperstepNo());
 		logger.trace(
-				"Worker finished superstep, ready for next " + query.Query.QueryId + ":"
+				"Worker starting next superstep " + query.Query.QueryId + ":"
 						+ query.getMasterStartedSuperstep()
 						+ ". Active: " + query.QueryLocal.getActiveVertices());
 

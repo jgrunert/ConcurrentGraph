@@ -548,12 +548,14 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		else queryActiveWorkers = new HashSet<>(workerIds);
 
 		// TODO Query stat and master/worker stat: Active workers
+		logger.trace("Next superstep " + queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo + " with "
+				+ queryActiveWorkers.size() + "/" + workerIds.size() + " workers");
 
 		// Start query superstep
 		for (Integer workerId : workerIds) {
 			List<Integer> otherActiveWorkers = new ArrayList<>(queryActiveWorkers.size());
 			for (Integer activeWorkerId : queryActiveWorkers) {
-				if (workerId != activeWorkerId) otherActiveWorkers.add(activeWorkerId);
+				if (!workerId.equals(activeWorkerId)) otherActiveWorkers.add(activeWorkerId);
 			}
 
 			boolean skipWorker = skipInactiveWorkers && !queryActiveWorkers.contains(workerId);
