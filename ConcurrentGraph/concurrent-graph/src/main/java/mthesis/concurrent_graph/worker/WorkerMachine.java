@@ -724,23 +724,23 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 
 	public void handleMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
-		long startTime = System.nanoTime();
+		//		long startTime = System.nanoTime();
 
 		if (message.lastSegment) {
 			// Remove from globalBarrierRecvVerts if received all vertices
 			globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine));
 		}
 
-		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
-		if (activeQuery == null)
-			return;
+		//WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
+		//		if (activeQuery == null)
+		//			return;
 
 		for (Pair<AbstractVertex<V, E, M, Q>, List<Integer>> movedVertInfo : message.vertices) {
 			AbstractVertex<V, E, M, Q> movedVert = movedVertInfo.first;
 			for (Integer queryActiveInId : movedVertInfo.second) {
 				WorkerQuery<V, E, M, Q> queryActiveIn = activeQueries.get(queryActiveInId);
 				if (queryActiveIn != null) {
-					activeQuery.ActiveVerticesThis.put(movedVert.ID, movedVert);
+					queryActiveIn.ActiveVerticesThis.put(movedVert.ID, movedVert);
 				}
 				else {
 					logger.error("Received worker for unknown query: " + queryActiveIn);
@@ -752,9 +752,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		//		if (message.lastSegment) {
 		//		}
 
-		long moveTime = (System.nanoTime() - startTime);
-		activeQuery.QueryLocal.Stats.MoveRecvVertices += message.vertices.size();
-		activeQuery.QueryLocal.Stats.MoveRecvVerticesTime += moveTime;
+		// TODO Worker stats
+		//		long moveTime = (System.nanoTime() - startTime);
+		//		activeQuery.QueryLocal.Stats.MoveRecvVertices += message.vertices.size();
+		//		activeQuery.QueryLocal.Stats.MoveRecvVerticesTime += moveTime;
 	}
 
 
