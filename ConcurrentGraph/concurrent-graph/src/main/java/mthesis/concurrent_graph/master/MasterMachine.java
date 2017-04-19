@@ -52,6 +52,7 @@ import mthesis.concurrent_graph.writable.NullWritable;
  */
 public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWritable, NullWritable, NullWritable, Q> {
 
+	private long firstQueryStartTimeMs = -1;
 	private long masterStartTimeMs;
 	private long masterStartTimeNano;
 	private final List<Integer> workerIds;
@@ -191,7 +192,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			queuedQueries++;
 		}
 		messageQueue.add(new StartQueryMessage<BaseQuery>(query));
-
 	}
 
 	private int getActiveQueryCount() {
@@ -241,6 +241,11 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		// TODO No more super.onIncomingControlMessage(message);
 
 		if (message.getTypeCode() == StartQueryMessage.ChannelMessageTypeCode) {
+			if (firstQueryStartTimeMs == -1) {
+				logger.info("First query started after " + (System.currentTimeMillis() - masterStartTimeMs));
+				firstQueryStartTimeMs = System.currentTimeMillis();
+			}
+
 			handleStartQuery(((StartQueryMessage<Q>) message).Query);
 			return;
 		}
@@ -597,6 +602,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	@Override
 	public void stop() {
 		logger.info("Stopping master after " + (System.currentTimeMillis() - masterStartTimeMs) + "ms");
+		logger.info("--- Time since first query " + (System.currentTimeMillis() - firstQueryStartTimeMs) + "ms ---");
 
 		signalWorkersShutdown();
 		vertexMoveDeciderService.stop();
