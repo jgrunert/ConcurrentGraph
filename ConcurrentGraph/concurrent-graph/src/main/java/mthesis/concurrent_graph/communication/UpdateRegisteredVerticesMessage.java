@@ -7,22 +7,19 @@ import java.util.Collection;
 public class UpdateRegisteredVerticesMessage implements ChannelMessage {
 
 	public final int srcMachine;
-	public final int queryId;
 	public final int movedTo;
 	public final Collection<Integer> vertices;
 
-	public UpdateRegisteredVerticesMessage(int srcMachine, int queryId, int movedTo, Collection<Integer> vertices) {
+	public UpdateRegisteredVerticesMessage(int srcMachine, int movedTo, Collection<Integer> vertices) {
 		super();
 		this.srcMachine = srcMachine;
 		this.vertices = vertices;
 		this.movedTo = movedTo;
-		this.queryId = queryId;
 	}
 
 	public UpdateRegisteredVerticesMessage(ByteBuffer buffer) {
 		super();
 		this.srcMachine = buffer.getInt();
-		this.queryId = buffer.getInt();
 		movedTo = buffer.getInt();
 		int numVertices = buffer.getInt();
 		vertices = new ArrayList<>(numVertices);
@@ -38,7 +35,6 @@ public class UpdateRegisteredVerticesMessage implements ChannelMessage {
 	@Override
 	public void writeMessageToBuffer(ByteBuffer buffer) {
 		buffer.putInt(srcMachine);
-		buffer.putInt(queryId);
 		buffer.putInt(movedTo);
 		buffer.putInt(vertices.size());
 		for (final Integer vert : vertices) {
