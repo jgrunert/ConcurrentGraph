@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
@@ -23,6 +24,8 @@ import mthesis.concurrent_graph.writable.DoubleWritable;
 public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> {
 
 	private static final Logger logger = LoggerFactory.getLogger(SPVertex.class);
+
+	private static final double SPDistStepFactor = Configuration.getPropertyDoubleDefault("SPDistStepFactor", 10.0);
 
 	//	private final Map<Integer, Integer> visits = new HashMap<>(4);
 	//	private static int firstVisits = 0;
@@ -166,9 +169,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 			return;
 		}
 
-		// TODO Dynamic limit step?
-		// TODO 6 would be faster
-		if (minDist > superstepNo * 10.0) {
+		if (minDist > superstepNo * SPDistStepFactor) {
 			// Come back later
 			if (minDist < mutableValue.Dist) {
 				mutableValue.Dist = minDist;
