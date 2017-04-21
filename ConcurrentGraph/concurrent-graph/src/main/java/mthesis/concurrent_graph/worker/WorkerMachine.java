@@ -13,8 +13,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
@@ -94,7 +95,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private final VertexMessageBucket<M> vertexMessageBroadcastBucket = new VertexMessageBucket<>();
 	private final Map<Integer, VertexMessageBucket<M>> vertexMessageMachineBuckets = new HashMap<>();
 
-	private final ConcurrentLinkedQueue<ChannelMessage> receivedMessages = new ConcurrentLinkedQueue<>();
+	private final BlockingQueue<ChannelMessage> receivedMessages = new LinkedBlockingQueue<>();
 
 	// Global barrier coordination/control
 	private boolean globalBarrierRequested = false;
@@ -204,8 +205,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		boolean interrupted = false;
 		try {
 			while (!started) {
-				Thread.sleep(1);
-				handleReceivedMessages();
+				handleReceivedMessagesWait();
 			}
 
 			// Initialize, load assigned partitions
@@ -258,7 +258,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				// ++++++++++ Wait for active queries ++++++++++
 				long startTime = System.nanoTime();
 				while (activeQueries.isEmpty()) {
-					handleReceivedMessages();
+					handleReceivedMessagesWait();
 				}
 				workerStats.IdleTime += (System.nanoTime() - startTime);
 
@@ -267,7 +267,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				startTime = System.nanoTime();
 				activeQueriesThisStep.clear();
 				while (!stopRequested && activeQueriesThisStep.isEmpty() && !globalBarrierRequested) {
-					handleReceivedMessages();
+					handleReceivedMessagesWait();
 
 					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 						if (activeQuery.getMasterStartedSuperstep() == activeQuery.getLastFinishedComputeSuperstep()
@@ -276,8 +276,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					}
 					if (!activeQueriesThisStep.isEmpty() || globalBarrierRequested)
 						break;
-					if (Configuration.WORKER_SLEEP_QUERY_WAIT > 0)
-						Thread.sleep(Configuration.WORKER_SLEEP_QUERY_WAIT);
 					if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
 						logger.warn("Waiting long time for active queries");
 						Thread.sleep(2000);
@@ -319,13 +317,14 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
+
 					// --- Handle all messages before barrier ---
-					handleReceivedMessages();
+					//handleReceivedMessages();  // TODO Can be removed?
 
 					// --- Wait for other workers barriers ---
 					startTime = System.nanoTime();
 					while (!globalBarrierStartWaitSet.isEmpty()) {
-						handleReceivedMessages();
+						handleReceivedMessagesWait();
 					}
 					long barrierStartWaitTime = System.nanoTime() - startTime;
 
@@ -340,7 +339,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					queryActiveVerticesSinceBarrier.clear();
 					// Receive vertices
 					while (!globalBarrierRecvVerts.isEmpty()) {
-						handleReceivedMessages();
+						handleReceivedMessagesWait();
 					}
 					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
 
@@ -353,7 +352,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Finished(ownId), true);
 					startTime = System.nanoTime();
 					while (!globalBarrierFinishWaitSet.isEmpty()) {
-						handleReceivedMessages();
+						handleReceivedMessagesWait();
 					}
 					long barrierFinishWaitTime = System.nanoTime() - startTime;
 
@@ -465,40 +464,63 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		receivedMessages.add(message);
 	}
 
+
 	/**
-	 * Handles all messages in received queues.
+	 * Handles all messages in receive queue.
+	 * Waits until at least one message has been handled.
 	 */
-	@SuppressWarnings("unchecked")
-	private void handleReceivedMessages() {
+	private void handleReceivedMessagesWait() throws InterruptedException {
+		handleWaitNextReceivedMessage();
+		handleReceivedMessagesNoWait();
+	}
+
+	/**
+	 * Handles all messages in receive queue.
+	 * Returns when no more messages are there
+	 */
+	private void handleReceivedMessagesNoWait() {
 		long startTime = System.nanoTime();
 		ChannelMessage message;
 		while ((message = receivedMessages.poll()) != null) {
-			switch (message.getTypeCode()) {
-				case 0:
-					handleVertexMessage((VertexMessage<V, E, M, Q>) message);
-					break;
-				case 1:
-					ProtoEnvelopeMessage msgEnvelope = ((ProtoEnvelopeMessage) message);
-					if (msgEnvelope.message.hasControlMessage()) {
-						handleControlMessage(msgEnvelope);
-					}
-					break;
-				case 2:
-					handleGetToKnowMessage((GetToKnowMessage) message);
-					break;
-				case 3:
-					handleMoveVerticesMessage((MoveVerticesMessage<V, E, M, Q>) message);
-					break;
-				case 4:
-					handleUpdateRegisteredVerticesMessage((UpdateRegisteredVerticesMessage) message);
-					break;
-
-				default:
-					logger.warn("Unknown incoming message id: " + message.getTypeCode());
-					break;
-			}
+			handleReceivedMessage(message);
 		}
 		workerStats.HandleMessagesTime += (System.nanoTime() - startTime);
+	}
+
+	/**
+	 * Waits for the next received message and handles it.
+	 */
+	private void handleWaitNextReceivedMessage() throws InterruptedException {
+		ChannelMessage message = receivedMessages.take();
+		handleReceivedMessage(message);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void handleReceivedMessage(ChannelMessage message) {
+		switch (message.getTypeCode()) {
+			case 0:
+				handleVertexMessage((VertexMessage<V, E, M, Q>) message);
+				break;
+			case 1:
+				ProtoEnvelopeMessage msgEnvelope = ((ProtoEnvelopeMessage) message);
+				if (msgEnvelope.message.hasControlMessage()) {
+					handleControlMessage(msgEnvelope);
+				}
+				break;
+			case 2:
+				handleGetToKnowMessage((GetToKnowMessage) message);
+				break;
+			case 3:
+				handleMoveVerticesMessage((MoveVerticesMessage<V, E, M, Q>) message);
+				break;
+			case 4:
+				handleUpdateRegisteredVerticesMessage((UpdateRegisteredVerticesMessage) message);
+				break;
+
+			default:
+				logger.warn("Unknown incoming message id: " + message.getTypeCode());
+				break;
+		}
 	}
 
 	/**
