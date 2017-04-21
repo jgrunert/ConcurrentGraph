@@ -523,6 +523,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			// Map of query finished supersteps for this barrier
 			Map<Integer, Integer> queryFinishedSupersteps = new HashMap<>(activeQueries.size());
 			for (MasterQuery<Q> q : activeQueries.values()) {
+				// Activate all workers for following superstep - vertices might be moved
+				q.ActiveWorkers.addAll(workerIds);
 				queryFinishedSupersteps.put(q.BaseQuery.QueryId, q.StartedSuperstepNo);
 			}
 
