@@ -42,6 +42,7 @@ import mthesis.concurrent_graph.master.vertexmove.VertexMoveDeciderService;
 import mthesis.concurrent_graph.master.vertexmove.VertexMoveDecision;
 import mthesis.concurrent_graph.plotting.JFreeChartPlotter;
 import mthesis.concurrent_graph.util.FileUtil;
+import mthesis.concurrent_graph.util.MiscUtil;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.worker.WorkerStats;
 import mthesis.concurrent_graph.writable.NullWritable;
@@ -95,6 +96,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final Set<Integer> barrierDelayedQueryStarts = new HashSet<>();
 
 	private final VertexMoveDeciderService<Q> vertexMoveDeciderService;
+
+	private final Map<Integer, Long> latestWorkerTotalVertices = new HashMap<>();
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
@@ -325,8 +328,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
 				for (WorkerStatSample sample : samples) {
 					WorkerStats stats = new WorkerStats(sample.getStatsBytes());
-					workerStats.get(controlMsg.getSrcMachine())
-							.add(new Pair<Long, WorkerStats>(sample.getTime(), stats));
+					workerStats.get(controlMsg.getSrcMachine()).add(new Pair<Long, WorkerStats>(sample.getTime(), stats));
+					latestWorkerTotalVertices.put(controlMsg.getSrcMachine(), stats.WorkerVertices);
 				}
 			}
 
@@ -459,7 +462,9 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			for (QueryVertexChunksMapMessage chunk : vertexChunks.getChunksList()) {
 				queryChunks.put(new IntOpenHashSet(chunk.getQueriesList()), chunk.getCount());
 			}
-			vertexMoveDeciderService.updateQueryIntersects(controlMsg.getSrcMachine(), queryChunks);
+			int workerId = controlMsg.getSrcMachine();
+			vertexMoveDeciderService.updateQueryIntersects(workerId, queryChunks,
+					MiscUtil.defaultLong(latestWorkerTotalVertices.get(workerId)));
 		}
 		else {
 			logger.error("Unexpected control message type in message " + message);
@@ -547,7 +552,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 						queryFinishedSupersteps), true);
 			}
 			logger.info("Started barrier with vertex move");
-			logger.debug("Supersteps at vertex move: " + queryFinishedSupersteps);
+			logger.info("Supersteps at vertex move: " + queryFinishedSupersteps); // TODO logger.debug
 
 			logger.debug("Delay query superstep " + queryToStart.BaseQuery.QueryId + ":" + superstepNo);
 			barrierDelayedQueryNextSteps.add(queryToStart);
@@ -590,7 +595,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private void globalBarrierFinished() {
 		logger.info("Global barrier finished");
-		logger.debug("Start delayed supersteps: " + barrierDelayedQueryNextSteps);
+		logger.info("Start delayed supersteps: " + barrierDelayedQueryNextSteps); // TODO logger.debug
 		globalBarrierActive = false;
 		for (MasterQuery<Q> delayedQueryNextStep : barrierDelayedQueryNextSteps) {
 			logger.debug(
@@ -663,10 +668,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -716,10 +721,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);

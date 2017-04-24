@@ -19,7 +19,8 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 	private static final Logger logger = LoggerFactory.getLogger(GreedyNewVertexMoveDecider.class);
 
 	// TODO Configuration
-	private static final double WorkerImbalanceThreshold = 0.3;
+	private static final double VerticesActiveImbalanceThreshold = Configuration.getPropertyDoubleDefault("VertexMoveActiveBalance", 0.1);
+	private static final double VerticesTotalImbalanceThreshold = Configuration.getPropertyDoubleDefault("VertexMoveTotalBalance", 0.1);
 	private static final long MinMoveWorkerVertices = 50;
 	private static final long MinMoveTotalVertices = 500;
 	private static final int MaxImproveIterations = 30;
@@ -28,7 +29,8 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 
 
 	@Override
-	public VertexMoveDecision decide(Set<Integer> queryIds, Map<Integer, Map<IntSet, Integer>> workerQueryChunks) {
+	public VertexMoveDecision decide(Set<Integer> queryIds, Map<Integer, Map<IntSet, Integer>> workerQueryChunks,
+			Map<Integer, Long> workerTotalVertices) {
 
 		List<Integer> workerIds = new ArrayList<>(workerQueryChunks.keySet());
 		Map<Integer, QueryWorkerMachine> queryMachines = new HashMap<>();
@@ -37,7 +39,7 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 			for (Entry<IntSet, Integer> chunk : worker.getValue().entrySet()) {
 				workerChunks.add(new QueryVertexChunk(chunk.getKey(), chunk.getValue(), worker.getKey()));
 			}
-			QueryWorkerMachine workerMachine = new QueryWorkerMachine(workerChunks);
+			QueryWorkerMachine workerMachine = new QueryWorkerMachine(workerChunks, workerTotalVertices.get(worker.getKey()));
 			queryMachines.put(worker.getKey(), workerMachine);
 		}
 
@@ -81,21 +83,15 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 					for (Integer toWorker : workerIds) {
 						if (fromWorker == toWorker) continue;
 
+						// TODO Optimize, neglect cases.
+
 						QueryDistribution newDistribution = bestDistribution.clone();
 						int movedVerts = newDistribution.moveVertices(queryId, fromWorker, toWorker, true);
 
-						double oldFmImbalance = bestDistribution.getWorkerImbalanceFactor(fromWorker);
-						double oldToImbalance = bestDistribution.getWorkerImbalanceFactor(toWorker);
-						double newFmImbalance = newDistribution.getWorkerImbalanceFactor(fromWorker);
-						double newToImbalance = newDistribution.getWorkerImbalanceFactor(toWorker);
-						boolean newFmBalanceBetter = newFmImbalance < oldFmImbalance;
-						boolean newToBalanceBetter = newToImbalance < oldToImbalance;
-						boolean newFmBalanceOk = newFmImbalance < WorkerImbalanceThreshold;
-						boolean newToBalanceOk = newToImbalance < WorkerImbalanceThreshold;
-
 						if (movedVerts > MinMoveWorkerVertices
 								&& newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts()
-								&& (newFmBalanceBetter || newFmBalanceOk) && (newToBalanceBetter || newToBalanceOk)) {
+								&& checkWorkerActiveVerticesOk(bestDistribution, newDistribution, fromWorker, toWorker)
+								&& checkWorkerTotalVerticesOk(bestDistribution, newDistribution, fromWorker, toWorker)) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							verticesMovedIter = movedVerts;
@@ -126,5 +122,31 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 		}
 		logger.info("Decided move, vertices: " + totalVerticesMoved);
 		return bestDistribution.toMoveDecision(workerIds);
+	}
+
+	private static boolean checkWorkerActiveVerticesOk(QueryDistribution oldDistribution, QueryDistribution newDistribution, int fromWorker,
+			int toWorker) {
+		double oldFmImbalance = oldDistribution.getWorkerActiveVerticesImbalanceFactor(fromWorker);
+		double oldToImbalance = oldDistribution.getWorkerActiveVerticesImbalanceFactor(toWorker);
+		double newFmImbalance = newDistribution.getWorkerActiveVerticesImbalanceFactor(fromWorker);
+		double newToImbalance = newDistribution.getWorkerActiveVerticesImbalanceFactor(toWorker);
+		boolean newFmBalanceBetter = newFmImbalance < oldFmImbalance;
+		boolean newToBalanceBetter = newToImbalance < oldToImbalance;
+		boolean newFmBalanceOk = newFmImbalance < VerticesActiveImbalanceThreshold;
+		boolean newToBalanceOk = newToImbalance < VerticesActiveImbalanceThreshold;
+		return (newFmBalanceBetter || newFmBalanceOk) && (newToBalanceBetter || newToBalanceOk);
+	}
+
+	private static boolean checkWorkerTotalVerticesOk(QueryDistribution oldDistribution, QueryDistribution newDistribution, int fromWorker,
+			int toWorker) {
+		double oldFmImbalance = oldDistribution.getWorkerTotalVerticesImbalanceFactor(fromWorker);
+		double oldToImbalance = oldDistribution.getWorkerTotalVerticesImbalanceFactor(toWorker);
+		double newFmImbalance = newDistribution.getWorkerTotalVerticesImbalanceFactor(fromWorker);
+		double newToImbalance = newDistribution.getWorkerTotalVerticesImbalanceFactor(toWorker);
+		boolean newFmBalanceBetter = newFmImbalance < oldFmImbalance;
+		boolean newToBalanceBetter = newToImbalance < oldToImbalance;
+		boolean newFmBalanceOk = newFmImbalance < VerticesTotalImbalanceThreshold;
+		boolean newToBalanceOk = newToImbalance < VerticesTotalImbalanceThreshold;
+		return (newFmBalanceBetter || newFmBalanceOk) && (newToBalanceBetter || newToBalanceOk);
 	}
 }

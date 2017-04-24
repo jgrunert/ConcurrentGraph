@@ -145,11 +145,21 @@ public class QueryDistribution {
 
 
 	/**
-	 * Fraction of vertices away from average vertices.
+	 * Fraction of active vertices away from average vertices.
 	 */
-	public double getWorkerImbalanceFactor(int workerId) {
+	public double getWorkerActiveVerticesImbalanceFactor(int workerId) {
 		long workerVerts = queryMachines.get(workerId).activeVertices;
 		long avgVerts = getAverageWorkerActiveVertices();
+		if (avgVerts == 0) return 0;
+		return (double) Math.abs(workerVerts - avgVerts) / avgVerts;
+	}
+
+	/**
+	 * Fraction of total vertices away from average vertices.
+	 */
+	public double getWorkerTotalVerticesImbalanceFactor(int workerId) {
+		long workerVerts = queryMachines.get(workerId).totalVertices;
+		long avgVerts = getAverageWorkerTotalVertices();
 		if (avgVerts == 0) return 0;
 		return (double) Math.abs(workerVerts - avgVerts) / avgVerts;
 	}
@@ -158,6 +168,14 @@ public class QueryDistribution {
 		long verts = 0;
 		for (QueryWorkerMachine machine : queryMachines.values()) {
 			verts += machine.activeVertices;
+		}
+		return verts / queryMachines.size();
+	}
+
+	private long getAverageWorkerTotalVertices() {
+		long verts = 0;
+		for (QueryWorkerMachine machine : queryMachines.values()) {
+			verts += machine.totalVertices;
 		}
 		return verts / queryMachines.size();
 	}
@@ -235,14 +253,14 @@ public class QueryDistribution {
 		for (VertexMoveOperation moveOperation : allMoves) {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
-							.setMaxMoveCount(Integer.MAX_VALUE)
-							.setQueryId(moveOperation.QueryId)
-							.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
-							.build());
+					.setMaxMoveCount(Integer.MAX_VALUE)
+					.setQueryId(moveOperation.QueryId)
+					.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
+					.build());
 			workerVertRecvMsgs.get(moveOperation.ToMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
-							.setQueryId(moveOperation.QueryId)
-							.setReceiveFromMachine(moveOperation.FromMachine).build());
+					.setQueryId(moveOperation.QueryId)
+					.setReceiveFromMachine(moveOperation.FromMachine).build());
 		}
 
 		return new VertexMoveDecision(workerVertSendMsgs, workerVertRecvMsgs);

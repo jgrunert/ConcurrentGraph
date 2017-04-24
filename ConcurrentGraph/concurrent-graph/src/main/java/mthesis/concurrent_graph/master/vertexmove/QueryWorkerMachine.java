@@ -17,16 +17,18 @@ public class QueryWorkerMachine {
 
 	// Total number of vertices active in a query (if a vertex is active in n queries it counts as n vertices)
 	public int activeVertices;
+	public long totalVertices;
 	// Active queries on this machine
 	public List<QueryVertexChunk> queryChunks;
 	// Number of vertices of queries
 	public Map<Integer, Integer> queryVertices;
 
 
-	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks) {
+	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, long totalVertices) {
 		super();
 		this.queryChunks = queryChunks;
 		this.queryVertices = new HashMap<>();
+		this.totalVertices = totalVertices;
 		activeVertices = 0;
 		for (QueryVertexChunk qChunk : queryChunks) {
 			activeVertices += qChunk.numVertices;
@@ -36,15 +38,17 @@ public class QueryWorkerMachine {
 		}
 	}
 
-	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, int activeVertices, Map<Integer, Integer> queryVertices) {
+	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, int activeVertices, long totalVertices,
+			Map<Integer, Integer> queryVertices) {
 		super();
 		this.queryChunks = queryChunks;
 		this.queryVertices = queryVertices;
 		this.activeVertices = activeVertices;
+		this.totalVertices = totalVertices;
 	}
 
 	public QueryWorkerMachine createClone() {
-		return new QueryWorkerMachine(new ArrayList<>(queryChunks), activeVertices, new HashMap<>(queryVertices));
+		return new QueryWorkerMachine(new ArrayList<>(queryChunks), activeVertices, totalVertices, new HashMap<>(queryVertices));
 	}
 
 
@@ -62,6 +66,7 @@ public class QueryWorkerMachine {
 				removedQueryChunks.add(chunk);
 				queryChunks.remove(i);
 				activeVertices -= chunk.numVertices;
+				totalVertices -= chunk.numVertices;
 				for (int query : chunk.queries) {
 					queryVertices.put(query, MiscUtil.defaultInt(queryVertices.get(query)) - chunk.numVertices);
 				}
@@ -80,6 +85,7 @@ public class QueryWorkerMachine {
 		for (QueryVertexChunk chunk : chunksToAdd) {
 			queryChunks.add(chunk);
 			activeVertices += chunk.numVertices;
+			totalVertices += chunk.numVertices;
 			for (int query : chunk.queries) {
 				queryVertices.put(query, MiscUtil.defaultInt(queryVertices.get(query)) + chunk.numVertices);
 			}

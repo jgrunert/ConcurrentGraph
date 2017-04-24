@@ -183,8 +183,15 @@ public class ControlMessageBuildUtil {
 				.build();
 	}
 
-	public static MessageEnvelope Build_Worker_Worker_Barrier_Finished(int srcMachineId) {
+	public static MessageEnvelope Build_Worker_Worker_Barrier_Sending_Finished(int srcMachineId) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
-				.setType(ControlMessageType.Worker_Barrier_Finished).setSrcMachine(srcMachineId)).build();
+				.setType(ControlMessageType.Worker_Barrier_Sending_Finished).setSrcMachine(srcMachineId)).build();
+	}
+
+	public static MessageEnvelope Build_Worker_Worker_Barrier_Finished(int srcMachineId) {
+		return MessageEnvelope.newBuilder()
+				.setControlMessage(
+						ControlMessage.newBuilder()
+						.setType(ControlMessageType.Worker_Barrier_Finished).setSrcMachine(srcMachineId)).build();
 	}
 }

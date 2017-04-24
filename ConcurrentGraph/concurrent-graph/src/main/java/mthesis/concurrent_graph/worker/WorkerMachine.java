@@ -66,7 +66,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -101,11 +101,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private Map<Integer, Integer> globalBarrierQuerySupersteps;
 	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
 	private final Set<Integer> globalBarrierStartPrematureSet = new HashSet<>();
+	private final Set<Integer> globalBarrierSendingFinishWaitSet = new HashSet<>();
+	private final Set<Integer> globalBarrierSendingFinishPrematureSet = new HashSet<>();
 	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>();
 	private final Set<Integer> globalBarrierFinishPrematureSet = new HashSet<>();
 	// Global barrier commands to perform while barrier
 	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
 	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
+	private List<MoveVerticesMessage<V, E, M, Q>> queuedMoveMessages = new ArrayList<>();
 
 	// Worker stats
 	private long masterStartTime;
@@ -301,7 +304,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					System.out.println("#BR " + ownId + " " + globalBarrierStartWaitSet);
 					// Checks
+					String querySSs = "";
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
+						querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
 						if (globalBarrierQuerySupersteps.containsKey(query.QueryId)
 								&& !globalBarrierQuerySupersteps.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
 							logger.warn("Query " + query.QueryId + " is not ready for global barrier, wrong superstep: "
@@ -317,12 +322,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						//									+ query.ActiveVerticesNext.size() + " superstep " + query.getLastFinishedComputeSuperstep());
 						//						}
 					}
+					logger.info("QSS " + ownId + " " + querySSs); // TODO
 
 					// Start barrier, notify other workers
 					logger.debug("Barrier started, waiting for other workers to start");
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
+					//logger.info("BarrierStarting " + ownId); // TODO
 
 					// --- Handle all messages before barrier ---
 					//handleReceivedMessages();  // TODO Can be removed?
@@ -333,19 +340,34 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						handleReceivedMessagesWait();
 					}
 					long barrierStartWaitTime = System.nanoTime() - startTime;
+					logger.info("BarrierStarted " + ownId); // TODO
 
-					// --- Barrier tasks ---
+
+					// --- Send and receive vertices ---
 					startTime = System.nanoTime();
 					// Send vertices
 					for (SendQueryVerticesMessage sendVert : globalBarrierSendVerts) {
 						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
 								sendVert.getMaxMoveCount(), true); // TODO Configure send intersecting
 					}
-					// Receive vertices
+
+					// Receive and queue move messages
 					while (!globalBarrierRecvVerts.isEmpty()) {
 						handleReceivedMessagesWait();
 					}
 					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
+
+
+					// --- Vertex sending finished barrier ---
+					messaging.sendControlMessageMulticast(otherWorkerIds,
+							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Sending_Finished(ownId), true);
+					while (!globalBarrierSendingFinishWaitSet.isEmpty()) {
+						handleReceivedMessagesWait();
+					}
+
+
+					// --- Process queued move messages ---
+					processQueuedMoveVerticesMessages();
 
 
 					// --- Finish barrier, notify other workers and master ---
@@ -525,7 +547,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				handleGetToKnowMessage((GetToKnowMessage) message);
 				break;
 			case 3:
-				handleMoveVerticesMessage((MoveVerticesMessage<V, E, M, Q>) message);
+				handleIncomingMoveVerticesMessage((MoveVerticesMessage<V, E, M, Q>) message);
 				break;
 			case 4:
 				handleUpdateRegisteredVerticesMessage((UpdateRegisteredVerticesMessage) message);
@@ -562,18 +584,20 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
 						globalBarrierStartWaitSet.removeAll(globalBarrierStartPrematureSet);
+						globalBarrierSendingFinishWaitSet.addAll(otherWorkerIds);
+						globalBarrierSendingFinishWaitSet.removeAll(globalBarrierSendingFinishPrematureSet);
 						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
 						globalBarrierFinishWaitSet.removeAll(globalBarrierFinishPrematureSet);
 						globalBarrierSendVerts = startBarrierMsg.getSendQueryVerticesList();
@@ -581,12 +605,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryVerticesMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
-									.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
+							.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
 						}
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -607,29 +631,35 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-						return true;
+					return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
+					case Worker_Barrier_Sending_Finished: {
+						logger.debug(ownId + " Worker_Barrier_Finished");
+						int srcWorker = message.getSrcMachine();
+						if (globalBarrierSendingFinishWaitSet.contains(srcWorker)) globalBarrierSendingFinishWaitSet.remove(srcWorker);
+						else globalBarrierSendingFinishPrematureSet.add(srcWorker);
+					}
+					return true;
 					case Worker_Barrier_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
-						if (globalBarrierFinishWaitSet.contains(srcWorker))
-							globalBarrierFinishWaitSet.remove(srcWorker);
+						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -664,8 +694,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		else {
 			// Completely wrong superstep
 			logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-					+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getBarrierSyncedSuperstep() + " from "
-					+ message.getSrcMachine());
+			+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getBarrierSyncedSuperstep() + " from "
+			+ message.getSrcMachine());
 		}
 	}
 
@@ -789,8 +819,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-					+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
-					+ query.getSuperstepNosLog());
+			+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
+			+ query.getSuperstepNosLog());
 			return;
 		}
 
@@ -1071,35 +1101,41 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 	}
 
-	public void handleMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
-		//		long startTime = System.nanoTime();
+	/**
+	 * Handles incoming messages, dont process, only queue
+	 */
+	public void handleIncomingMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
 
 		if (message.lastSegment) {
 			// Remove from globalBarrierRecvVerts if received all vertices
 			globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine));
 		}
 
-		//WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
-		//		if (activeQuery == null)
-		//			return;
+		queuedMoveMessages.add(message);
+	}
 
-		for (Pair<AbstractVertex<V, E, M, Q>, List<Integer>> movedVertInfo : message.vertices) {
-			AbstractVertex<V, E, M, Q> movedVert = movedVertInfo.first;
-			for (Integer queryActiveInId : movedVertInfo.second) {
-				WorkerQuery<V, E, M, Q> queryActiveIn = activeQueries.get(queryActiveInId);
-				if (queryActiveIn != null) {
-					queryActiveIn.ActiveVerticesThis.put(movedVert.ID, movedVert);
-					queryActiveIn.VerticesEverActive.add(movedVert.ID);
+	/**
+	 * Processes queued move messages
+	 */
+	public void processQueuedMoveVerticesMessages() {
+		//		long startTime = System.nanoTime();
+
+		for (MoveVerticesMessage<V, E, M, Q> message : queuedMoveMessages) {
+			for (Pair<AbstractVertex<V, E, M, Q>, List<Integer>> movedVertInfo : message.vertices) {
+				AbstractVertex<V, E, M, Q> movedVert = movedVertInfo.first;
+				for (Integer queryActiveInId : movedVertInfo.second) {
+					WorkerQuery<V, E, M, Q> queryActiveIn = activeQueries.get(queryActiveInId);
+					if (queryActiveIn != null) {
+						queryActiveIn.ActiveVerticesThis.put(movedVert.ID, movedVert);
+						queryActiveIn.VerticesEverActive.add(movedVert.ID);
+					}
+					else {
+						logger.warn("Received vertex for unknown query: " + queryActiveInId);
+					}
 				}
-				else {
-					logger.error("Received worker for unknown query: " + queryActiveIn);
-				}
+				localVertices.put(movedVert.ID, movedVert);
 			}
-			localVertices.put(movedVert.ID, movedVert);
 		}
-
-		//		if (message.lastSegment) {
-		//		}
 
 		// TODO Worker stats
 		//		long moveTime = (System.nanoTime() - startTime);

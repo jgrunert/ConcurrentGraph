@@ -15,5 +15,6 @@ import mthesis.concurrent_graph.BaseQuery;
  */
 public abstract class AbstractVertexMoveDecider<Q extends BaseQuery> {
 
-	public abstract VertexMoveDecision decide(Set<Integer> queryIds, Map<Integer, Map<IntSet, Integer>> workerQueryChunks);
+	public abstract VertexMoveDecision decide(Set<Integer> queryIds, Map<Integer, Map<IntSet, Integer>> workerQueryChunks,
+			Map<Integer, Long> workerTotalVertices);
 }

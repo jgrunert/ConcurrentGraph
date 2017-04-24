@@ -26,6 +26,7 @@ public class VertexMoveDeciderService<Q extends BaseQuery> {
 	private final IntSet workerIds;
 	/** Map<Machine, Map<QueryId, Map<IntersectQueryId, IntersectingsCount>>> */
 	private Map<Integer, Map<IntSet, Integer>> latestWorkerQueryChunks = new HashMap<>();
+	private Map<Integer, Long> latestWorkerTotalVertices = new HashMap<>();
 
 	//private long vertexBarrierMoveLastTime = System.currentTimeMillis();
 	private Object latestDecissionLock = new Object();
@@ -62,9 +63,10 @@ public class VertexMoveDeciderService<Q extends BaseQuery> {
 	}
 
 
-	public void updateQueryIntersects(int workerId, Map<IntSet, Integer> workerQueryIntersects) {
+	public void updateQueryIntersects(int workerId, Map<IntSet, Integer> workerQueryIntersects, long workerTotalVertices) {
 		synchronized (workerQueryIntersectsLock) {
 			latestWorkerQueryChunks.put(workerId, workerQueryIntersects);
+			latestWorkerTotalVertices.put(workerId, workerTotalVertices);
 			if (latestWorkerQueryChunks.size() == workerIds.size()) {
 				newQueryIntersectsReady = true;
 			}
@@ -114,7 +116,7 @@ public class VertexMoveDeciderService<Q extends BaseQuery> {
 			newQueryIntersectsReady = false;
 		}
 
-		VertexMoveDecision newDecission = moveDecider.decide(queryIds, queryChunks);
+		VertexMoveDecision newDecission = moveDecider.decide(queryIds, queryChunks, latestWorkerTotalVertices);
 		synchronized (latestDecissionLock) {
 			latestDecission = newDecission;
 			newDecissionFinished = true;

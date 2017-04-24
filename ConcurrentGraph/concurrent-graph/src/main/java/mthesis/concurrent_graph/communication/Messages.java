@@ -69,6 +69,14 @@ public final class Messages {
     Worker_Barrier_Started(12),
     /**
      * <pre>
+     * Message from workers to other workers to signal vertex sending finished
+     * </pre>
+     *
+     * <code>Worker_Barrier_Sending_Finished = 15;</code>
+     */
+    Worker_Barrier_Sending_Finished(15),
+    /**
+     * <pre>
      * Message from workers to other workers to signal barrier finished
      * </pre>
      *
@@ -179,6 +187,14 @@ public final class Messages {
     public static final int Worker_Barrier_Started_VALUE = 12;
     /**
      * <pre>
+     * Message from workers to other workers to signal vertex sending finished
+     * </pre>
+     *
+     * <code>Worker_Barrier_Sending_Finished = 15;</code>
+     */
+    public static final int Worker_Barrier_Sending_Finished_VALUE = 15;
+    /**
+     * <pre>
      * Message from workers to other workers to signal barrier finished
      * </pre>
      *
@@ -259,6 +275,7 @@ public final class Messages {
         case 4: return Worker_Query_Superstep_Finished;
         case 5: return Worker_Query_Finished;
         case 12: return Worker_Barrier_Started;
+        case 15: return Worker_Barrier_Sending_Finished;
         case 13: return Worker_Barrier_Finished;
         case 6: return Master_Worker_Initialize;
         case 7: return Master_Query_Start;
@@ -4151,10 +4168,9 @@ public final class Messages {
                   mutable_bitField0_ |= 0x00000001;
                 }
                 com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-                querySupersteps__ = input.readMessage(
+                querySupersteps = input.readMessage(
                     QuerySuperstepsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-                querySupersteps_.getMutableMap().put(
-                    querySupersteps__.getKey(), querySupersteps__.getValue());
+                querySupersteps_.getMutableMap().put(querySupersteps.getKey(), querySupersteps.getValue());
                 break;
               }
               case 18: {
@@ -5743,12 +5759,15 @@ public final class Messages {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        com.google.protobuf.GeneratedMessageV3
-          .serializeIntegerMapTo(
-            output,
-            internalGetQuerySupersteps(),
-            QuerySuperstepsDefaultEntryHolder.defaultEntry,
-            1);
+        for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
+             : internalGetQuerySupersteps().getMap().entrySet()) {
+          com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
+          querySupersteps = QuerySuperstepsDefaultEntryHolder.defaultEntry.newBuilderForType()
+              .setKey(entry.getKey())
+              .setValue(entry.getValue())
+              .build();
+          output.writeMessage(1, querySupersteps);
+        }
         for (int i = 0; i < sendQueryVertices_.size(); i++) {
           output.writeMessage(2, sendQueryVertices_.get(i));
         }
@@ -5766,12 +5785,12 @@ public final class Messages {
         for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
              : internalGetQuerySupersteps().getMap().entrySet()) {
           com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-          querySupersteps__ = QuerySuperstepsDefaultEntryHolder.defaultEntry.newBuilderForType()
+          querySupersteps = QuerySuperstepsDefaultEntryHolder.defaultEntry.newBuilderForType()
               .setKey(entry.getKey())
               .setValue(entry.getValue())
               .build();
           size += com.google.protobuf.CodedOutputStream
-              .computeMessageSize(1, querySupersteps__);
+              .computeMessageSize(1, querySupersteps);
         }
         for (int i = 0; i < sendQueryVertices_.size(); i++) {
           size += com.google.protobuf.CodedOutputStream
@@ -11698,19 +11717,20 @@ public final class Messages {
       "nt_graph.communication.messages.ControlM" +
       "essage.QueryVertexChunksMapMessage\032=\n\033Qu" +
       "eryVertexChunksMapMessage\022\017\n\007Queries\030\001 \003" +
-      "(\005\022\r\n\005Count\030\002 \001(\005*\241\003\n\022ControlMessageType" +
+      "(\005\022\r\n\005Count\030\002 \001(\005*\306\003\n\022ControlMessageType" +
       "\022\025\n\021Channel_Handshake\020\001\022\026\n\022Worker_Initia" +
       "lized\020\002\022\"\n\036Worker_Query_Superstep_Barrie" +
       "r\020\003\022#\n\037Worker_Query_Superstep_Finished\020\004" +
       "\022\031\n\025Worker_Query_Finished\020\005\022\032\n\026Worker_Ba",
-      "rrier_Started\020\014\022\033\n\027Worker_Barrier_Finish" +
-      "ed\020\r\022\034\n\030Master_Worker_Initialize\020\006\022\026\n\022Ma" +
-      "ster_Query_Start\020\007\022\037\n\033Master_Query_Next_" +
-      "Superstep\020\010\022\031\n\025Master_Query_Finished\020\t\022\023" +
-      "\n\017Master_Shutdown\020\n\022\030\n\024Master_Start_Barr" +
-      "ier\020\013\022\036\n\032Worker_Query_Vertex_Chunks\020\016B2\n" +
-      "&mthesis.concurrent_graph.communicationB" +
-      "\010Messages"
+      "rrier_Started\020\014\022#\n\037Worker_Barrier_Sendin" +
+      "g_Finished\020\017\022\033\n\027Worker_Barrier_Finished\020" +
+      "\r\022\034\n\030Master_Worker_Initialize\020\006\022\026\n\022Maste" +
+      "r_Query_Start\020\007\022\037\n\033Master_Query_Next_Sup" +
+      "erstep\020\010\022\031\n\025Master_Query_Finished\020\t\022\023\n\017M" +
+      "aster_Shutdown\020\n\022\030\n\024Master_Start_Barrier" +
+      "\020\013\022\036\n\032Worker_Query_Vertex_Chunks\020\016B2\n&mt" +
+      "hesis.concurrent_graph.communicationB\010Me" +
+      "ssages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

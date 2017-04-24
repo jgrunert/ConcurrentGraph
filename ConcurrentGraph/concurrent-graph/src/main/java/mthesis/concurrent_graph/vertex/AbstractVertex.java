@@ -16,6 +16,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
+import mthesis.concurrent_graph.worker.VertexMoveFailureException;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -116,6 +117,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	/**
 	 * Writes vertices to a buffer to send
+	 * @throws VertexMoveFailureException
 	 */
 	public void writeToBuffer(ByteBuffer buffer) {
 		buffer.putInt(ID);
@@ -158,9 +160,9 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 		for (Entry<Integer, List<M>> qMsgs : queryMessagesNextSuperstep.entrySet()) {
 			if (!qMsgs.getValue().isEmpty()) {
-				logger.error("Will not send vertex messages for next superstep - vertices to send shouldnt have these. " + qMsgs.getKey()
-						+ " at " + ID);
-				break;
+				logger.warn(
+						"Will not send vertex messages for next superstep - vertices to send shouldnt have these. "
+								+ qMsgs.getKey() + " at " + ID);
 			}
 		}
 		//		buffer.putInt(queryMessagesNextSuperstep.size());
