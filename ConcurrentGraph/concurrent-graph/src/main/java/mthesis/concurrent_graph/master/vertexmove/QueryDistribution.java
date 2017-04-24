@@ -65,7 +65,6 @@ public class QueryDistribution {
 
 
 	/**
-	 * TODO Handle intersections
 	 * @param queryId
 	 * @param fromWorker
 	 * @param toWorker
@@ -73,8 +72,6 @@ public class QueryDistribution {
 	 * @return Number of moved vertices, 0 if no move possible
 	 */
 	public int moveVertices(int queryId, int fromWorkerId, int toWorkerId, boolean moveIntersecting) {
-		VertexMoveOperation moveOperation = new VertexMoveOperation(queryId, fromWorkerId, toWorkerId);
-
 		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
 		QueryWorkerMachine toWorker = queryMachines.get(toWorkerId);
 
@@ -224,7 +221,6 @@ public class QueryDistribution {
 		// Find all chunks that are not on their home machines
 		Set<VertexMoveOperation> allMoves = new HashSet<>();
 		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-			int machineCosts = 0;
 			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
 				if (chunk.homeMachine != machine.getKey()) {
 					for (int chunkQuery : chunk.queries) {

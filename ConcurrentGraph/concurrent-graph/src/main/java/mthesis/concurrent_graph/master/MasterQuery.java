@@ -85,4 +85,9 @@ public class MasterQuery<Q extends BaseQuery> {
 		if (QueryStepAggregator.getActiveVertices() != 0)
 			logger.warn("Finishing query with active vertices: " + QueryStepAggregator.getActiveVertices());
 	}
+
+	@Override
+	public String toString() {
+		return "" + BaseQuery.QueryId;
+	}
 }

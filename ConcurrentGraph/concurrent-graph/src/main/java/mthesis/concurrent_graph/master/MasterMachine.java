@@ -590,6 +590,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private void globalBarrierFinished() {
 		logger.info("Global barrier finished");
+		logger.debug("Start delayed supersteps: " + barrierDelayedQueryNextSteps);
 		globalBarrierActive = false;
 		for (MasterQuery<Q> delayedQueryNextStep : barrierDelayedQueryNextSteps) {
 			logger.debug(
