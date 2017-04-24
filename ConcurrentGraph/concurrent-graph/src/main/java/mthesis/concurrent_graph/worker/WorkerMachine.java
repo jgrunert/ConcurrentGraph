@@ -36,7 +36,6 @@ import mthesis.concurrent_graph.communication.GetToKnowMessage;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
@@ -107,7 +106,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private final Set<Integer> globalBarrierFinishPrematureSet = new HashSet<>();
 	// Global barrier commands to perform while barrier
 	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
-	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
+	//	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
 	private List<MoveVerticesMessage<V, E, M, Q>> queuedMoveMessages = new ArrayList<>();
 
 	// Worker stats
@@ -350,17 +349,17 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
 								sendVert.getMaxMoveCount(), true); // TODO Configure send intersecting
 					}
-
-					// Receive and queue move messages
-					while (!globalBarrierRecvVerts.isEmpty()) {
-						handleReceivedMessagesWait();
-					}
-					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
-
-
-					// --- Vertex sending finished barrier ---
+					// Send barrier message and flush
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Sending_Finished(ownId), true);
+
+					// Receive and queue move messages
+					//					while (!globalBarrierRecvVerts.isEmpty()) {
+					//						handleReceivedMessagesWait();
+					//					}
+
+
+					// --- Vertex sending finished barrier, receive all move messages ---
 					while (!globalBarrierSendingFinishWaitSet.isEmpty()) {
 						handleReceivedMessagesWait();
 					}
@@ -368,6 +367,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 					// --- Process queued move messages ---
 					processQueuedMoveVerticesMessages();
+					workerStats.BarrierVertexMoveTime += (System.nanoTime() - startTime);
+					startTime = System.nanoTime();
 
 
 					// --- Finish barrier, notify other workers and master ---
@@ -376,7 +377,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Finished(ownId), true);
 					messaging.sendControlMessageUnicast(masterId,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Finished(ownId), true);
-					startTime = System.nanoTime();
 					while (!globalBarrierFinishWaitSet.isEmpty()) {
 						handleReceivedMessagesWait();
 					}
@@ -601,12 +601,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
 						globalBarrierFinishWaitSet.removeAll(globalBarrierFinishPrematureSet);
 						globalBarrierSendVerts = startBarrierMsg.getSendQueryVerticesList();
-						List<ReceiveQueryVerticesMessage> recvVerts = startBarrierMsg.getReceiveQueryVerticesList();
-						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
-						for (ReceiveQueryVerticesMessage rvMsg : recvVerts) {
-							globalBarrierRecvVerts
-							.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
-						}
+						//						List<ReceiveQueryVerticesMessage> recvVerts = startBarrierMsg.getReceiveQueryVerticesList();
+						//						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
+						//						for (ReceiveQueryVerticesMessage rvMsg : recvVerts) {
+						//							globalBarrierRecvVerts
+						//							.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
+						//						}
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
@@ -1106,10 +1106,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	 */
 	public void handleIncomingMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
 
-		if (message.lastSegment) {
-			// Remove from globalBarrierRecvVerts if received all vertices
-			globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine));
-		}
+		//		if (message.lastSegment) {
+		//			// Remove from globalBarrierRecvVerts if received all vertices
+		//			globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine));
+		//		}
 
 		queuedMoveMessages.add(message);
 	}
@@ -1129,13 +1129,15 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						queryActiveIn.ActiveVerticesThis.put(movedVert.ID, movedVert);
 						queryActiveIn.VerticesEverActive.add(movedVert.ID);
 					}
-					else {
-						logger.warn("Received vertex for unknown query: " + queryActiveInId);
-					}
+					//					else {
+					//						logger.warn("Received vertex for unknown query: " + queryActiveInId);
+					//					}
 				}
 				localVertices.put(movedVert.ID, movedVert);
 			}
 		}
+
+		queuedMoveMessages.clear();
 
 		// TODO Worker stats
 		//		long moveTime = (System.nanoTime() - startTime);
