@@ -1015,61 +1015,61 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		List<Integer> queriesActiveInBuffer = new ArrayList<>();
 
 		if (activeQuery != null) {
-			if (!activeQuery.ActiveVerticesNext.isEmpty()) {
-				logger.warn(
-						"Query has ActiveVerticesNext when moving " + activeQuery.QueryId + ":" + activeQuery.getMasterStartedSuperstep());
-				return;
-			}
+			if (activeQuery.ActiveVerticesNext.isEmpty()) {
+				for (Integer vertexId : new ArrayList<>(activeQuery.VerticesEverActive)) {
+					AbstractVertex<V, E, M, Q> vertex = localVertices.get(vertexId);
+					if (vertex == null) {
+						// Vertex to move not found here anymore
+						notMoved++;
+						continue;
+					}
 
-			for (Integer vertexId : new ArrayList<>(activeQuery.VerticesEverActive)) {
-				AbstractVertex<V, E, M, Q> vertex = localVertices.get(vertexId);
-				if (vertex == null) {
-					// Vertex to move not found here anymore
-					notMoved++;
-					continue;
-				}
+					if (moved >= maxVertices) {
+						// Reached max move limit
+						notMoved++;
+						continue;
+					}
 
-				if (moved >= maxVertices) {
-					// Reached max move limit
-					notMoved++;
-					continue;
-				}
+					// Check for intersection, don't move
+					queriesActiveInBuffer.clear();
+					for (WorkerQuery<V, E, M, Q> queryActiveCandidate : activeQueries.values()) {
+						if (queryActiveCandidate.ActiveVerticesThis.containsKey(vertexId)) {
+							queriesActiveInBuffer.add(queryActiveCandidate.QueryId);
+						}
+					}
 
-				// Check for intersection, don't move
-				queriesActiveInBuffer.clear();
-				for (WorkerQuery<V, E, M, Q> queryActiveCandidate : activeQueries.values()) {
-					if (queryActiveCandidate.ActiveVerticesThis.containsKey(vertexId)) {
-						queriesActiveInBuffer.add(queryActiveCandidate.QueryId);
+					// Send vertex if non-intersecting or intersecting is allowed
+					if (!sendIntersecting && queriesActiveInBuffer.size() > 1) {
+						notMoved++;
+						continue;
+					}
+					moved++;
+					verticesToMove.add(new Pair<>(vertex, new ArrayList<>(queriesActiveInBuffer)));
+
+					// Remove vertex
+					localVertices.remove(vertexId);
+					activeQuery.VerticesEverActive.remove(vertexId);
+					for (Integer qActiveIn : queriesActiveInBuffer) {
+						activeQueries.get(qActiveIn).ActiveVerticesThis.remove(vertex.ID);
+					}
+
+					// Send vertices now if bucket full
+					if (verticesToMove.size() >= Configuration.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
+						handleVerticesMoving(verticesToMove, sendToWorker);
+						messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
+						verticesSent += verticesToMove.size();
+						verticesToMove = new ArrayList<>();
+					}
+					if (Configuration.DETAILED_STATS) {
+						verticesMessagesSent += vertex.getBufferedMessageCount();
 					}
 				}
-
-				// Send vertex if non-intersecting or intersecting is allowed
-				if (!sendIntersecting && queriesActiveInBuffer.size() > 1) {
-					notMoved++;
-					continue;
-				}
-				moved++;
-				verticesToMove.add(new Pair<>(vertex, new ArrayList<>(queriesActiveInBuffer)));
-
-				// Remove vertex
-				localVertices.remove(vertexId);
-				activeQuery.VerticesEverActive.remove(vertexId);
-				for (Integer qActiveIn : queriesActiveInBuffer) {
-					activeQueries.get(qActiveIn).ActiveVerticesThis.remove(vertex.ID);
-				}
-
-				// Send vertices now if bucket full
-				if (verticesToMove.size() >= Configuration.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
-					handleVerticesMoving(verticesToMove, sendToWorker);
-					messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, false);
-					verticesSent += verticesToMove.size();
-					verticesToMove = new ArrayList<>();
-				}
-				if (Configuration.DETAILED_STATS) {
-					verticesMessagesSent += vertex.getBufferedMessageCount();
-				}
+				logger.info(ownId + " Sent " + moved + " and skipped " + notMoved + " to " + sendToWorker + " for query " + queryId); // TODO logger.debug
 			}
-			logger.info(ownId + " Sent " + moved + " and skipped " + notMoved + " to " + sendToWorker + " for query " + queryId); // TODO logger.debug
+			else {
+				logger.warn(
+						"Cant move query, has ActiveVerticesNext " + activeQuery.QueryId + ":" + activeQuery.getMasterStartedSuperstep());
+			}
 		}
 		else {
 			logger.debug("Vertices not moved because query inactive: " + queryId);
