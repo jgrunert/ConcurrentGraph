@@ -1218,6 +1218,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	private Map<IntSet, Integer> calculateQueryIntersectChunks() {
 		long startTime = System.nanoTime();
+		//long start2 = System.currentTimeMillis();
 		Map<IntSet, Integer> intersectChunks = new HashMap<>();
 
 		// Find all active vertics
@@ -1227,6 +1228,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 
 		// Find queries vertices are active in
+		// TODO Rather slow - 300ms sometimes
 		IntSet vertexQueriesSet = new IntOpenHashSet();
 		for (IntIterator it = allActiveVertices.iterator(); it.hasNext();) {
 			int vertex = it.nextInt();
@@ -1246,7 +1248,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 
 		workerStats.IntersectCalcTime += System.nanoTime() - startTime;
-		System.out.println(System.nanoTime() - startTime); // TODO Testcode
+		//System.out.println("IntersectCalcTime " + (System.currentTimeMillis() - start2))
 
 		return intersectChunks;
 	}
