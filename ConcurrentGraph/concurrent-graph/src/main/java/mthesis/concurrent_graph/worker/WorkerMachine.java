@@ -294,18 +294,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 				// ++++++++++ Global barrier if requested and no more outstanding queries ++++++++++
 				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
-					//					Map<Integer, Integer> queryFinishedSupersteps = new HashMap<>(activeQueries.size());
-					//					for (WorkerQuery<V, E, M, Q> q : activeQueries.values()) {
-					//						queryFinishedSupersteps.put(q.QueryId, q.getLastFinishedComputeSuperstep());
-					//					}
-					//					logger.info("W " + queryFinishedSupersteps);
-					//					logger.info("M " + globalBarrierQuerySupersteps);
-
-					System.out.println("#BR " + ownId + " " + globalBarrierStartWaitSet);
-					// Checks
-					String querySSs = "";
+					//					System.out.println("#BR " + ownId + " " + globalBarrierStartWaitSet);
+					// --- Checks  ---
+					//					String querySSs = "";
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
-						querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
+						//						querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
 						if (globalBarrierQuerySupersteps.containsKey(query.QueryId)
 								&& !globalBarrierQuerySupersteps.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
 							logger.warn("Query " + query.QueryId + " is not ready for global barrier, wrong superstep: "
@@ -316,22 +309,16 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							logger.warn("Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
 									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
 						}
-						//						if (!query.ActiveVerticesNext.isEmpty()) {
-						//							logger.warn("Query " + query.QueryId + " is not ready for global barrier, has ActiveVerticesNext: "
-						//									+ query.ActiveVerticesNext.size() + " superstep " + query.getLastFinishedComputeSuperstep());
-						//						}
 					}
-					logger.info("QSS " + ownId + " " + querySSs); // TODO
+					//					logger.info("QSS " + ownId + " " + querySSs);
 
-					// Start barrier, notify other workers
+
+					// --- Start barrier, notify other workers  ---
 					logger.debug("Barrier started, waiting for other workers to start");
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Started(ownId),
 							true);
-					//logger.info("BarrierStarting " + ownId); // TODO
 
-					// --- Handle all messages before barrier ---
-					//handleReceivedMessages();  // TODO Can be removed?
 
 					// --- Wait for other workers barriers ---
 					startTime = System.nanoTime();
@@ -339,7 +326,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						handleReceivedMessagesWait();
 					}
 					long barrierStartWaitTime = System.nanoTime() - startTime;
-					logger.info("BarrierStarted " + ownId); // TODO
 
 
 					// --- Send and receive vertices ---
@@ -352,11 +338,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					// Send barrier message and flush
 					messaging.sendControlMessageMulticast(otherWorkerIds,
 							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Sending_Finished(ownId), true);
-
-					// Receive and queue move messages
-					//					while (!globalBarrierRecvVerts.isEmpty()) {
-					//						handleReceivedMessagesWait();
-					//					}
 
 
 					// --- Vertex sending finished barrier, receive all move messages ---
