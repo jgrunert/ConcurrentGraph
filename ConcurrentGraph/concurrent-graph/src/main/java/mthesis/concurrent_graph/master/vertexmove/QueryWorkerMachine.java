@@ -1,7 +1,11 @@
 package mthesis.concurrent_graph.master.vertexmove;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import mthesis.concurrent_graph.util.MiscUtil;
 
 /**
  * Represents a worker machine with queries active
@@ -15,25 +19,32 @@ public class QueryWorkerMachine {
 	public int activeVertices;
 	// Active queries on this machine
 	public List<QueryVertexChunk> queryChunks;
+	// Number of vertices of queries
+	public Map<Integer, Integer> queryVertices;
 
 
 	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks) {
 		super();
 		this.queryChunks = queryChunks;
+		this.queryVertices = new HashMap<>();
 		activeVertices = 0;
-		for (QueryVertexChunk q : queryChunks) {
-			activeVertices += q.numVertices;
+		for (QueryVertexChunk qChunk : queryChunks) {
+			activeVertices += qChunk.numVertices;
+			for (int query : qChunk.queries) {
+				queryVertices.put(query, MiscUtil.defaultInt(queryVertices.get(query)) + qChunk.numVertices);
+			}
 		}
 	}
 
-	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, int activeVertices) {
+	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, int activeVertices, Map<Integer, Integer> queryVertices) {
 		super();
 		this.queryChunks = queryChunks;
+		this.queryVertices = queryVertices;
 		this.activeVertices = activeVertices;
 	}
 
 	public QueryWorkerMachine createClone() {
-		return new QueryWorkerMachine(new ArrayList<>(queryChunks), activeVertices);
+		return new QueryWorkerMachine(new ArrayList<>(queryChunks), activeVertices, new HashMap<>(queryVertices));
 	}
 
 
@@ -51,6 +62,9 @@ public class QueryWorkerMachine {
 				removedQueryChunks.add(chunk);
 				queryChunks.remove(i);
 				activeVertices -= chunk.numVertices;
+				for (int query : chunk.queries) {
+					queryVertices.put(query, MiscUtil.defaultInt(queryVertices.get(query)) - chunk.numVertices);
+				}
 				i--;
 			}
 		}
@@ -59,13 +73,16 @@ public class QueryWorkerMachine {
 	}
 
 	/**
-	 * Adds query vertices to this machine
-	 * @param addVertexCount Number of vertices to add
+	 * Adds QueryVertexChunks to this machine
+	 * @param chunksToAdd Chunks to add
 	 */
 	public void addQueryVertices(List<QueryVertexChunk> chunksToAdd) {
 		for (QueryVertexChunk chunk : chunksToAdd) {
 			queryChunks.add(chunk);
 			activeVertices += chunk.numVertices;
+			for (int query : chunk.queries) {
+				queryVertices.put(query, MiscUtil.defaultInt(queryVertices.get(query)) + chunk.numVertices);
+			}
 		}
 	}
 

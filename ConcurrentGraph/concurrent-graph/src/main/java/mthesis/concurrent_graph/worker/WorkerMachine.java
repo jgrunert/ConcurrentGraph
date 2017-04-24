@@ -1005,7 +1005,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				return;
 			}
 
-			for (Integer vertexId : activeQuery.VerticesEverActive) {
+			for (Integer vertexId : new ArrayList<>(activeQuery.VerticesEverActive)) {
 				AbstractVertex<V, E, M, Q> vertex = localVertices.get(vertexId);
 				if (vertex == null) {
 					// Vertex to move not found here anymore

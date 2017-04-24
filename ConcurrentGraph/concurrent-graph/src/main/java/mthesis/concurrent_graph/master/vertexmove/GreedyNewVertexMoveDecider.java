@@ -43,7 +43,7 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 
 		QueryDistribution originalDistribution = new QueryDistribution(queryIds, queryMachines);
 		QueryDistribution bestDistribution = originalDistribution;
-		System.out.println(bestDistribution.getCosts());
+		System.out.println(bestDistribution.getCurrentCosts());
 
 		System.out.println("/////////////////////////////////");
 		System.out.println(queryIds);
@@ -94,7 +94,7 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 						boolean newToBalanceOk = newToImbalance < WorkerImbalanceThreshold;
 
 						if (movedVerts > MinMoveWorkerVertices
-								&& newDistribution.getCosts() < iterBestDistribution.getCosts()
+								&& newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts()
 								&& (newFmBalanceBetter || newFmBalanceOk) && (newToBalanceBetter || newToBalanceOk)) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;

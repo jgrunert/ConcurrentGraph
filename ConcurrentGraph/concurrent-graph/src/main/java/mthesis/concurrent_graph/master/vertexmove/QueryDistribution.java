@@ -2,6 +2,7 @@ package mthesis.concurrent_graph.master.vertexmove;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -98,34 +99,50 @@ public class QueryDistribution {
 	}
 
 	private static double calculateCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		// TODO
+		return calculateVerticesSeparatedCosts(queryIds, queryMachines) + calculateMoveCosts(queryIds, queryMachines);
+
 	}
 
 	private static double calculateVerticesSeparatedCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+		// TODO Better, use max instead of sum?
 		double costs = 0;
 		for (Integer queryId : queryIds) {
 			// Find largest partition
 			Integer largestPartitionMachine = null;
 			int largestPartitionSize = -1;
 			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-				QueryVerticesOnMachine q = machine.getValue().queries.get(queryId);
-				if (q != null && q.totalVertices > largestPartitionSize) {
+				Integer q = machine.getValue().queryVertices.get(queryId);
+				if (q != null && q > largestPartitionSize) {
 					largestPartitionMachine = machine.getKey();
-					largestPartitionSize = q.totalVertices;
+					largestPartitionSize = q;
 				}
 			}
 
 			// Calculate vertices separated from largest partition
 			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
 				if (machine.getKey() != largestPartitionMachine) {
-					QueryVerticesOnMachine q = machine.getValue().queries.get(queryId);
+					Integer q = machine.getValue().queryVertices.get(queryId);
 					if (q != null) {
-						costs += q.totalVertices;
+						costs += q;
 					}
 				}
 			}
 		}
 		return costs;
+	}
+
+	private static double calculateMoveCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+		// TODO
+		int hightestMachineCost = 0;
+		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+			int machineCosts = 0;
+			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
+				if (chunk.homeMachine != machine.getKey())
+					machineCosts += chunk.numVertices;
+			}
+			hightestMachineCost = Math.max(machineCosts, hightestMachineCost);
+		}
+		return (double) hightestMachineCost * VertexMoveCosts;
 	}
 
 
@@ -197,9 +214,6 @@ public class QueryDistribution {
 	//	}
 
 	public VertexMoveDecision toMoveDecision(List<Integer> workerIds) {
-		if (moveOperationsSoFar.isEmpty())
-			return null;
-
 		Map<Integer, List<SendQueryVerticesMessage>> workerVertSendMsgs = new HashMap<>();
 		Map<Integer, List<ReceiveQueryVerticesMessage>> workerVertRecvMsgs = new HashMap<>();
 		for (int workerId : workerIds) {
@@ -207,7 +221,22 @@ public class QueryDistribution {
 			workerVertRecvMsgs.put(workerId, new ArrayList<>());
 		}
 
-		for (VertexMoveOperation moveOperation : moveOperationsSoFar.keySet()) {
+		// Find all chunks that are not on their home machines
+		Set<VertexMoveOperation> allMoves = new HashSet<>();
+		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+			int machineCosts = 0;
+			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
+				if (chunk.homeMachine != machine.getKey()) {
+					for (int chunkQuery : chunk.queries) {
+						allMoves.add(new VertexMoveOperation(chunkQuery, chunk.homeMachine, machine.getKey()));
+					}
+				}
+			}
+		}
+
+		// TODO Ist his all correct? Check for cycles etc
+
+		for (VertexMoveOperation moveOperation : allMoves) {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
 							.setMaxMoveCount(Integer.MAX_VALUE)
@@ -222,7 +251,6 @@ public class QueryDistribution {
 
 		return new VertexMoveDecision(workerVertSendMsgs, workerVertRecvMsgs);
 	}
-
 
 	//	// Testing
 	//	public static void main(String[] args) {
