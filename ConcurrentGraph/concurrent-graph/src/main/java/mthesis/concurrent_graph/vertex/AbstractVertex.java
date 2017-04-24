@@ -162,7 +162,8 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			if (!qMsgs.getValue().isEmpty()) {
 				logger.warn(
 						"Will not send vertex messages for next superstep - vertices to send shouldnt have these. Query" + qMsgs.getKey()
-								+ " vertex " + ID);
+						+ " vertex " + ID);
+				break;
 			}
 		}
 		//		buffer.putInt(queryMessagesNextSuperstep.size());

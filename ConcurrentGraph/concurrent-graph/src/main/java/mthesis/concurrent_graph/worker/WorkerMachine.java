@@ -98,6 +98,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	// Global barrier coordination/control
 	private boolean globalBarrierRequested = false;
+	private volatile boolean globalBarrierVertexMoveActive = false;
 	private Map<Integer, Integer> globalBarrierQuerySupersteps;
 	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
 	private final Set<Integer> globalBarrierStartPrematureSet = new HashSet<>();
@@ -331,6 +332,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 					// --- Send and receive vertices ---
 					startTime = System.nanoTime();
+					globalBarrierVertexMoveActive = true;
 					// Send vertices
 					for (SendQueryVerticesMessage sendVert : globalBarrierSendVerts) {
 						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
@@ -350,6 +352,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					while (!globalBarrierReceivingFinishWaitSet.isEmpty()) {
 						handleReceivedMessagesWait();
 					}
+					globalBarrierVertexMoveActive = false;
 
 
 					// --- Process queued move messages ---
@@ -711,6 +714,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 		int barrierSuperstepNo = activeQuery.getBarrierSyncedSuperstep();
 
+		if (globalBarrierVertexMoveActive) {
+			logger.warn("Received vertex message while barrier active: " + activeQuery.QueryId + ":" + message.superstepNo);
+		}
+
 		// Discover vertices if enabled. Only discover for broadcast messages as they are a sign that vertices are unknown.
 		if (message.broadcastFlag && Configuration.VERTEX_MACHINE_DISCOVERY) {
 			// Collect all vertices from this broadcast message on this machine
@@ -752,7 +759,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				else {
 					if (!message.broadcastFlag) {
 						logger.warn("Received non-broadcast vertex message for wrong vertex " + msg.first + " from "
-								+ message.srcMachine + " query " + activeQuery.QueryId + ":" + barrierSuperstepNo
+								+ message.srcMachine + " query " + activeQuery.QueryId + ":" + message.superstepNo
 								+ " with no redirection");
 					}
 					activeQuery.QueryLocal.Stats.MessagesReceivedWrongVertex++;
@@ -1094,10 +1101,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 		if (message.lastSegment) {
 			// Remove from globalBarrierRecvVerts if received all vertices
-			Pair<Integer, Integer> pair = new Pair<>(message.queryId, message.srcMachine);
-			if (globalBarrierRecvVerts.contains(pair))
-				globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine));
-			else logger.error("TODO");
+			if (!globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine))) {
+				logger.error("TODO Premature globalBarrierRecvVerts");
+			}
 		}
 
 		queuedMoveMessages.add(message);
