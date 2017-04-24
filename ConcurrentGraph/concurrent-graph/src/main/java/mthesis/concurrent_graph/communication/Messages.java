@@ -69,12 +69,12 @@ public final class Messages {
     Worker_Barrier_Started(12),
     /**
      * <pre>
-     * Message from workers to other workers to signal vertex sending finished
+     * Message from workers to other workers to signal vertex sending/receivinf finished
      * </pre>
      *
-     * <code>Worker_Barrier_Sending_Finished = 15;</code>
+     * <code>Worker_Barrier_Receive_Finished = 15;</code>
      */
-    Worker_Barrier_Sending_Finished(15),
+    Worker_Barrier_Receive_Finished(15),
     /**
      * <pre>
      * Message from workers to other workers to signal barrier finished
@@ -187,12 +187,12 @@ public final class Messages {
     public static final int Worker_Barrier_Started_VALUE = 12;
     /**
      * <pre>
-     * Message from workers to other workers to signal vertex sending finished
+     * Message from workers to other workers to signal vertex sending/receivinf finished
      * </pre>
      *
-     * <code>Worker_Barrier_Sending_Finished = 15;</code>
+     * <code>Worker_Barrier_Receive_Finished = 15;</code>
      */
-    public static final int Worker_Barrier_Sending_Finished_VALUE = 15;
+    public static final int Worker_Barrier_Receive_Finished_VALUE = 15;
     /**
      * <pre>
      * Message from workers to other workers to signal barrier finished
@@ -275,7 +275,7 @@ public final class Messages {
         case 4: return Worker_Query_Superstep_Finished;
         case 5: return Worker_Query_Finished;
         case 12: return Worker_Barrier_Started;
-        case 15: return Worker_Barrier_Sending_Finished;
+        case 15: return Worker_Barrier_Receive_Finished;
         case 13: return Worker_Barrier_Finished;
         case 6: return Master_Worker_Initialize;
         case 7: return Master_Query_Start;
@@ -11722,8 +11722,8 @@ public final class Messages {
       "lized\020\002\022\"\n\036Worker_Query_Superstep_Barrie" +
       "r\020\003\022#\n\037Worker_Query_Superstep_Finished\020\004" +
       "\022\031\n\025Worker_Query_Finished\020\005\022\032\n\026Worker_Ba",
-      "rrier_Started\020\014\022#\n\037Worker_Barrier_Sendin" +
-      "g_Finished\020\017\022\033\n\027Worker_Barrier_Finished\020" +
+      "rrier_Started\020\014\022#\n\037Worker_Barrier_Receiv" +
+      "e_Finished\020\017\022\033\n\027Worker_Barrier_Finished\020" +
       "\r\022\034\n\030Master_Worker_Initialize\020\006\022\026\n\022Maste" +
       "r_Query_Start\020\007\022\037\n\033Master_Query_Next_Sup" +
       "erstep\020\010\022\031\n\025Master_Query_Finished\020\t\022\023\n\017M" +

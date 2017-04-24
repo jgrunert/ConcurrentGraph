@@ -23,8 +23,8 @@ message MessageEnvelope {
 		Worker_Query_Finished = 5;
 		// Message from workers to other workers to signal barrier started
 		Worker_Barrier_Started = 12;
-		// Message from workers to other workers to signal vertex sending finished
-		Worker_Barrier_Sending_Finished  = 15;
+		// Message from workers to other workers to signal vertex sending/receivinf finished
+		Worker_Barrier_Receive_Finished  = 15;
 		// Message from workers to other workers to signal barrier finished
 		Worker_Barrier_Finished  = 13;
 	

@@ -36,6 +36,7 @@ import mthesis.concurrent_graph.communication.GetToKnowMessage;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
@@ -100,13 +101,13 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private Map<Integer, Integer> globalBarrierQuerySupersteps;
 	private final Set<Integer> globalBarrierStartWaitSet = new HashSet<>();
 	private final Set<Integer> globalBarrierStartPrematureSet = new HashSet<>();
-	private final Set<Integer> globalBarrierSendingFinishWaitSet = new HashSet<>();
-	private final Set<Integer> globalBarrierSendingFinishPrematureSet = new HashSet<>();
+	private final Set<Integer> globalBarrierReceivingFinishWaitSet = new HashSet<>();
+	private final Set<Integer> globalBarrierReceivingFinishPrematureSet = new HashSet<>();
 	private final Set<Integer> globalBarrierFinishWaitSet = new HashSet<>();
 	private final Set<Integer> globalBarrierFinishPrematureSet = new HashSet<>();
 	// Global barrier commands to perform while barrier
 	private List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> globalBarrierSendVerts;
-	//	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
+	private Set<Pair<Integer, Integer>> globalBarrierRecvVerts;
 	private List<MoveVerticesMessage<V, E, M, Q>> queuedMoveMessages = new ArrayList<>();
 
 	// Worker stats
@@ -335,13 +336,18 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						sendQueryVerticesToMove(sendVert.getQueryId(), sendVert.getMoveToMachine(),
 								sendVert.getMaxMoveCount(), true); // TODO Configure send intersecting
 					}
-					// Send barrier message and flush
+
+					// Wait until we received all messages
+					while (!globalBarrierRecvVerts.isEmpty()) {
+						handleReceivedMessagesWait();
+					}
+
+					// Send barrier message and flush to notify others that received everything
 					messaging.sendControlMessageMulticast(otherWorkerIds,
-							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Sending_Finished(ownId), true);
+							ControlMessageBuildUtil.Build_Worker_Worker_Barrier_Receiving_Finished(ownId), true);
 
-
-					// --- Vertex sending finished barrier, receive all move messages ---
-					while (!globalBarrierSendingFinishWaitSet.isEmpty()) {
+					// Wait until everyone sent and received all messages - then we can continue without causing problems
+					while (!globalBarrierReceivingFinishWaitSet.isEmpty()) {
 						handleReceivedMessagesWait();
 					}
 
@@ -577,17 +583,16 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
 						globalBarrierStartWaitSet.removeAll(globalBarrierStartPrematureSet);
-						globalBarrierSendingFinishWaitSet.addAll(otherWorkerIds);
-						globalBarrierSendingFinishWaitSet.removeAll(globalBarrierSendingFinishPrematureSet);
+						globalBarrierReceivingFinishWaitSet.addAll(otherWorkerIds);
+						globalBarrierReceivingFinishWaitSet.removeAll(globalBarrierReceivingFinishPrematureSet);
 						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
 						globalBarrierFinishWaitSet.removeAll(globalBarrierFinishPrematureSet);
 						globalBarrierSendVerts = startBarrierMsg.getSendQueryVerticesList();
-						//						List<ReceiveQueryVerticesMessage> recvVerts = startBarrierMsg.getReceiveQueryVerticesList();
-						//						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
-						//						for (ReceiveQueryVerticesMessage rvMsg : recvVerts) {
-						//							globalBarrierRecvVerts
-						//							.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
-						//						}
+						List<ReceiveQueryVerticesMessage> recvVerts = startBarrierMsg.getReceiveQueryVerticesList();
+						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
+						for (ReceiveQueryVerticesMessage rvMsg : recvVerts) {
+							globalBarrierRecvVerts.add(new Pair<Integer, Integer>(rvMsg.getQueryId(), rvMsg.getReceiveFromMachine()));
+						}
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
@@ -620,11 +625,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
 					return true;
-					case Worker_Barrier_Sending_Finished: {
+					case Worker_Barrier_Receive_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
-						if (globalBarrierSendingFinishWaitSet.contains(srcWorker)) globalBarrierSendingFinishWaitSet.remove(srcWorker);
-						else globalBarrierSendingFinishPrematureSet.add(srcWorker);
+						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
+						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
 					return true;
 					case Worker_Barrier_Finished: {
@@ -1087,10 +1092,13 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	 */
 	public void handleIncomingMoveVerticesMessage(MoveVerticesMessage<V, E, M, Q> message) {
 
-		//		if (message.lastSegment) {
-		//			// Remove from globalBarrierRecvVerts if received all vertices
-		//			globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine));
-		//		}
+		if (message.lastSegment) {
+			// Remove from globalBarrierRecvVerts if received all vertices
+			Pair<Integer, Integer> pair = new Pair<>(message.queryId, message.srcMachine);
+			if (globalBarrierRecvVerts.contains(pair))
+				globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine));
+			else logger.error("TODO");
+		}
 
 		queuedMoveMessages.add(message);
 	}
