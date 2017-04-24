@@ -117,8 +117,13 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private List<WorkerStatSample> workerStatsSamplesToSend = new ArrayList<>();
 	private PrintWriter allVertexStatsFile = null;
 	private PrintWriter actVertexStatsFile = null;
-	/** Map of all queries active vertices since the last barrier/move. Disabled if no vertex barrier move enabled */
-	private Int2ObjectMap<IntSet> queryActiveVerticesSinceBarrier = new Int2ObjectOpenHashMap<>();
+
+	/** Map of all queries active vertices in past barrier periods. Disabled if no vertex barrier move enabled */
+	private List<Int2ObjectMap<IntSet>> queryActiveVerticesSlidingWindow = new ArrayList<>();
+	// Sliding window size in barrier periods
+	private final int queryActiveVerticesWindowSize = 1; // TODO Config
+
+	Int2ObjectMap<IntSet> queryActiveVerticesSinceBarrier = new Int2ObjectOpenHashMap<>();
 
 	// Most recent calculated query intersections
 	//	private Map<Integer, Map<Integer, Integer>> currentQueryIntersects = new HashMap<>();
@@ -144,6 +149,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		this.outputDir = outputDir;
 		this.jobConfig = jobConfig;
 		this.vertexReader = vertexReader;
+
+		queryActiveVerticesSlidingWindow.add(new Int2ObjectOpenHashMap<>());
 	}
 
 	private void loadVertices(List<String> partitions) {
@@ -1029,11 +1036,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 		List<Integer> queriesActiveInBuffer = new ArrayList<>();
 
-		if (//query != null &&
-				queryVertices != null) {
+		if (queryVertices != null) {
 			if (activeQuery != null && !activeQuery.ActiveVerticesNext.isEmpty()) {
-				logger.error(
+				logger.warn(
 						"Query has ActiveVerticesNext when moving " + activeQuery.QueryId + ":" + activeQuery.getMasterStartedSuperstep());
+				return;
 			}
 
 			for (Integer vertexId : queryVertices) {
@@ -1103,7 +1110,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	// #################### Others #################### //
 	/**
-	 * TODO Explain
+	 * Calculates intersections between queries,
 	 */
 	private Map<Integer, Map<Integer, Integer>> calculateQueryIntersectsSinceBarrier() {
 		long startTime = System.nanoTime();
@@ -1123,7 +1130,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			// Calculate intersects with others
 			for (Entry<Integer, IntSet> qOther : queryActiveVerticesSinceBarrier.entrySet()) {
 				if (qOther.getKey().equals(q.getKey())) continue;
-				if (qIntersects.containsKey(qOther)) continue; // Dont calculate same intersection twice
+				if (qIntersects.containsKey(qOther)) continue; // Avoids calculating same intersection twice
 				int intersection = MiscUtil.getIntersectCount(q.getValue(), qOther.getValue());
 				qIntersects.put(qOther.getKey(), intersection);
 				allIntersects.get(qOther.getKey()).put(q.getKey(), intersection);
