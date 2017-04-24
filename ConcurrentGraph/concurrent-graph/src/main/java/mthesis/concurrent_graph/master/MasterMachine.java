@@ -18,6 +18,8 @@ import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
@@ -27,6 +29,8 @@ import mthesis.concurrent_graph.QueryStats;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexChunksMapMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexChunksMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
@@ -71,7 +75,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	// Map WorkerId->(timestamp, workerStatsSample)
 	private Map<Integer, List<Pair<Long, WorkerStats>>> workerStats = new HashMap<>();
-	private Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects = new HashMap<>();
+	// Map WorkerId->(Map Queries->NumVertices)
+	private Map<Integer, Map<IntSet, Integer>> workerQueryChunks = new HashMap<>();
 
 	private final String inputFile;
 	private final String inputPartitionDir;
@@ -89,7 +94,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	@SuppressWarnings("unused") // TODO
 	private final Set<Integer> barrierDelayedQueryStarts = new HashSet<>();
 
-	private final VertexMoveDeciderService<Q> vertexMoveDeciderService = new VertexMoveDeciderService<>(new GreedyNewVertexMoveDecider<>());
+	private final VertexMoveDeciderService<Q> vertexMoveDeciderService;
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
@@ -106,6 +111,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		this.outputDir = outputDir;
 		this.queryStatsDir = outputDir + File.separator + "stats";
 		this.queryValueFactory = globalValueFactory;
+		this.vertexMoveDeciderService = new VertexMoveDeciderService<>(new GreedyNewVertexMoveDecider<>(), workerIds);
 		FileUtil.makeCleanDirectory(outputDir);
 		FileUtil.makeCleanDirectory(queryStatsDir);
 		saveSetupSummary(machines, ownId);
@@ -113,7 +119,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 		for (Integer workerId : workerIds) {
 			workerStats.put(workerId, new ArrayList<>());
-			workerQueryIntersects.put(workerId, new HashMap<>());
+			workerQueryChunks.put(workerId, new HashMap<>());
 		}
 	}
 
@@ -320,10 +326,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				for (WorkerStatSample sample : samples) {
 					WorkerStats stats = new WorkerStats(sample.getStatsBytes());
 					workerStats.get(controlMsg.getSrcMachine())
-					.add(new Pair<Long, WorkerStats>(sample.getTime(), stats));
-					workerQueryIntersects.put(controlMsg.getSrcMachine(), stats.QueryIntersectsSinceBarrier);
+							.add(new Pair<Long, WorkerStats>(sample.getTime(), stats));
 				}
-				vertexMoveDeciderService.updateQueryIntersects(workerQueryIntersects);
 			}
 
 			if (controlMsg.getType() == ControlMessageType.Worker_Query_Superstep_Finished) {
@@ -448,6 +452,14 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			else {
 				logger.error("Worker_Barrier_Finished from worker not waiting for " + controlMsg.getSrcMachine() + " " + controlMsg);
 			}
+		}
+		else if (controlMsg.getType() == ControlMessageType.Worker_Query_Vertex_Chunks) {
+			QueryVertexChunksMessage vertexChunks = controlMsg.getQueryVertexChunks();
+			Map<IntSet, Integer> queryChunks = new HashMap<>();
+			for (QueryVertexChunksMapMessage chunk : vertexChunks.getChunksList()) {
+				queryChunks.put(new IntOpenHashSet(chunk.getQueriesList()), chunk.getCount());
+			}
+			vertexMoveDeciderService.updateQueryIntersects(controlMsg.getSrcMachine(), queryChunks);
 		}
 		else {
 			logger.error("Unexpected control message type in message " + message);
@@ -650,10 +662,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -703,10 +715,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);

@@ -5,9 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import com.google.protobuf.ByteString;
@@ -45,7 +43,7 @@ public class WorkerStats {
 	public double ProcessCpuLoad;
 
 	/** All queries, their active vertices and intersections since last vertex move barrier */
-	public Map<Integer, Map<Integer, Integer>> QueryIntersectsSinceBarrier;
+	//public Map<Integer, Map<Integer, Integer>> QueryIntersectsSinceBarrier;
 
 	private QueryStats aggregatedQueryStats;
 
@@ -89,17 +87,17 @@ public class WorkerStats {
 		ProcessCpuTime = bytes.getDouble();
 		ProcessCpuLoad = bytes.getDouble();
 
-		int qICount = bytes.getInt();
-		QueryIntersectsSinceBarrier = new HashMap<>(qICount);
-		for (int iQi = 0; iQi < qICount; iQi++) {
-			Integer qiKey = bytes.getInt();
-			Integer qiCount = bytes.getInt();
-			Map<Integer, Integer> qiIntMap = new HashMap<>(qiCount);
-			for (int iQiInt = 0; iQiInt < qiCount; iQiInt++) {
-				qiIntMap.put(bytes.getInt(), bytes.getInt());
-			}
-			QueryIntersectsSinceBarrier.put(qiKey, qiIntMap);
-		}
+		//		int qICount = bytes.getInt();
+		//		QueryIntersectsSinceBarrier = new HashMap<>(qICount);
+		//		for (int iQi = 0; iQi < qICount; iQi++) {
+		//			Integer qiKey = bytes.getInt();
+		//			Integer qiCount = bytes.getInt();
+		//			Map<Integer, Integer> qiIntMap = new HashMap<>(qiCount);
+		//			for (int iQiInt = 0; iQiInt < qiCount; iQiInt++) {
+		//				qiIntMap.put(bytes.getInt(), bytes.getInt());
+		//			}
+		//			QueryIntersectsSinceBarrier.put(qiKey, qiIntMap);
+		//		}
 
 		aggregatedQueryStats = new QueryStats(bytes);
 	}
@@ -120,18 +118,18 @@ public class WorkerStats {
 		stream.writeDouble(ProcessCpuTime);
 		stream.writeDouble(ProcessCpuLoad);
 
-		if (QueryIntersectsSinceBarrier != null) {
-			stream.writeInt(QueryIntersectsSinceBarrier.size());
-			for (Entry<Integer, Map<Integer, Integer>> qI : QueryIntersectsSinceBarrier.entrySet()) {
-				stream.writeInt(qI.getKey());
-				stream.writeInt(qI.getValue().size());
-				for (Entry<Integer, Integer> inters : qI.getValue().entrySet()) {
-					stream.writeInt(inters.getKey());
-					stream.writeInt(inters.getValue());
-				}
-			}
-		}
-		else stream.writeInt(0);
+		//		if (QueryIntersectsSinceBarrier != null) {
+		//			stream.writeInt(QueryIntersectsSinceBarrier.size());
+		//			for (Entry<Integer, Map<Integer, Integer>> qI : QueryIntersectsSinceBarrier.entrySet()) {
+		//				stream.writeInt(qI.getKey());
+		//				stream.writeInt(qI.getValue().size());
+		//				for (Entry<Integer, Integer> inters : qI.getValue().entrySet()) {
+		//					stream.writeInt(inters.getKey());
+		//					stream.writeInt(inters.getValue());
+		//				}
+		//			}
+		//		}
+		//		else stream.writeInt(0);
 
 		aggregatedQueryStats.writeToStream(stream);
 	}

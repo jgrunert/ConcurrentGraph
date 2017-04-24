@@ -3,12 +3,14 @@ package mthesis.concurrent_graph.worker;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
@@ -41,9 +43,12 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public final Set<Integer> BarrierSyncPostponedSet = new HashSet<>();
 
 	// Active vertices for next superstep
-	public ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> ActiveVerticesNext = new ConcurrentHashMap<>();
+	public Int2ObjectMap<AbstractVertex<V, E, M, Q>> ActiveVerticesNext = new Int2ObjectOpenHashMap<>();
 	// Active vertices this superstep
-	public ConcurrentMap<Integer, AbstractVertex<V, E, M, Q>> ActiveVerticesThis = new ConcurrentHashMap<>();
+	public Int2ObjectMap<AbstractVertex<V, E, M, Q>> ActiveVerticesThis = new Int2ObjectOpenHashMap<>();
+
+	// All vertices ever active for this query on this worker
+	public IntSet VerticesEverActive = new IntOpenHashSet();
 
 
 	public WorkerQuery(Q globalQueryValues, BaseQueryGlobalValuesFactory<Q> globalValueFactory,
@@ -133,7 +138,7 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public boolean isNextSuperstepLocallyReady() {
 		return finishedComputeSuperstepNo == localFinishedSuperstepNo + 1
 				&& (barrierSyncedSuperstepNo == localFinishedSuperstepNo + 1
-				|| barrierSyncedSuperstepNo == localFinishedSuperstepNo + 2);
+						|| barrierSyncedSuperstepNo == localFinishedSuperstepNo + 2);
 	}
 
 
