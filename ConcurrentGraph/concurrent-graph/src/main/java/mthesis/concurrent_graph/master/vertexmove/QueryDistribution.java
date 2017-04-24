@@ -30,29 +30,27 @@ public class QueryDistribution {
 	private final Set<Integer> queryIds;
 
 	// Move operations and costs so far
-	private final Map<VertexMoveOperation, Integer> moveOperationsSoFar;
-	private double moveCostsSoFar;
-	private double distributionCosts;
+	//	private double distributionCosts;
+	// Costs of current distribution
+	private double currentCosts;
 
 
 	/**
 	 * Constructor for initial state, no moves so far.
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		this(queryIds, queryMachines, new HashMap<>(), 0, calculateVerticesSeparatedCosts(queryIds, queryMachines));
+		this(queryIds, queryMachines, calculateCosts(queryIds, queryMachines));
 	}
 
 	/**
 	 * Copy constructor
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines,
-			Map<VertexMoveOperation, Integer> moveOperationsSoFar, double moveCostsSoFar, double distributionCosts) {
+			double currentCosts) {
 		super();
 		this.queryIds = queryIds;
 		this.queryMachines = queryMachines;
-		this.moveOperationsSoFar = moveOperationsSoFar;
-		this.moveCostsSoFar = moveCostsSoFar;
-		this.distributionCosts = distributionCosts;
+		this.currentCosts = currentCosts;
 	}
 
 	@Override
@@ -61,8 +59,7 @@ public class QueryDistribution {
 		for (Entry<Integer, QueryWorkerMachine> entry : queryMachines.entrySet()) {
 			queryMachinesClone.put(entry.getKey(), entry.getValue().createClone());
 		}
-		return new QueryDistribution(queryIds, queryMachinesClone,
-				new HashMap<>(moveOperationsSoFar), moveCostsSoFar, distributionCosts);
+		return new QueryDistribution(queryIds, queryMachinesClone, currentCosts);
 	}
 
 
@@ -76,37 +73,32 @@ public class QueryDistribution {
 	 */
 	public int moveVertices(int queryId, int fromWorkerId, int toWorkerId, boolean moveIntersecting) {
 		VertexMoveOperation moveOperation = new VertexMoveOperation(queryId, fromWorkerId, toWorkerId);
-		if (moveOperationsSoFar.containsKey(moveOperation))
-			return 0; // Cant do same move twice?
 
 		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
 		QueryWorkerMachine toWorker = queryMachines.get(toWorkerId);
 
-		Map<Integer, QueryVerticesOnMachine> moved = fromWorker.removeQueryVertices(queryId, moveIntersecting);
+		List<QueryVertexChunk> moved = fromWorker.removeQueryVertices(queryId, moveIntersecting);
 		toWorker.addQueryVertices(moved);
 
-		int movedCount  = 0;
-		for (QueryVerticesOnMachine movedQ : moved.values()) {
-			movedCount += movedQ.totalVertices;
+		int movedCount = 0;
+		for (QueryVertexChunk movedQ : moved) {
+			movedCount += movedQ.numVertices;
 		}
 
-		moveOperationsSoFar.put(moveOperation, movedCount);
-		moveCostsSoFar += (double) movedCount * VertexMoveCosts;
-		distributionCosts = calculateVerticesSeparatedCosts(queryIds, queryMachines);
+		currentCosts = calculateCosts(queryIds, queryMachines);
 		return movedCount;
 	}
 
 
 	/**
-	 * Calculates the costs of this state, sum of mis-distribution and moveCosts so far.
-	 *
-	 * Mis-distribution costs are a sum of:
-	 * 	- Vertices separated from the largest partition
-	 *  - TODO Queries not entirely local?
-	 *  - TODO Load imbalance?
+	 * Returns costs of the current distribution
 	 */
-	public double getCosts() {
-		return moveCostsSoFar + distributionCosts;
+	public double getCurrentCosts() {
+		return currentCosts;
+	}
+
+	private static double calculateCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+		// TODO
 	}
 
 	private static double calculateVerticesSeparatedCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
@@ -189,20 +181,20 @@ public class QueryDistribution {
 
 	public void printMoveDistribution() {
 		for (Entry<Integer, QueryWorkerMachine> queryWorkerMachine : queryMachines.entrySet()) {
-			System.out.println(queryWorkerMachine.getKey());
-			for (Entry<Integer, QueryVerticesOnMachine> query : queryWorkerMachine.getValue().queries.entrySet()) {
-				System.out.println("  " + query.getKey() + ": " + query.getValue().totalVertices);
+			System.out.println(queryWorkerMachine.getKey() + " " + queryWorkerMachine.getValue());
+			for (QueryVertexChunk queryChunk : queryWorkerMachine.getValue().queryChunks) {
+				System.out.println("  " + queryChunk);
 			}
 		}
 	}
 
-	public void printMoveDecissions() {
-		for (Entry<VertexMoveOperation, Integer> moveOperationEntry : moveOperationsSoFar.entrySet()) {
-			VertexMoveOperation moveOperation = moveOperationEntry.getKey();
-			System.out.println(moveOperation.QueryId + ": " + moveOperation.FromMachine + "->" + moveOperation.ToMachine + " "
-					+ moveOperationEntry.getValue());
-		}
-	}
+	//	public void printMoveDecissions() {
+	//		for (Entry<VertexMoveOperation, Integer> moveOperationEntry : moveOperationsSoFar.entrySet()) {
+	//			VertexMoveOperation moveOperation = moveOperationEntry.getKey();
+	//			System.out.println(moveOperation.QueryId + ": " + moveOperation.FromMachine + "->" + moveOperation.ToMachine + " "
+	//					+ moveOperationEntry.getValue());
+	//		}
+	//	}
 
 	public VertexMoveDecision toMoveDecision(List<Integer> workerIds) {
 		if (moveOperationsSoFar.isEmpty())
@@ -219,13 +211,13 @@ public class QueryDistribution {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
 							.setMaxMoveCount(Integer.MAX_VALUE)
-					.setQueryId(moveOperation.QueryId)
-					.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
-					.build());
+							.setQueryId(moveOperation.QueryId)
+							.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
+							.build());
 			workerVertRecvMsgs.get(moveOperation.ToMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
-					.setQueryId(moveOperation.QueryId)
-					.setReceiveFromMachine(moveOperation.FromMachine).build());
+							.setQueryId(moveOperation.QueryId)
+							.setReceiveFromMachine(moveOperation.FromMachine).build());
 		}
 
 		return new VertexMoveDecision(workerVertSendMsgs, workerVertRecvMsgs);

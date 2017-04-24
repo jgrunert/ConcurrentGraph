@@ -2,12 +2,16 @@ package mthesis.concurrent_graph.communication;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.google.protobuf.ByteString;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexChunksMapMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexChunksMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartSuperstepMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage;
@@ -138,7 +142,7 @@ public class ControlMessageBuildUtil {
 				.build();
 	}
 
-	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId, //SuperstepStats stats,
+	public static MessageEnvelope Build_Worker_QuerySuperstepFinished(int superstepNo, int srcMachineId,
 			BaseQuery localQuery, List<WorkerStatSample> workerStats) {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Superstep_Finished)
@@ -146,6 +150,19 @@ public class ControlMessageBuildUtil {
 						.setSuperstepNo(superstepNo)
 						.setSrcMachine(srcMachineId)
 						.setWorkerStats(WorkerStatsMessage.newBuilder().addAllSamples(workerStats))
+						.build())
+				.build();
+	}
+
+	public static MessageEnvelope Build_Worker_QueryVertexChunks(int srcMachineId, Map<IntSet, Integer> queryIntersectChunks) {
+		QueryVertexChunksMessage.Builder chunksMsg = QueryVertexChunksMessage.newBuilder();
+		for (Entry<IntSet, Integer> chunk : queryIntersectChunks.entrySet()) {
+			chunksMsg.addChunks(QueryVertexChunksMapMessage.newBuilder().addAllQueries(chunk.getKey()).setCount(chunk.getValue()));
+		}
+		return MessageEnvelope.newBuilder()
+				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Vertex_Chunks)
+						.setSrcMachine(srcMachineId)
+						.setQueryVertexChunks(chunksMsg)
 						.build())
 				.build();
 	}

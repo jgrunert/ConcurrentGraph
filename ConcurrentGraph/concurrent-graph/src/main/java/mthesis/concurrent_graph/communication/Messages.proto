@@ -38,6 +38,8 @@ message MessageEnvelope {
 		Master_Shutdown = 10;
 		// Message to signal workers to make a system wide barrier to perform tasks
 		Master_Start_Barrier = 11;
+		
+		Worker_Query_Vertex_Chunks = 14;
 	}
 	  
 	message ControlMessage {
@@ -54,6 +56,7 @@ message MessageEnvelope {
 		optional StartBarrierMessage StartBarrier = 11;
 		optional WorkerStatsMessage WorkerStats = 12;
 		optional StartSuperstepMessage StartSuperstep = 13;
+		optional QueryVertexChunksMessage QueryVertexChunks = 14;
 		
 		message AssignPartitionsMessage {	
 			optional int64 MasterStartTime = 1;
@@ -116,5 +119,15 @@ message MessageEnvelope {
 				optional int64 Time = 1;
 				optional bytes StatsBytes = 2;
 			}
+		}
+		
+		
+		message QueryVertexChunksMessage {
+			repeated QueryVertexChunksMapMessage Chunks = 1;
+		}
+		
+		message QueryVertexChunksMapMessage {
+			repeated int32 Queries = 1;
+			optional int32 Count = 2;
 		}
 	}

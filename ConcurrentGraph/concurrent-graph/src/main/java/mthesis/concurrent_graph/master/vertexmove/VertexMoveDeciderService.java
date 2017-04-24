@@ -2,15 +2,16 @@ package mthesis.concurrent_graph.master.vertexmove;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQuery;
-import mthesis.concurrent_graph.Configuration;
 
 public class VertexMoveDeciderService<Q extends BaseQuery> {
 
@@ -21,17 +22,19 @@ public class VertexMoveDeciderService<Q extends BaseQuery> {
 	private boolean stopRequested;
 
 	private Object workerQueryIntersectsLock = new Object();
-	private volatile boolean newQueryIntersects;
+	private volatile boolean newQueryIntersectsReady;
+	private final IntSet workerIds;
 	/** Map<Machine, Map<QueryId, Map<IntersectQueryId, IntersectingsCount>>> */
-	private Map<Integer, Map<Integer, Map<Integer, Integer>>> latestWorkerQueryIntersects;
+	private Map<Integer, Map<IntSet, Integer>> latestWorkerQueryChunks = new HashMap<>();
 
-	private long vertexBarrierMoveLastTime = System.currentTimeMillis();
+	//private long vertexBarrierMoveLastTime = System.currentTimeMillis();
 	private Object latestDecissionLock = new Object();
 	private volatile boolean newDecissionFinished;
 	private VertexMoveDecision latestDecission;
 
-	public VertexMoveDeciderService(AbstractVertexMoveDecider<Q> moveDecider) {
+	public VertexMoveDeciderService(AbstractVertexMoveDecider<Q> moveDecider, List<Integer> workerIds) {
 		this.moveDecider = moveDecider;
+		this.workerIds = new IntOpenHashSet(workerIds);
 		stopRequested = false;
 		deciderThread = new Thread(new Runnable() {
 
@@ -59,10 +62,12 @@ public class VertexMoveDeciderService<Q extends BaseQuery> {
 	}
 
 
-	public void updateQueryIntersects(Map<Integer, Map<Integer, Map<Integer, Integer>>> workerQueryIntersects) {
+	public void updateQueryIntersects(int workerId, Map<IntSet, Integer> workerQueryIntersects) {
 		synchronized (workerQueryIntersectsLock) {
-			latestWorkerQueryIntersects = workerQueryIntersects;
-			newQueryIntersects = true;
+			latestWorkerQueryChunks.put(workerId, workerQueryIntersects);
+			if (latestWorkerQueryChunks.size() == workerIds.size()) {
+				newQueryIntersectsReady = true;
+			}
 		}
 	}
 
@@ -79,42 +84,37 @@ public class VertexMoveDeciderService<Q extends BaseQuery> {
 
 	private void deciderLoop() throws Exception {
 		while (!Thread.interrupted() && !stopRequested) {
-			long elapsed = System.currentTimeMillis() - vertexBarrierMoveLastTime;
-			if (elapsed >= Configuration.VERTEX_BARRIER_MOVE_INTERVAL && newQueryIntersects) {
-				newQueryIntersects = false;
+			//long elapsed = System.currentTimeMillis() - vertexBarrierMoveLastTime;
+			if (newQueryIntersectsReady) {
 				long decideStartTime = System.currentTimeMillis();
-				newMoveDecission();
+				calcNewMoveDecission();
 				logger.info("Decided to move in " + (System.currentTimeMillis() - decideStartTime));
 				// TODO Master stats decide time
-				vertexBarrierMoveLastTime = System.currentTimeMillis();
+				//vertexBarrierMoveLastTime = System.currentTimeMillis();
 			}
 			else {
-				Thread.sleep(Math.max(1, Configuration.VERTEX_BARRIER_MOVE_INTERVAL - elapsed));
+				Thread.sleep(1);
 			}
 		}
 	}
 
-	private void newMoveDecission() {
+	private void calcNewMoveDecission() {
 		// Transform into queryMachines dataset
 		Set<Integer> queryIds = new HashSet<>();
-		Map<Integer, QueryWorkerMachine> queryMachines = new HashMap<>();
+		Map<Integer, Map<IntSet, Integer>> queryChunks;
 		synchronized (workerQueryIntersectsLock) {
+			queryChunks = new HashMap<>(latestWorkerQueryChunks);
 			// Transform into queryMachines dataset
-			for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> machine : latestWorkerQueryIntersects.entrySet()) {
-				Map<Integer, QueryVerticesOnMachine> machineQueries = new HashMap<>();
-				for (Entry<Integer, Map<Integer, Integer>> machineQuery : machine.getValue().entrySet()) {
-					int queryId = machineQuery.getKey();
-					queryIds.add(queryId);
-					int totalVertices = machineQuery.getValue().get(queryId);
-					Map<Integer, Integer> intersects = new HashMap<>(machineQuery.getValue());
-					intersects.remove(queryId);
-					machineQueries.put(queryId, new QueryVerticesOnMachine(totalVertices, intersects));
+			for (Map<IntSet, Integer> workerChunks : latestWorkerQueryChunks.values()) {
+				for (IntSet chunkQueries : workerChunks.keySet()) {
+					queryIds.addAll(chunkQueries);
 				}
-				queryMachines.put(machine.getKey(), new QueryWorkerMachine(machineQueries));
 			}
+			latestWorkerQueryChunks.clear();
+			newQueryIntersectsReady = false;
 		}
 
-		VertexMoveDecision newDecission = moveDecider.decide(queryIds, queryMachines);
+		VertexMoveDecision newDecission = moveDecider.decide(queryIds, queryChunks);
 		synchronized (latestDecissionLock) {
 			latestDecission = newDecission;
 			newDecissionFinished = true;

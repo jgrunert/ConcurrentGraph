@@ -3,6 +3,7 @@ package mthesis.concurrent_graph.master.vertexmove;
 import java.util.Map;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQuery;
 
 /**
@@ -14,5 +15,5 @@ import mthesis.concurrent_graph.BaseQuery;
  */
 public abstract class AbstractVertexMoveDecider<Q extends BaseQuery> {
 
-	public abstract VertexMoveDecision decide(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines);
+	public abstract VertexMoveDecision decide(Set<Integer> queryIds, Map<Integer, Map<IntSet, Integer>> workerQueryChunks);
 }

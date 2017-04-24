@@ -1,13 +1,16 @@
 package mthesis.concurrent_graph.master.vertexmove;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.Configuration;
 
@@ -20,14 +23,23 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 	private static final long MinMoveWorkerVertices = 50;
 	private static final long MinMoveTotalVertices = 500;
 	private static final int MaxImproveIterations = 30;
-	private static final long MaxImproveTime = Configuration.VERTEX_BARRIER_MOVE_INTERVAL / 2;
+	private static final long MaxImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT;
 
 
 
 	@Override
-	public VertexMoveDecision decide(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+	public VertexMoveDecision decide(Set<Integer> queryIds, Map<Integer, Map<IntSet, Integer>> workerQueryChunks) {
 
-		List<Integer> workerIds = new ArrayList<>(queryMachines.keySet());
+		List<Integer> workerIds = new ArrayList<>(workerQueryChunks.keySet());
+		Map<Integer, QueryWorkerMachine> queryMachines = new HashMap<>();
+		for (Entry<Integer, Map<IntSet, Integer>> worker : workerQueryChunks.entrySet()) {
+			List<QueryVertexChunk> workerChunks = new ArrayList<>();
+			for (Entry<IntSet, Integer> chunk : worker.getValue().entrySet()) {
+				workerChunks.add(new QueryVertexChunk(chunk.getKey(), chunk.getValue(), worker.getKey()));
+			}
+			QueryWorkerMachine workerMachine = new QueryWorkerMachine(workerChunks);
+			queryMachines.put(worker.getKey(), workerMachine);
+		}
 
 		QueryDistribution originalDistribution = new QueryDistribution(queryIds, queryMachines);
 		QueryDistribution bestDistribution = originalDistribution;
@@ -35,7 +47,7 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 
 		System.out.println("/////////////////////////////////");
 		System.out.println(queryIds);
-		System.out.println(queryMachines);
+		System.out.println(workerQueryChunks);
 		System.out.println("/////////////////////////////////");
 		//		bestDistribution.printMoveDistribution();
 
