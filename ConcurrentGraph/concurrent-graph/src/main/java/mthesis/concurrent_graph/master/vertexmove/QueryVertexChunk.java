@@ -21,4 +21,9 @@ public class QueryVertexChunk {
 		this.numVertices = numVertices;
 		this.homeMachine = homeMachine;
 	}
+
+	@Override
+	public String toString() {
+		return queries + " " + numVertices + " from " + homeMachine;
+	}
 }
