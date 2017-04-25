@@ -298,9 +298,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
 					//					System.out.println("#BR " + ownId + " " + globalBarrierStartWaitSet);
 					// --- Checks  ---
-					//					String querySSs = "";
+					String querySSs = ""; // TODO
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
-						//						querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
+						querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
 						if (globalBarrierQuerySupersteps.containsKey(query.QueryId)
 								&& !globalBarrierQuerySupersteps.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
 							logger.warn("Query " + query.QueryId + " is not ready for global barrier, wrong superstep: "
@@ -312,7 +312,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
 						}
 					}
-					//					logger.info("QSS " + ownId + " " + querySSs);
+					logger.info("QSS " + ownId + " " + querySSs);
 
 
 					// --- Start barrier, notify other workers  ---
@@ -328,6 +328,23 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						handleReceivedMessagesWait();
 					}
 					long barrierStartWaitTime = System.nanoTime() - startTime;
+
+
+					querySSs = ""; // TODO
+					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
+						querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
+						if (globalBarrierQuerySupersteps.containsKey(query.QueryId)
+								&& !globalBarrierQuerySupersteps.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
+							logger.warn("Query " + query.QueryId + " is not ready for global barrier, wrong superstep: "
+									+ query.getLastFinishedComputeSuperstep() + " should be "
+									+ globalBarrierQuerySupersteps.get(query.QueryId));
+						}
+						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()) {
+							logger.warn("Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
+									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
+						}
+					}
+					logger.info("QSS2 " + ownId + " " + querySSs);
 
 
 					// --- Send and receive vertices ---
@@ -709,13 +726,15 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	public void handleVertexMessage(VertexMessage<V, E, M, Q> message) {
 		WorkerQuery<V, E, M, Q> activeQuery = activeQueries.get(message.queryId);
 		if (activeQuery == null) {
-			logger.error("Cannot process vertex message, no active query for ID " + message.queryId + ". " + message);
+			logger.error("Cannot process vertex message, no active query for ID " + message.queryId + ". " + message + " from "
+					+ message.srcMachine);
 			return;
 		}
 		int barrierSuperstepNo = activeQuery.getBarrierSyncedSuperstep();
 
 		if (globalBarrierVertexMoveActive) {
-			logger.warn("Received vertex message while barrier active: " + activeQuery.QueryId + ":" + message.superstepNo);
+			logger.warn("Received vertex message while barrier active: " + activeQuery.QueryId + ":" + message.superstepNo + " from "
+					+ message.srcMachine);
 		}
 
 		// Discover vertices if enabled. Only discover for broadcast messages as they are a sign that vertices are unknown.

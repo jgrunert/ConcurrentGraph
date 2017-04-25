@@ -523,7 +523,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		Q queryStats = queryToStart.QueryStepAggregator;
 
 		if (globalBarrierActive) {
-			logger.debug("Delay query superstep " + queryStats.QueryId + ":" + superstepNo);
+			logger.debug("Delay query superstep " + queryStats.QueryId + ":" + (superstepNo + 1));
 			barrierDelayedQueryNextSteps.add(queryToStart);
 			return;
 		}
@@ -554,7 +554,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			logger.info("Started barrier with vertex move");
 			logger.info("Supersteps at vertex move: " + queryFinishedSupersteps); // TODO logger.debug
 
-			logger.debug("Delay query superstep " + queryToStart.BaseQuery.QueryId + ":" + superstepNo);
+			logger.debug("Delay query superstep " + queryToStart.BaseQuery.QueryId + ":" + (superstepNo + 1));
 			barrierDelayedQueryNextSteps.add(queryToStart);
 		}
 		else {
