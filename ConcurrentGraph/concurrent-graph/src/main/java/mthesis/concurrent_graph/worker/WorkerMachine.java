@@ -307,7 +307,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 									+ query.getLastFinishedComputeSuperstep() + " should be "
 									+ globalBarrierQuerySupersteps.get(query.QueryId));
 						}
-						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()) {
+						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()
+								&& query.getMasterStartedSuperstep() >= 0) {
 							logger.warn("Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
 									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
 						}
