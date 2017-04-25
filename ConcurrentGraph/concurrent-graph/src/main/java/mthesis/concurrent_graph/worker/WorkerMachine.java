@@ -66,7 +66,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -298,9 +298,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
 					//					System.out.println("#BR " + ownId + " " + globalBarrierStartWaitSet);
 					// --- Checks  ---
-					String querySSs = ""; // TODO
+					//String querySSs = ""; // TODO
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
-						querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
+						//querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
 						if (globalBarrierQuerySupersteps.containsKey(query.QueryId)
 								&& !globalBarrierQuerySupersteps.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
 							logger.warn("Query " + query.QueryId + " is not ready for global barrier, wrong superstep: "
@@ -312,7 +312,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
 						}
 					}
-					logger.info("QSS " + ownId + " " + querySSs);
+					//logger.info("QSS1 " + ownId + " " + querySSs); // TODO
 
 
 					// --- Start barrier, notify other workers  ---
@@ -330,9 +330,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					long barrierStartWaitTime = System.nanoTime() - startTime;
 
 
-					querySSs = ""; // TODO
+					//querySSs = ""; // TODO
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
-						querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
+						//querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
 						if (globalBarrierQuerySupersteps.containsKey(query.QueryId)
 								&& !globalBarrierQuerySupersteps.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
 							logger.warn("Query " + query.QueryId + " is not ready for global barrier, wrong superstep: "
@@ -344,7 +344,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
 						}
 					}
-					logger.info("QSS2 " + ownId + " " + querySSs);
+					//logger.info("QSS2 " + ownId + " " + querySSs); // TODO
 
 
 					// --- Send and receive vertices ---
@@ -396,6 +396,19 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 					// Synchronize query intersects sending
 					lastSendMasterQueryIntersects = System.currentTimeMillis();
+
+					if (!globalBarrierStartPrematureSet.isEmpty()) {
+						logger.warn("globalBarrierStartPrematureSet not empty");
+						globalBarrierStartPrematureSet.clear();
+					}
+					if (!globalBarrierReceivingFinishPrematureSet.isEmpty()) {
+						logger.warn("globalBarrierReceivingFinishPrematureSet not empty");
+						globalBarrierReceivingFinishPrematureSet.clear();
+					}
+					if (!globalBarrierFinishPrematureSet.isEmpty()) {
+						logger.warn("globalBarrierFinishPrematureSet not empty");
+						globalBarrierFinishPrematureSet.clear();
+					}
 				}
 
 
@@ -591,22 +604,25 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-					break;
+						break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-					break;
+						break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
 						globalBarrierStartWaitSet.addAll(otherWorkerIds);
 						globalBarrierStartWaitSet.removeAll(globalBarrierStartPrematureSet);
+						globalBarrierStartPrematureSet.clear();
 						globalBarrierReceivingFinishWaitSet.addAll(otherWorkerIds);
 						globalBarrierReceivingFinishWaitSet.removeAll(globalBarrierReceivingFinishPrematureSet);
+						globalBarrierReceivingFinishPrematureSet.clear();
 						globalBarrierFinishWaitSet.addAll(otherWorkerIds);
 						globalBarrierFinishWaitSet.removeAll(globalBarrierFinishPrematureSet);
+						globalBarrierFinishPrematureSet.clear();
 						globalBarrierSendVerts = startBarrierMsg.getSendQueryVerticesList();
 						List<ReceiveQueryVerticesMessage> recvVerts = startBarrierMsg.getReceiveQueryVerticesList();
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
@@ -616,7 +632,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-					break;
+						break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -637,35 +653,35 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-					return true;
+						return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 					case Worker_Barrier_Receive_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 					case Worker_Barrier_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-					break;
+						break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -700,8 +716,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		else {
 			// Completely wrong superstep
 			logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-			+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getBarrierSyncedSuperstep() + " from "
-			+ message.getSrcMachine());
+					+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getBarrierSyncedSuperstep() + " from "
+					+ message.getSrcMachine());
 		}
 	}
 
@@ -831,8 +847,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-			+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
-			+ query.getSuperstepNosLog());
+					+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
+					+ query.getSuperstepNosLog());
 			return;
 		}
 
@@ -1121,7 +1137,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		if (message.lastSegment) {
 			// Remove from globalBarrierRecvVerts if received all vertices
 			if (!globalBarrierRecvVerts.remove(new Pair<>(message.queryId, message.srcMachine))) {
-				logger.error("TODO Premature globalBarrierRecvVerts");
+				logger.error("TODO Premature globalBarrierRecvVerts not implemented");
 			}
 		}
 
