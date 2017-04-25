@@ -47,10 +47,9 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 		QueryDistribution bestDistribution = originalDistribution;
 		System.out.println(bestDistribution.getCurrentCosts());
 
-		System.out.println("/////////////////////////////////");
-		System.out.println(queryIds);
-		System.out.println(workerQueryChunks);
-		System.out.println("/////////////////////////////////");
+		logger.info("///////////////////////////////// Move decission");
+		logger.debug("Move decission queries {}", queryIds);
+		logger.trace("Move decission workerQueryChunks {}", workerQueryChunks);
 		//		bestDistribution.printMoveDistribution();
 
 		//		QueryDistribution test = bestDistribution.clone();
@@ -110,9 +109,8 @@ public class GreedyNewVertexMoveDecider<Q extends BaseQuery> extends AbstractVer
 			bestDistribution = iterBestDistribution;
 			totalVerticesMoved += verticesMovedIter;
 		}
-		logger.info("Stopped deciding after " + i + " iterations in " + (System.currentTimeMillis() - startTime) + "ms");
+		logger.info("+++++++++++++ Stopped deciding after " + i + " iterations in " + (System.currentTimeMillis() - startTime) + "ms");
 
-		System.out.println("+++++++++++++");
 		//		bestDistribution.printMoveDistribution();
 		//		bestDistribution.printMoveDecissions();
 
