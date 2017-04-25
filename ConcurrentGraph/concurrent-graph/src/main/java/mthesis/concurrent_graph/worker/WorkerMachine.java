@@ -296,25 +296,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				// ++++++++++ Global barrier if requested and no more outstanding queries ++++++++++
 				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
-					//					System.out.println("#BR " + ownId + " " + globalBarrierStartWaitSet);
-					// --- Checks  ---
-					//String querySSs = ""; // TODO
-					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
-						//querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
-						if (globalBarrierQuerySupersteps.containsKey(query.QueryId)
-								&& !globalBarrierQuerySupersteps.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
-							logger.warn("Query " + query.QueryId + " is not ready for global barrier, wrong superstep: "
-									+ query.getLastFinishedComputeSuperstep() + " should be "
-									+ globalBarrierQuerySupersteps.get(query.QueryId));
-						}
-						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()
-								&& query.getMasterStartedSuperstep() >= 0) {
-							logger.warn("Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
-									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
-						}
-					}
-					//logger.info("QSS1 " + ownId + " " + querySSs); // TODO
-
 
 					// --- Start barrier, notify other workers  ---
 					logger.debug("Barrier started, waiting for other workers to start");
@@ -331,7 +312,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					long barrierStartWaitTime = System.nanoTime() - startTime;
 
 
-					//querySSs = ""; // TODO
+					// --- Checks  ---
 					for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
 						//querySSs += query.QueryId + ":" + query.getMasterStartedSuperstep() + " ";
 						if (globalBarrierQuerySupersteps.containsKey(query.QueryId)
@@ -340,12 +321,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 									+ query.getLastFinishedComputeSuperstep() + " should be "
 									+ globalBarrierQuerySupersteps.get(query.QueryId));
 						}
-						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()) {
+						if (query.getMasterStartedSuperstep() != query.getLastFinishedComputeSuperstep()
+								&& query.getMasterStartedSuperstep() >= 0) {
 							logger.warn("Query " + query.QueryId + " is not ready for global barrier, barrier superstep: "
 									+ query.getMasterStartedSuperstep() + " " + query.getLastFinishedComputeSuperstep());
 						}
 					}
-					//logger.info("QSS2 " + ownId + " " + querySSs); // TODO
 
 
 					// --- Send and receive vertices ---
@@ -1107,7 +1088,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						verticesMessagesSent += vertex.getBufferedMessageCount();
 					}
 				}
-				logger.info(ownId + " Sent " + moved + " and skipped " + notMoved + " to " + sendToWorker + " for query " + queryId); // TODO logger.debug
+				logger.debug(ownId + " Sent " + moved + " and skipped " + notMoved + " to " + sendToWorker + " for query " + queryId); // TODO logger.debug
 			}
 			else {
 				logger.warn(
