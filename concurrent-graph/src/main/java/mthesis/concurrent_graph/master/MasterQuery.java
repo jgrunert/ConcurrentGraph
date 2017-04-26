@@ -55,12 +55,8 @@ public class MasterQuery<Q extends BaseQuery> {
 	}
 
 	public void finishStartNextSuperstep() {
-		logger.debug("Workers finished superstep " + BaseQuery.QueryId + ":" + (StartedSuperstepNo - 1) + " after "
-				+ ((System.nanoTime() - LastStepTime) / 1000000) + "ms. Total " + ((System.nanoTime() - StartTime) / 1000000)
-				+ "ms. Active: " + QueryStepAggregator.getActiveVertices());
 		resetValueAggregator(queryValueFactory);
 		LastStepTime = System.nanoTime();
-		logger.trace("Next master superstep query " + BaseQuery.QueryId + ":" + StartedSuperstepNo);
 	}
 
 	private void resetValueAggregator(BaseQuery.BaseQueryGlobalValuesFactory<Q> queryFactory) {

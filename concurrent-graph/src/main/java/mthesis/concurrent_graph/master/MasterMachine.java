@@ -579,11 +579,11 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		logger.trace("Next superstep " + queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo + " with "
 				+ queryActiveWorkers.size() + "/" + workerIds.size() + " workers");
 
-		System.out.println("active " + queryActiveWorkers + " " + queryToStart.BaseQuery.QueryId + ":"
+		logger.info("active " + queryActiveWorkers + " " + queryToStart.BaseQuery.QueryId + ":"
 				+ queryToStart.StartedSuperstepNo); // TODO
 
 		if (queryActiveWorkers.size() == 1 && localQueryExecution) {
-			System.out.println("localmode on " + queryActiveWorkers + " " + queryToStart.BaseQuery.QueryId + ":"
+			logger.info("localmode on " + queryActiveWorkers + " " + queryToStart.BaseQuery.QueryId + ":"
 					+ queryToStart.StartedSuperstepNo); // TODO
 			// Start query in localmode - only one worker runs query until it is finished or not local anymore
 			for (Integer workerId : workerIds) {
@@ -604,7 +604,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 							true);
 				}
 			}
-			queryToStart.finishStartNextSuperstep();
+			finishStartNextSuperstep(queryToStart);
 		}
 		else {
 			// Start query superstep in normal mode,
@@ -622,8 +622,19 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 								otherActiveWorkers),
 						true);
 			}
-			queryToStart.finishStartNextSuperstep();
+			finishStartNextSuperstep(queryToStart);
 		}
+	}
+
+	private void finishStartNextSuperstep(MasterQuery<Q> queryToStart) {
+		logger.debug("Workers finished superstep, now starting " + queryToStart.BaseQuery.QueryId + ":"
+				+ (queryToStart.StartedSuperstepNo) + " after "
+				+ ((System.nanoTime() - queryToStart.LastStepTime) / 1000000) + "ms. Total "
+				+ ((System.nanoTime() - queryToStart.StartTime) / 1000000) + "ms. Active: "
+				+ queryToStart.QueryStepAggregator.getActiveVertices());
+		queryToStart.finishStartNextSuperstep();
+		logger.trace("Next master superstep query " + queryToStart.BaseQuery.QueryId + ":"
+				+ queryToStart.StartedSuperstepNo);
 	}
 
 	private void globalBarrierFinished() {

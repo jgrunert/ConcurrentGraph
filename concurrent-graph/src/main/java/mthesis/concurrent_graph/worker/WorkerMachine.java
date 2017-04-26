@@ -841,7 +841,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		query.BarrierSyncWaitSet.addAll(message.getStartSuperstep().getWorkersWaitForList());
 		for (Integer postponed : query.BarrierSyncPostponedSet) {
 			if (!query.BarrierSyncWaitSet.remove(postponed))
-				logger.error("Postponed worker barrier sync for worker not waiting from: " + postponed);
+				logger.error("Postponed worker barrier sync from worker not waiting for: " + postponed);
 		}
 		query.BarrierSyncPostponedSet.clear();
 		if (query.BarrierSyncWaitSet.isEmpty()) {
