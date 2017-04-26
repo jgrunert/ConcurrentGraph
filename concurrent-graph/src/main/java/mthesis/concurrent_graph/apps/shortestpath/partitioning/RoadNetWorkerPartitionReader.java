@@ -1,4 +1,4 @@
-package mthesis.concurrent_graph.apps.shortestpath;
+package mthesis.concurrent_graph.apps.shortestpath.partitioning;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -10,6 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.JobConfiguration;
+import mthesis.concurrent_graph.apps.shortestpath.SPMessageWritable;
+import mthesis.concurrent_graph.apps.shortestpath.SPQuery;
+import mthesis.concurrent_graph.apps.shortestpath.SPVertex;
+import mthesis.concurrent_graph.apps.shortestpath.SPVertexWritable;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.Edge;
 import mthesis.concurrent_graph.worker.BaseVertexInputReader;
@@ -17,12 +21,13 @@ import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.DoubleWritable;
 
 /**
+ * Used by workers to read input partitions
  * Reads input from file with standard format Vertex0,VertexValue0|Edge1Neighbor,Edge1Value;Edge2Neighbor,Edge2Value Vertex1...
  *
  * @author Jonas Grunert
  */
-public class RoadNetVertexInputReader
-		implements BaseVertexInputReader<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> {
+public class RoadNetWorkerPartitionReader
+implements BaseVertexInputReader<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.Configuration;
+import mthesis.concurrent_graph.apps.shortestpath.partitioning.PartitioningStrategySelector;
+import mthesis.concurrent_graph.apps.shortestpath.partitioning.RoadNetWorkerPartitionReader;
 import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.master.MasterMachine;
 import mthesis.concurrent_graph.master.MasterOutputEvaluator;
@@ -47,15 +49,14 @@ public class SPLocalTestClusterMain {
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
 		final SPConfiguration jobConfig = new SPConfiguration();
-		final MasterInputPartitioner inputPartitioner = new RoadNetInputPartitioner(
-				Configuration.getPropertyInt("PartitionsPerWorker"));
+		final MasterInputPartitioner inputPartitioner = PartitioningStrategySelector.getPartitioner();
 		final MasterOutputEvaluator<SPQuery> outputCombiner = new SPOutputEvaluator();
 
 		// Start machines
 		System.out.println("Starting machines");
 		final RunUtils<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> testUtils = new RunUtils<>();
 		MasterMachine<SPQuery> master = testUtils.startSetup(clusterConfigFile, extraJvmPerWorker, inputFile,
-				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig, new RoadNetVertexInputReader());
+				inputPartitionDir, inputPartitioner, outputCombiner, outputDir, jobConfig, new RoadNetWorkerPartitionReader());
 
 		// TODO Start queries by script or external application
 

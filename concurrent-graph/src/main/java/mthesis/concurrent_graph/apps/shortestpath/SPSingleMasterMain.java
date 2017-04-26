@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.Configuration;
+import mthesis.concurrent_graph.apps.shortestpath.partitioning.PartitioningStrategySelector;
 import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
 import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.master.MasterMachine;
@@ -46,8 +47,7 @@ public class SPSingleMasterMain {
 		final String inputPartitionDir = "input";
 		final String outputDir = "output";
 		final SPConfiguration jobConfig = new SPConfiguration();
-		final MasterInputPartitioner inputPartitioner = new RoadNetInputPartitioner(
-				Configuration.getPropertyInt("PartitionsPerWorker"));
+		final MasterInputPartitioner inputPartitioner = PartitioningStrategySelector.getPartitioner();
 		final MasterOutputEvaluator<SPQuery> outputCombiner = new SPOutputEvaluator();
 
 		// Start machines

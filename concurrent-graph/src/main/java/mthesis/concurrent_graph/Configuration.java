@@ -147,4 +147,13 @@ public class Configuration {
 		if (!Properties.containsKey(propName)) return defaultValue;
 		return Double.parseDouble(Properties.getProperty(propName));
 	}
+
+	public static String getPropertyString(String propName) {
+		return Properties.getProperty(propName);
+	}
+
+	public static String getPropertyIntString(String propName, String defaultValue) {
+		if (!Properties.containsKey(propName)) return defaultValue;
+		return Properties.getProperty(propName);
+	}
 }

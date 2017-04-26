@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.Configuration;
+import mthesis.concurrent_graph.apps.shortestpath.partitioning.RoadNetWorkerPartitionReader;
 import mthesis.concurrent_graph.apputils.MachineClusterConfiguration;
 import mthesis.concurrent_graph.apputils.RunUtils;
 import mthesis.concurrent_graph.writable.DoubleWritable;
@@ -47,6 +48,6 @@ public class SPSingleWorkerMain {
 		final RunUtils<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> testUtils = new RunUtils<>();
 		testUtils.startWorker(config.AllMachineConfigs, workerId, config.masterId, config.AllWorkerIds, outputDir,
 				jobConfig,
-				new RoadNetVertexInputReader());
+				new RoadNetWorkerPartitionReader());
 	}
 }
