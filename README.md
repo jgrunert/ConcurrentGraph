@@ -8,6 +8,7 @@ TODO Master, Worker, Input, Output, Plotting, Apps
 
 ## Local Test Runner
 SPLocalTestClusterMain can be used to start a local test cluster with master and workers on the local machine.
+In the java project the local test runner can be started using the main method of mthesis.concurrent_graph.apps.shortestpath.SPSingleMasterMain
 
 ```
 Usage: [configFile] [clusterConfigFile] [inputFile] [optional extraJvmPerWorker-bool]
@@ -21,5 +22,12 @@ inputFile must be a graph file TODO Format. One possibility to create this file 
 
 If extraJvmPerWorker [experimental] is enabled, each worker will be started in a sepatarate jvm.
 
-## Cluster deployment
+## Cluster Deployment
 TODO
+
+## Input Partitioning
+There are different input partitioning strategies available: Direct, Hashed and [TODO LDG]. 
+Direct means that the partitions are directly assigned, the vertex order is taken from the input files. 
+Hashing means that vertices are distributed on partitions using a hash function.
+
+The PartitioningStrategySelector selects a partitioning strategy based on the InputPartitioner config value.
