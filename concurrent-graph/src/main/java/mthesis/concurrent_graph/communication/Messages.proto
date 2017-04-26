@@ -45,12 +45,14 @@ message MessageEnvelope {
 	}
 	
 	enum WorkerQueryExecutionMode {
-	  	// Normal superstep execution
-		Normal = 1;
+	  	// Normal non-local superstep execution
+		NonLocal = 1;
+	  	// Non-local superstep execution with skipping superstep on this machine
+		NonLocalSkip = 2;
 		// Run in local mode on this machine
-		RunLocalmodeOnThis = 2;
+		LocalOnThis = 3;
 		// Query runs on other machine in localmode
-		RunLocalmodeOnOther = 3;
+		LocalOnOther = 4;
 	}
 	  
 	message ControlMessage {
@@ -79,9 +81,8 @@ message MessageEnvelope {
 		}
 		
 		message StartSuperstepMessage {
-			optional bool SkipBarrierAndCompute = 1;
+			optional WorkerQueryExecutionMode WorkerQueryExecution = 1;
 			repeated int32 WorkersWaitFor = 2;
-			optional WorkerQueryExecutionMode WorkerQueryExecution = 3;
 		}
 		
 		//message QueriesIntersectionsMessage {

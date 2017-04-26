@@ -54,11 +54,10 @@ public class ControlMessageBuildUtil {
 
 	// Normal next superstep message, no vertex transfer
 	public static MessageEnvelope Build_Master_QueryNextSuperstep(int superstepNo, int srcMachineId,
-			BaseQuery query, WorkerQueryExecutionMode queryExecutionMode, boolean skipBarrierAndCompute,
+			BaseQuery query, WorkerQueryExecutionMode queryExecutionMode,
 			List<Integer> workersWaitFor) {
 		StartSuperstepMessage.Builder ssmBuilder = StartSuperstepMessage.newBuilder()
 				.setWorkerQueryExecution(queryExecutionMode)
-				.setSkipBarrierAndCompute(skipBarrierAndCompute)
 				.addAllWorkersWaitFor(workersWaitFor);
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()

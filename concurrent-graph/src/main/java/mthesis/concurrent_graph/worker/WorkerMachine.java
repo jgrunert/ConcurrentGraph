@@ -40,6 +40,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
+import mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.communication.UpdateRegisteredVerticesMessage;
@@ -66,7 +67,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -586,13 +587,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
@@ -614,7 +615,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -635,35 +636,35 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-						return true;
+					return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Receive_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -698,8 +699,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		else {
 			// Completely wrong superstep
 			logger.error("Received Worker_Superstep_Channel_Barrier with wrong superstepNo: " + message.getSuperstepNo()
-					+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getBarrierSyncedSuperstep() + " from "
-					+ message.getSrcMachine());
+			+ " at " + activeQuery.Query.QueryId + ":" + activeQuery.getBarrierSyncedSuperstep() + " from "
+			+ message.getSrcMachine());
 		}
 	}
 
@@ -829,12 +830,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-					+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
-					+ query.getSuperstepNosLog());
+			+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
+			+ query.getSuperstepNosLog());
 			return;
 		}
 
-		// Wait for next barrier, apply all postponed premature barrier syncs
+		// Initialize wait set for next barrier, apply all postponed premature barrier syncs
 		query.BarrierSyncWaitSet.addAll(message.getStartSuperstep().getWorkersWaitForList());
 		for (Integer postponed : query.BarrierSyncPostponedSet) {
 			if (!query.BarrierSyncWaitSet.remove(postponed))
@@ -859,7 +860,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						+ ". Active: " + query.QueryLocal.getActiveVertices());
 
 		// Skip superstep if master says so
-		if (message.getStartSuperstep().getSkipBarrierAndCompute()) {
+		if (message.getStartSuperstep().getWorkerQueryExecution() == WorkerQueryExecutionMode.NonLocalSkip) {
 			skipSuperstepCompute(query);
 		}
 	}

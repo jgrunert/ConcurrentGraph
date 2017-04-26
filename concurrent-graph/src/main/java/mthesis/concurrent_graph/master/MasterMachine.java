@@ -581,19 +581,24 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 		if (queryActiveWorkers.size() == 1 && localQueryExecution) {
 			// TODO Localmode
-			// Start query superstep
+			// Start query in localmode - only one worker runs query until it is finished or not local anymore
 			for (Integer workerId : workerIds) {
-				List<Integer> otherActiveWorkers = new ArrayList<>(queryActiveWorkers.size());
-				for (Integer activeWorkerId : queryActiveWorkers) {
-					if (!workerId.equals(activeWorkerId)) otherActiveWorkers.add(activeWorkerId);
+				if (activeQueries.containsKey(workerId)) {
+					// This worker is the chosen one - it can execute the query in localmode
+					messaging.sendControlMessageUnicast(workerId,
+							ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo,
+									ownId, queryToStart.QueryStepAggregator, WorkerQueryExecutionMode.LocalOnThis,
+									new ArrayList<>(0)),
+							true);
 				}
-
-				boolean skipWorker = skipInactiveWorkers && !queryActiveWorkers.contains(workerId);
-				messaging.sendControlMessageUnicast(workerId,
-						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo, ownId,
-								queryToStart.QueryStepAggregator, WorkerQueryExecutionMode.Normal, skipWorker,
-								otherActiveWorkers),
-						true);
+				else {
+					// This worker will not execute the query until it leaves localmode
+					messaging.sendControlMessageUnicast(workerId,
+							ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo,
+									ownId, queryToStart.QueryStepAggregator, WorkerQueryExecutionMode.LocalOnOther,
+									new ArrayList<>(queryActiveWorkers)),
+							true);
+				}
 			}
 			queryToStart.finishStartNextSuperstep();
 		}
@@ -605,10 +610,11 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					if (!workerId.equals(activeWorkerId)) otherActiveWorkers.add(activeWorkerId);
 				}
 
-				boolean skipWorker = skipInactiveWorkers && !queryActiveWorkers.contains(workerId);
+				WorkerQueryExecutionMode skipMode = (skipInactiveWorkers && !queryActiveWorkers.contains(workerId))
+						? WorkerQueryExecutionMode.NonLocalSkip : WorkerQueryExecutionMode.NonLocal;
 				messaging.sendControlMessageUnicast(workerId,
 						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo, ownId,
-								queryToStart.QueryStepAggregator, WorkerQueryExecutionMode.Normal, skipWorker,
+								queryToStart.QueryStepAggregator, skipMode,
 								otherActiveWorkers),
 						true);
 			}
