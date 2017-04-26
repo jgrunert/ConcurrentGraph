@@ -19,6 +19,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStat
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
+import mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode;
 
 
 /**
@@ -53,8 +54,11 @@ public class ControlMessageBuildUtil {
 
 	// Normal next superstep message, no vertex transfer
 	public static MessageEnvelope Build_Master_QueryNextSuperstep(int superstepNo, int srcMachineId,
-			BaseQuery query, boolean skipBarrierAndCompute, List<Integer> workersWaitFor) {
-		StartSuperstepMessage.Builder ssmBuilder = StartSuperstepMessage.newBuilder().setSkipBarrierAndCompute(skipBarrierAndCompute)
+			BaseQuery query, WorkerQueryExecutionMode queryExecutionMode, boolean skipBarrierAndCompute,
+			List<Integer> workersWaitFor) {
+		StartSuperstepMessage.Builder ssmBuilder = StartSuperstepMessage.newBuilder()
+				.setWorkerQueryExecution(queryExecutionMode)
+				.setSkipBarrierAndCompute(skipBarrierAndCompute)
 				.addAllWorkersWaitFor(workersWaitFor);
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder()

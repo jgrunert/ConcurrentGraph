@@ -34,6 +34,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVerte
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
+import mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
@@ -567,6 +568,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		queryToStart.beginStartNextSuperstep(workerIds);
 
 		boolean skipInactiveWorkers = Configuration.getPropertyBoolDefault("SkipInactiveWorkers", true);
+		boolean localQueryExecution = Configuration.getPropertyBoolDefault("LocalQueryExecution", true);
 
 		Set<Integer> queryActiveWorkers;
 		if (skipInactiveWorkers)
@@ -577,20 +579,41 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		logger.trace("Next superstep " + queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo + " with "
 				+ queryActiveWorkers.size() + "/" + workerIds.size() + " workers");
 
-		// Start query superstep
-		for (Integer workerId : workerIds) {
-			List<Integer> otherActiveWorkers = new ArrayList<>(queryActiveWorkers.size());
-			for (Integer activeWorkerId : queryActiveWorkers) {
-				if (!workerId.equals(activeWorkerId)) otherActiveWorkers.add(activeWorkerId);
-			}
+		if (queryActiveWorkers.size() == 1 && localQueryExecution) {
+			// TODO Localmode
+			// Start query superstep
+			for (Integer workerId : workerIds) {
+				List<Integer> otherActiveWorkers = new ArrayList<>(queryActiveWorkers.size());
+				for (Integer activeWorkerId : queryActiveWorkers) {
+					if (!workerId.equals(activeWorkerId)) otherActiveWorkers.add(activeWorkerId);
+				}
 
-			boolean skipWorker = skipInactiveWorkers && !queryActiveWorkers.contains(workerId);
-			messaging.sendControlMessageUnicast(workerId,
-					ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo, ownId,
-							queryToStart.QueryStepAggregator, skipWorker, otherActiveWorkers),
-					true);
+				boolean skipWorker = skipInactiveWorkers && !queryActiveWorkers.contains(workerId);
+				messaging.sendControlMessageUnicast(workerId,
+						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo, ownId,
+								queryToStart.QueryStepAggregator, WorkerQueryExecutionMode.Normal, skipWorker,
+								otherActiveWorkers),
+						true);
+			}
+			queryToStart.finishStartNextSuperstep();
 		}
-		queryToStart.finishStartNextSuperstep();
+		else {
+			// Start query superstep in normal mode,
+			for (Integer workerId : workerIds) {
+				List<Integer> otherActiveWorkers = new ArrayList<>(queryActiveWorkers.size());
+				for (Integer activeWorkerId : queryActiveWorkers) {
+					if (!workerId.equals(activeWorkerId)) otherActiveWorkers.add(activeWorkerId);
+				}
+
+				boolean skipWorker = skipInactiveWorkers && !queryActiveWorkers.contains(workerId);
+				messaging.sendControlMessageUnicast(workerId,
+						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo, ownId,
+								queryToStart.QueryStepAggregator, WorkerQueryExecutionMode.Normal, skipWorker,
+								otherActiveWorkers),
+						true);
+			}
+			queryToStart.finishStartNextSuperstep();
+		}
 	}
 
 	private void globalBarrierFinished() {

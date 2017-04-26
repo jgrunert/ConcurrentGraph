@@ -333,6 +333,129 @@ public final class Messages {
     // @@protoc_insertion_point(enum_scope:mthesis.concurrent_graph.communication.messages.ControlMessageType)
   }
 
+  /**
+   * Protobuf enum {@code mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode}
+   */
+  public enum WorkerQueryExecutionMode
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <pre>
+     * Normal superstep execution
+     * </pre>
+     *
+     * <code>Normal = 1;</code>
+     */
+    Normal(1),
+    /**
+     * <pre>
+     * Run in local mode on this machine
+     * </pre>
+     *
+     * <code>RunLocalmodeOnThis = 2;</code>
+     */
+    RunLocalmodeOnThis(2),
+    /**
+     * <pre>
+     * Query runs on other machine in localmode
+     * </pre>
+     *
+     * <code>RunLocalmodeOnOther = 3;</code>
+     */
+    RunLocalmodeOnOther(3),
+    ;
+
+    /**
+     * <pre>
+     * Normal superstep execution
+     * </pre>
+     *
+     * <code>Normal = 1;</code>
+     */
+    public static final int Normal_VALUE = 1;
+    /**
+     * <pre>
+     * Run in local mode on this machine
+     * </pre>
+     *
+     * <code>RunLocalmodeOnThis = 2;</code>
+     */
+    public static final int RunLocalmodeOnThis_VALUE = 2;
+    /**
+     * <pre>
+     * Query runs on other machine in localmode
+     * </pre>
+     *
+     * <code>RunLocalmodeOnOther = 3;</code>
+     */
+    public static final int RunLocalmodeOnOther_VALUE = 3;
+
+
+    public final int getNumber() {
+      return value;
+    }
+
+    /**
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static WorkerQueryExecutionMode valueOf(int value) {
+      return forNumber(value);
+    }
+
+    public static WorkerQueryExecutionMode forNumber(int value) {
+      switch (value) {
+        case 1: return Normal;
+        case 2: return RunLocalmodeOnThis;
+        case 3: return RunLocalmodeOnOther;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<WorkerQueryExecutionMode>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        WorkerQueryExecutionMode> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<WorkerQueryExecutionMode>() {
+            public WorkerQueryExecutionMode findValueByNumber(int number) {
+              return WorkerQueryExecutionMode.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return mthesis.concurrent_graph.communication.Messages.getDescriptor().getEnumTypes().get(1);
+    }
+
+    private static final WorkerQueryExecutionMode[] VALUES = values();
+
+    public static WorkerQueryExecutionMode valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private WorkerQueryExecutionMode(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode)
+  }
+
   public interface MessageEnvelopeOrBuilder extends
       // @@protoc_insertion_point(interface_extends:mthesis.concurrent_graph.communication.messages.MessageEnvelope)
       com.google.protobuf.MessageOrBuilder {
@@ -2425,6 +2548,15 @@ public final class Messages {
        * <code>repeated int32 WorkersWaitFor = 2;</code>
        */
       int getWorkersWaitFor(int index);
+
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode WorkerQueryExecution = 3;</code>
+       */
+      boolean hasWorkerQueryExecution();
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode WorkerQueryExecution = 3;</code>
+       */
+      mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode getWorkerQueryExecution();
     }
     /**
      * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage.StartSuperstepMessage}
@@ -2440,6 +2572,7 @@ public final class Messages {
       private StartSuperstepMessage() {
         skipBarrierAndCompute_ = false;
         workersWaitFor_ = java.util.Collections.emptyList();
+        workerQueryExecution_ = 1;
       }
 
       @java.lang.Override
@@ -2494,6 +2627,17 @@ public final class Messages {
                   workersWaitFor_.add(input.readInt32());
                 }
                 input.popLimit(limit);
+                break;
+              }
+              case 24: {
+                int rawValue = input.readEnum();
+                mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode value = mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.valueOf(rawValue);
+                if (value == null) {
+                  unknownFields.mergeVarintField(3, rawValue);
+                } else {
+                  bitField0_ |= 0x00000002;
+                  workerQueryExecution_ = rawValue;
+                }
                 break;
               }
             }
@@ -2561,6 +2705,22 @@ public final class Messages {
         return workersWaitFor_.get(index);
       }
 
+      public static final int WORKERQUERYEXECUTION_FIELD_NUMBER = 3;
+      private int workerQueryExecution_;
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode WorkerQueryExecution = 3;</code>
+       */
+      public boolean hasWorkerQueryExecution() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode WorkerQueryExecution = 3;</code>
+       */
+      public mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode getWorkerQueryExecution() {
+        mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode result = mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.valueOf(workerQueryExecution_);
+        return result == null ? mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.Normal : result;
+      }
+
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
@@ -2578,6 +2738,9 @@ public final class Messages {
         }
         for (int i = 0; i < workersWaitFor_.size(); i++) {
           output.writeInt32(2, workersWaitFor_.get(i));
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeEnum(3, workerQueryExecution_);
         }
         unknownFields.writeTo(output);
       }
@@ -2599,6 +2762,10 @@ public final class Messages {
           }
           size += dataSize;
           size += 1 * getWorkersWaitForList().size();
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeEnumSize(3, workerQueryExecution_);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -2624,6 +2791,10 @@ public final class Messages {
         }
         result = result && getWorkersWaitForList()
             .equals(other.getWorkersWaitForList());
+        result = result && (hasWorkerQueryExecution() == other.hasWorkerQueryExecution());
+        if (hasWorkerQueryExecution()) {
+          result = result && workerQueryExecution_ == other.workerQueryExecution_;
+        }
         result = result && unknownFields.equals(other.unknownFields);
         return result;
       }
@@ -2643,6 +2814,10 @@ public final class Messages {
         if (getWorkersWaitForCount() > 0) {
           hash = (37 * hash) + WORKERSWAITFOR_FIELD_NUMBER;
           hash = (53 * hash) + getWorkersWaitForList().hashCode();
+        }
+        if (hasWorkerQueryExecution()) {
+          hash = (37 * hash) + WORKERQUERYEXECUTION_FIELD_NUMBER;
+          hash = (53 * hash) + workerQueryExecution_;
         }
         hash = (29 * hash) + unknownFields.hashCode();
         memoizedHashCode = hash;
@@ -2766,6 +2941,8 @@ public final class Messages {
           bitField0_ = (bitField0_ & ~0x00000001);
           workersWaitFor_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000002);
+          workerQueryExecution_ = 1;
+          bitField0_ = (bitField0_ & ~0x00000004);
           return this;
         }
 
@@ -2799,6 +2976,10 @@ public final class Messages {
             bitField0_ = (bitField0_ & ~0x00000002);
           }
           result.workersWaitFor_ = workersWaitFor_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.workerQueryExecution_ = workerQueryExecution_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -2853,6 +3034,9 @@ public final class Messages {
               workersWaitFor_.addAll(other.workersWaitFor_);
             }
             onChanged();
+          }
+          if (other.hasWorkerQueryExecution()) {
+            setWorkerQueryExecution(other.getWorkerQueryExecution());
           }
           this.mergeUnknownFields(other.unknownFields);
           onChanged();
@@ -2976,6 +3160,42 @@ public final class Messages {
         public Builder clearWorkersWaitFor() {
           workersWaitFor_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+          return this;
+        }
+
+        private int workerQueryExecution_ = 1;
+        /**
+         * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode WorkerQueryExecution = 3;</code>
+         */
+        public boolean hasWorkerQueryExecution() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode WorkerQueryExecution = 3;</code>
+         */
+        public mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode getWorkerQueryExecution() {
+          mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode result = mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.valueOf(workerQueryExecution_);
+          return result == null ? mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.Normal : result;
+        }
+        /**
+         * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode WorkerQueryExecution = 3;</code>
+         */
+        public Builder setWorkerQueryExecution(mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode value) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          bitField0_ |= 0x00000004;
+          workerQueryExecution_ = value.getNumber();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode WorkerQueryExecution = 3;</code>
+         */
+        public Builder clearWorkerQueryExecution() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          workerQueryExecution_ = 1;
           onChanged();
           return this;
         }
@@ -11656,7 +11876,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\211\023\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\363\023\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022q\n\020" +
@@ -11686,51 +11906,56 @@ public final class Messages {
       "ksMessage\032J\n\027AssignPartitionsMessage\022\027\n\017" +
       "MasterStartTime\030\001 \001(\003\022\026\n\016PartitionFiles\030" +
       "\002 \003(\t\032/\n\030WorkerInitializedMessage\022\023\n\013Ver" +
-      "texCount\030\001 \001(\005\032N\n\025StartSuperstepMessage\022" +
-      "\035\n\025SkipBarrierAndCompute\030\001 \001(\010\022\026\n\016Worker" +
-      "sWaitFor\030\002 \003(\005\0321\n\030SendQueryVerticesMessa" +
-      "ge\022\025\n\rSendToMachine\030\001 \001(\005\0326\n\033ReceiveQuer" +
-      "yVerticesMessage\022\027\n\017RecvFromMachine\030\001 \003(" +
-      "\005\032\221\005\n\023StartBarrierMessage\022\201\001\n\017QuerySuper",
-      "steps\030\001 \003(\0132h.mthesis.concurrent_graph.c" +
+      "texCount\030\001 \001(\005\032\267\001\n\025StartSuperstepMessage" +
+      "\022\035\n\025SkipBarrierAndCompute\030\001 \001(\010\022\026\n\016Worke" +
+      "rsWaitFor\030\002 \003(\005\022g\n\024WorkerQueryExecution\030" +
+      "\003 \001(\0162I.mthesis.concurrent_graph.communi" +
+      "cation.messages.WorkerQueryExecutionMode" +
+      "\0321\n\030SendQueryVerticesMessage\022\025\n\rSendToMa",
+      "chine\030\001 \001(\005\0326\n\033ReceiveQueryVerticesMessa" +
+      "ge\022\027\n\017RecvFromMachine\030\001 \003(\005\032\221\005\n\023StartBar" +
+      "rierMessage\022\201\001\n\017QuerySupersteps\030\001 \003(\0132h." +
+      "mthesis.concurrent_graph.communication.m" +
+      "essages.ControlMessage.StartBarrierMessa" +
+      "ge.QuerySuperstepsEntry\022\207\001\n\021SendQueryVer" +
+      "tices\030\002 \003(\0132l.mthesis.concurrent_graph.c" +
       "ommunication.messages.ControlMessage.Sta" +
-      "rtBarrierMessage.QuerySuperstepsEntry\022\207\001" +
-      "\n\021SendQueryVertices\030\002 \003(\0132l.mthesis.conc" +
-      "urrent_graph.communication.messages.Cont" +
-      "rolMessage.StartBarrierMessage.SendQuery" +
-      "VerticesMessage\022\215\001\n\024ReceiveQueryVertices" +
-      "\030\003 \003(\0132o.mthesis.concurrent_graph.commun" +
-      "ication.messages.ControlMessage.StartBar" +
-      "rierMessage.ReceiveQueryVerticesMessage\032",
-      "6\n\024QuerySuperstepsEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005" +
-      "value\030\002 \001(\005:\0028\001\032X\n\030SendQueryVerticesMess" +
-      "age\022\017\n\007QueryId\030\001 \001(\005\022\025\n\rMoveToMachine\030\002 " +
-      "\001(\005\022\024\n\014MaxMoveCount\030\003 \001(\005\032J\n\033ReceiveQuer" +
-      "yVerticesMessage\022\017\n\007QueryId\030\001 \001(\005\022\032\n\022Rec" +
-      "eiveFromMachine\030\002 \001(\005\032\300\001\n\022WorkerStatsMes" +
-      "sage\022t\n\007Samples\030\001 \003(\0132c.mthesis.concurre" +
-      "nt_graph.communication.messages.ControlM" +
-      "essage.WorkerStatsMessage.WorkerStatSamp" +
-      "le\0324\n\020WorkerStatSample\022\014\n\004Time\030\001 \001(\003\022\022\n\n",
-      "StatsBytes\030\002 \001(\014\032\207\001\n\030QueryVertexChunksMe" +
-      "ssage\022k\n\006Chunks\030\001 \003(\0132[.mthesis.concurre" +
-      "nt_graph.communication.messages.ControlM" +
-      "essage.QueryVertexChunksMapMessage\032=\n\033Qu" +
-      "eryVertexChunksMapMessage\022\017\n\007Queries\030\001 \003" +
-      "(\005\022\r\n\005Count\030\002 \001(\005*\306\003\n\022ControlMessageType" +
-      "\022\025\n\021Channel_Handshake\020\001\022\026\n\022Worker_Initia" +
-      "lized\020\002\022\"\n\036Worker_Query_Superstep_Barrie" +
-      "r\020\003\022#\n\037Worker_Query_Superstep_Finished\020\004" +
-      "\022\031\n\025Worker_Query_Finished\020\005\022\032\n\026Worker_Ba",
-      "rrier_Started\020\014\022#\n\037Worker_Barrier_Receiv" +
-      "e_Finished\020\017\022\033\n\027Worker_Barrier_Finished\020" +
-      "\r\022\034\n\030Master_Worker_Initialize\020\006\022\026\n\022Maste" +
-      "r_Query_Start\020\007\022\037\n\033Master_Query_Next_Sup" +
-      "erstep\020\010\022\031\n\025Master_Query_Finished\020\t\022\023\n\017M" +
-      "aster_Shutdown\020\n\022\030\n\024Master_Start_Barrier" +
-      "\020\013\022\036\n\032Worker_Query_Vertex_Chunks\020\016B2\n&mt" +
-      "hesis.concurrent_graph.communicationB\010Me" +
-      "ssages"
+      "rtBarrierMessage.SendQueryVerticesMessag" +
+      "e\022\215\001\n\024ReceiveQueryVertices\030\003 \003(\0132o.mthes",
+      "is.concurrent_graph.communication.messag" +
+      "es.ControlMessage.StartBarrierMessage.Re" +
+      "ceiveQueryVerticesMessage\0326\n\024QuerySupers" +
+      "tepsEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\005:\0028" +
+      "\001\032X\n\030SendQueryVerticesMessage\022\017\n\007QueryId" +
+      "\030\001 \001(\005\022\025\n\rMoveToMachine\030\002 \001(\005\022\024\n\014MaxMove" +
+      "Count\030\003 \001(\005\032J\n\033ReceiveQueryVerticesMessa" +
+      "ge\022\017\n\007QueryId\030\001 \001(\005\022\032\n\022ReceiveFromMachin" +
+      "e\030\002 \001(\005\032\300\001\n\022WorkerStatsMessage\022t\n\007Sample" +
+      "s\030\001 \003(\0132c.mthesis.concurrent_graph.commu",
+      "nication.messages.ControlMessage.WorkerS" +
+      "tatsMessage.WorkerStatSample\0324\n\020WorkerSt" +
+      "atSample\022\014\n\004Time\030\001 \001(\003\022\022\n\nStatsBytes\030\002 \001" +
+      "(\014\032\207\001\n\030QueryVertexChunksMessage\022k\n\006Chunk" +
+      "s\030\001 \003(\0132[.mthesis.concurrent_graph.commu" +
+      "nication.messages.ControlMessage.QueryVe" +
+      "rtexChunksMapMessage\032=\n\033QueryVertexChunk" +
+      "sMapMessage\022\017\n\007Queries\030\001 \003(\005\022\r\n\005Count\030\002 " +
+      "\001(\005*\306\003\n\022ControlMessageType\022\025\n\021Channel_Ha" +
+      "ndshake\020\001\022\026\n\022Worker_Initialized\020\002\022\"\n\036Wor",
+      "ker_Query_Superstep_Barrier\020\003\022#\n\037Worker_" +
+      "Query_Superstep_Finished\020\004\022\031\n\025Worker_Que" +
+      "ry_Finished\020\005\022\032\n\026Worker_Barrier_Started\020" +
+      "\014\022#\n\037Worker_Barrier_Receive_Finished\020\017\022\033" +
+      "\n\027Worker_Barrier_Finished\020\r\022\034\n\030Master_Wo" +
+      "rker_Initialize\020\006\022\026\n\022Master_Query_Start\020" +
+      "\007\022\037\n\033Master_Query_Next_Superstep\020\010\022\031\n\025Ma" +
+      "ster_Query_Finished\020\t\022\023\n\017Master_Shutdown" +
+      "\020\n\022\030\n\024Master_Start_Barrier\020\013\022\036\n\032Worker_Q" +
+      "uery_Vertex_Chunks\020\016*W\n\030WorkerQueryExecu",
+      "tionMode\022\n\n\006Normal\020\001\022\026\n\022RunLocalmodeOnTh" +
+      "is\020\002\022\027\n\023RunLocalmodeOnOther\020\003B2\n&mthesis" +
+      ".concurrent_graph.communicationB\010Message" +
+      "s"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -11773,7 +11998,7 @@ public final class Messages {
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartSuperstepMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartSuperstepMessage_descriptor,
-        new java.lang.String[] { "SkipBarrierAndCompute", "WorkersWaitFor", });
+        new java.lang.String[] { "SkipBarrierAndCompute", "WorkersWaitFor", "WorkerQueryExecution", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(3);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_SendQueryVerticesMessage_fieldAccessorTable = new

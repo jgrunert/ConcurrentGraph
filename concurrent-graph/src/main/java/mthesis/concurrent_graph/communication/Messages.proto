@@ -43,6 +43,15 @@ message MessageEnvelope {
 		
 		Worker_Query_Vertex_Chunks = 14;
 	}
+	
+	enum WorkerQueryExecutionMode {
+	  	// Normal superstep execution
+		Normal = 1;
+		// Run in local mode on this machine
+		RunLocalmodeOnThis = 2;
+		// Query runs on other machine in localmode
+		RunLocalmodeOnOther = 3;
+	}
 	  
 	message ControlMessage {
 		optional ControlMessageType Type = 1;
@@ -72,6 +81,7 @@ message MessageEnvelope {
 		message StartSuperstepMessage {
 			optional bool SkipBarrierAndCompute = 1;
 			repeated int32 WorkersWaitFor = 2;
+			optional WorkerQueryExecutionMode WorkerQueryExecution = 3;
 		}
 		
 		//message QueriesIntersectionsMessage {
