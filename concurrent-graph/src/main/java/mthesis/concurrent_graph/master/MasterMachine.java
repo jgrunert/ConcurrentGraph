@@ -579,8 +579,12 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		logger.trace("Next superstep " + queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo + " with "
 				+ queryActiveWorkers.size() + "/" + workerIds.size() + " workers");
 
+		System.out.println("active " + queryActiveWorkers + " " + queryToStart.BaseQuery.QueryId + ":"
+				+ queryToStart.StartedSuperstepNo); // TODO
+
 		if (queryActiveWorkers.size() == 1 && localQueryExecution) {
-			// TODO Localmode
+			System.out.println("localmode on " + queryActiveWorkers + " " + queryToStart.BaseQuery.QueryId + ":"
+					+ queryToStart.StartedSuperstepNo); // TODO
 			// Start query in localmode - only one worker runs query until it is finished or not local anymore
 			for (Integer workerId : workerIds) {
 				if (activeQueries.containsKey(workerId)) {

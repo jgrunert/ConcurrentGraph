@@ -278,8 +278,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				startTime = System.nanoTime();
 				activeQueriesThisStep.clear();
 				while (!stopRequested && activeQueriesThisStep.isEmpty() && !globalBarrierRequested) {
-					handleReceivedMessagesWait();
-
 					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 						if (activeQuery.getMasterStartedSuperstep() == activeQuery.getLastFinishedComputeSuperstep()
 								+ 1)
@@ -287,6 +285,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					}
 					if (!activeQueriesThisStep.isEmpty() || globalBarrierRequested)
 						break;
+
+					handleReceivedMessagesWait();
+
 					if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
 						logger.warn("Waiting long time for active queries");
 						Thread.sleep(2000);
@@ -818,6 +819,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	private void handleMasterNextSuperstep(ControlMessage message) {
 		Q msgQuery = deserializeQuery(message.getQueryValues());
 		WorkerQuery<V, E, M, Q> query = activeQueries.get(msgQuery.QueryId);
+		WorkerQueryExecutionMode queryExecutionMode = message.getStartSuperstep().getWorkerQueryExecution();
 
 		// Checks
 		if (query == null) {
@@ -839,7 +841,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		query.BarrierSyncWaitSet.addAll(message.getStartSuperstep().getWorkersWaitForList());
 		for (Integer postponed : query.BarrierSyncPostponedSet) {
 			if (!query.BarrierSyncWaitSet.remove(postponed))
-				logger.error("Postponed worker barrier sync for worker not waiting for: " + postponed);
+				logger.error("Postponed worker barrier sync for worker not waiting from: " + postponed);
 		}
 		query.BarrierSyncPostponedSet.clear();
 		if (query.BarrierSyncWaitSet.isEmpty()) {
@@ -860,7 +862,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						+ ". Active: " + query.QueryLocal.getActiveVertices());
 
 		// Skip superstep if master says so
-		if (message.getStartSuperstep().getWorkerQueryExecution() == WorkerQueryExecutionMode.NonLocalSkip) {
+		if (queryExecutionMode == WorkerQueryExecutionMode.NonLocalSkip
+				|| queryExecutionMode == WorkerQueryExecutionMode.LocalOnOther) {
 			skipSuperstepCompute(query);
 		}
 	}
