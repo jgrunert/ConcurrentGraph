@@ -248,8 +248,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	@SuppressWarnings("unchecked")
 	public void handleMessage(ChannelMessage message) {
-		// TODO No more super.onIncomingControlMessage(message);
-
 		if (message.getTypeCode() == StartQueryMessage.ChannelMessageTypeCode) {
 			if (firstQueryStartTimeMs == -1) {
 				logger.info("First query started after " + (System.currentTimeMillis() - masterStartTimeMs));
@@ -553,7 +551,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 						queryFinishedSupersteps), true);
 			}
 			logger.info("Started barrier with vertex move");
-			logger.info("Supersteps at vertex move: " + queryFinishedSupersteps); // TODO logger.debug
+			logger.debug("Supersteps at vertex move: {}", queryFinishedSupersteps);
 
 			logger.debug("Delay query superstep " + queryToStart.BaseQuery.QueryId + ":" + (superstepNo + 1));
 			barrierDelayedQueryNextSteps.add(queryToStart);
@@ -576,18 +574,15 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		else queryActiveWorkers = new HashSet<>(workerIds);
 
 		// TODO Query stat and master/worker stat: Active workers
-		logger.trace("Next superstep " + queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo + " with "
-				+ queryActiveWorkers.size() + "/" + workerIds.size() + " workers");
-
-		logger.info("active " + queryActiveWorkers + " " + queryToStart.BaseQuery.QueryId + ":"
-				+ queryToStart.StartedSuperstepNo); // TODO
+		logger.trace("Next superstep {}:{} with {}/{} {}", new Object[] { queryToStart.BaseQuery.QueryId,
+				queryToStart.StartedSuperstepNo, queryActiveWorkers.size(), workerIds.size(), workerIds });
 
 		if (queryActiveWorkers.size() == 1 && localQueryExecution) {
-			logger.info("localmode on " + queryActiveWorkers + " " + queryToStart.BaseQuery.QueryId + ":"
-					+ queryToStart.StartedSuperstepNo); // TODO
+			logger.trace("localmode on {} {}:{}", new Object[] { queryActiveWorkers, queryToStart.BaseQuery.QueryId,
+					queryToStart.StartedSuperstepNo });
 			// Start query in localmode - only one worker runs query until it is finished or not local anymore
 			for (Integer workerId : workerIds) {
-				if (activeQueries.containsKey(workerId)) {
+				if (queryActiveWorkers.contains(workerId)) {
 					// This worker is the chosen one - it can execute the query in localmode
 					messaging.sendControlMessageUnicast(workerId,
 							ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo,
@@ -639,7 +634,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private void globalBarrierFinished() {
 		logger.info("Global barrier finished");
-		logger.info("Start delayed supersteps: " + barrierDelayedQueryNextSteps); // TODO logger.debug
+		logger.debug("Start delayed supersteps: {}", barrierDelayedQueryNextSteps);
 		globalBarrierActive = false;
 		for (MasterQuery<Q> delayedQueryNextStep : barrierDelayedQueryNextSteps) {
 			logger.debug(
