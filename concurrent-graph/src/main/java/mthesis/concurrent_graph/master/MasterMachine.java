@@ -398,12 +398,16 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					}
 
 					boolean queryFinished;
-					if (msgActiveQuery.QueryStepAggregator.masterForceWorkersActive(superstepNo))
+					if (msgActiveQuery.QueryStepAggregator.masterForceAllWorkersActive(superstepNo)) {
 						msgActiveQuery.ActiveWorkers.addAll(workerIds);
-					if (msgActiveQuery.ActiveWorkers.isEmpty())
+					}
+					if (msgActiveQuery.ActiveWorkers.isEmpty()) {
 						queryFinished = msgActiveQuery.QueryStepAggregator.onMasterAllVerticesFinished();
-					else
+						if (!queryFinished) msgActiveQuery.ActiveWorkers.addAll(workerIds);
+					}
+					else {
 						queryFinished = false;
+					}
 
 					// All workers have superstep finished
 					if (!queryFinished) {
@@ -583,7 +587,11 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 		// TODO Query stat and master/worker stat: Active workers
 		logger.trace("Next superstep {}:{} with {}/{} {}", new Object[] { queryToStart.BaseQuery.QueryId,
-				queryToStart.StartedSuperstepNo, queryActiveWorkers.size(), workerIds.size(), workerIds });
+				queryToStart.StartedSuperstepNo, queryActiveWorkers.size(), workerIds.size(), queryActiveWorkers });
+
+		if (queryActiveWorkers.isEmpty()) {
+			System.err.println("WF");
+		}
 
 		if (queryActiveWorkers.size() == 1 && localQueryExecution) {
 			logger.trace("localmode on {} {}:{}", new Object[] { queryActiveWorkers, queryToStart.BaseQuery.QueryId,
@@ -896,6 +904,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 					for (int i = 0; i < querySteps.getValue().size(); i++) {
 						Q step = querySteps.getValue().get(i).get(workerId);
+						if (step == null) continue; // TODO Missing steps when doing localmode
 
 						sb.append(step.getActiveVertices());
 						sb.append(';');

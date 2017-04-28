@@ -1218,6 +1218,15 @@ public final class Messages {
      * <code>optional .mthesis.concurrent_graph.communication.messages.ControlMessage.QueryVertexChunksMessage QueryVertexChunks = 14;</code>
      */
     mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexChunksMessageOrBuilder getQueryVertexChunksOrBuilder();
+
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode SuperstepQueryExecution = 15;</code>
+     */
+    boolean hasSuperstepQueryExecution();
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode SuperstepQueryExecution = 15;</code>
+     */
+    mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode getSuperstepQueryExecution();
   }
   /**
    * Protobuf type {@code mthesis.concurrent_graph.communication.messages.ControlMessage}
@@ -1235,6 +1244,7 @@ public final class Messages {
       superstepNo_ = 0;
       srcMachine_ = 0;
       queryValues_ = com.google.protobuf.ByteString.EMPTY;
+      superstepQueryExecution_ = 1;
     }
 
     @java.lang.Override
@@ -1393,6 +1403,17 @@ public final class Messages {
                 queryVertexChunks_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000800;
+              break;
+            }
+            case 120: {
+              int rawValue = input.readEnum();
+              mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode value = mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(15, rawValue);
+              } else {
+                bitField0_ |= 0x00001000;
+                superstepQueryExecution_ = rawValue;
+              }
               break;
             }
           }
@@ -9887,6 +9908,22 @@ public final class Messages {
       return queryVertexChunks_ == null ? mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexChunksMessage.getDefaultInstance() : queryVertexChunks_;
     }
 
+    public static final int SUPERSTEPQUERYEXECUTION_FIELD_NUMBER = 15;
+    private int superstepQueryExecution_;
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode SuperstepQueryExecution = 15;</code>
+     */
+    public boolean hasSuperstepQueryExecution() {
+      return ((bitField0_ & 0x00001000) == 0x00001000);
+    }
+    /**
+     * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode SuperstepQueryExecution = 15;</code>
+     */
+    public mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode getSuperstepQueryExecution() {
+      mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode result = mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.valueOf(superstepQueryExecution_);
+      return result == null ? mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.NonLocal : result;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -9934,6 +9971,9 @@ public final class Messages {
       }
       if (((bitField0_ & 0x00000800) == 0x00000800)) {
         output.writeMessage(14, getQueryVertexChunks());
+      }
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+        output.writeEnum(15, superstepQueryExecution_);
       }
       unknownFields.writeTo(output);
     }
@@ -9990,6 +10030,10 @@ public final class Messages {
       if (((bitField0_ & 0x00000800) == 0x00000800)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(14, getQueryVertexChunks());
+      }
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(15, superstepQueryExecution_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -10067,6 +10111,10 @@ public final class Messages {
         result = result && getQueryVertexChunks()
             .equals(other.getQueryVertexChunks());
       }
+      result = result && (hasSuperstepQueryExecution() == other.hasSuperstepQueryExecution());
+      if (hasSuperstepQueryExecution()) {
+        result = result && superstepQueryExecution_ == other.superstepQueryExecution_;
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -10125,6 +10173,10 @@ public final class Messages {
       if (hasQueryVertexChunks()) {
         hash = (37 * hash) + QUERYVERTEXCHUNKS_FIELD_NUMBER;
         hash = (53 * hash) + getQueryVertexChunks().hashCode();
+      }
+      if (hasSuperstepQueryExecution()) {
+        hash = (37 * hash) + SUPERSTEPQUERYEXECUTION_FIELD_NUMBER;
+        hash = (53 * hash) + superstepQueryExecution_;
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -10308,6 +10360,8 @@ public final class Messages {
           queryVertexChunksBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000800);
+        superstepQueryExecution_ = 1;
+        bitField0_ = (bitField0_ & ~0x00001000);
         return this;
       }
 
@@ -10412,6 +10466,10 @@ public final class Messages {
         } else {
           result.queryVertexChunks_ = queryVertexChunksBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
+          to_bitField0_ |= 0x00001000;
+        }
+        result.superstepQueryExecution_ = superstepQueryExecution_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -10489,6 +10547,9 @@ public final class Messages {
         }
         if (other.hasQueryVertexChunks()) {
           mergeQueryVertexChunks(other.getQueryVertexChunks());
+        }
+        if (other.hasSuperstepQueryExecution()) {
+          setSuperstepQueryExecution(other.getSuperstepQueryExecution());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -11668,6 +11729,42 @@ public final class Messages {
         }
         return queryVertexChunksBuilder_;
       }
+
+      private int superstepQueryExecution_ = 1;
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode SuperstepQueryExecution = 15;</code>
+       */
+      public boolean hasSuperstepQueryExecution() {
+        return ((bitField0_ & 0x00001000) == 0x00001000);
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode SuperstepQueryExecution = 15;</code>
+       */
+      public mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode getSuperstepQueryExecution() {
+        mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode result = mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.valueOf(superstepQueryExecution_);
+        return result == null ? mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode.NonLocal : result;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode SuperstepQueryExecution = 15;</code>
+       */
+      public Builder setSuperstepQueryExecution(mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00001000;
+        superstepQueryExecution_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .mthesis.concurrent_graph.communication.messages.WorkerQueryExecutionMode SuperstepQueryExecution = 15;</code>
+       */
+      public Builder clearSuperstepQueryExecution() {
+        bitField0_ = (bitField0_ & ~0x00001000);
+        superstepQueryExecution_ = 1;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
@@ -11805,7 +11902,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\324\023\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\300\024\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022q\n\020" +
@@ -11832,58 +11929,61 @@ public final class Messages {
       "rstepMessage\022s\n\021QueryVertexChunks\030\016 \001(\0132" +
       "X.mthesis.concurrent_graph.communication",
       ".messages.ControlMessage.QueryVertexChun" +
-      "ksMessage\032J\n\027AssignPartitionsMessage\022\027\n\017" +
-      "MasterStartTime\030\001 \001(\003\022\026\n\016PartitionFiles\030" +
-      "\002 \003(\t\032/\n\030WorkerInitializedMessage\022\023\n\013Ver" +
-      "texCount\030\001 \001(\005\032\230\001\n\025StartSuperstepMessage" +
-      "\022g\n\024WorkerQueryExecution\030\001 \001(\0162I.mthesis" +
-      ".concurrent_graph.communication.messages" +
-      ".WorkerQueryExecutionMode\022\026\n\016WorkersWait" +
-      "For\030\002 \003(\005\0321\n\030SendQueryVerticesMessage\022\025\n" +
-      "\rSendToMachine\030\001 \001(\005\0326\n\033ReceiveQueryVert",
-      "icesMessage\022\027\n\017RecvFromMachine\030\001 \003(\005\032\221\005\n" +
-      "\023StartBarrierMessage\022\201\001\n\017QuerySupersteps" +
-      "\030\001 \003(\0132h.mthesis.concurrent_graph.commun" +
-      "ication.messages.ControlMessage.StartBar" +
-      "rierMessage.QuerySuperstepsEntry\022\207\001\n\021Sen" +
-      "dQueryVertices\030\002 \003(\0132l.mthesis.concurren" +
-      "t_graph.communication.messages.ControlMe" +
-      "ssage.StartBarrierMessage.SendQueryVerti" +
-      "cesMessage\022\215\001\n\024ReceiveQueryVertices\030\003 \003(" +
-      "\0132o.mthesis.concurrent_graph.communicati",
-      "on.messages.ControlMessage.StartBarrierM" +
-      "essage.ReceiveQueryVerticesMessage\0326\n\024Qu" +
-      "erySuperstepsEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005value" +
-      "\030\002 \001(\005:\0028\001\032X\n\030SendQueryVerticesMessage\022\017" +
-      "\n\007QueryId\030\001 \001(\005\022\025\n\rMoveToMachine\030\002 \001(\005\022\024" +
-      "\n\014MaxMoveCount\030\003 \001(\005\032J\n\033ReceiveQueryVert" +
-      "icesMessage\022\017\n\007QueryId\030\001 \001(\005\022\032\n\022ReceiveF" +
-      "romMachine\030\002 \001(\005\032\300\001\n\022WorkerStatsMessage\022" +
-      "t\n\007Samples\030\001 \003(\0132c.mthesis.concurrent_gr" +
-      "aph.communication.messages.ControlMessag",
-      "e.WorkerStatsMessage.WorkerStatSample\0324\n" +
-      "\020WorkerStatSample\022\014\n\004Time\030\001 \001(\003\022\022\n\nStats" +
-      "Bytes\030\002 \001(\014\032\207\001\n\030QueryVertexChunksMessage" +
-      "\022k\n\006Chunks\030\001 \003(\0132[.mthesis.concurrent_gr" +
-      "aph.communication.messages.ControlMessag" +
-      "e.QueryVertexChunksMapMessage\032=\n\033QueryVe" +
-      "rtexChunksMapMessage\022\017\n\007Queries\030\001 \003(\005\022\r\n" +
-      "\005Count\030\002 \001(\005*\306\003\n\022ControlMessageType\022\025\n\021C" +
-      "hannel_Handshake\020\001\022\026\n\022Worker_Initialized" +
-      "\020\002\022\"\n\036Worker_Query_Superstep_Barrier\020\003\022#",
-      "\n\037Worker_Query_Superstep_Finished\020\004\022\031\n\025W" +
-      "orker_Query_Finished\020\005\022\032\n\026Worker_Barrier" +
-      "_Started\020\014\022#\n\037Worker_Barrier_Receive_Fin" +
-      "ished\020\017\022\033\n\027Worker_Barrier_Finished\020\r\022\034\n\030" +
-      "Master_Worker_Initialize\020\006\022\026\n\022Master_Que" +
-      "ry_Start\020\007\022\037\n\033Master_Query_Next_Superste" +
-      "p\020\010\022\031\n\025Master_Query_Finished\020\t\022\023\n\017Master" +
-      "_Shutdown\020\n\022\030\n\024Master_Start_Barrier\020\013\022\036\n" +
-      "\032Worker_Query_Vertex_Chunks\020\016*]\n\030WorkerQ" +
-      "ueryExecutionMode\022\014\n\010NonLocal\020\001\022\020\n\014NonLo",
-      "calSkip\020\002\022\017\n\013LocalOnThis\020\003\022\020\n\014LocalOnOth" +
-      "er\020\004B2\n&mthesis.concurrent_graph.communi" +
-      "cationB\010Messages"
+      "ksMessage\022j\n\027SuperstepQueryExecution\030\017 \001" +
+      "(\0162I.mthesis.concurrent_graph.communicat" +
+      "ion.messages.WorkerQueryExecutionMode\032J\n" +
+      "\027AssignPartitionsMessage\022\027\n\017MasterStartT" +
+      "ime\030\001 \001(\003\022\026\n\016PartitionFiles\030\002 \003(\t\032/\n\030Wor" +
+      "kerInitializedMessage\022\023\n\013VertexCount\030\001 \001" +
+      "(\005\032\230\001\n\025StartSuperstepMessage\022g\n\024WorkerQu" +
+      "eryExecution\030\001 \001(\0162I.mthesis.concurrent_" +
+      "graph.communication.messages.WorkerQuery",
+      "ExecutionMode\022\026\n\016WorkersWaitFor\030\002 \003(\005\0321\n" +
+      "\030SendQueryVerticesMessage\022\025\n\rSendToMachi" +
+      "ne\030\001 \001(\005\0326\n\033ReceiveQueryVerticesMessage\022" +
+      "\027\n\017RecvFromMachine\030\001 \003(\005\032\221\005\n\023StartBarrie" +
+      "rMessage\022\201\001\n\017QuerySupersteps\030\001 \003(\0132h.mth" +
+      "esis.concurrent_graph.communication.mess" +
+      "ages.ControlMessage.StartBarrierMessage." +
+      "QuerySuperstepsEntry\022\207\001\n\021SendQueryVertic" +
+      "es\030\002 \003(\0132l.mthesis.concurrent_graph.comm" +
+      "unication.messages.ControlMessage.StartB",
+      "arrierMessage.SendQueryVerticesMessage\022\215" +
+      "\001\n\024ReceiveQueryVertices\030\003 \003(\0132o.mthesis." +
+      "concurrent_graph.communication.messages." +
+      "ControlMessage.StartBarrierMessage.Recei" +
+      "veQueryVerticesMessage\0326\n\024QuerySuperstep" +
+      "sEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\005:\0028\001\032X" +
+      "\n\030SendQueryVerticesMessage\022\017\n\007QueryId\030\001 " +
+      "\001(\005\022\025\n\rMoveToMachine\030\002 \001(\005\022\024\n\014MaxMoveCou" +
+      "nt\030\003 \001(\005\032J\n\033ReceiveQueryVerticesMessage\022" +
+      "\017\n\007QueryId\030\001 \001(\005\022\032\n\022ReceiveFromMachine\030\002",
+      " \001(\005\032\300\001\n\022WorkerStatsMessage\022t\n\007Samples\030\001" +
+      " \003(\0132c.mthesis.concurrent_graph.communic" +
+      "ation.messages.ControlMessage.WorkerStat" +
+      "sMessage.WorkerStatSample\0324\n\020WorkerStatS" +
+      "ample\022\014\n\004Time\030\001 \001(\003\022\022\n\nStatsBytes\030\002 \001(\014\032" +
+      "\207\001\n\030QueryVertexChunksMessage\022k\n\006Chunks\030\001" +
+      " \003(\0132[.mthesis.concurrent_graph.communic" +
+      "ation.messages.ControlMessage.QueryVerte" +
+      "xChunksMapMessage\032=\n\033QueryVertexChunksMa" +
+      "pMessage\022\017\n\007Queries\030\001 \003(\005\022\r\n\005Count\030\002 \001(\005",
+      "*\306\003\n\022ControlMessageType\022\025\n\021Channel_Hands" +
+      "hake\020\001\022\026\n\022Worker_Initialized\020\002\022\"\n\036Worker" +
+      "_Query_Superstep_Barrier\020\003\022#\n\037Worker_Que" +
+      "ry_Superstep_Finished\020\004\022\031\n\025Worker_Query_" +
+      "Finished\020\005\022\032\n\026Worker_Barrier_Started\020\014\022#" +
+      "\n\037Worker_Barrier_Receive_Finished\020\017\022\033\n\027W" +
+      "orker_Barrier_Finished\020\r\022\034\n\030Master_Worke" +
+      "r_Initialize\020\006\022\026\n\022Master_Query_Start\020\007\022\037" +
+      "\n\033Master_Query_Next_Superstep\020\010\022\031\n\025Maste" +
+      "r_Query_Finished\020\t\022\023\n\017Master_Shutdown\020\n\022",
+      "\030\n\024Master_Start_Barrier\020\013\022\036\n\032Worker_Quer" +
+      "y_Vertex_Chunks\020\016*]\n\030WorkerQueryExecutio" +
+      "nMode\022\014\n\010NonLocal\020\001\022\020\n\014NonLocalSkip\020\002\022\017\n" +
+      "\013LocalOnThis\020\003\022\020\n\014LocalOnOther\020\004B2\n&mthe" +
+      "sis.concurrent_graph.communicationB\010Mess" +
+      "ages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -11908,7 +12008,7 @@ public final class Messages {
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor,
-        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "AssignPartitions", "QueryValues", "WorkerInitialized", "SendQueryVertices", "ReceiveQueryVertices", "StartBarrier", "WorkerStats", "StartSuperstep", "QueryVertexChunks", });
+        new java.lang.String[] { "Type", "SuperstepNo", "SrcMachine", "AssignPartitions", "QueryValues", "WorkerInitialized", "SendQueryVertices", "ReceiveQueryVertices", "StartBarrier", "WorkerStats", "StartSuperstep", "QueryVertexChunks", "SuperstepQueryExecution", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_descriptor.getNestedTypes().get(0);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_AssignPartitionsMessage_fieldAccessorTable = new

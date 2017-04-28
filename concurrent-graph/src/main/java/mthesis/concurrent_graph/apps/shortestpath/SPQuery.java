@@ -66,7 +66,7 @@ public class SPQuery extends BaseQuery {
 	 * @return TRUE if force all workers to be active.
 	 */
 	@Override
-	public boolean masterForceWorkersActive(int superstepNo) {
+	public boolean masterForceAllWorkersActive(int superstepNo) {
 		if (ReconstructionPhaseActive && !InitializedReconstructionPhase) {
 			return true;
 		}

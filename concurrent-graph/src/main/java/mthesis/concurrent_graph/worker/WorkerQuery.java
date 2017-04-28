@@ -52,7 +52,7 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public IntSet VerticesEverActive = new IntOpenHashSet();
 
 	public boolean localExecution;
-	private WorkerQueryExecutionMode executionMode;
+	private WorkerQueryExecutionMode executionMode = WorkerQueryExecutionMode.NonLocal;
 
 
 	public WorkerQuery(Q globalQueryValues, BaseQueryGlobalValuesFactory<Q> globalValueFactory,
@@ -109,18 +109,17 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	}
 
 
+
 	/**
-	 * Finished local compute superstep.
-	 * All superstep counters are incremented, no barrier and master sync needed
+	 * Finished a superstep while query in localmode.
+	 * All superstep counters are set, no barrier and master sync needed
 	 */
-	public void onFinishedLocalSuperstepCompute(int superstepFinished) {
-		// Compute can be finished before or after barrier sync
-		assert superstepFinished == finishedComputeSuperstepNo + 1;
-		assert superstepFinished == masterStartedSuperstepNo;
+	public void onFinishedLocalmodeSuperstepCompute(int superstepFinished) {
+		assert superstepFinished >= finishedComputeSuperstepNo;
 		finishedComputeSuperstepNo = superstepFinished;
 		barrierSyncedSuperstepNo = superstepFinished;
-		localFinishedSuperstepNo = superstepFinished;
-		masterStartedSuperstepNo = superstepFinished + 1;
+		localFinishedSuperstepNo = superstepFinished - 1;
+		masterStartedSuperstepNo = superstepFinished;
 	}
 
 

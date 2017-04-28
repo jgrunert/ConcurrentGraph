@@ -60,7 +60,7 @@ public class BaseQuery extends BaseWritable {
 	 * Called by master if all workers must be forced active in the next superstep.
 	 * @return TRUE if force all workers to be active.
 	 */
-	public boolean masterForceWorkersActive(int superstepNo) {
+	public boolean masterForceAllWorkersActive(int superstepNo) {
 		return superstepNo <= 0;
 	}
 

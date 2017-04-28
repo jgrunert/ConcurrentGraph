@@ -127,11 +127,12 @@ public class ControlMessageBuildUtil {
 				.setSrcMachine(srcMachineId).build()).build();
 	}
 
-	public static MessageEnvelope Build_Worker_QuerySuperstepBarrier(int superstepNo, int srcMachineId, BaseQuery query) {
+	public static MessageEnvelope Build_Worker_QuerySuperstepBarrier(int superstepNo, int srcMachineId, BaseQuery query, WorkerQueryExecutionMode queryMode)
+	{
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Worker_Query_Superstep_Barrier)
 				.setQueryValues(ByteString.copyFrom(query.getBytes()))
-				.setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build())
+				.setSuperstepQueryExecution(queryMode).setSuperstepNo(superstepNo).setSrcMachine(srcMachineId).build())
 				.build();
 	}
 

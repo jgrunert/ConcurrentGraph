@@ -70,6 +70,7 @@ message MessageEnvelope {
 		optional WorkerStatsMessage WorkerStats = 12;
 		optional StartSuperstepMessage StartSuperstep = 13;
 		optional QueryVertexChunksMessage QueryVertexChunks = 14;
+		optional WorkerQueryExecutionMode SuperstepQueryExecution = 15;
 		
 		message AssignPartitionsMessage {	
 			optional int64 MasterStartTime = 1;
