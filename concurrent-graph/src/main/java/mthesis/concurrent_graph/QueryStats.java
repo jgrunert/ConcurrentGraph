@@ -37,6 +37,9 @@ public class QueryStats {
 	public long MoveRecvVertices;
 	public long MoveSendVerticesTime;
 	public long MoveRecvVerticesTime;
+	public long SuperstepsComputed;
+	public long LocalSuperstepsComputed;
+	public long LocalmodeStops;
 
 	// Detailed stats
 	public long MoveSendVerticesMessages;
@@ -77,6 +80,9 @@ public class QueryStats {
 		MoveRecvVertices = bytes.getLong();
 		MoveSendVerticesTime = bytes.getLong();
 		MoveRecvVerticesTime = bytes.getLong();
+		SuperstepsComputed = bytes.getLong();
+		LocalSuperstepsComputed = bytes.getLong();
+		LocalmodeStops = bytes.getLong();
 
 		MoveSendVerticesMessages = bytes.getLong();
 	}
@@ -107,6 +113,9 @@ public class QueryStats {
 		buffer.putLong(MoveRecvVertices);
 		buffer.putLong(MoveSendVerticesTime);
 		buffer.putLong(MoveRecvVerticesTime);
+		buffer.putLong(SuperstepsComputed);
+		buffer.putLong(LocalSuperstepsComputed);
+		buffer.putLong(LocalmodeStops);
 
 		buffer.putLong(MoveSendVerticesMessages);
 	}
@@ -131,6 +140,9 @@ public class QueryStats {
 		statsMap.put("MoveRecvVertices", (double) MoveRecvVertices);
 		statsMap.put("MoveSendVerticesTime", (double) MoveSendVerticesTime);
 		statsMap.put("MoveRecvVerticesTime", (double) MoveRecvVerticesTime);
+		statsMap.put("SuperstepsComputed", (double) SuperstepsComputed);
+		statsMap.put("LocalSuperstepsComputed", (double) LocalSuperstepsComputed);
+		statsMap.put("LocalmodeStops", (double) LocalmodeStops);
 
 		statsMap.put("MoveSendVerticesMessages", (double) MoveSendVerticesMessages);
 
@@ -162,7 +174,7 @@ public class QueryStats {
 
 
 	public static int getBytesLength() {
-		return 18 * 8;
+		return 21 * 8;
 	}
 
 	public String getString() {

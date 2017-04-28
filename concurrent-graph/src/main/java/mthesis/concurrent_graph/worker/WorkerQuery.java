@@ -110,6 +110,21 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 
 
 	/**
+	 * Finished local compute superstep.
+	 * All superstep counters are incremented, no barrier and master sync needed
+	 */
+	public void onFinishedLocalSuperstepCompute(int superstepFinished) {
+		// Compute can be finished before or after barrier sync
+		assert superstepFinished == finishedComputeSuperstepNo + 1;
+		assert superstepFinished == masterStartedSuperstepNo;
+		finishedComputeSuperstepNo = superstepFinished;
+		barrierSyncedSuperstepNo = superstepFinished;
+		localFinishedSuperstepNo = superstepFinished;
+		masterStartedSuperstepNo = superstepFinished + 1;
+	}
+
+
+	/**
 	 * Number of last finished superstep, incremented when superstep is finished.
 	 */
 	public int getLastFinishedComputeSuperstep() {

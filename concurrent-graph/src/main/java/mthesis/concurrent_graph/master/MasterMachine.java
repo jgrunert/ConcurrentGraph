@@ -311,8 +311,16 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 			// Check superstep
 			if (controlMsg.getSuperstepNo() != msgActiveQuery.StartedSuperstepNo) {
-				logger.error("Message for wrong superstep. not " + msgActiveQuery.StartedSuperstepNo + ": " + message);
-				return;
+				if (msgActiveQuery.IsInLocalMode) {
+					msgActiveQuery.setSuperstepAfterLocalExecution(controlMsg.getSuperstepNo());
+					logger.debug("Query back from local execution {}:{}, message from {}", new Object[] {
+							msgQueryOnWorker.QueryId, msgActiveQuery.StartedSuperstepNo, controlMsg.getSrcMachine() });
+				}
+				else {
+					logger.error("Message for wrong superstep. not {}:{} {}",
+							new Object[] { msgActiveQuery.BaseQuery.QueryId, msgActiveQuery.StartedSuperstepNo, message });
+					return;
+				}
 			}
 
 			// Check if a worker waiting for
@@ -580,6 +588,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		if (queryActiveWorkers.size() == 1 && localQueryExecution) {
 			logger.trace("localmode on {} {}:{}", new Object[] { queryActiveWorkers, queryToStart.BaseQuery.QueryId,
 					queryToStart.StartedSuperstepNo });
+			queryToStart.IsInLocalMode = true;
+
 			// Start query in localmode - only one worker runs query until it is finished or not local anymore
 			for (Integer workerId : workerIds) {
 				if (queryActiveWorkers.contains(workerId)) {
@@ -602,7 +612,9 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			finishStartNextSuperstep(queryToStart);
 		}
 		else {
-			// Start query superstep in normal mode,
+			// Start query superstep in normal mode
+			queryToStart.IsInLocalMode = false;
+
 			for (Integer workerId : workerIds) {
 				List<Integer> otherActiveWorkers = new ArrayList<>(queryActiveWorkers.size());
 				for (Integer activeWorkerId : queryActiveWorkers) {

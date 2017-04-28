@@ -32,7 +32,9 @@ public class MasterQuery<Q extends BaseQuery> {
 	// Active workers for this superstep
 	//	public List<Integer> ActiveWorkersNow = new ArrayList<>();
 	public final Set<Integer> workersWaitingFor;
+
 	public boolean IsComputing = true;
+	public boolean IsInLocalMode = false;
 
 
 	public MasterQuery(Q query, Collection<Integer> workersToWait, BaseQuery.BaseQueryGlobalValuesFactory<Q> queryFactory) {
@@ -72,6 +74,14 @@ public class MasterQuery<Q extends BaseQuery> {
 		QueryStepAggregator.combine(workerQueryMsg);
 		QueryTotalAggregator.combine(workerQueryMsg);
 		if (workerQueryMsg.getActiveVertices() > 0) ActiveWorkers.add(workerMachineId);
+	}
+
+	/**
+	 * After a query was in localmode the superstep number must be increased.
+	 */
+	public void setSuperstepAfterLocalExecution(int superstepNo) {
+		StartedSuperstepNo = superstepNo;
+		LastFinishedSuperstepNo = superstepNo - 1;
 	}
 
 	public void workersFinished(Collection<Integer> workersToWait) {
