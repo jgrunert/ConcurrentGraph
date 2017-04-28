@@ -36,7 +36,9 @@ public class WorkerStats {
 	public long BarrierFinishWaitTime;
 	public long BarrierVertexMoveTime;
 	public long IntersectCalcTime;
-	public long SuperstepsFinished;
+	public long SuperstepsComputed;
+	public long LocalSuperstepsComputed;
+	public long LocalmodeStops;
 
 	public double SystemCpuLoad;
 	public double ProcessCpuTime;
@@ -81,7 +83,9 @@ public class WorkerStats {
 		BarrierFinishWaitTime = bytes.getLong();
 		BarrierVertexMoveTime = bytes.getLong();
 		IntersectCalcTime = bytes.getLong();
-		SuperstepsFinished = bytes.getLong();
+		SuperstepsComputed = bytes.getLong();
+		LocalSuperstepsComputed = bytes.getLong();
+		LocalmodeStops = bytes.getLong();
 
 		SystemCpuLoad = bytes.getDouble();
 		ProcessCpuTime = bytes.getDouble();
@@ -112,7 +116,9 @@ public class WorkerStats {
 		stream.writeLong(BarrierFinishWaitTime);
 		stream.writeLong(BarrierVertexMoveTime);
 		stream.writeLong(IntersectCalcTime);
-		stream.writeLong(SuperstepsFinished);
+		stream.writeLong(SuperstepsComputed);
+		stream.writeLong(LocalSuperstepsComputed);
+		stream.writeLong(LocalmodeStops);
 
 		stream.writeDouble(SystemCpuLoad);
 		stream.writeDouble(ProcessCpuTime);
@@ -146,7 +152,9 @@ public class WorkerStats {
 		statsMap.put("BarrierFinishWaitTime", (double) BarrierFinishWaitTime);
 		statsMap.put("BarrierVertexMoveTime", (double) BarrierVertexMoveTime);
 		statsMap.put("IntersectCalcTime", (double) IntersectCalcTime);
-		statsMap.put("SuperstepsFinished", (double) SuperstepsFinished);
+		statsMap.put("SuperstepsComputed", (double) SuperstepsComputed);
+		statsMap.put("LocalSuperstepsComputed", (double) LocalSuperstepsComputed);
+		statsMap.put("LocalmodeStops", (double) LocalmodeStops);
 
 		statsMap.put("SystemCpuLoad", SystemCpuLoad);
 		statsMap.put("ProcessCpuTime", ProcessCpuTime);

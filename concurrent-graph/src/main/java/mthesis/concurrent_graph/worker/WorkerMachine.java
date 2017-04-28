@@ -400,30 +400,56 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisStep) {
 					int queryId = activeQuery.Query.QueryId;
 					int superstepNo = activeQuery.getMasterStartedSuperstep();
-					logger.trace("Worker start superstep " + queryId + ":" + superstepNo);
 					boolean allVerticesActivate = activeQuery.QueryLocal.onWorkerSuperstepStart(superstepNo);
 
 					// Next superstep. Compute and Messaging (done by vertices)
-					logger.trace("Worker start query " + queryId + " superstep compute " + superstepNo);
+					logger.trace("Worker start superstep compute {}:{}", new Object[] { queryId, superstepNo });
 
-					// First frame: Call all vertices, second frame only active vertices
+					// First frame: Call all vertices, second frame only active vertices TODO more flexible, call single vertex
 					startTime = System.nanoTime();
-					if (superstepNo >= 0) {
-						if (allVerticesActivate) {
-							for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
-								vertex.superstep(superstepNo, activeQuery, true);
+
+					while (true) {// TODO Timeout for localmode execution
+						boolean isLocalSuperstep = activeQuery.localExecution;
+
+						if (superstepNo >= 0) {
+							if (allVerticesActivate) {
+								for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
+									vertex.superstep(superstepNo, activeQuery, true);
+								}
 							}
+							else {
+								for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
+									vertex.superstep(superstepNo, activeQuery, false);
+								}
+							}
+						}
+
+						if (isLocalSuperstep) {
+							workerStats.LocalSuperstepsComputed++;
+						}
+						workerStats.SuperstepsComputed++;
+
+						if (activeQuery.localExecution) {
+							// TODO Continue running in local mode
+							System.out.println("go local " + ownId + " " + queryId + ":" + superstepNo);
+							logger.trace(
+									"Local query execution continues {}:{}" + new Object[] { queryId, superstepNo });
+							break;
 						}
 						else {
-							for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
-								vertex.superstep(superstepNo, activeQuery, false);
+							if (isLocalSuperstep) {
+								System.err.println("STAP " + ownId + " " + queryId + ":" + superstepNo);
+								logger.debug(
+										"Local query execution ended {}:{}" + new Object[] { queryId, superstepNo });
+								workerStats.LocalmodeStops++;
 							}
+							finishNonlocalSuperstepCompute(activeQuery);
+							break;
 						}
 					}
+
 					long computeTime = System.nanoTime() - startTime;
 					activeQuery.QueryLocal.Stats.ComputeTime += computeTime;
-
-					finishSuperstepCompute(activeQuery);
 				}
 
 
@@ -466,7 +492,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 	}
 
-	private void finishSuperstepCompute(WorkerQuery<V, E, M, Q> activeQuery) {
+	private void finishNonlocalSuperstepCompute(WorkerQuery<V, E, M, Q> activeQuery) {
 		int superstepNo = activeQuery.getMasterStartedSuperstep();
 
 		// Send barrier sync with other workers
@@ -855,7 +881,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		query.QueryLocal.Stats = new QueryStats();
 
 		// Finish superstep, start next
-		query.onMasterNextSuperstep(message.getSuperstepNo());
+		query.onMasterNextSuperstep(message.getSuperstepNo(), queryExecutionMode);
 		logger.trace(
 				"Worker starting next superstep " + query.Query.QueryId + ":"
 						+ query.getMasterStartedSuperstep()
@@ -933,7 +959,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(workerQuery.getMasterStartedSuperstep(), ownId,
 						workerQuery.QueryLocal, workerStatsSamplesToSend),
 				true);
-		workerStats.SuperstepsFinished++;
 		workerStatsSamplesToSend.clear();
 	}
 
@@ -966,6 +991,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 		else {
 			// Remote message
+
+			// Local mode will be stopped as soon as remote messages are sent
+			query.localExecution = false;
+
 			final Integer remoteMachine = remoteVertexMachineRegistry.lookupEntry(dstVertex);
 			if (remoteMachine != null) {
 				// Unicast remote message

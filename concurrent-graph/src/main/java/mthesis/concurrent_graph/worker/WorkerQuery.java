@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
@@ -49,6 +50,9 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 
 	// All vertices ever active for this query on this worker
 	public IntSet VerticesEverActive = new IntOpenHashSet();
+
+	public boolean localExecution;
+	private WorkerQueryExecutionMode executionMode;
 
 
 	public WorkerQuery(Q globalQueryValues, BaseQueryGlobalValuesFactory<Q> globalValueFactory,
@@ -90,7 +94,7 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	/**
 	 * Master sent message to start next superstep
 	 */
-	public void onMasterNextSuperstep(int nextSuperstep) {
+	public void onMasterNextSuperstep(int nextSuperstep, WorkerQueryExecutionMode queryExecutionMode) {
 		assert nextSuperstep == masterStartedSuperstepNo + 1;
 		assert nextSuperstep == localFinishedSuperstepNo + 1;
 		//		assert finishedComputeSuperstepNo2 == lastFinishedSuperstepNo + 1;
@@ -99,6 +103,8 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 		//		assert workerBarrierSyncSuperstepNo == finishedComputeSuperstepNo2;
 		//		assert superstep == lastFinishedSuperstepNo + 1;
 		//		assert superstep == nextComputeSuperstepNo;
+		this.executionMode = queryExecutionMode;
+		if (executionMode == WorkerQueryExecutionMode.LocalOnThis) localExecution = true;
 		masterStartedSuperstepNo = nextSuperstep;
 	}
 
@@ -138,12 +144,17 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public boolean isNextSuperstepLocallyReady() {
 		return finishedComputeSuperstepNo == localFinishedSuperstepNo + 1
 				&& (barrierSyncedSuperstepNo == localFinishedSuperstepNo + 1
-						|| barrierSyncedSuperstepNo == localFinishedSuperstepNo + 2);
+				|| barrierSyncedSuperstepNo == localFinishedSuperstepNo + 2);
 	}
 
 
 	public String getSuperstepNosLog() {
 		return finishedComputeSuperstepNo + " " + barrierSyncedSuperstepNo + " " + localFinishedSuperstepNo + " "
 				+ masterStartedSuperstepNo;
+	}
+
+
+	public WorkerQueryExecutionMode getExecutionMode() {
+		return executionMode;
 	}
 }
