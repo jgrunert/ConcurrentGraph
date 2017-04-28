@@ -437,7 +437,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 								// Query local and no more vertices active - finished
 								logger.debug("No more vertices active while local query execution {}:{}"
 										, new Object[] { queryId, superstepNo });
-								System.out.println("Finished local " + ownId + " " + queryId + ":" + superstepNo);
 								activeQuery.onFinishedWorkerSuperstepBarrierSync(superstepNo);
 								finishNonlocalSuperstepCompute(activeQuery);
 								activeQuery.localExecution = false;
@@ -445,7 +444,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							}
 							else {
 								// Continue query local execution
-								System.out.println("go local " + ownId + " " + queryId + ":" + superstepNo);
 								logger.trace("Local query execution continues {}:{}"
 										, new Object[] { queryId, superstepNo });
 								activeQuery.onFinishedLocalmodeSuperstepCompute(superstepNo);
@@ -459,7 +457,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						else {
 							// Nonlocal query execution or local execution stopped
 							if (isLocalSuperstep) {
-								System.err.println("STAP " + ownId + " " + queryId + ":" + superstepNo);
 								logger.debug(
 										"Local query execution ended {}:{}", new Object[] { queryId, superstepNo });
 								workerStats.LocalmodeStops++;
@@ -737,17 +734,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		if(message.getSuperstepQueryExecution() == WorkerQueryExecutionMode.LocalOnThis) {
 			// Localmode
 			if(message.getSuperstepNo() > activeQuery.getBarrierSyncedSuperstep()) {
-				// TODO Just directly
-				// activeQuery.onFinishedLocalmodeSuperstepCompute(message.getSuperstepNo());
-				if (activeQuery.BarrierSyncWaitSet.remove(message.getSrcMachine())) {
-					if (activeQuery.BarrierSyncWaitSet.isEmpty()) {
-						activeQuery.onFinishedLocalmodeSuperstepCompute(message.getSuperstepNo());
-					}
-				}
-				else {
-					// TODO Handle if LocalOnThis
-					logger.warn("Postponing barrier messages when other worker in localmode not implemented");
-				}
+				activeQuery.onFinishedLocalmodeSuperstepCompute(message.getSuperstepNo());
 			} else {
 				// Completely wrong superstep
 				logger.error("Received localmode Worker_Superstep_Channel_Barrier with wrong superstepNo: "
@@ -764,7 +751,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					}
 				}
 				else {
-					// TODO Handle if LocalOnThis
 					if (message.getSuperstepQueryExecution() == WorkerQueryExecutionMode.LocalOnThis)
 						logger.warn("Postponing barrier messages when other worker in localmode not implemented");
 					activeQuery.BarrierSyncPostponedSet.add(message.getSrcMachine());
@@ -913,9 +899,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			return;
 		}
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1) {
-			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-			+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
-			+ query.getSuperstepNosLog());
+			if (queryExecutionMode != WorkerQueryExecutionMode.LocalOnOther) { // TODO Investigate if correct
+				logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
+				+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
+				+ query.getSuperstepNosLog());
+			}
 			return;
 		}
 
