@@ -77,6 +77,8 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	 * Finished barrier sync with other workers
 	 */
 	public void onFinishedWorkerSuperstepBarrierSync(int superstepSynced) {
+		if (!(superstepSynced == barrierSyncedSuperstepNo + 1))
+			System.out.println(superstepSynced + " " + barrierSyncedSuperstepNo + 1);
 		assert superstepSynced == barrierSyncedSuperstepNo + 1;
 		barrierSyncedSuperstepNo = superstepSynced;
 	}
@@ -104,7 +106,7 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 		//		assert superstep == lastFinishedSuperstepNo + 1;
 		//		assert superstep == nextComputeSuperstepNo;
 		this.executionMode = queryExecutionMode;
-		if (executionMode == WorkerQueryExecutionMode.LocalOnThis) localExecution = true;
+		localExecution = (executionMode == WorkerQueryExecutionMode.LocalOnThis);
 		masterStartedSuperstepNo = nextSuperstep;
 	}
 

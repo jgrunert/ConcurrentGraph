@@ -195,15 +195,16 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 
 	public void sendVertexMessageUnicast(int dstMachine, int superstepNo, int srcMachine, int queryId,
+			boolean fromLocalMode,
 			List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
 		sendUnicastMessageAsync(dstMachine,
 				//				new VertexMessage<>(superstepNo, ownId, false, queryId, vertexMessages, 1));
-				new VertexMessage<>(superstepNo, ownId, false, queryId, vertexMessages));
+				new VertexMessage<>(superstepNo, ownId, false, queryId, fromLocalMode, vertexMessages));
 	}
 
 	public void sendVertexMessageBroadcast(List<Integer> otherWorkers, int superstepNo, int srcMachine,
-			int queryId, List<Pair<Integer, M>> vertexMessages) {
+			int queryId, boolean fromLocalMode, List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
 		// Dont use message multiple times to allow free/reuse
 		//		for (final Integer dstMachine : otherWorkers) {
@@ -212,7 +213,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		//		}
 		sendMulticastMessageAsync(otherWorkers,
 				//				new VertexMessage<>(superstepNo, ownId, true, queryId, vertexMessages, otherWorkers.size()));
-				new VertexMessage<>(superstepNo, ownId, true, queryId, vertexMessages));
+				new VertexMessage<>(superstepNo, ownId, true, queryId, fromLocalMode, vertexMessages));
 	}
 
 

@@ -707,7 +707,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			logger.warn("Warnings: " + ErrWarnCounter.Warnings);
 		else logger.info("No warnings");
 		if (ErrWarnCounter.Errors > 0)
-			logger.warn("Errors: " + ErrWarnCounter.Errors);
+			logger.error("Errors: " + ErrWarnCounter.Errors);
 		else logger.info("No errors");
 	}
 
