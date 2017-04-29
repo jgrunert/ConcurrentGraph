@@ -425,10 +425,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						}
 
 						if (isLocalSuperstep) {
-							workerStats.LocalSuperstepsComputed++;
 							activeQuery.QueryLocal.Stats.LocalSuperstepsComputed++;
 						}
-						workerStats.SuperstepsComputed++;
 						activeQuery.QueryLocal.Stats.SuperstepsComputed++;
 
 						if (activeQuery.localExecution) {
@@ -460,7 +458,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							if (isLocalSuperstep) {
 								logger.debug(
 										"Local query execution ended {}:{}", new Object[] { queryId, superstepNo });
-								workerStats.LocalmodeStops++;
 								activeQuery.QueryLocal.Stats.LocalmodeStops++;
 								// Skip barrier if query was local for more than one superstep
 								if (superstepNo != activeQuery.getBarrierSyncedSuperstep())

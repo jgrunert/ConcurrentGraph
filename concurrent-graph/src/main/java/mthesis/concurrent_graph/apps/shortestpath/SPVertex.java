@@ -188,8 +188,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		if (sendMessages) {
 			for (Edge<DoubleWritable> edge : getEdges()) {
 				sendMessageToVertex(new SPMessageWritable(ID, mutableValue.Dist + edge.Value.Value, edge.TargetVertexId, superstepNo + 1),
-						edge.TargetVertexId,
-						query);
+						edge.TargetVertexId, query);
 			}
 			mutableValue.SendMsgsLater = false;
 		}
