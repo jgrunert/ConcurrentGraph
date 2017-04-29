@@ -31,6 +31,7 @@ implements ChannelMessage {
 		this.superstepNo = superstepNo;
 		this.broadcastFlag = broadcastFlag;
 		this.queryId = queryId;
+		this.fromLocalMode = fromLocalMode;
 		this.vertexMessages = vertexMessages;
 	}
 

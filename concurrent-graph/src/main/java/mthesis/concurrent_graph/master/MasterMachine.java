@@ -438,7 +438,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				}
 
 				msgActiveQuery.workersWaitingFor.remove(srcMachine);
-				logger.info("Worker " + srcMachine + " finished query " + msgActiveQuery.BaseQuery.QueryId);
+				logger.debug("Worker " + srcMachine + " finished query " + msgActiveQuery.BaseQuery.QueryId);
 
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
 					// All workers have query finished
