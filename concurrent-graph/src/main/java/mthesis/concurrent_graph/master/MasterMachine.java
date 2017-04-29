@@ -548,6 +548,12 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			globalBarrierWaitSet.addAll(workerIds);
 			globalBarrierActive = true;
 
+			for(MasterQuery<Q> q : activeQueries.values()) {
+				if(q.IsInLocalMode) {
+					System.err.println(q.BaseQuery.QueryId + " is in localmode!!");
+				}
+			}
+
 			// Map of query finished supersteps for this barrier
 			Map<Integer, Integer> queryFinishedSupersteps = new HashMap<>(activeQueries.size());
 			for (MasterQuery<Q> q : activeQueries.values()) {
@@ -851,16 +857,18 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			catch (Exception e) {
 				logger.error("Exception when saveWorkerStats", e);
 			}
+		}
 
-			try (PrintWriter writer = new PrintWriter(
-					new FileWriter(queryStatsDir + File.separator + "allworkers" + workerId + "_all.csv"))) {
-				for (Entry<String, Double> stat : workerStatsSums.entrySet()) {
-					writer.println(stat.getKey() + ";" + stat.getValue() + ";");
-				}
+		workerStatsSums.put("LocalSuperstepsRatio",
+				workerStatsSums.get("LocalSuperstepsComputed") * 100 / workerStatsSums.get("SuperstepsComputed"));
+		try (PrintWriter writer = new PrintWriter(
+				new FileWriter(queryStatsDir + File.separator + "allworkers" + "_all.csv"))) {
+			for (String statName : statsNames) {
+				writer.println(statName + ";" + workerStatsSums.get(statName) + ";");
 			}
-			catch (Exception e) {
-				logger.error("Exception when saveWorkerStats", e);
-			}
+		}
+		catch (Exception e) {
+			logger.error("Exception when saveWorkerStats", e);
 		}
 		logger.info("Saved worker stats");
 	}

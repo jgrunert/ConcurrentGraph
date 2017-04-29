@@ -277,13 +277,17 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				// ++++++++++ Wait for queries ready to compute ++++++++++
 				startTime = System.nanoTime();
 				activeQueriesThisStep.clear();
-				while (!stopRequested && activeQueriesThisStep.isEmpty() && !globalBarrierRequested) {
+				while (!stopRequested && activeQueriesThisStep.isEmpty()
+						&& !(globalBarrierRequested && checkQueriesReadyForBarrier())) {
 					for (WorkerQuery<V, E, M, Q> activeQuery : activeQueries.values()) {
 						if (activeQuery.getMasterStartedSuperstep() == activeQuery.getLastFinishedComputeSuperstep()
 								+ 1)
 							activeQueriesThisStep.add(activeQuery);
 					}
-					if (!activeQueriesThisStep.isEmpty() || globalBarrierRequested)
+					boolean x0 = activeQueriesThisStep.isEmpty();
+					boolean x1 = globalBarrierRequested;
+					boolean x2 = checkQueriesReadyForBarrier();
+					if (!activeQueriesThisStep.isEmpty() || (globalBarrierRequested && checkQueriesReadyForBarrier()))
 						break;
 
 					handleReceivedMessagesWait();
@@ -297,7 +301,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 
 				// ++++++++++ Global barrier if requested and no more outstanding queries ++++++++++
-				if (globalBarrierRequested && activeQueriesThisStep.isEmpty()) {
+				if (globalBarrierRequested && activeQueriesThisStep.isEmpty() && checkQueriesReadyForBarrier()) {
 
 					// --- Start barrier, notify other workers  ---
 					logger.debug("Barrier started, waiting for other workers to start");
@@ -510,6 +514,23 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				stop();
 			}
 		}
+	}
+
+	// TODO Remove
+	String test = "";
+
+	// Checks if all queries are ready for a global barrier
+	private boolean checkQueriesReadyForBarrier() {
+		if (!globalBarrierRequested) return false;
+		for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
+			if (globalBarrierQuerySupersteps.containsKey(query.QueryId) && !globalBarrierQuerySupersteps
+					.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
+				test = query.QueryId + " " + query.getLastFinishedComputeSuperstep() + " "
+						+ globalBarrierQuerySupersteps.get(query.QueryId) + " " + query.getExecutionMode();
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void finishNonlocalSuperstepCompute(WorkerQuery<V, E, M, Q> activeQuery) {
