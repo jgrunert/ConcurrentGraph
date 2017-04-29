@@ -147,4 +147,8 @@ public class MiscUtil {
 	public static long defaultLong(Long value) {
 		return (value != null) ? (long) value : 0;
 	}
+
+	public static double defaultDouble(Double value) {
+		return (value != null) ? (double) value : 0.0;
+	}
 }

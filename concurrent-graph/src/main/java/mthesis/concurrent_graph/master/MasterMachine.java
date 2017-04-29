@@ -819,6 +819,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		}
 
 		// Worker all stats
+		Map<String, Double> workerStatsSums = new HashMap<>();
 		for (int workerId : workerIds) {
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + "worker" + workerId + "_all.csv"))) {
@@ -837,11 +838,24 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					sb.append(';');
 					Map<String, Double> sampleValues = statSample.second.getStatsMap();
 					for (String statName : statsNames) {
-						sb.append(sampleValues.get(statName));
+						double statValue = sampleValues.get(statName);
+						workerStatsSums.put(statName,
+								MiscUtil.defaultDouble(workerStatsSums.get(statName)) + statValue);
+						sb.append(statValue);
 						sb.append(';');
 					}
 					writer.println(sb.toString());
 					sb.setLength(0);
+				}
+			}
+			catch (Exception e) {
+				logger.error("Exception when saveWorkerStats", e);
+			}
+
+			try (PrintWriter writer = new PrintWriter(
+					new FileWriter(queryStatsDir + File.separator + "allworkers" + workerId + "_all.csv"))) {
+				for (Entry<String, Double> stat : workerStatsSums.entrySet()) {
+					writer.println(stat.getKey() + ";" + stat.getValue() + ";");
 				}
 			}
 			catch (Exception e) {
