@@ -10,8 +10,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -28,6 +30,8 @@ public class RoadNetLDGPartitioner extends MasterInputPartitioner {
 
 	private final int partitionsPerWorker;
 
+	private LinearDeterministicGreedy LDG;
+	
 	public RoadNetLDGPartitioner(int partitionsPerWorker) {
 		this.partitionsPerWorker = partitionsPerWorker;
 	}
@@ -67,6 +71,8 @@ public class RoadNetLDGPartitioner extends MasterInputPartitioner {
 		//////////// Parse and assign partition vertices ////////////
 		// Forked from Hashed partitioning
 		// TODO LDG partitioning
+		
+		LDG = new LinearDeterministicGreedy(numPartitions,numVertices);
 
 		int[] partitionVertexCount = new int[numPartitions];
 		Int2IntMap vertexPartitions = new Int2IntOpenHashMap(numVertices);
@@ -78,17 +84,19 @@ public class RoadNetLDGPartitioner extends MasterInputPartitioner {
 				reader.readDouble(); // Ignore latitude
 				reader.readDouble(); // Ignore longitude
 				int numEdges = reader.readInt();
+				
+				Set<Integer> neighbors = new HashSet<Integer>();
 				for (int iEdge = 0; iEdge < numEdges; iEdge++) {
-					reader.readInt();
+					Integer neighbor = reader.readInt();
 					reader.readDouble();
+					neighbors.add(neighbor);
 				}
 
-				int partitionIndex = (vertexId * 31 + numEdges) % numPartitions;
+				int partitionIndex = LDG.getPartitionID(vertexId, neighbors);
 				vertexPartitions.put(vertexId, partitionIndex);
 				partitionVertexCount[partitionIndex]++;
 			}
 		}
-
 
 		//////////// Write out partitions ////////////
 		// Write partition size
