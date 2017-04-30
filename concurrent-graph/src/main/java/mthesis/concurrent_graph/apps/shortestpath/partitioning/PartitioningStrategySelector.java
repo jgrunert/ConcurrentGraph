@@ -24,6 +24,9 @@ public class PartitioningStrategySelector {
 			case "ldg":
 				logger.info("Partitioning with RoadNetLDGPartitioner");
 				return new RoadNetLDGPartitioner(partitionsPerWorker);
+			case "hotspot":
+				logger.info("Partitioning with RoadNetHotspotPartitioner");
+				return new RoadNetHotspotPartitioner(partitionsPerWorker);
 			default:
 				throw new RuntimeException("Unsupported partitioning mode: " + partitioningMode);
 		}
