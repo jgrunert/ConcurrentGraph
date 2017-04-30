@@ -18,7 +18,7 @@ public class Configuration {
 	public static String ConfigFile;
 	public static Properties Properties = new Properties();
 
-	public static final String VERSION = "0.1.92";
+	public static final String VERSION = "0.1.94";
 
 	/** Maximum size of a message in bytes */
 	public static int MAX_MESSAGE_SIZE;
@@ -60,11 +60,11 @@ public class Configuration {
 	public static int VERTEX_MESSAGE_POOL_SIZE;
 
 	public static int WORKER_WATCHDOG_TIME;
-
 	public static int WORKER_STATS_SAMPLING_INTERVAL;
 	// Enables recording of some more expensive stats
 	public static boolean DETAILED_STATS;
-
+	// Time limit in nanoseconds for executing a query in localmode until interrupting
+	public static long WORKER_LOCAL_EXECUTE_TIME_LIMIT;
 
 
 	public static void loadConfig(String configFile, Map<String, String> overrideConfigs) {
@@ -98,6 +98,7 @@ public class Configuration {
 			VERTEX_MESSAGE_POOL_SIZE = Integer.parseInt(Properties.getProperty("VERTEX_MESSAGE_POOL_SIZE"));
 			WORKER_WATCHDOG_TIME = Integer.parseInt(Properties.getProperty("WORKER_WATCHDOG_TIME"));
 			DETAILED_STATS = Boolean.parseBoolean(Properties.getProperty("DETAILED_STATS"));
+			WORKER_LOCAL_EXECUTE_TIME_LIMIT = Long.parseLong(Properties.getProperty("WORKER_LOCAL_EXECUTE_TIME_LIMIT"));
 			WORKER_STATS_SAMPLING_INTERVAL = Integer.parseInt(Properties.getProperty("WORKER_STATS_SAMPLING_INTERVAL"));
 
 			ConfigFile = configFile;

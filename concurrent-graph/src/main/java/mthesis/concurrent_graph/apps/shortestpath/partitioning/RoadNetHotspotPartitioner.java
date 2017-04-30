@@ -14,9 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
 import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.Pair;
@@ -45,8 +47,8 @@ public class RoadNetHotspotPartitioner extends MasterInputPartitioner {
 			numVertices = reader.readInt();
 		}
 
-		int numSpots = 30;
-		double rangeDivisor = 50000;
+		int numSpots = Configuration.getPropertyIntDefault("HotspotPartitionerSpots", 16);
+		double rangeDivisor = Configuration.getPropertyIntDefault("HotspotPartitionerRange", 50000);
 		// Load cities and their sizes
 		List<String> spots = new ArrayList<>();
 		List<Double> spotsRanges = new ArrayList<>();
@@ -111,8 +113,8 @@ public class RoadNetHotspotPartitioner extends MasterInputPartitioner {
 		// Hashed partitioning
 
 		// Assign vertices
-		int[] partitionVertexCount = new int[numPartitions];
-		Int2IntMap vertexPartitions = new Int2IntOpenHashMap(numVertices);
+		int[] sportVertexCount = new int[numSpots];
+		Int2IntMap vertexSpots = new Int2IntOpenHashMap(numVertices);
 		try (DataInputStream reader = new DataInputStream(
 				new BufferedInputStream(new FileInputStream(inputFile)))) {
 			reader.readInt();
@@ -131,9 +133,9 @@ public class RoadNetHotspotPartitioner extends MasterInputPartitioner {
 				// Try to find closest spot where vertex within range
 				for (int i = 0; i < spotCoordinates.size(); i++) {
 					Pair<Double, Double> spotCoords = spotCoordinates.get(i);
-					//double spotRange = spotsRanges.get(i);
+					double spotRange = spotsRanges.get(i);
 					double dist = calcVector2Dist(lat, lon, spotCoords.first, spotCoords.second);
-					if (dist < smallestPartitionDist) {
+					if (dist <= spotRange && dist < smallestPartitionDist) {
 						smallestPartitionDist = dist;
 						partitionIndex = i;
 					}
@@ -150,12 +152,41 @@ public class RoadNetHotspotPartitioner extends MasterInputPartitioner {
 					}
 				}
 
-				partitionIndex = partitionIndex % partitionVertexCount.length;
-
-				vertexPartitions.put(vertexId, partitionIndex);
-				partitionVertexCount[partitionIndex]++;
+				vertexSpots.put(vertexId, partitionIndex);
+				sportVertexCount[partitionIndex]++;
 			}
 		}
+
+
+		// Assign spots to partitions
+		Map<Integer, Integer> spotPartitions = new HashMap<>(numPartitions);
+		Map<Integer, Integer> partitionSizes = new HashMap<>(numPartitions);
+		for (int iP = 0; iP < numPartitions; iP++) {
+			partitionSizes.put(iP, 0);
+		}
+		for (int iS = 0; iS < numSpots; iS++) {
+			int bestPartition = 0;
+			int bestPartitionSize = Integer.MAX_VALUE;
+			for (Entry<Integer, Integer> partition : partitionSizes.entrySet()) {
+				if (partition.getValue() < bestPartitionSize) {
+					bestPartition = partition.getKey();
+					bestPartitionSize = partition.getValue();
+				}
+			}
+			spotPartitions.put(iS, bestPartition);
+			partitionSizes.put(bestPartition, partitionSizes.get(bestPartition) + sportVertexCount[iS]);
+		}
+
+		int[] partitionVertexCount = new int[numPartitions];
+		Int2IntMap vertexPartitions = new Int2IntOpenHashMap(numVertices);
+		for (Entry<Integer, Integer> vertex : vertexSpots.entrySet()) {
+			int vertexId = vertex.getKey();
+			int vertexSpot = vertex.getValue();
+			int vertexPartition = spotPartitions.get(vertexSpot);
+			vertexPartitions.put(vertexId, vertexPartition);
+			partitionVertexCount[vertexPartition]++;
+		}
+
 
 		// Write out partitions
 		for (int iP = 0; iP < numPartitions; iP++) {

@@ -284,9 +284,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 								+ 1)
 							activeQueriesThisStep.add(activeQuery);
 					}
-					boolean x0 = activeQueriesThisStep.isEmpty();
-					boolean x1 = globalBarrierRequested;
-					boolean x2 = checkQueriesReadyForBarrier();
 					if (!activeQueriesThisStep.isEmpty() || (globalBarrierRequested && checkQueriesReadyForBarrier()))
 						break;
 
@@ -412,7 +409,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					// First frame: Call all vertices, second frame only active vertices TODO more flexible, call single vertex
 					startTime = System.nanoTime();
 
-					while (true) {// TODO do while with Timeout for localmode execution
+					do {// TODO do while with Timeout for localmode execution
 						boolean isLocalSuperstep = activeQuery.localExecution;
 
 						if (superstepNo >= 0) {
@@ -470,7 +467,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							finishNonlocalSuperstepCompute(activeQuery);
 							break;
 						}
-					}
+					} while ((System.nanoTime() - startTime) <= Configuration.WORKER_LOCAL_EXECUTE_TIME_LIMIT);
 
 					long computeTime = System.nanoTime() - startTime;
 					activeQuery.QueryLocal.Stats.ComputeTime += computeTime;
@@ -516,17 +513,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 	}
 
-	// TODO Remove
-	String test = "";
-
 	// Checks if all queries are ready for a global barrier
 	private boolean checkQueriesReadyForBarrier() {
 		if (!globalBarrierRequested) return false;
 		for (WorkerQuery<V, E, M, Q> query : activeQueries.values()) {
 			if (globalBarrierQuerySupersteps.containsKey(query.QueryId) && !globalBarrierQuerySupersteps
 					.get(query.QueryId).equals(query.getLastFinishedComputeSuperstep())) {
-				test = query.QueryId + " " + query.getLastFinishedComputeSuperstep() + " "
-						+ globalBarrierQuerySupersteps.get(query.QueryId) + " " + query.getExecutionMode();
 				return false;
 			}
 		}

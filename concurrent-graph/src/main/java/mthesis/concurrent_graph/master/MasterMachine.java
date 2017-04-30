@@ -91,7 +91,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final BlockingQueue<ChannelMessage> messageQueue = new LinkedBlockingQueue<>();
 	/** Indicates if global barrier should be active as soon as all queries in standby */
 	private volatile boolean globalBarrierPlanned = false;
-	private volatile boolean globalBarrierActive = false;
 	private final Set<Integer> globalBarrierWaitSet = new HashSet<>();
 	// Queries that are delayed because of the active global barrier
 	private final Set<MasterQuery<Q>> barrierDelayedQueryNextSteps = new HashSet<>();
@@ -570,7 +569,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 				logger.info("Starting barrier for move");
 				globalBarrierWaitSet.addAll(workerIds);
-				globalBarrierActive = true;
 
 				// Map of query finished supersteps for this barrier
 				Map<Integer, Integer> queryFinishedSupersteps = new HashMap<>(activeQueries.size());
@@ -678,7 +676,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private void globalBarrierFinished() {
 		logger.info("Global barrier finished");
 		logger.debug("Start delayed supersteps: {}", barrierDelayedQueryNextSteps);
-		globalBarrierActive = false;
 		for (MasterQuery<Q> delayedQueryNextStep : barrierDelayedQueryNextSteps) {
 			logger.debug(
 					"Start delayed query superstep " + delayedQueryNextStep.BaseQuery.QueryId);
