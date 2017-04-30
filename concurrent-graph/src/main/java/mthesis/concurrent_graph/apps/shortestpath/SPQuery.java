@@ -1,6 +1,8 @@
 package mthesis.concurrent_graph.apps.shortestpath;
 
 import java.nio.ByteBuffer;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,16 +77,23 @@ public class SPQuery extends BaseQuery {
 
 	/**
 	 * Called by worker before the computation of a new superstep is started
-	 * @return TRUE if all vertices should be activated this superstep.
+	 * @return Instructions how to start superstep.
 	 */
 	@Override
-	public boolean onWorkerSuperstepStart(int superstepNo) {
+	public SuperstepInstructions onWorkerSuperstepStart(int superstepNo) {
 		if (ReconstructionPhaseActive && !InitializedReconstructionPhase) {
 			logger.debug(QueryId + " worker start initialize reconstruction phase");
 			InitializedReconstructionPhase = true;
-			return true;
+			Set<Integer> verts = new HashSet<>(1);
+			verts.add(To);
+			return new SuperstepInstructions(SuperstepInstructionsType.StartSpecific, verts);
 		}
-		return superstepNo == 0;
+		if (superstepNo == 0) {
+			Set<Integer> verts = new HashSet<>(1);
+			verts.add(From);
+			return new SuperstepInstructions(SuperstepInstructionsType.StartSpecific, verts);
+		}
+		return new SuperstepInstructions(SuperstepInstructionsType.StartActive, null);
 	}
 
 

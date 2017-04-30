@@ -1,6 +1,7 @@
 package mthesis.concurrent_graph;
 
 import java.nio.ByteBuffer;
+import java.util.Set;
 
 import mthesis.concurrent_graph.writable.BaseWritable;
 
@@ -66,10 +67,11 @@ public class BaseQuery extends BaseWritable {
 
 	/**
 	 * Called by worker before the computation of a new superstep is started
-	 * @return TRUE if all vertices should be activated this superstep.
+	 * @return Instructions how to start superstep.
 	 */
-	public boolean onWorkerSuperstepStart(int superstepNo) {
-		return superstepNo == 0;
+	public SuperstepInstructions onWorkerSuperstepStart(int superstepNo) {
+		if (superstepNo == 0) return new SuperstepInstructions(SuperstepInstructionsType.StartAll, null);
+		return new SuperstepInstructions(SuperstepInstructionsType.StartActive, null);
 	}
 
 
@@ -148,6 +150,28 @@ public class BaseQuery extends BaseWritable {
 		@Override
 		public BaseQuery createFromString(String str) {
 			throw new RuntimeException("createFromString not implemented for BaseQueryGlobalValues");
+		}
+	}
+
+
+	public enum SuperstepInstructionsType {
+		/** Start all already active vertices */
+		StartActive,
+		/** Start all vertices */
+		StartAll,
+		/** Start specific vertices */
+		StartSpecific
+	}
+
+	public static class SuperstepInstructions {
+
+		public final SuperstepInstructionsType type;
+		public final Set<Integer> specificVerticesIds;
+
+		public SuperstepInstructions(SuperstepInstructionsType type, Set<Integer> specificVerticesIds) {
+			super();
+			this.type = type;
+			this.specificVerticesIds = specificVerticesIds;
 		}
 	}
 }

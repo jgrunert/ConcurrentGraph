@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.AbstractMachine;
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
+import mthesis.concurrent_graph.BaseQuery.SuperstepInstructions;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.MachineConfig;
@@ -401,7 +402,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisStep) {
 					int queryId = activeQuery.Query.QueryId;
 					int superstepNo = activeQuery.getMasterStartedSuperstep();
-					boolean allVerticesActivate = activeQuery.QueryLocal.onWorkerSuperstepStart(superstepNo);
+					SuperstepInstructions stepInstructions = activeQuery.QueryLocal.onWorkerSuperstepStart(superstepNo);
 
 					// Next superstep. Compute and Messaging (done by vertices)
 					logger.trace("Worker start superstep compute {}:{}", new Object[] { queryId, superstepNo });
@@ -409,19 +410,31 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					// First frame: Call all vertices, second frame only active vertices TODO more flexible, call single vertex
 					startTime = System.nanoTime();
 
-					do {// TODO do while with Timeout for localmode execution
+					do {
 						boolean isLocalSuperstep = activeQuery.localExecution;
 
 						if (superstepNo >= 0) {
-							if (allVerticesActivate) {
-								for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
-									vertex.superstep(superstepNo, activeQuery, true);
-								}
-							}
-							else {
-								for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
-									vertex.superstep(superstepNo, activeQuery, false);
-								}
+							switch(stepInstructions.type) {
+								case StartActive:
+									for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
+										vertex.superstep(superstepNo, activeQuery, false);
+									}
+									break;
+								case StartSpecific:
+									for (int vertexId : stepInstructions.specificVerticesIds) {
+										AbstractVertex<V, E, M, Q> vertex = localVertices.get( vertexId);
+										if(vertex != null)
+											vertex.superstep(superstepNo, activeQuery, true);
+									}
+									break;
+								case StartAll:
+									for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
+										vertex.superstep(superstepNo, activeQuery, true);
+									}
+									break;
+								default:
+									logger.error("Unsupported stepInstructions type: " + stepInstructions.type);
+									break;
 							}
 						}
 
