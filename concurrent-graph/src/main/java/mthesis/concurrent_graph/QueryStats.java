@@ -142,7 +142,10 @@ public class QueryStats {
 		statsMap.put("MoveRecvVerticesTime", (double) MoveRecvVerticesTime);
 		statsMap.put("SuperstepsComputed", (double) SuperstepsComputed);
 		statsMap.put("LocalSuperstepsComputed", (double) LocalSuperstepsComputed);
-		statsMap.put("LocalSuperstepsRatio", (double) LocalSuperstepsComputed * 100 / SuperstepsComputed);
+		if (SuperstepsComputed > 0)
+			statsMap.put("LocalSuperstepsRatio", (double) LocalSuperstepsComputed * 100 / SuperstepsComputed);
+		else
+			statsMap.put("LocalSuperstepsRatio", (double) 0);
 		statsMap.put("LocalmodeStops", (double) LocalmodeStops);
 
 		statsMap.put("MoveSendVerticesMessages", (double) MoveSendVerticesMessages);

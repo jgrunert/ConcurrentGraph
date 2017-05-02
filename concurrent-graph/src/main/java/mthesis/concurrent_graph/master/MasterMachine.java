@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -747,10 +748,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -800,10 +801,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap();
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -873,11 +874,19 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			}
 		}
 
-		workerStatsSums.put("LocalSuperstepsRatio",
-				workerStatsSums.get("LocalSuperstepsComputed") * 100 / workerStatsSums.get("SuperstepsComputed"));
+		double totalSupersteps = workerStatsSums.get("SuperstepsComputed");
+		double localSupersteps = workerStatsSums.get("LocalSuperstepsComputed");
+		double nonlocalSuperstepsUnique = (totalSupersteps - localSupersteps) / workerIds.size();
+		double totalSuperstepsUnique = localSupersteps + nonlocalSuperstepsUnique;
+		//int nonlocalSupersteps =
+		workerStatsSums.put("LocalSuperstepsRatio", localSupersteps * 100 / totalSupersteps);
+		workerStatsSums.put("SuperstepsComputedUnique", totalSuperstepsUnique);
+		workerStatsSums.put("LocalSuperstepsComputedUnique", localSupersteps * 100 / totalSuperstepsUnique);
+		List<String> workerStatsNames = new ArrayList<>(workerStatsSums.keySet());
+		Collections.sort(workerStatsNames);
 		try (PrintWriter writer = new PrintWriter(
 				new FileWriter(queryStatsDir + File.separator + "allworkers" + "_all.csv"))) {
-			for (String statName : statsNames) {
+			for (String statName : workerStatsNames) {
 				writer.println(statName + ";" + workerStatsSums.get(statName) + ";");
 			}
 		}
