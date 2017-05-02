@@ -68,7 +68,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -414,7 +414,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						boolean isLocalSuperstep = activeQuery.localExecution;
 
 						if (superstepNo >= 0) {
-							switch(stepInstructions.type) {
+							switch (stepInstructions.type) {
 								case StartActive:
 									for (AbstractVertex<V, E, M, Q> vertex : activeQuery.ActiveVerticesThis.values()) {
 										vertex.superstep(superstepNo, activeQuery, false);
@@ -422,8 +422,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 									break;
 								case StartSpecific:
 									for (int vertexId : stepInstructions.specificVerticesIds) {
-										AbstractVertex<V, E, M, Q> vertex = localVertices.get( vertexId);
-										if(vertex != null)
+										AbstractVertex<V, E, M, Q> vertex = localVertices.get(vertexId);
+										if (vertex != null)
 											vertex.superstep(superstepNo, activeQuery, true);
 									}
 									break;
@@ -447,8 +447,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							// TODO Continue running in local mode
 							if (activeQuery.ActiveVerticesNext.isEmpty()) {
 								// Query local and no more vertices active - finished
-								logger.debug("No more vertices active while local query execution {}:{}"
-										, new Object[] { queryId, superstepNo });
+								logger.debug("No more vertices active while local query execution {}:{}",
+										new Object[] { queryId, superstepNo });
 								if (superstepNo != activeQuery.getBarrierSyncedSuperstep())
 									activeQuery.onFinishedWorkerSuperstepBarrierSync(superstepNo);
 								finishNonlocalSuperstepCompute(activeQuery);
@@ -457,8 +457,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 							}
 							else {
 								// Continue query local execution
-								logger.trace("Local query execution continues {}:{}"
-										, new Object[] { queryId, superstepNo });
+								logger.trace("Local query execution continues {}:{}", new Object[] { queryId, superstepNo });
 								activeQuery.onFinishedLocalmodeSuperstepCompute(superstepNo);
 								activeQuery.onLocalFinishSuperstep(superstepNo);
 								activeQuery.onMasterNextSuperstep(superstepNo + 1,
@@ -660,13 +659,13 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-					break;
+						break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-					break;
+						break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
@@ -688,7 +687,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-					break;
+						break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -709,35 +708,35 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-					return true;
+						return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 					case Worker_Barrier_Receive_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 					case Worker_Barrier_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-					break;
+						break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -755,9 +754,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	// ++++++++++ Barrier Sync ++++++++++
 	private void handleQuerySuperstepBarrierMsg(ControlMessage message, WorkerQuery<V, E, M, Q> activeQuery) {
 
-		if(message.getSuperstepQueryExecution() == WorkerQueryExecutionMode.LocalOnThis) {
+		if (message.getSuperstepQueryExecution() == WorkerQueryExecutionMode.LocalOnThis) {
 			// Localmode
-			if(message.getSuperstepNo() > activeQuery.getBarrierSyncedSuperstep()) {
+			if (message.getSuperstepNo() > activeQuery.getBarrierSyncedSuperstep()) {
 				if (activeQuery.BarrierSyncWaitSet.size() == 0) {
 					// Received barrier from worker executing local query before received superstepStart from master
 					activeQuery.onFinishedLocalmodeSuperstepCompute(message.getSuperstepNo());
@@ -780,7 +779,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 								+ message.getSrcMachine() + " should be " + activeQuery.BarrierSyncWaitSet);
 					}
 				}
-			} else {
+			}
+			else {
 				// Completely wrong superstep
 				logger.error("Received localmode Worker_Superstep_Channel_Barrier with wrong superstepNo: "
 						+ message.getSuperstepNo() + " at " + activeQuery.Query.QueryId + ":"
@@ -946,8 +946,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1
 				&& !receivedLocalOnOtherBarrier) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-			+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
-			+ query.getSuperstepNosLog());
+					+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
+					+ query.getSuperstepNosLog());
 			return;
 		}
 
@@ -1236,7 +1236,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						verticesMessagesSent += vertex.getBufferedMessageCount();
 					}
 				}
-				logger.debug(ownId + " Sent " + moved + " and skipped " + notMoved + " to " + sendToWorker + " for query " + queryId); // TODO logger.debug
+				logger.debug(ownId + " Sent " + moved + " and skipped " + notMoved + " to " + sendToWorker + " for query " + queryId);
 			}
 			else {
 				logger.warn(
@@ -1252,11 +1252,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		messaging.sendMoveVerticesMessage(sendToWorker, verticesToMove, queryId, true);
 		verticesSent += verticesToMove.size();
 
-		if (activeQuery != null) {
-			activeQuery.QueryLocal.Stats.MoveSendVertices += verticesSent;
-			activeQuery.QueryLocal.Stats.MoveSendVerticesTime += (System.nanoTime() - startTime);
-			activeQuery.QueryLocal.Stats.MoveSendVerticesMessages += verticesMessagesSent;
-		}
+		workerStats.MoveSendVertices += verticesSent;
+		workerStats.MoveSendVerticesTime += (System.nanoTime() - startTime);
+		workerStats.MoveSendVerticesMessages += verticesMessagesSent;
 	}
 
 	/**
@@ -1278,7 +1276,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	 * Processes queued move messages
 	 */
 	public void processQueuedMoveVerticesMessages() {
-		//		long startTime = System.nanoTime();
+		long startTime = System.nanoTime();
 
 		for (MoveVerticesMessage<V, E, M, Q> message : queuedMoveMessages) {
 			for (Pair<AbstractVertex<V, E, M, Q>, List<Integer>> movedVertInfo : message.vertices) {
@@ -1295,14 +1293,11 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				}
 				localVertices.put(movedVert.ID, movedVert);
 			}
+			workerStats.MoveRecvVertices += message.vertices.size();
 		}
 
 		queuedMoveMessages.clear();
-
-		// TODO Worker stats
-		//		long moveTime = (System.nanoTime() - startTime);
-		//		activeQuery.QueryLocal.Stats.MoveRecvVertices += message.vertices.size();
-		//		activeQuery.QueryLocal.Stats.MoveRecvVerticesTime += moveTime;
+		workerStats.MoveRecvVerticesTime += (System.nanoTime() - startTime);
 	}
 
 

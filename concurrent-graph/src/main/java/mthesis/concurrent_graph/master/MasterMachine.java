@@ -905,21 +905,17 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + "query" + querySteps.getKey() + "_times_ms.csv"))) {
 				writer.println(
-						"StepTime;WorkerTime;ComputeTime;StepFinishTime;MoveSendVerticsTime;MoveRecvVerticsTime;");
+						"StepTime;WorkerTime;ComputeTime;StepFinishTime;");
 
 				for (int i = 0; i < querySteps.getValue().size(); i++) {
 					Q step = querySteps.getValue().get(i);
 					sb.append(queryStatsStepTimes.get(querySteps.getKey()).get(i) / 1000000);
 					sb.append(';');
-					sb.append(step.Stats.getWorkersTime() / 1000000);
+					sb.append(step.Stats.getTimeSum() / 1000000);
 					sb.append(';');
 					sb.append(step.Stats.ComputeTime / 1000000);
 					sb.append(';');
 					sb.append(step.Stats.StepFinishTime / 1000000);
-					sb.append(';');
-					sb.append(step.Stats.MoveSendVerticesTime / 1000000);
-					sb.append(';');
-					sb.append(step.Stats.MoveRecvVerticesTime / 1000000);
 					sb.append(';');
 					writer.println(sb.toString());
 					sb.setLength(0);
@@ -977,7 +973,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				writer.println(
 						query.getKey() + ";" + query.getValue().GetQueryHash() + ";"
 								+ queryDurations.get(query.getKey()) / 1000000 + ";"
-								+ query.getValue().Stats.getWorkersTime() / 1000000 + ";"
+								+ query.getValue().Stats.getTimeSum() / 1000000 + ";"
 								+ query.getValue().Stats.ComputeTime / 1000000 + ";");
 			}
 		}

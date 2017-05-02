@@ -41,6 +41,16 @@ public class WorkerStats {
 	public double ProcessCpuTime;
 	public double ProcessCpuLoad;
 
+	public long UpdateVertexRegisters;
+	public long RedirectedMessages;
+	public long MoveSendVertices;
+	public long MoveRecvVertices;
+	public long MoveSendVerticesTime;
+	public long MoveRecvVerticesTime;
+
+	// Detailed stats
+	public long MoveSendVerticesMessages;
+
 	/** All queries, their active vertices and intersections since last vertex move barrier */
 	//public Map<Integer, Map<Integer, Integer>> QueryIntersectsSinceBarrier;
 
@@ -85,17 +95,14 @@ public class WorkerStats {
 		ProcessCpuTime = bytes.getDouble();
 		ProcessCpuLoad = bytes.getDouble();
 
-		//		int qICount = bytes.getInt();
-		//		QueryIntersectsSinceBarrier = new HashMap<>(qICount);
-		//		for (int iQi = 0; iQi < qICount; iQi++) {
-		//			Integer qiKey = bytes.getInt();
-		//			Integer qiCount = bytes.getInt();
-		//			Map<Integer, Integer> qiIntMap = new HashMap<>(qiCount);
-		//			for (int iQiInt = 0; iQiInt < qiCount; iQiInt++) {
-		//				qiIntMap.put(bytes.getInt(), bytes.getInt());
-		//			}
-		//			QueryIntersectsSinceBarrier.put(qiKey, qiIntMap);
-		//		}
+		UpdateVertexRegisters = bytes.getLong();
+		RedirectedMessages = bytes.getLong();
+		MoveSendVertices = bytes.getLong();
+		MoveRecvVertices = bytes.getLong();
+		MoveSendVerticesTime = bytes.getLong();
+		MoveRecvVerticesTime = bytes.getLong();
+
+		MoveSendVerticesMessages = bytes.getLong();
 
 		aggregatedQueryStats = new QueryStats(bytes);
 	}
@@ -115,18 +122,14 @@ public class WorkerStats {
 		stream.writeDouble(ProcessCpuTime);
 		stream.writeDouble(ProcessCpuLoad);
 
-		//		if (QueryIntersectsSinceBarrier != null) {
-		//			stream.writeInt(QueryIntersectsSinceBarrier.size());
-		//			for (Entry<Integer, Map<Integer, Integer>> qI : QueryIntersectsSinceBarrier.entrySet()) {
-		//				stream.writeInt(qI.getKey());
-		//				stream.writeInt(qI.getValue().size());
-		//				for (Entry<Integer, Integer> inters : qI.getValue().entrySet()) {
-		//					stream.writeInt(inters.getKey());
-		//					stream.writeInt(inters.getValue());
-		//				}
-		//			}
-		//		}
-		//		else stream.writeInt(0);
+		stream.writeLong(UpdateVertexRegisters);
+		stream.writeLong(RedirectedMessages);
+		stream.writeLong(MoveSendVertices);
+		stream.writeLong(MoveRecvVertices);
+		stream.writeLong(MoveSendVerticesTime);
+		stream.writeLong(MoveRecvVerticesTime);
+
+		stream.writeLong(MoveSendVerticesMessages);
 
 		aggregatedQueryStats.writeToStream(stream);
 	}
@@ -147,6 +150,15 @@ public class WorkerStats {
 		statsMap.put("SystemCpuLoad", SystemCpuLoad);
 		statsMap.put("ProcessCpuTime", ProcessCpuTime);
 		statsMap.put("ProcessCpuLoad", ProcessCpuLoad);
+
+		statsMap.put("UpdateVertexRegisters", (double) UpdateVertexRegisters);
+		statsMap.put("RedirectedMessages", (double) RedirectedMessages);
+		statsMap.put("MoveSendVertices", (double) MoveSendVertices);
+		statsMap.put("MoveRecvVertices", (double) MoveRecvVertices);
+		statsMap.put("MoveSendVerticesTime", (double) MoveSendVerticesTime);
+		statsMap.put("MoveRecvVerticesTime", (double) MoveRecvVerticesTime);
+
+		statsMap.put("MoveSendVerticesMessages", (double) MoveSendVerticesMessages);
 
 		statsMap.putAll(aggregatedQueryStats.getStatsMap());
 
