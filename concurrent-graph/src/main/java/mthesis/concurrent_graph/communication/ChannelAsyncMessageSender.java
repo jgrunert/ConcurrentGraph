@@ -92,7 +92,12 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 			outBuffer.clear();
 			//			outBuffer.position(4); // Leave 4 bytes for content length
 			outBuffer.put(message.getTypeCode());
-			message.writeMessageToBuffer(outBuffer);
+			try {
+				message.writeMessageToBuffer(outBuffer);
+			}
+			catch (Exception e) {
+				logger.error("Sending " + message + " failed", e);
+			}
 
 			final int msgLength = outBuffer.position();
 			if (msgLength <= 0) {

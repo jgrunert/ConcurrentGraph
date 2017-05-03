@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.Configuration;
+import mthesis.concurrent_graph.util.MiscUtil;
 
 public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
@@ -83,7 +84,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		// Do ILS with pertubations
 		int i = 0;
 		for (; i < maxIlsIteraions && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
-			QueryDistribution ilsDistribution = pertubationQueryUnify(queryIdsList, workerIds, bestDistribution, rd);
+			QueryDistribution ilsDistribution = pertubationQueryUnifyLargestPartition(queryIdsList, workerIds, bestDistribution, rd);
 			ilsDistribution = optimizeGreedy(queryIds, workerIds, ilsDistribution);
 			if (isGoodNewDistribution(bestDistribution, ilsDistribution, workerIds)) {
 				bestDistribution = ilsDistribution;
@@ -176,24 +177,51 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	}
 
 	/**
-	 * Pertubation by moving all partitions of a query to one machine
+	 * Pertubation by moving all partitions of a query to with least load machine
 	 */
-	private QueryDistribution pertubationQueryUnify(List<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution,
+	private QueryDistribution pertubationQueryUnifyLeastLoaded(List<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution, Random rd) {
+		QueryDistribution pertubated = baseDistribution.clone();
+		int pertubationQuery = getRandomFromList(queryIds, rd);
+		int bestWorkerId = 0;
+		long bestWorkerSize = Integer.MAX_VALUE;
+		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
+			if (machine.getValue().totalVertices < bestWorkerSize) {
+				bestWorkerSize = machine.getValue().totalVertices;
+				bestWorkerId = machine.getKey();
+			}
+		}
+
+		for (int worker : workerIds) {
+			if (worker != bestWorkerId) {
+				pertubated.moveVertices(pertubationQuery, worker, bestWorkerId, true);
+
+			}
+		}
+
+		return pertubated;
+	}
+
+	/**
+	 * Pertubation by moving all partitions of a query to machine with largest partition
+	 */
+	private QueryDistribution pertubationQueryUnifyLargestPartition(List<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution,
 			Random rd) {
 		QueryDistribution pertubated = baseDistribution.clone();
 		int pertubationQuery = getRandomFromList(queryIds, rd);
-		int smallesWorkerId = 0;
-		long smallestWorkerSize = Integer.MAX_VALUE;
+
+		int bestWorkerId = 0;
+		long bestWorkerPartitionSize = 0;
 		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
-			if (machine.getValue().totalVertices < smallestWorkerSize) {
-				smallestWorkerSize = machine.getValue().totalVertices;
-				smallesWorkerId = machine.getKey();
+			int partitionSize = MiscUtil.defaultInt(machine.getValue().queryVertices.get(pertubationQuery)) ;
+			if (partitionSize > bestWorkerPartitionSize) {
+				bestWorkerPartitionSize = partitionSize;
+				bestWorkerId = machine.getKey();
 			}
 		}
 
 		for(int worker : workerIds) {
-			if (worker != smallesWorkerId) {
-				pertubated.moveVertices(pertubationQuery, worker, smallesWorkerId, true);
+			if (worker != bestWorkerId) {
+				pertubated.moveVertices(pertubationQuery, worker, bestWorkerId, true);
 
 			}
 		}
