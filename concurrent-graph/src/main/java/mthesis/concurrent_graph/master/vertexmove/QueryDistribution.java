@@ -289,6 +289,11 @@ public class QueryDistribution {
 		return new VertexMoveDecision(workerVertSendMsgs, workerVertRecvMsgs);
 	}
 
+
+	public Map<Integer, QueryWorkerMachine> getQueryMachines() {
+		return queryMachines;
+	}
+
 	//	// Testing
 	//	public static void main(String[] args) {
 	//		Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts = new HashMap<>();

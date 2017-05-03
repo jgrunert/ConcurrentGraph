@@ -83,7 +83,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		// Do ILS with pertubations
 		int i = 0;
 		for (; i < maxIlsIteraions && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
-			QueryDistribution ilsDistribution = pertubation(queryIdsList, workerIds, bestDistribution, rd);
+			QueryDistribution ilsDistribution = pertubationQueryUnify(queryIdsList, workerIds, bestDistribution, rd);
 			ilsDistribution = optimizeGreedy(queryIds, workerIds, ilsDistribution);
 			if (isGoodNewDistribution(bestDistribution, ilsDistribution, workerIds)) {
 				bestDistribution = ilsDistribution;
@@ -175,10 +175,29 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		return true;
 	}
 
-	private QueryDistribution pertubation(List<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution,
+	/**
+	 * Pertubation by moving all partitions of a query to one machine
+	 */
+	private QueryDistribution pertubationQueryUnify(List<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution,
 			Random rd) {
 		QueryDistribution pertubated = baseDistribution.clone();
-		pertubated.moveVertices(getRandomFromList(queryIds, rd), getRandomFromList(workerIds, rd), getRandomFromList(workerIds, rd), true);
+		int pertubationQuery = getRandomFromList(queryIds, rd);
+		int smallesWorkerId = 0;
+		long smallestWorkerSize = Integer.MAX_VALUE;
+		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
+			if (machine.getValue().totalVertices < smallestWorkerSize) {
+				smallestWorkerSize = machine.getValue().totalVertices;
+				smallesWorkerId = machine.getKey();
+			}
+		}
+
+		for(int worker : workerIds) {
+			if (worker != smallesWorkerId) {
+				pertubated.moveVertices(pertubationQuery, worker, smallesWorkerId, true);
+
+			}
+		}
+
 		return pertubated;
 	}
 
