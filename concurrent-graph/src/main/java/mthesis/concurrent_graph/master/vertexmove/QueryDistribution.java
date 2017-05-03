@@ -31,8 +31,6 @@ public class QueryDistribution {
 	private final Set<Integer> queryIds;
 
 	// Move operations and costs so far
-	//	private double distributionCosts;
-	// Costs of current distribution
 	private double currentCosts;
 
 
@@ -72,6 +70,8 @@ public class QueryDistribution {
 	 * @return Number of moved vertices, 0 if no move possible
 	 */
 	public int moveVertices(int queryId, int fromWorkerId, int toWorkerId, boolean moveIntersecting) {
+		if (fromWorkerId == toWorkerId) return 0;
+
 		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
 		QueryWorkerMachine toWorker = queryMachines.get(toWorkerId);
 
@@ -140,6 +140,18 @@ public class QueryDistribution {
 			hightestMachineCost = Math.max(machineCosts, hightestMachineCost);
 		}
 		return (double) hightestMachineCost * VertexMoveCosts;
+	}
+
+	public int calculateMovedVertices() {
+		int movedVertices = 0;
+		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+			int machineCosts = 0;
+			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
+				if (chunk.homeMachine != machine.getKey()) machineCosts += chunk.numVertices;
+			}
+			movedVertices += machineCosts;
+		}
+		return movedVertices;
 	}
 
 

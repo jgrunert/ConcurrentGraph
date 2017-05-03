@@ -39,7 +39,7 @@ import mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode;
 import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.logging.ErrWarnCounter;
 import mthesis.concurrent_graph.master.input.MasterInputPartitioner;
-import mthesis.concurrent_graph.master.vertexmove.GreedyNewVertexMoveDecider;
+import mthesis.concurrent_graph.master.vertexmove.ILSVertexMoveDecider;
 import mthesis.concurrent_graph.master.vertexmove.VertexMoveDeciderService;
 import mthesis.concurrent_graph.master.vertexmove.VertexMoveDecision;
 import mthesis.concurrent_graph.plotting.JFreeChartPlotter;
@@ -118,7 +118,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		this.outputDir = outputDir;
 		this.queryStatsDir = outputDir + File.separator + "stats";
 		this.queryValueFactory = globalValueFactory;
-		this.vertexMoveDeciderService = new VertexMoveDeciderService(new GreedyNewVertexMoveDecider(), workerIds);
+		this.vertexMoveDeciderService = new VertexMoveDeciderService(new ILSVertexMoveDecider(), workerIds);
 		FileUtil.makeCleanDirectory(outputDir);
 		FileUtil.makeCleanDirectory(queryStatsDir);
 		saveSetupSummary(machines, ownId);
