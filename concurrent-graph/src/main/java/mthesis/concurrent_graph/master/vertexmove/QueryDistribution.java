@@ -96,7 +96,7 @@ public class QueryDistribution {
 	}
 
 	private static double calculateCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		return calculateVerticesSeparatedCosts(queryIds, queryMachines) + calculateMoveCosts(queryIds, queryMachines);
+		return calculateVerticesSeparatedCosts(queryIds, queryMachines) + calculateMoveCostsTotal(queryIds, queryMachines);
 
 	}
 
@@ -128,8 +128,7 @@ public class QueryDistribution {
 		return costs;
 	}
 
-	private static double calculateMoveCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		// TODO
+	private static double calculateMoveCostsMachineMax(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
 		int hightestMachineCost = 0;
 		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
 			int machineCosts = 0;
@@ -140,6 +139,18 @@ public class QueryDistribution {
 			hightestMachineCost = Math.max(machineCosts, hightestMachineCost);
 		}
 		return (double) hightestMachineCost * VertexMoveCosts;
+	}
+
+	private static double calculateMoveCostsTotal(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+		int costSum = 0;
+		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+			int machineCosts = 0;
+			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
+				if (chunk.homeMachine != machine.getKey()) machineCosts += chunk.numVertices;
+			}
+			costSum += machineCosts;
+		}
+		return (double) costSum * VertexMoveCosts;
 	}
 
 	public int calculateMovedVertices() {

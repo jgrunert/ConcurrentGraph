@@ -134,7 +134,7 @@ public class WorkerStats {
 		aggregatedQueryStats.writeToStream(stream);
 	}
 
-	public Map<String, Double> getStatsMap() {
+	public Map<String, Double> getStatsMap(int numWorkers) {
 		Map<String, Double> statsMap = new TreeMap<>();
 
 		statsMap.put("WorkerVertices", (double) WorkerVertices);
@@ -160,7 +160,7 @@ public class WorkerStats {
 
 		statsMap.put("MoveSendVerticesMessages", (double) MoveSendVerticesMessages);
 
-		statsMap.putAll(aggregatedQueryStats.getStatsMap());
+		statsMap.putAll(aggregatedQueryStats.getStatsMap(numWorkers));
 
 		return statsMap;
 	}

@@ -22,6 +22,8 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	protected final Logger logger = LoggerFactory.getLogger(WorkerQuery.class);
 
 	public final int QueryId;
+	public final long startTime;
+
 	/** Global query, values from master, aggregated from local queries from last frame */
 	public Q Query;
 	/** Local query values, are sent to the master after superstep and then aggregated */
@@ -56,8 +58,9 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 
 
 	public WorkerQuery(Q globalQueryValues, BaseQueryGlobalValuesFactory<Q> globalValueFactory,
-			Collection<Integer> vertexIds) {
+			Collection<Integer> vertexIds, long startTime) {
 		QueryId = globalQueryValues.QueryId;
+		this.startTime = startTime;
 		Query = globalQueryValues;
 		QueryLocal = globalValueFactory.createClone(globalQueryValues);
 	}

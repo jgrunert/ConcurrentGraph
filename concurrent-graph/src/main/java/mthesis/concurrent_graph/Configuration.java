@@ -35,6 +35,7 @@ public class Configuration {
 	public static boolean VERTEX_BARRIER_MOVE_ENABLED;
 	public static long WORKER_QUERY_INTERSECT_INTERVAL;
 	public static long MASTER_QUERY_MOVE_CALC_TIMEOUT;
+	public static long QUERY_CUT_TIME_WINDOW;
 
 	/**
 	 * When enabled, machines will discover and store mappings VertexId->Machine.
@@ -90,6 +91,7 @@ public class Configuration {
 			VERTEX_BARRIER_MOVE_ENABLED = Boolean.parseBoolean(Properties.getProperty("VERTEX_BARRIER_MOVE_ENABLED"));
 			WORKER_QUERY_INTERSECT_INTERVAL = Long.parseLong(Properties.getProperty("WORKER_QUERY_INTERSECT_INTERVAL"));
 			MASTER_QUERY_MOVE_CALC_TIMEOUT = Long.parseLong(Properties.getProperty("MASTER_QUERY_MOVE_CALC_TIMEOUT"));
+			QUERY_CUT_TIME_WINDOW = Long.parseLong(Properties.getProperty("QUERY_CUT_TIME_WINDOW"));
 			VERTEX_MACHINE_DISCOVERY = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY"));
 			VERTEX_MACHINE_DISCOVERY_INCOMING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY_INCOMING"));
 			LOG_LEVEL_MAIN = Level.valueOf(Properties.getProperty("LOG_LEVEL_MAIN")).levelInt;

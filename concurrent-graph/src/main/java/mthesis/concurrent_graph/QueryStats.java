@@ -95,7 +95,7 @@ public class QueryStats {
 		buffer.putLong(LocalmodeStops);
 	}
 
-	public Map<String, Double> getStatsMap() {
+	public Map<String, Double> getStatsMap(int numWorkers) {
 		Map<String, Double> statsMap = new TreeMap<>();
 
 		statsMap.put("MessagesTransmittedLocal", (double) MessagesTransmittedLocal);
@@ -111,10 +111,20 @@ public class QueryStats {
 		statsMap.put("StepFinishTime", (double) StepFinishTime);
 		statsMap.put("SuperstepsComputed", (double) SuperstepsComputed);
 		statsMap.put("LocalSuperstepsComputed", (double) LocalSuperstepsComputed);
-		if (SuperstepsComputed > 0)
+		if (SuperstepsComputed > 0) {
+			long totalSupersteps = SuperstepsComputed;
+			long localSupersteps = LocalSuperstepsComputed;
+			double nonlocalSuperstepsUnique = (double) (totalSupersteps - localSupersteps) / numWorkers;
+			double totalSuperstepsUnique = localSupersteps + nonlocalSuperstepsUnique;
 			statsMap.put("LocalSuperstepsRatio", (double) LocalSuperstepsComputed * 100 / SuperstepsComputed);
-		else
+			statsMap.put("SuperstepsComputedUnique", totalSuperstepsUnique);
+			statsMap.put("LocalSuperstepsRatioUnique", localSupersteps * 100 / totalSuperstepsUnique);
+		}
+		else {
 			statsMap.put("LocalSuperstepsRatio", (double) 0);
+			statsMap.put("SuperstepsComputedUnique", 0D);
+			statsMap.put("LocalSuperstepsRatioUnique", 0D);
+		}
 		statsMap.put("LocalmodeStops", (double) LocalmodeStops);
 
 		return statsMap;

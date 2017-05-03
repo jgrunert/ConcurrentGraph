@@ -734,7 +734,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private void saveWorkerStats() {
 		StringBuilder sb = new StringBuilder();
-		Set<String> statsNames = new WorkerStats().getStatsMap().keySet();
+		Set<String> statsNames = new WorkerStats().getStatsMap(workerIds.size()).keySet();
 
 		// Worker times in milliseconds, normalized for time/s
 		for (Integer workerId : workerIds) {
@@ -745,13 +745,13 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 				for (Pair<Long, WorkerStats> statSample : workerStats.get(workerId)) {
 					double timeNormFactor = 1;
-					Map<String, Double> statsMap = statSample.second.getStatsMap();
+					Map<String, Double> statsMap = statSample.second.getStatsMap(workerIds.size());
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -798,13 +798,13 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					long timeSinceLastSample = statSample.first - lastTime;
 					lastTime = statSample.first;
 					double timeNormFactor = (double) 1000 / timeSinceLastSample;
-					Map<String, Double> statsMap = statSample.second.getStatsMap();
+					Map<String, Double> statsMap = statSample.second.getStatsMap(workerIds.size());
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -857,7 +857,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				for (Pair<Long, WorkerStats> statSample : workerStats.get(workerId)) {
 					sb.append(statSample.first / 1000); // Timestamp in seconds
 					sb.append(';');
-					Map<String, Double> sampleValues = statSample.second.getStatsMap();
+					Map<String, Double> sampleValues = statSample.second.getStatsMap(workerIds.size());
 					for (String statName : statsNames) {
 						double statValue = sampleValues.get(statName);
 						workerStatsSums.put(statName,
@@ -881,7 +881,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		//int nonlocalSupersteps =
 		workerStatsSums.put("LocalSuperstepsRatio", localSupersteps * 100 / totalSupersteps);
 		workerStatsSums.put("SuperstepsComputedUnique", totalSuperstepsUnique);
-		workerStatsSums.put("LocalSuperstepsComputedUnique", localSupersteps * 100 / totalSuperstepsUnique);
+		workerStatsSums.put("LocalSuperstepsRatioUnique", localSupersteps * 100 / totalSuperstepsUnique);
 		List<String> workerStatsNames = new ArrayList<>(workerStatsSums.keySet());
 		Collections.sort(workerStatsNames);
 		try (PrintWriter writer = new PrintWriter(
@@ -936,7 +936,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					// Write first line
 					sb.append("ActiveVertices");
 					sb.append(';');
-					for (String colName : new QueryStats().getStatsMap().keySet()) {
+					for (String colName : new QueryStats().getStatsMap(workerIds.size()).keySet()) {
 						sb.append(colName);
 						sb.append(';');
 					}
@@ -950,7 +950,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 						sb.append(step.getActiveVertices());
 						sb.append(';');
 
-						for (Double colStat : step.Stats.getStatsMap().values()) {
+						for (Double colStat : step.Stats.getStatsMap(workerIds.size()).values()) {
 							sb.append(colStat);
 							sb.append(';');
 						}

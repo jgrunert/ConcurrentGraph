@@ -22,7 +22,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 	private final double VerticesActiveImbalanceThreshold = Configuration.getPropertyDoubleDefault("VertexMoveActiveBalance", 0.1);
 	private final double VerticesTotalImbalanceThreshold = Configuration.getPropertyDoubleDefault("VertexMoveTotalBalance", 0.1);
-	private final long MaxImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT;
+	private final long MaxTotalImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT;
+	private final long MaxGreedyImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT / 4; // TODO Config
 	// TODO Configuration
 	private final long MinMoveTotalVertices = 500;
 	private final int MaxImproveIterations = 30;
@@ -81,7 +82,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		// Do ILS with pertubations
 		int i = 0;
-		for (; i < maxIlsIteraions && (System.currentTimeMillis() - decideStartTime) < MaxImproveTime; i++) {
+		for (; i < maxIlsIteraions && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
 			QueryDistribution ilsDistribution = pertubation(queryIdsList, workerIds, bestDistribution, rd);
 			ilsDistribution = optimizeGreedy(queryIds, workerIds, ilsDistribution);
 			if (isGoodNewDistribution(bestDistribution, ilsDistribution, workerIds)) {
@@ -107,7 +108,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private QueryDistribution optimizeGreedy(Set<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution) {
 		QueryDistribution bestDistribution = baseDistribution;
 		int i = 0;
-		for (; i < MaxImproveIterations && (System.currentTimeMillis() - decideStartTime) < MaxImproveTime; i++) {
+		for (; i < MaxImproveIterations && (System.currentTimeMillis() - decideStartTime) < MaxGreedyImproveTime; i++) {
 			QueryDistribution iterBestDistribution = bestDistribution.clone();
 			boolean anyImproves = false;
 
