@@ -99,7 +99,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final Set<Integer> barrierDelayedQueryStarts = new HashSet<>();
 	private VertexMoveDecision moveDecission = null;
 
-	private final VertexMoveDeciderService<Q> vertexMoveDeciderService;
+	private final VertexMoveDeciderService vertexMoveDeciderService;
 
 	private final Map<Integer, Long> latestWorkerTotalVertices = new HashMap<>();
 
@@ -118,7 +118,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		this.outputDir = outputDir;
 		this.queryStatsDir = outputDir + File.separator + "stats";
 		this.queryValueFactory = globalValueFactory;
-		this.vertexMoveDeciderService = new VertexMoveDeciderService<>(new GreedyNewVertexMoveDecider<>(), workerIds);
+		this.vertexMoveDeciderService = new VertexMoveDeciderService(new GreedyNewVertexMoveDecider(), workerIds);
 		FileUtil.makeCleanDirectory(outputDir);
 		FileUtil.makeCleanDirectory(queryStatsDir);
 		saveSetupSummary(machines, ownId);

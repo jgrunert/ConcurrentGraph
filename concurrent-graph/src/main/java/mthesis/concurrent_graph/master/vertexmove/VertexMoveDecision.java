@@ -2,6 +2,7 @@ package mthesis.concurrent_graph.master.vertexmove;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
@@ -24,5 +25,14 @@ public class VertexMoveDecision {
 		super();
 		WorkerVertSendMsgs = workerVertSendMsgs;
 		WorkerVertRecvMsgs = workerVertRecvMsgs;
+	}
+
+	public void printDecission() {
+		for (Entry<Integer, List<ReceiveQueryVerticesMessage>> receiver : WorkerVertRecvMsgs.entrySet()) {
+			System.out.println(receiver.getKey());
+			for (ReceiveQueryVerticesMessage recvMsg : receiver.getValue()) {
+				System.out.println("   " + recvMsg.getQueryId() + " from " + recvMsg.getReceiveFromMachine());
+			}
+		}
 	}
 }

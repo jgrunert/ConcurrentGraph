@@ -11,13 +11,12 @@ import org.slf4j.LoggerFactory;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import mthesis.concurrent_graph.BaseQuery;
 
-public class VertexMoveDeciderService<Q extends BaseQuery> {
+public class VertexMoveDeciderService {
 
 	private static final Logger logger = LoggerFactory.getLogger(VertexMoveDeciderService.class);
 
-	private final AbstractVertexMoveDecider<Q> moveDecider;
+	private final AbstractVertexMoveDecider moveDecider;
 	private final Thread deciderThread;
 	private boolean stopRequested;
 
@@ -33,7 +32,7 @@ public class VertexMoveDeciderService<Q extends BaseQuery> {
 	private volatile boolean newDecissionFinished;
 	private VertexMoveDecision latestDecission;
 
-	public VertexMoveDeciderService(AbstractVertexMoveDecider<Q> moveDecider, List<Integer> workerIds) {
+	public VertexMoveDeciderService(AbstractVertexMoveDecider moveDecider, List<Integer> workerIds) {
 		this.moveDecider = moveDecider;
 		this.workerIds = new IntOpenHashSet(workerIds);
 		stopRequested = false;
