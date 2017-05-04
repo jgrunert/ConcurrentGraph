@@ -27,6 +27,9 @@ public class PartitioningStrategySelector {
 			case "hotspot":
 				logger.info("Partitioning with RoadNetHotspotPartitioner");
 				return new RoadNetHotspotPartitioner(partitionsPerWorker);
+			case "closestcity":
+				logger.info("Partitioning with RoadNetClosestCityPartitioner");
+				return new RoadNetClosestCityPartitioner(partitionsPerWorker);
 			default:
 				throw new RuntimeException("Unsupported partitioning mode: " + partitioningMode);
 		}
