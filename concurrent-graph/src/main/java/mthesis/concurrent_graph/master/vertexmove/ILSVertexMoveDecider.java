@@ -114,7 +114,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		logger.info("+++++++++++++ Stopped deciding after " + i + " ILS iterations in " + (System.currentTimeMillis() - decideStartTime) + "ms moving "
 				+ movedVertices);
 
-		bestDistribution.printMoveDistribution();
+		//bestDistribution.printMoveDistribution();
 		//		bestDistribution.printMoveDecissions();
 
 
@@ -176,6 +176,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						if (toWorker.activeVertices + toWorkerQueryVertices > maxActiveVertices
 								|| toWorker.totalVertices + toWorkerQueryVertices > maxTotalVertices)
 							continue;
+
+						// Only move smaller to larger partition
+						if (fromWorkerQueryVertices > toWorkerQueryVertices) continue;
 
 						// TODO Optimize, neglect cases.
 
@@ -256,6 +259,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 			}
 		}
+
+		// TODO No pertubation without workload balance
 
 		return pertubated;
 	}

@@ -1440,12 +1440,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
 				long qAge = (startTimeMs - query.startTime);
 				if (qAge > Configuration.QUERY_CUT_TIME_WINDOW || qlocalSuperstepRatio < Configuration.QUERY_CUT_KEEP_MIN_LOCALITY) {
-					System.err.println(ownId + " REM " + query.QueryId + " " + qAge+ " " + qlocalSuperstepRatio); // TODO
+					//System.err.println(ownId + " REM " + query.QueryId + " " + qAge+ " " + qlocalSuperstepRatio); // TODO
 					queriesForQueryCut.remove(i);
 					queriesLocalSupersteps.remove(query.QueryId);
 					i--;
 				}
-				else System.err.println(ownId + " KEEP " + query.QueryId + " " + qAge + " " + qlocalSuperstepRatio); // TODO
+				//else System.err.println(ownId + " KEEP " + query.QueryId + " " + qAge + " " + qlocalSuperstepRatio); // TODO
 			}
 		}
 
