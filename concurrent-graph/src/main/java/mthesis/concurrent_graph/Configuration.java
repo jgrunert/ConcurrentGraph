@@ -31,11 +31,21 @@ public class Configuration {
 	public static int CONNECT_TIMEOUT;
 	public static int MESSAGE_TIMEOUT;
 
-
+	// Enables vertex move and query cut
 	public static boolean VERTEX_BARRIER_MOVE_ENABLED;
+	// Interval for workers to send stats for query cut
 	public static long WORKER_QUERY_INTERSECT_INTERVAL;
+	// Max time to calculate query cut
 	public static long MASTER_QUERY_MOVE_CALC_TIMEOUT;
+	// Time how long inactive queries are kept for query cut
 	public static long QUERY_CUT_TIME_WINDOW;
+	// Max. number of queries to keep
+	public static int QUERY_CUT_MAX_QUERIES;
+	// Min. size of a chunk, other chunks are neglected
+	public static int QUERY_CUT_CHUNK_MIN_SIZE;
+	// Threshhold for local ratio to keep a query after finished for query cut
+	public static double QUERY_CUT_KEEP_MIN_LOCALITY;
+
 
 	/**
 	 * When enabled, machines will discover and store mappings VertexId->Machine.
@@ -88,9 +98,14 @@ public class Configuration {
 			TCP_NODELAY = Boolean.parseBoolean(Properties.getProperty("TCP_NODELAY"));
 			CONNECT_TIMEOUT = Integer.parseInt(Properties.getProperty("CONNECT_TIMEOUT"));
 			MESSAGE_TIMEOUT = Integer.parseInt(Properties.getProperty("MESSAGE_TIMEOUT"));
+
 			VERTEX_BARRIER_MOVE_ENABLED = Boolean.parseBoolean(Properties.getProperty("VERTEX_BARRIER_MOVE_ENABLED"));
 			WORKER_QUERY_INTERSECT_INTERVAL = Long.parseLong(Properties.getProperty("WORKER_QUERY_INTERSECT_INTERVAL"));
 			MASTER_QUERY_MOVE_CALC_TIMEOUT = Long.parseLong(Properties.getProperty("MASTER_QUERY_MOVE_CALC_TIMEOUT"));
+			QUERY_CUT_MAX_QUERIES = Integer.parseInt(Properties.getProperty("QUERY_CUT_MAX_QUERIES"));
+			QUERY_CUT_CHUNK_MIN_SIZE = Integer.parseInt(Properties.getProperty("QUERY_CUT_CHUNK_MIN_SIZE"));
+			QUERY_CUT_KEEP_MIN_LOCALITY = Double.parseDouble(Properties.getProperty("QUERY_CUT_KEEP_MIN_LOCALITY"));
+
 			QUERY_CUT_TIME_WINDOW = Long.parseLong(Properties.getProperty("QUERY_CUT_TIME_WINDOW"));
 			VERTEX_MACHINE_DISCOVERY = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY"));
 			VERTEX_MACHINE_DISCOVERY_INCOMING = Boolean.parseBoolean(Properties.getProperty("VERTEX_MACHINE_DISCOVERY_INCOMING"));
