@@ -3,6 +3,7 @@ package mthesis.concurrent_graph.communication;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.google.protobuf.ByteString;
 
@@ -12,6 +13,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.AssignPartitionsMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexChunksMapMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexChunksMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexQueryMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartSuperstepMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage;
@@ -20,6 +22,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStat
 import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode;
+import mthesis.concurrent_graph.util.Pair;
 
 
 /**
@@ -158,11 +161,18 @@ public class ControlMessageBuildUtil {
 				.build();
 	}
 
-	public static MessageEnvelope Build_Worker_QueryVertexChunks(int srcMachineId, Map<IntSet, Integer> queryIntersectChunks) {
+	public static MessageEnvelope Build_Worker_QueryVertexChunks(int srcMachineId, Map<IntSet, Integer> queryIntersectChunks,
+			Set<Integer> activeQueryIds, Map<Integer, Pair<Integer, Integer>> queriesLocalSupersteps) {
 		QueryVertexChunksMessage.Builder chunksMsg = QueryVertexChunksMessage.newBuilder();
 		for (Entry<IntSet, Integer> chunk : queryIntersectChunks.entrySet()) {
 			chunksMsg.addChunks(QueryVertexChunksMapMessage.newBuilder().addAllQueries(chunk.getKey()).setCount(chunk.getValue()));
 		}
+		for (Entry<Integer, Pair<Integer, Integer>> query : queriesLocalSupersteps.entrySet()) {
+			boolean isActive = activeQueryIds.contains(query.getKey());
+			chunksMsg.addQueries(QueryVertexQueryMessage.newBuilder().setIsActive(isActive).setSupersteps(query.getValue().first)
+					.setLocalSupersteps(query.getValue().second));
+		}
+
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(ControlMessage.newBuilder().setType(ControlMessageType.Worker_Query_Vertex_Chunks)
 						.setSrcMachine(srcMachineId)

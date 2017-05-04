@@ -138,10 +138,17 @@ message MessageEnvelope {
 		
 		message QueryVertexChunksMessage {
 			repeated QueryVertexChunksMapMessage Chunks = 1;
+			repeated QueryVertexQueryMessage Queries = 2;
 		}
 		
 		message QueryVertexChunksMapMessage {
 			repeated int32 Queries = 1;
 			optional int32 Count = 2;
+		}
+		
+		message QueryVertexQueryMessage {
+			optional bool IsActive = 1;
+			optional int32 Supersteps = 2;
+			optional int32 LocalSupersteps = 3;
 		}
 	}

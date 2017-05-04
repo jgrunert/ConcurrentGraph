@@ -509,7 +509,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 				if (Configuration.VERTEX_BARRIER_MOVE_ENABLED &&
 						(System.currentTimeMillis() - lastSendMasterQueryIntersects) >= Configuration.WORKER_QUERY_INTERSECT_INTERVAL) {
-					MessageEnvelope msg = ControlMessageBuildUtil.Build_Worker_QueryVertexChunks(ownId, calculateQueryIntersectChunks());
+					MessageEnvelope msg = ControlMessageBuildUtil.Build_Worker_QueryVertexChunks(ownId, calculateQueryIntersectChunks(), activeQueries.keySet(),
+							queriesLocalSupersteps);
 					messaging.sendControlMessageUnicast(masterId, msg, true);
 					lastSendMasterQueryIntersects = System.currentTimeMillis();
 				}
