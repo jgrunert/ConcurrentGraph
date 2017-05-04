@@ -12,3 +12,4 @@ buildNumber.properties
 .project
 *.log
 log*.txt
+ILS_log_*.csv

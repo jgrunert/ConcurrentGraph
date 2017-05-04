@@ -1,5 +1,7 @@
 package mthesis.concurrent_graph.master.vertexmove;
 
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +32,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private final int MaxImproveIterations = 30;
 
 	private long decideStartTime;
+
+	private List<IlsLogItem> ilsLog = new ArrayList<>();
+	private boolean saveIlsLog = true;
 
 
 
@@ -73,6 +78,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		//		System.out.println("/////////////////////////////////");
 
 		int totalVerticesMoved = 0;
+		ilsLog.clear();
 		decideStartTime = System.currentTimeMillis();
 
 		// Greedy improve initial distribution
@@ -86,7 +92,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		for (; i < maxIlsIteraions && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
 			QueryDistribution ilsDistribution = pertubationQueryUnifyLargestPartition(queryIdsList, workerIds, bestDistribution, rd);
 			ilsDistribution = optimizeGreedy(queryIds, workerIds, ilsDistribution);
-			if (isGoodNewDistribution(bestDistribution, ilsDistribution, workerIds)) {
+			boolean isGoodNew = isGoodNewDistribution(bestDistribution, ilsDistribution, workerIds);
+			if (saveIlsLog) ilsLog.add(new IlsLogItem(ilsDistribution.getCurrentCosts(), isGoodNew));
+			if (isGoodNew) {
 				bestDistribution = ilsDistribution;
 			}
 		}
@@ -97,6 +105,20 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		bestDistribution.printMoveDistribution();
 		//		bestDistribution.printMoveDecissions();
+
+		if (saveIlsLog) {
+			try (PrintWriter writer = new PrintWriter(new FileWriter("ILS_log_" + System.currentTimeMillis() + ".csv"))) {
+				for (IlsLogItem ilsLogItem : ilsLog) {
+					if(ilsLogItem.isValid)
+						writer.println((int) (double) ilsLogItem.costs + ";" + (int) (double) ilsLogItem.costs + ";");
+					else
+						writer.println((int) (double) ilsLogItem.costs + ";;");
+				}
+			}
+			catch (Exception e) {
+				logger.error("Save ILS failed", e);
+			}
+		}
 
 		if (movedVertices < MinMoveTotalVertices) {
 			logger.info("Decided not move, not enough vertices: " + totalVerticesMoved);
@@ -132,6 +154,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						//								+ fromWorker + "->" + toWorker);
 						// TODO movedVerts > MinMoveWorkerVertices &&
 						if (isGoodNewDistributionMove(iterBestDistribution, newDistribution, fromWorker, toWorker)) {
+							if (saveIlsLog) ilsLog.add(new IlsLogItem(iterBestDistribution.getCurrentCosts(),
+									isGoodNewDistribution(iterBestDistribution, newDistribution, workerIds)));
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							//							System.out.println("## i " + i + ": " + newDistribution.getCosts());
@@ -179,6 +203,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	/**
 	 * Pertubation by moving all partitions of a query to with least load machine
 	 */
+	@SuppressWarnings("unused")
 	private QueryDistribution pertubationQueryUnifyLeastLoaded(List<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution, Random rd) {
 		QueryDistribution pertubated = baseDistribution.clone();
 		int pertubationQuery = getRandomFromList(queryIds, rd);
@@ -291,5 +316,17 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 	private static <T> T getRandomFromList(List<T> list, Random rd) {
 		return list.get(rd.nextInt(list.size()));
+	}
+
+
+	private class IlsLogItem {
+		public final double costs;
+		public final boolean isValid;
+
+		public IlsLogItem(double costs, boolean isValid) {
+			super();
+			this.costs = costs;
+			this.isValid = isValid;
+		}
 	}
 }
