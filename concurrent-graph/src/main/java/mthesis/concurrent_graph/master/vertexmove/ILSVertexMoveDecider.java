@@ -34,6 +34,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private long decideStartTime;
 
 	private List<IlsLogItem> ilsLog = new ArrayList<>();
+	private double latestPertubatedDistributionCosts;
 	private boolean saveIlsLog = true;
 
 
@@ -82,6 +83,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		decideStartTime = System.currentTimeMillis();
 
 		// Greedy improve initial distribution
+		latestPertubatedDistributionCosts = bestDistribution.getCurrentCosts();
 		bestDistribution = optimizeGreedy(queryIds, workerIds, bestDistribution);
 
 		int maxIlsIteraions = 20;
@@ -91,9 +93,10 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		int i = 0;
 		for (; i < maxIlsIteraions && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
 			QueryDistribution ilsDistribution = pertubationQueryUnifyLargestPartition(queryIdsList, workerIds, bestDistribution, rd);
+			latestPertubatedDistributionCosts = ilsDistribution.getCurrentCosts();
 			ilsDistribution = optimizeGreedy(queryIds, workerIds, ilsDistribution);
 			boolean isGoodNew = isGoodNewDistribution(bestDistribution, ilsDistribution, workerIds);
-			if (saveIlsLog) ilsLog.add(new IlsLogItem(ilsDistribution.getCurrentCosts(), isGoodNew));
+			if (saveIlsLog) ilsLog.add(new IlsLogItem(ilsDistribution.getCurrentCosts(), latestPertubatedDistributionCosts, isGoodNew));
 			if (isGoodNew) {
 				bestDistribution = ilsDistribution;
 			}
@@ -106,13 +109,14 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		bestDistribution.printMoveDistribution();
 		//		bestDistribution.printMoveDecissions();
 
+
 		if (saveIlsLog) {
 			try (PrintWriter writer = new PrintWriter(new FileWriter("ILS_log_" + System.currentTimeMillis() + ".csv"))) {
 				for (IlsLogItem ilsLogItem : ilsLog) {
 					if(ilsLogItem.isValid)
-						writer.println((int) (double) ilsLogItem.costs + ";" + (int) (double) ilsLogItem.costs + ";");
+						writer.println(ilsLogItem.costs + ";" + ilsLogItem.lastPertubationCosts + ";" + ilsLogItem.costs + ";");
 					else
-						writer.println((int) (double) ilsLogItem.costs + ";;");
+						writer.println(ilsLogItem.costs + ";" + ilsLogItem.lastPertubationCosts + ";;");
 				}
 			}
 			catch (Exception e) {
@@ -154,7 +158,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						//								+ fromWorker + "->" + toWorker);
 						// TODO movedVerts > MinMoveWorkerVertices &&
 						if (isGoodNewDistributionMove(iterBestDistribution, newDistribution, fromWorker, toWorker)) {
-							if (saveIlsLog) ilsLog.add(new IlsLogItem(iterBestDistribution.getCurrentCosts(),
+							if (saveIlsLog) ilsLog.add(new IlsLogItem(iterBestDistribution.getCurrentCosts(), latestPertubatedDistributionCosts,
 									isGoodNewDistribution(iterBestDistribution, newDistribution, workerIds)));
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
@@ -320,12 +324,15 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 	private class IlsLogItem {
-		public final double costs;
+
+		public final int costs;
+		public final int lastPertubationCosts;
 		public final boolean isValid;
 
-		public IlsLogItem(double costs, boolean isValid) {
+		public IlsLogItem(double costs, double lastPertubationCosts, boolean isValid) {
 			super();
-			this.costs = costs;
+			this.costs = (int) costs;
+			this.lastPertubationCosts = (int) lastPertubationCosts;
 			this.isValid = isValid;
 		}
 	}
