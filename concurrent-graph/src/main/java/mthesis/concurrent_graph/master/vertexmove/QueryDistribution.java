@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
@@ -22,7 +21,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
 public class QueryDistribution {
 
 	// Move costs per vertex to move, relative to a vertex separated from its larger partition
-	private static final double VertexMoveCosts = Configuration.getPropertyDoubleDefault("VertexMoveCosts", 0.7); // TODO smarter
+	//private static final double VertexMoveCosts = Configuration.getPropertyDoubleDefault("VertexMoveCosts", 0.7); // TODO smarter
 
 	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
 	//	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
@@ -33,23 +32,44 @@ public class QueryDistribution {
 	// Move operations and costs so far
 	private double currentCosts;
 
+	public final long workerTotalVertices;
+	public final long workerActiveVertices;
+
 
 	/**
 	 * Constructor for initial state, no moves so far.
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		this(queryIds, queryMachines, calculateCosts(queryIds, queryMachines));
+		this(queryIds, queryMachines, calculateCosts(queryIds, queryMachines), getWorkerTotalVertices(queryMachines), getWorkerActiveVertices(queryMachines));
+	}
+
+	private static long getWorkerTotalVertices(Map<Integer, QueryWorkerMachine> queryMachines) {
+		long vertices = 0;
+		for (QueryWorkerMachine worker : queryMachines.values()) {
+			vertices += worker.totalVertices;
+		}
+		return vertices;
+	}
+
+	private static long getWorkerActiveVertices(Map<Integer, QueryWorkerMachine> queryMachines) {
+		long vertices = 0;
+		for (QueryWorkerMachine worker : queryMachines.values()) {
+			vertices += worker.activeVertices;
+		}
+		return vertices;
 	}
 
 	/**
 	 * Copy constructor
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines,
-			double currentCosts) {
+			double currentCosts, long workerTotalVertices, long workerActiveVertices) {
 		super();
 		this.queryIds = queryIds;
 		this.queryMachines = queryMachines;
 		this.currentCosts = currentCosts;
+		this.workerTotalVertices = workerTotalVertices;
+		this.workerActiveVertices = workerActiveVertices;
 	}
 
 	@Override
@@ -58,7 +78,7 @@ public class QueryDistribution {
 		for (Entry<Integer, QueryWorkerMachine> entry : queryMachines.entrySet()) {
 			queryMachinesClone.put(entry.getKey(), entry.getValue().createClone());
 		}
-		return new QueryDistribution(queryIds, queryMachinesClone, currentCosts);
+		return new QueryDistribution(queryIds, queryMachinesClone, currentCosts, workerTotalVertices, workerActiveVertices);
 	}
 
 
@@ -96,8 +116,8 @@ public class QueryDistribution {
 	}
 
 	private static double calculateCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		return calculateVerticesSeparatedCosts(queryIds, queryMachines) + calculateMoveCostsTotal(queryIds, queryMachines);
-
+		//return calculateVerticesSeparatedCosts(queryIds, queryMachines) + calculateMoveCostsTotal(queryIds, queryMachines);
+		return calculateVerticesSeparatedCosts(queryIds, queryMachines);
 	}
 
 	private static double calculateVerticesSeparatedCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
@@ -128,30 +148,30 @@ public class QueryDistribution {
 		return costs;
 	}
 
-	private static double calculateMoveCostsMachineMax(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		int hightestMachineCost = 0;
-		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-			int machineCosts = 0;
-			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
-				if (chunk.homeMachine != machine.getKey())
-					machineCosts += chunk.numVertices;
-			}
-			hightestMachineCost = Math.max(machineCosts, hightestMachineCost);
-		}
-		return (double) hightestMachineCost * VertexMoveCosts;
-	}
-
-	private static double calculateMoveCostsTotal(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		int costSum = 0;
-		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-			int machineCosts = 0;
-			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
-				if (chunk.homeMachine != machine.getKey()) machineCosts += chunk.numVertices;
-			}
-			costSum += machineCosts;
-		}
-		return (double) costSum * VertexMoveCosts;
-	}
+	//	private static double calculateMoveCostsMachineMax(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+	//		int hightestMachineCost = 0;
+	//		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+	//			int machineCosts = 0;
+	//			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
+	//				if (chunk.homeMachine != machine.getKey())
+	//					machineCosts += chunk.numVertices;
+	//			}
+	//			hightestMachineCost = Math.max(machineCosts, hightestMachineCost);
+	//		}
+	//		return (double) hightestMachineCost * VertexMoveCosts;
+	//	}
+	//
+	//	private static double calculateMoveCostsTotal(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+	//		int costSum = 0;
+	//		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+	//			int machineCosts = 0;
+	//			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
+	//				if (chunk.homeMachine != machine.getKey()) machineCosts += chunk.numVertices;
+	//			}
+	//			costSum += machineCosts;
+	//		}
+	//		return (double) costSum * VertexMoveCosts;
+	//	}
 
 	public int calculateMovedVertices() {
 		int movedVertices = 0;
