@@ -42,7 +42,8 @@ public class QueryDistribution {
 	 * Constructor for initial state, no moves so far.
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		this(queryIds, queryMachines, calculateCosts(queryIds, queryMachines), getWorkerTotalVertices(queryMachines), getWorkerActiveVertices(queryMachines));
+		this(queryIds, queryMachines, calculateCosts(queryIds, queryMachines), getWorkerTotalVertices(queryMachines),
+				getWorkerActiveVertices(queryMachines));
 	}
 
 	private static long getWorkerTotalVertices(Map<Integer, QueryWorkerMachine> queryMachines) {
@@ -71,9 +72,9 @@ public class QueryDistribution {
 		this.queryMachines = queryMachines;
 		this.currentCosts = currentCosts;
 		this.workerTotalVertices = workerTotalVertices;
-		this.avgTotalVertices = workerTotalVertices / queryIds.size();
+		this.avgTotalVertices = workerTotalVertices / queryMachines.size();
 		this.workerActiveVertices = workerActiveVertices;
-		this.avgActiveVertices = workerActiveVertices / queryIds.size();
+		this.avgActiveVertices = workerActiveVertices / queryMachines.size();
 	}
 
 	@Override
@@ -282,14 +283,14 @@ public class QueryDistribution {
 		for (VertexMoveOperation moveOperation : allMoves) {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
-					.setMaxMoveCount(Integer.MAX_VALUE)
-					.setQueryId(moveOperation.QueryId)
-					.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
-					.build());
+							.setMaxMoveCount(Integer.MAX_VALUE)
+							.setQueryId(moveOperation.QueryId)
+							.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
+							.build());
 			workerVertRecvMsgs.get(moveOperation.ToMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
-					.setQueryId(moveOperation.QueryId)
-					.setReceiveFromMachine(moveOperation.FromMachine).build());
+							.setQueryId(moveOperation.QueryId)
+							.setReceiveFromMachine(moveOperation.FromMachine).build());
 		}
 
 		return new VertexMoveDecision(workerVertSendMsgs, workerVertRecvMsgs);
