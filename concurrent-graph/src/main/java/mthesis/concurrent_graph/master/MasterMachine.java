@@ -119,8 +119,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		this.queryStatsDir = outputDir + File.separator + "stats";
 		this.queryValueFactory = globalValueFactory;
 		this.vertexMoveDeciderService = new VertexMoveDeciderService(new ILSVertexMoveDecider(), workerIds);
-		FileUtil.makeCleanDirectory(outputDir);
-		FileUtil.makeCleanDirectory(queryStatsDir);
+		FileUtil.createDirOrEmptyFiles(outputDir);
+		FileUtil.createDirOrEmptyFiles(queryStatsDir);
 		saveSetupSummary(machines, ownId);
 		saveConfigSummary();
 
@@ -507,7 +507,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	}
 
 	private void handleStartQuery(Q query) {
-		FileUtil.makeCleanDirectory(outputDir + File.separator + Integer.toString(query.QueryId));
+		FileUtil.createDirOrEmptyFiles(outputDir + File.separator + Integer.toString(query.QueryId));
 		query.setVertexCount(vertexCount);
 		MasterQuery<Q> activeQuery = new MasterQuery<>(query, workerIds, queryValueFactory);
 		synchronized (activeQueries) {

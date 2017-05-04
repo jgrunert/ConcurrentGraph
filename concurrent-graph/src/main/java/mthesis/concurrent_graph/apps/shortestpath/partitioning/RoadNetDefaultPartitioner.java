@@ -39,7 +39,7 @@ public class RoadNetDefaultPartitioner extends MasterInputPartitioner {
 			numVertices = reader.readInt();
 		}
 
-		FileUtil.makeCleanDirectory(outputDir);
+		FileUtil.createDirOrEmptyFiles(outputDir);
 
 		// Determine and assign partitions
 		int numPartitions = workers.size() * partitionsPerWorker;

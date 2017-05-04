@@ -29,7 +29,7 @@ public abstract class BlockInputPartitioner extends MasterInputPartitioner {
 	@Override
 	public Map<Integer, List<String>> partition(String inputFile, String outputDir, List<Integer> workers) {
 
-		FileUtil.makeCleanDirectory(outputDir);
+		FileUtil.createDirOrEmptyFiles(outputDir);
 		final List<String> partitionFiles = new ArrayList<>();
 		PrintWriter partitionWriter = null;
 		int partitionCounter = 0;

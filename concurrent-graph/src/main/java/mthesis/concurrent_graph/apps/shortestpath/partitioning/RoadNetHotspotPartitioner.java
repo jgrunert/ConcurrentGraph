@@ -87,7 +87,7 @@ public class RoadNetHotspotPartitioner extends MasterInputPartitioner {
 			spotCoordinates.add(spotsCoordinates.get(spots.get(i)));
 		}
 
-		FileUtil.makeCleanDirectory(outputDir);
+		FileUtil.createDirOrEmptyFiles(outputDir);
 
 		// Determine and assign partitions
 		int numPartitions = workers.size() * partitionsPerWorker;

@@ -48,7 +48,7 @@ public class RoadNetLDGPartitioner extends MasterInputPartitioner {
 		}
 
 		// Create partition files
-		FileUtil.makeCleanDirectory(outputDir);
+		FileUtil.createDirOrEmptyFiles(outputDir);
 		int numPartitions = workers.size() * partitionsPerWorker;
 		Map<Integer, List<String>> partitionsAssignements = new HashMap<>();
 		List<DataOutputStream> partitionFiles = new ArrayList<>(numPartitions);

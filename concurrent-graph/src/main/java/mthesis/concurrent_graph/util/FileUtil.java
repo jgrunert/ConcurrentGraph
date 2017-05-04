@@ -4,11 +4,11 @@ import java.io.File;
 
 public class FileUtil {
 
-	public static void makeCleanDirectory(String dir) {
+	public static void createDirOrEmptyFiles(String dir) {
 		final File dirFile = new File(dir);
 		if (dirFile.exists()) {
 			for (final File f : dirFile.listFiles()) {
-				deleteFile(f);
+				emptyDirectory(f);
 			}
 		}
 		else {
@@ -16,11 +16,33 @@ public class FileUtil {
 		}
 	}
 
-	public static void deleteFile(File file) {
+	public static void createEmptyDir(String dir) {
+		final File dirFile = new File(dir);
+		if (dirFile.exists()) {
+			for (final File f : dirFile.listFiles()) {
+				deleteDirRecursive(f);
+			}
+		}
+		else {
+			dirFile.mkdirs();
+		}
+	}
+
+	public static void deleteDirRecursive(File file) {
 		if (file.isDirectory()) {
 			for (final File f : file.listFiles())
-				deleteFile(f);
+				deleteDirRecursive(f);
 		}
 		file.delete();
+	}
+
+	public static void emptyDirectory(File file) {
+		if (file.isDirectory()) {
+			for (final File f : file.listFiles())
+				emptyDirectory(f);
+		}
+		else {
+			file.delete();
+		}
 	}
 }

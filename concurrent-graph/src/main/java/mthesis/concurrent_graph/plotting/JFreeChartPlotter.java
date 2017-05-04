@@ -38,7 +38,7 @@ public class JFreeChartPlotter {
 		logger.info("Start plotting");
 
 		String statsFolder = outputFolder + File.separator + "stats";
-		FileUtil.makeCleanDirectory(statsFolder + File.separator + "plots");
+		FileUtil.createDirOrEmptyFiles(statsFolder + File.separator + "plots");
 
 		List<Integer> workers = new ArrayList<>();
 		List<Integer> queries = new ArrayList<>();
