@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import mthesis.concurrent_graph.util.MiscUtil;
 
@@ -16,12 +17,12 @@ import mthesis.concurrent_graph.util.MiscUtil;
 public class QueryWorkerMachine {
 
 	// Total number of vertices active in a query (if a vertex is active in n queries it counts as n vertices)
-	public int activeVertices;
+	public long activeVertices;
 	public long totalVertices;
 	// Active queries on this machine
 	public List<QueryVertexChunk> queryChunks;
 	// Number of vertices of queries
-	public Map<Integer, Integer> queryVertices;
+	public Map<Integer, Long> queryVertices;
 
 
 	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, long totalVertices) {
@@ -33,13 +34,13 @@ public class QueryWorkerMachine {
 		for (QueryVertexChunk qChunk : queryChunks) {
 			activeVertices += qChunk.numVertices;
 			for (int query : qChunk.queries) {
-				queryVertices.put(query, MiscUtil.defaultInt(queryVertices.get(query)) + qChunk.numVertices);
+				queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) + qChunk.numVertices);
 			}
 		}
 	}
 
-	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, int activeVertices, long totalVertices,
-			Map<Integer, Integer> queryVertices) {
+	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, long activeVertices, long totalVertices,
+			Map<Integer, Long> queryVertices) {
 		super();
 		this.queryChunks = queryChunks;
 		this.queryVertices = queryVertices;
@@ -68,7 +69,7 @@ public class QueryWorkerMachine {
 				activeVertices -= chunk.numVertices;
 				totalVertices -= chunk.numVertices;
 				for (int query : chunk.queries) {
-					queryVertices.put(query, MiscUtil.defaultInt(queryVertices.get(query)) - chunk.numVertices);
+					queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) - chunk.numVertices);
 				}
 				i--;
 			}
@@ -87,10 +88,26 @@ public class QueryWorkerMachine {
 			activeVertices += chunk.numVertices;
 			totalVertices += chunk.numVertices;
 			for (int query : chunk.queries) {
-				queryVertices.put(query, MiscUtil.defaultInt(queryVertices.get(query)) + chunk.numVertices);
+				queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) + chunk.numVertices);
 			}
 		}
 	}
+
+
+	/** Returns query with least active vertices on this machine */
+	public int getSmallestPartitionQuery() {
+		int minQuery = 0;
+		long minQuerySize = Long.MAX_VALUE;
+		for (Entry<Integer, Long> queryVerts : queryVertices.entrySet()) {
+			long querySize = queryVerts.getValue();
+			if (querySize > 0 && querySize < minQuerySize) {
+				minQuerySize = querySize;
+				minQuery = queryVerts.getKey();
+			}
+		}
+		return minQuery;
+	}
+
 
 	@Override
 	public String toString() {

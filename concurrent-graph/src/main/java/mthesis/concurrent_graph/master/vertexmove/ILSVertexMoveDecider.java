@@ -161,7 +161,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				for (Integer fromWorkerId : workerIds) {
 					// Dont move from worker if worker has too few vertices afterwards
 					QueryWorkerMachine fromWorker = baseDistribution.getQueryMachines().get(fromWorkerId);
-					int fromWorkerQueryVertices = MiscUtil.defaultInt(fromWorker.queryVertices.get(queryId));
+					long fromWorkerQueryVertices = MiscUtil.defaultLong(fromWorker.queryVertices.get(queryId));
 					if (fromWorkerQueryVertices == 0) continue;
 					if (fromWorker.activeVertices - fromWorkerQueryVertices < minActiveVertices
 							|| fromWorker.totalVertices - fromWorkerQueryVertices < minTotalVertices)
@@ -171,7 +171,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						if (fromWorkerId == toWorkerId) continue;
 						// Dont move to worker if has too many vertices afterwards
 						QueryWorkerMachine toWorker = baseDistribution.getQueryMachines().get(toWorkerId);
-						int toWorkerQueryVertices = MiscUtil.defaultInt(toWorker.queryVertices.get(queryId));
+						long toWorkerQueryVertices = MiscUtil.defaultLong(toWorker.queryVertices.get(queryId));
 						if (toWorkerQueryVertices == 0) continue;
 						if (toWorker.activeVertices + toWorkerQueryVertices > maxActiveVertices
 								|| toWorker.totalVertices + toWorkerQueryVertices > maxTotalVertices)
@@ -214,6 +214,83 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		return bestDistribution;
 	}
 
+
+	/**
+	 * Pertubation by moving all partitions of a query to machine with largest partition
+	 */
+	private QueryDistribution pertubationQueryUnifyLargestPartition(List<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution,
+			Random rd) {
+		// First unify random query
+		QueryDistribution newDistribution = unifyQueryAtLargestPartition(getRandomFromList(queryIds, rd), workerIds, baseDistribution);
+
+		// Now unify until workload balancing reached. Move smallest partition from most loaded worker to least loaded worker
+		// TODO Deadlock possible?
+		while (!workloadBalanceOk(newDistribution)) {
+			while (!workloadActiveBalanceOk(newDistribution)) {
+				int minLoadedId = newDistribution.getMachineMinActiveVertices();
+				int maxLoadedId = newDistribution.getMachineMaxActiveVertices();
+				int moveQuery = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestPartitionQuery();
+				System.out.println("A " + moveQuery + " " + maxLoadedId + "->" + minLoadedId + " "
+						+ newDistribution.moveVertices(moveQuery, maxLoadedId, minLoadedId, true));
+			}
+
+			while (!workloadTotalBalanceOk(newDistribution)) {
+				int minLoadedId = newDistribution.getMachineMinTotalVertices();
+				int maxLoadedId = newDistribution.getMachineMaxTotalVertices();
+				int moveQuery = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestPartitionQuery();
+				System.out.println("T " + moveQuery + " " + maxLoadedId + "->" + minLoadedId + " "
+						+ newDistribution.moveVertices(moveQuery, maxLoadedId, minLoadedId, true));
+				//newDistribution.moveVertices(moveQuery, maxLoadedId, minLoadedId, true);
+			}
+
+			// Workers sorted by increasing total vertices
+		}
+
+		return newDistribution;
+	}
+
+	/**
+	 * Moving all partitions of a query to machine with largest partition
+	 */
+	private QueryDistribution unifyQueryAtLargestPartition(int pertubationQuery, List<Integer> workerIds, QueryDistribution baseDistribution) {
+		QueryDistribution newDistribution = baseDistribution.clone();
+		int bestWorkerId = 0;
+		long bestWorkerPartitionSize = 0;
+		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
+			long partitionSize = MiscUtil.defaultLong(machine.getValue().queryVertices.get(pertubationQuery));
+			if (partitionSize > bestWorkerPartitionSize) {
+				bestWorkerPartitionSize = partitionSize;
+				bestWorkerId = machine.getKey();
+			}
+		}
+
+		for(int worker : workerIds) {
+			if (worker != bestWorkerId) {
+				newDistribution.moveVertices(pertubationQuery, worker, bestWorkerId, true);
+			}
+		}
+
+		return newDistribution;
+	}
+
+	/**
+	 * Moving all partitions of a query to machine with largest partition
+	 */
+	private QueryDistribution unifyQueryAtWorker(int pertubationQuery, int workerId, List<Integer> workerIds, QueryDistribution baseDistribution) {
+		QueryDistribution newDistribution = baseDistribution.clone();
+
+		for (int worker : workerIds) {
+			if (worker != workerId) {
+				newDistribution.moveVertices(pertubationQuery, worker, workerId, true);
+			}
+		}
+
+		return newDistribution;
+	}
+
+
+
+
 	/**
 	 * Checks if a new distribution after a move step is better than the old one and has sufficient workload balancing.
 	 * Checks workers affected by the move.
@@ -224,13 +301,57 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				&& checkWorkerTotalVerticesOk(oldDistribution, newDistribution, fromWorker, toWorker);
 	}
 
+	// TODO Replace by workloadBalanceOkOrBetter
 	/**
 	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
 	 */
 	private boolean isGoodNewDistribution(QueryDistribution oldDistribution, QueryDistribution newDistribution, List<Integer> workerIds) {
-		if( newDistribution.getCurrentCosts() >= oldDistribution.getCurrentCosts())
-			return false;
-		for(Integer worker : workerIds) {
+		if (newDistribution.getCurrentCosts() >= oldDistribution.getCurrentCosts()) return false;
+		for (Integer worker : workerIds) {
+			if (!checkWorkerActiveVerticesOk(oldDistribution, newDistribution, worker) || !checkWorkerTotalVerticesOk(oldDistribution, newDistribution, worker))
+				return false;
+		}
+		return true;
+	}
+
+
+	/**
+	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
+	 */
+	private boolean workloadBalanceOk(QueryDistribution distribution) {
+		for (Integer worker : distribution.getQueryMachines().keySet()) {
+			if (distribution.getWorkerActiveVerticesImbalanceFactor(worker) > VerticesActiveImbalanceThreshold
+					|| distribution.getWorkerTotalVerticesImbalanceFactor(worker) > VerticesTotalImbalanceThreshold)
+				return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
+	 */
+	private boolean workloadActiveBalanceOk(QueryDistribution distribution) {
+		for (Integer worker : distribution.getQueryMachines().keySet()) {
+			if (distribution.getWorkerActiveVerticesImbalanceFactor(worker) > VerticesActiveImbalanceThreshold) return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
+	 */
+	private boolean workloadTotalBalanceOk(QueryDistribution distribution) {
+		for (Integer worker : distribution.getQueryMachines().keySet()) {
+			if (distribution.getWorkerTotalVerticesImbalanceFactor(worker) > VerticesTotalImbalanceThreshold) return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
+	 */
+	private boolean workloadBalanceOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution) {
+		for (Integer worker : oldDistribution.getQueryMachines().keySet()) {
 			if (!checkWorkerActiveVerticesOk(oldDistribution, newDistribution, worker) || !checkWorkerTotalVerticesOk(oldDistribution, newDistribution, worker))
 				return false;
 		}
@@ -238,61 +359,24 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	}
 
 	/**
-	 * Pertubation by moving all partitions of a query to with least load machine
+	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
 	 */
-	@SuppressWarnings("unused")
-	private QueryDistribution pertubationQueryUnifyLeastLoaded(List<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution, Random rd) {
-		QueryDistribution pertubated = baseDistribution.clone();
-		int pertubationQuery = getRandomFromList(queryIds, rd);
-		int bestWorkerId = 0;
-		long bestWorkerSize = Integer.MAX_VALUE;
-		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
-			if (machine.getValue().totalVertices < bestWorkerSize) {
-				bestWorkerSize = machine.getValue().totalVertices;
-				bestWorkerId = machine.getKey();
-			}
+	private boolean workloadActiveBalanceOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution) {
+		for (Integer worker : oldDistribution.getQueryMachines().keySet()) {
+			if (!checkWorkerActiveVerticesOk(oldDistribution, newDistribution, worker)) return false;
 		}
-
-		for (int worker : workerIds) {
-			if (worker != bestWorkerId) {
-				pertubated.moveVertices(pertubationQuery, worker, bestWorkerId, true);
-
-			}
-		}
-
-		// TODO No pertubation without workload balance
-
-		return pertubated;
+		return true;
 	}
 
 	/**
-	 * Pertubation by moving all partitions of a query to machine with largest partition
+	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
 	 */
-	private QueryDistribution pertubationQueryUnifyLargestPartition(List<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution,
-			Random rd) {
-		QueryDistribution pertubated = baseDistribution.clone();
-		int pertubationQuery = getRandomFromList(queryIds, rd);
-
-		int bestWorkerId = 0;
-		long bestWorkerPartitionSize = 0;
-		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
-			int partitionSize = MiscUtil.defaultInt(machine.getValue().queryVertices.get(pertubationQuery)) ;
-			if (partitionSize > bestWorkerPartitionSize) {
-				bestWorkerPartitionSize = partitionSize;
-				bestWorkerId = machine.getKey();
-			}
+	private boolean workloadTotalBalanceOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution) {
+		for (Integer worker : oldDistribution.getQueryMachines().keySet()) {
+			if (!checkWorkerTotalVerticesOk(oldDistribution, newDistribution, worker)) return false;
 		}
-
-		for(int worker : workerIds) {
-			if (worker != bestWorkerId) {
-				pertubated.moveVertices(pertubationQuery, worker, bestWorkerId, true);
-
-			}
-		}
-
-		return pertubated;
+		return true;
 	}
-
 
 
 	private boolean checkWorkerActiveVerticesOk(QueryDistribution oldDistribution, QueryDistribution newDistribution, int fromWorker,

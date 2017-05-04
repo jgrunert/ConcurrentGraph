@@ -33,7 +33,9 @@ public class QueryDistribution {
 	private double currentCosts;
 
 	public final long workerTotalVertices;
+	public final long avgTotalVertices;
 	public final long workerActiveVertices;
+	public final long avgActiveVertices;
 
 
 	/**
@@ -69,7 +71,9 @@ public class QueryDistribution {
 		this.queryMachines = queryMachines;
 		this.currentCosts = currentCosts;
 		this.workerTotalVertices = workerTotalVertices;
+		this.avgTotalVertices = workerTotalVertices / queryIds.size();
 		this.workerActiveVertices = workerActiveVertices;
+		this.avgActiveVertices = workerActiveVertices / queryIds.size();
 	}
 
 	@Override
@@ -126,9 +130,9 @@ public class QueryDistribution {
 		for (Integer queryId : queryIds) {
 			// Find largest partition
 			Integer largestPartitionMachine = null;
-			int largestPartitionSize = -1;
+			long largestPartitionSize = -1;
 			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-				Integer q = machine.getValue().queryVertices.get(queryId);
+				Long q = machine.getValue().queryVertices.get(queryId);
 				if (q != null && q > largestPartitionSize) {
 					largestPartitionMachine = machine.getKey();
 					largestPartitionSize = q;
@@ -138,7 +142,7 @@ public class QueryDistribution {
 			// Calculate vertices separated from largest partition
 			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
 				if (machine.getKey() != largestPartitionMachine) {
-					Integer q = machine.getValue().queryVertices.get(queryId);
+					Long q = machine.getValue().queryVertices.get(queryId);
 					if (q != null) {
 						costs += q;
 					}
@@ -192,9 +196,8 @@ public class QueryDistribution {
 	 */
 	public double getWorkerActiveVerticesImbalanceFactor(int workerId) {
 		long workerVerts = queryMachines.get(workerId).activeVertices;
-		long avgVerts = getAverageWorkerActiveVertices();
-		if (avgVerts == 0) return 0;
-		return (double) Math.abs(workerVerts - avgVerts) / avgVerts;
+		if (avgActiveVertices == 0) return 0;
+		return (double) Math.abs(workerVerts - avgActiveVertices) / avgActiveVertices;
 	}
 
 	/**
@@ -202,25 +205,8 @@ public class QueryDistribution {
 	 */
 	public double getWorkerTotalVerticesImbalanceFactor(int workerId) {
 		long workerVerts = queryMachines.get(workerId).totalVertices;
-		long avgVerts = getAverageWorkerTotalVertices();
-		if (avgVerts == 0) return 0;
-		return (double) Math.abs(workerVerts - avgVerts) / avgVerts;
-	}
-
-	private long getAverageWorkerActiveVertices() {
-		long verts = 0;
-		for (QueryWorkerMachine machine : queryMachines.values()) {
-			verts += machine.activeVertices;
-		}
-		return verts / queryMachines.size();
-	}
-
-	private long getAverageWorkerTotalVertices() {
-		long verts = 0;
-		for (QueryWorkerMachine machine : queryMachines.values()) {
-			verts += machine.totalVertices;
-		}
-		return verts / queryMachines.size();
+		if (avgTotalVertices == 0) return 0;
+		return (double) Math.abs(workerVerts - avgTotalVertices) / avgTotalVertices;
 	}
 
 
@@ -312,6 +298,55 @@ public class QueryDistribution {
 
 	public Map<Integer, QueryWorkerMachine> getQueryMachines() {
 		return queryMachines;
+	}
+
+
+	public int getMachineMinActiveVertices() {
+		int workerId = 0;
+		long minVertices = Long.MAX_VALUE;
+		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
+			if (worker.getValue().activeVertices < minVertices) {
+				minVertices = worker.getValue().activeVertices;
+				workerId = worker.getKey();
+			}
+		}
+		return workerId;
+	}
+
+	public int getMachineMaxActiveVertices() {
+		int workerId = 0;
+		long maxVertices = 0;
+		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
+			if (worker.getValue().activeVertices > maxVertices) {
+				maxVertices = worker.getValue().activeVertices;
+				workerId = worker.getKey();
+			}
+		}
+		return workerId;
+	}
+
+	public int getMachineMinTotalVertices() {
+		int workerId = 0;
+		long minVertices = Long.MAX_VALUE;
+		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
+			if (worker.getValue().totalVertices < minVertices) {
+				minVertices = worker.getValue().totalVertices;
+				workerId = worker.getKey();
+			}
+		}
+		return workerId;
+	}
+
+	public int getMachineMaxTotalVertices() {
+		int workerId = 0;
+		long maxVertices = 0;
+		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
+			if (worker.getValue().totalVertices > maxVertices) {
+				maxVertices = worker.getValue().totalVertices;
+				workerId = worker.getKey();
+			}
+		}
+		return workerId;
 	}
 
 	//	// Testing
