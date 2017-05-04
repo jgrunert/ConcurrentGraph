@@ -68,7 +68,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -89,6 +89,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	private final Map<Integer, WorkerQuery<V, E, M, Q>> activeQueries = new HashMap<>();
 	// List of currently and previously active queries for query cut
 	private final List<WorkerQuery<V, E, M, Q>> queriesForQueryCut = new ArrayList<>();
+	// Counter of supersteps/localSupersteps per query. Resets when query vertices moved.
+	private final Map<Integer, Pair<Integer, Integer>> queriesLocalSupersteps = new HashMap<>();
 	// Barrier messages that arrived before a became was active
 	private final Map<Integer, List<ControlMessage>> postponedBarrierMessages = new HashMap<>();
 
@@ -444,11 +446,18 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 							}
 						}
 
+						// Supersteps/LocalSupersteps counters
+						Pair<Integer, Integer> querySuperstepsStat = queriesLocalSupersteps.get(activeQuery.QueryId);
+						if (querySuperstepsStat == null) querySuperstepsStat = new Pair<Integer, Integer>(0, 0);
 						if (isLocalSuperstep) {
 							activeQuery.QueryLocal.Stats.LocalSuperstepsComputed++;
+							querySuperstepsStat.second++;
 						}
 						activeQuery.QueryLocal.Stats.SuperstepsComputed++;
+						querySuperstepsStat.first++;
+						queriesLocalSupersteps.put(activeQuery.QueryId, querySuperstepsStat);
 
+						// Check if local execution possible
 						if (activeQuery.localExecution) {
 							// TODO Continue running in local mode
 							if (activeQuery.ActiveVerticesNext.isEmpty()) {
@@ -665,13 +674,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
@@ -693,7 +702,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -714,35 +723,35 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-						return true;
+					return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Receive_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -917,14 +926,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	}
 
 
-	@SuppressWarnings("unused")
 	public void handleUpdateRegisteredVerticesMessage(UpdateRegisteredVerticesMessage message) {
 		int updatedEntries;
 		if (message.movedTo != ownId)
 			updatedEntries = remoteVertexMachineRegistry.updateEntries(message.vertices, message.movedTo);
 		else
 			updatedEntries = remoteVertexMachineRegistry.removeEntries(message.vertices);
-		//query.QueryLocal.Stats.UpdateVertexRegisters += updatedEntries;  TODO WorkerStats UpdateVertexRegisters
+		workerStats.UpdateVertexRegisters += updatedEntries;
 	}
 
 
@@ -952,8 +960,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1
 				&& !receivedLocalOnOtherBarrier) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-					+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
-					+ query.getSuperstepNosLog());
+			+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
+			+ query.getSuperstepNosLog());
 			return;
 		}
 
@@ -1228,7 +1236,10 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					localVertices.remove(vertexId);
 					activeQuery.VerticesEverActive.remove(vertexId);
 					for (Integer qActiveIn : queriesActiveInBuffer) {
+						WorkerQuery<V, E, M, Q> query = activeQueries.get(qActiveIn);
 						activeQueries.get(qActiveIn).ActiveVerticesThis.remove(vertex.ID);
+						// Reset local query locality stat
+						queriesLocalSupersteps.remove(query.QueryId);
 					}
 
 					// Send vertices now if bucket full
@@ -1292,6 +1303,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					if (queryActiveIn != null) {
 						queryActiveIn.ActiveVerticesThis.put(movedVert.ID, movedVert);
 						queryActiveIn.VerticesEverActive.add(movedVert.ID);
+						// Reset local query locality stat
+						queriesLocalSupersteps.remove(queryActiveIn.QueryId);
 					}
 					//					else {
 					//						logger.warn("Received vertex for unknown query: " + queryActiveInId);
@@ -1422,10 +1435,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		// Remove older and inactive queries from query cut
 		for (int i = 0; i < queriesForQueryCut.size(); i++) {
 			WorkerQuery<V, E, M, Q> query = queriesForQueryCut.get(i);
-			if (!activeQueries.containsKey(query.QueryId) && (startTimeMs - query.startTime) > Configuration.QUERY_CUT_TIME_WINDOW) {
-				System.err.println(ownId + " REM " + query.QueryId); // TODO
-				queriesForQueryCut.remove(i);
-				i--;
+			if (!activeQueries.containsKey(query.QueryId)) {
+				double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
+				long qAge = (startTimeMs - query.startTime);
+				if (qAge > Configuration.QUERY_CUT_TIME_WINDOW || qlocalSuperstepRatio < Configuration.QUERY_CUT_KEEP_MIN_LOCALITY) {
+					System.err.println(ownId + " REM " + query.QueryId + " " + qAge+ " " + qlocalSuperstepRatio); // TODO
+					queriesForQueryCut.remove(i);
+					queriesLocalSupersteps.remove(query.QueryId);
+					i--;
+				}
+				else System.err.println(ownId + " KEEP " + query.QueryId + " " + qAge + " " + qlocalSuperstepRatio); // TODO
 			}
 		}
 
@@ -1472,6 +1491,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		return intersectChunks;
 	}
 
+
+	private double getQueryLocalSuperstepRatio(int queryId) {
+		Pair<Integer, Integer> superstepStat = queriesLocalSupersteps.get(queryId);
+		if (superstepStat == null) return 0;
+		return (double) superstepStat.second / superstepStat.first;
+	}
 
 	@Override
 	public BaseWritableFactory<V> getVertexValueFactory() {
