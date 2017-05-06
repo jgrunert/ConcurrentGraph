@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -122,7 +123,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		final long timeoutTime = System.currentTimeMillis() + Configuration.CONNECT_TIMEOUT;
 		while (System.currentTimeMillis() <= timeoutTime &&
 				!(channelAsyncReceivers.size() == (machineConfigs.size() - 1)
-				&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
+						&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
 			try {
 				Thread.sleep(1);
 			}
@@ -221,9 +222,10 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		sendUnicastMessageAsync(dstMachine, new GetToKnowMessage(ownId, queryId, vertices));
 	}
 
-	public void sendMoveVerticesMessage(int dstMachine, List<Pair<AbstractVertex<V, E, M, Q>, List<Integer>>> vertices, int queryId,
+	public void sendMoveVerticesMessage(int dstMachine, Set<Integer> chunkQueries, Set<Integer> vertexQueries,
+			List<AbstractVertex<V, E, M, Q>> vertices,
 			boolean lastSegment) {
-		sendUnicastMessageAsync(dstMachine, new MoveVerticesMessage<>(ownId, queryId, vertices, lastSegment));
+		sendUnicastMessageAsync(dstMachine, new MoveVerticesMessage<>(ownId, chunkQueries, vertexQueries, vertices, lastSegment));
 	}
 
 	public void sendInvalidateRegisteredVerticesMessage(int dstMachine, Collection<Integer> vertices, int movedTo) {

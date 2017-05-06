@@ -9,8 +9,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import mthesis.concurrent_graph.communication.Messages;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage;
-import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage;
 
 /**
  * Represents a distribution of vertices on worker machines and the sequence to move them in this way
@@ -259,8 +259,8 @@ public class QueryDistribution {
 	//	}
 
 	public VertexMoveDecision toMoveDecision(List<Integer> workerIds) {
-		Map<Integer, List<SendQueryVerticesMessage>> workerVertSendMsgs = new HashMap<>();
-		Map<Integer, List<ReceiveQueryVerticesMessage>> workerVertRecvMsgs = new HashMap<>();
+		Map<Integer, List<SendQueryChunkMessage>> workerVertSendMsgs = new HashMap<>();
+		Map<Integer, List<ReceiveQueryChunkMessage>> workerVertRecvMsgs = new HashMap<>();
 		for (int workerId : workerIds) {
 			workerVertSendMsgs.put(workerId, new ArrayList<>());
 			workerVertRecvMsgs.put(workerId, new ArrayList<>());
@@ -271,25 +271,21 @@ public class QueryDistribution {
 		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
 			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
 				if (chunk.homeMachine != machine.getKey()) {
-					for (int chunkQuery : chunk.queries) {
-						allMoves.add(new VertexMoveOperation(chunkQuery, chunk.homeMachine, machine.getKey()));
-					}
+					allMoves.add(new VertexMoveOperation(chunk.queries, chunk.homeMachine, machine.getKey()));
 				}
 			}
 		}
 
-		// TODO Ist his all correct? Check for cycles etc
-
 		for (VertexMoveOperation moveOperation : allMoves) {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
-					Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage.newBuilder()
+					Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.newBuilder()
 							.setMaxMoveCount(Integer.MAX_VALUE)
-							.setQueryId(moveOperation.QueryId)
+							.addAllChunkQueries(moveOperation.QueryChunk)
 							.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
 							.build());
 			workerVertRecvMsgs.get(moveOperation.ToMachine).add(
-					Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage.newBuilder()
-							.setQueryId(moveOperation.QueryId)
+					Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage.newBuilder()
+							.addAllChunkQueries(moveOperation.QueryChunk)
 							.setReceiveFromMachine(moveOperation.FromMachine).build());
 		}
 

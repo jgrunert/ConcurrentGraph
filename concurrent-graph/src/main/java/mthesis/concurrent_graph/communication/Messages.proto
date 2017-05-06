@@ -64,8 +64,8 @@ message MessageEnvelope {
 		optional bytes QueryValues = 6;
 		optional WorkerInitializedMessage WorkerInitialized = 7;
 		//optional QueriesIntersectionsMessage QueriesIntersections = 8;
-		optional SendQueryVerticesMessage SendQueryVertices = 9;
-		optional ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;
+		//optional SendQueryVerticesMessage SendQueryVertices = 9;
+		//optional ReceiveQueryVerticesMessage ReceiveQueryVertices = 10;
 		optional StartBarrierMessage StartBarrier = 11;
 		optional WorkerStatsMessage WorkerStats = 12;
 		optional StartSuperstepMessage StartSuperstep = 13;
@@ -94,23 +94,16 @@ message MessageEnvelope {
 		//	map<int32, int32> Intersections = 1;
 		//}
 		
-		message SendQueryVerticesMessage {
-			optional int32 SendToMachine = 1;
-		}
-		
-		message ReceiveQueryVerticesMessage {
-			repeated int32 RecvFromMachine = 1;
-		}
 		
 		message StartBarrierMessage {
     		map<int32, int32> QuerySupersteps = 1;
-			repeated SendQueryVerticesMessage SendQueryVertices = 2;
-			repeated ReceiveQueryVerticesMessage ReceiveQueryVertices = 3;
+			repeated SendQueryChunkMessage SendQueryChunks = 2;
+			repeated ReceiveQueryChunkMessage ReceiveQueryChunks = 3;
 			
 			// Message to signal workers to make a system wide barrier to perform tasks
-			message SendQueryVerticesMessage {
-				// Query to send vertices for
-				optional int32 QueryId = 1;
+			message SendQueryChunkMessage {
+				// Queries to send vertices for
+				repeated int32 ChunkQueries = 1;
 				// Target machine to send vertices to
 				optional int32 MoveToMachine = 2;
 				// Max. number of vertices to move
@@ -118,9 +111,9 @@ message MessageEnvelope {
 			}
 			
 			// Message to signal workers to make a system wide barrier to perform tasks
-			message ReceiveQueryVerticesMessage {
-				// Query to receive vertices for
-				optional int32 QueryId = 1;
+			message ReceiveQueryChunkMessage {
+				// Queries to send vertices for
+				repeated int32 ChunkQueries = 1;
 				// Machine to receive vertices from
 				optional int32 ReceiveFromMachine = 2;
 			}

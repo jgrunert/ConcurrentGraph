@@ -15,6 +15,8 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVerte
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexChunksMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.QueryVertexQueryMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage;
+import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartSuperstepMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerInitializedMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage;
@@ -118,20 +120,20 @@ public class ControlMessageBuildUtil {
 	}
 
 	public static MessageEnvelope Build_Master_StartBarrier_VertexMove(int srcMachineId,
-			List<Messages.ControlMessage.StartBarrierMessage.SendQueryVerticesMessage> sendVerts,
-			List<Messages.ControlMessage.StartBarrierMessage.ReceiveQueryVerticesMessage> recvVerts,
+			List<SendQueryChunkMessage> sendVerts,
+			List<ReceiveQueryChunkMessage> recvVerts,
 			Map<Integer, Integer> queryFinishedSupersteps) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Master_Start_Barrier)
 				.setStartBarrier(StartBarrierMessage.newBuilder()
-						.addAllSendQueryVertices(sendVerts)
-						.addAllReceiveQueryVertices(recvVerts)
+						.addAllSendQueryChunks(sendVerts)
+						.addAllReceiveQueryChunks(recvVerts)
 						.putAllQuerySupersteps(queryFinishedSupersteps))
 				.setSrcMachine(srcMachineId).build()).build();
 	}
 
-	public static MessageEnvelope Build_Worker_QuerySuperstepBarrier(int superstepNo, int srcMachineId, BaseQuery query, WorkerQueryExecutionMode queryMode)
-	{
+	public static MessageEnvelope Build_Worker_QuerySuperstepBarrier(int superstepNo, int srcMachineId, BaseQuery query,
+			WorkerQueryExecutionMode queryMode) {
 		return MessageEnvelope.newBuilder().setControlMessage(ControlMessage.newBuilder()
 				.setType(ControlMessageType.Worker_Query_Superstep_Barrier)
 				.setQueryValues(ByteString.copyFrom(query.getBytes()))
@@ -206,6 +208,7 @@ public class ControlMessageBuildUtil {
 		return MessageEnvelope.newBuilder()
 				.setControlMessage(
 						ControlMessage.newBuilder()
-						.setType(ControlMessageType.Worker_Barrier_Finished).setSrcMachine(srcMachineId)).build();
+								.setType(ControlMessageType.Worker_Barrier_Finished).setSrcMachine(srcMachineId))
+				.build();
 	}
 }

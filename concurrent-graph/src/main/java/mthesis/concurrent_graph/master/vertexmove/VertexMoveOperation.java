@@ -1,5 +1,7 @@
 package mthesis.concurrent_graph.master.vertexmove;
 
+import java.util.Set;
+
 /**
  * Represents an operation moving vertices from one worker machine to another
  * TODO Implement moves not moving all vertices
@@ -9,14 +11,14 @@ package mthesis.concurrent_graph.master.vertexmove;
  */
 public class VertexMoveOperation {
 
-	public final int QueryId;
+	public final Set<Integer> QueryChunk;
 	public final int FromMachine;
 	public final int ToMachine;
 
 
-	public VertexMoveOperation(int queryId, int fromMachine, int toMachine) {
+	public VertexMoveOperation(Set<Integer> queryChunk, int fromMachine, int toMachine) {
 		super();
-		QueryId = queryId;
+		QueryChunk = queryChunk;
 		FromMachine = fromMachine;
 		ToMachine = toMachine;
 	}
@@ -27,7 +29,9 @@ public class VertexMoveOperation {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + FromMachine;
-		result = prime * result + QueryId;
+		for (Integer q : QueryChunk) {
+			result = prime * result + q;
+		}
 		result = prime * result + ToMachine;
 		return result;
 	}
@@ -39,7 +43,9 @@ public class VertexMoveOperation {
 		if (getClass() != obj.getClass()) return false;
 		VertexMoveOperation other = (VertexMoveOperation) obj;
 		if (FromMachine != other.FromMachine) return false;
-		if (QueryId != other.QueryId) return false;
+		if (QueryChunk != other.QueryChunk && QueryChunk != null &&
+				!QueryChunk.equals(other.QueryChunk))
+			return false;
 		if (ToMachine != other.ToMachine) return false;
 		return true;
 	}

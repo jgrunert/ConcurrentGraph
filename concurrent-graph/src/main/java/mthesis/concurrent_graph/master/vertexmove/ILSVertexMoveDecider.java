@@ -89,8 +89,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		// Greedy improve initial distribution
 		latestPertubatedDistributionCosts = bestDistribution.getCurrentCosts();
-		currentlyBestDistributionCosts = bestDistribution.getCurrentCosts();
 		bestDistribution = optimizeGreedy(queryIds, workerIds, bestDistribution);
+		currentlyBestDistributionCosts = bestDistribution.getCurrentCosts();
 
 		int maxIlsIteraions = 20;
 		Random rd = new Random(0);
