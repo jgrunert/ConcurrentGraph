@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage;
+import mthesis.concurrent_graph.util.MiscUtil;
 
 /**
  * Represents a distribution of vertices on worker machines and the sequence to move them in this way
@@ -32,6 +33,7 @@ public class QueryDistribution {
 	public final long avgTotalVertices;
 	public final long workerActiveVertices;
 	public final long avgActiveVertices;
+	public final Map<Integer, Long> queryVertices;
 
 
 	/**
@@ -39,7 +41,7 @@ public class QueryDistribution {
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
 		this(queryIds, queryMachines, calculateCosts(queryIds, queryMachines), getWorkerTotalVertices(queryMachines),
-				getWorkerActiveVertices(queryMachines));
+				getWorkerActiveVertices(queryMachines), getWorkerQueryVertices(queryMachines));
 	}
 
 	private static long getWorkerTotalVertices(Map<Integer, QueryWorkerMachine> queryMachines) {
@@ -58,11 +60,21 @@ public class QueryDistribution {
 		return vertices;
 	}
 
+	private static Map<Integer, Long> getWorkerQueryVertices(Map<Integer, QueryWorkerMachine> queryMachines) {
+		Map<Integer, Long> vertices = new HashMap<>();
+		for (QueryWorkerMachine worker : queryMachines.values()) {
+			for (Entry<Integer, Long> workerQuery : worker.queryVertices.entrySet()) {
+				vertices.put(workerQuery.getKey(), MiscUtil.defaultLong(vertices.get(workerQuery.getKey())) + workerQuery.getValue());
+			}
+		}
+		return vertices;
+	}
+
 	/**
 	 * Copy constructor
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines,
-			double currentCosts, long workerTotalVertices, long workerActiveVertices) {
+			double currentCosts, long workerTotalVertices, long workerActiveVertices, Map<Integer, Long> queryVertices) {
 		super();
 		this.queryIds = queryIds;
 		this.queryMachines = queryMachines;
@@ -71,6 +83,7 @@ public class QueryDistribution {
 		this.avgTotalVertices = workerTotalVertices / queryMachines.size();
 		this.workerActiveVertices = workerActiveVertices;
 		this.avgActiveVertices = workerActiveVertices / queryMachines.size();
+		this.queryVertices = queryVertices;
 	}
 
 	@Override
@@ -79,7 +92,8 @@ public class QueryDistribution {
 		for (Entry<Integer, QueryWorkerMachine> entry : queryMachines.entrySet()) {
 			queryMachinesClone.put(entry.getKey(), entry.getValue().createClone());
 		}
-		return new QueryDistribution(queryIds, queryMachinesClone, currentCosts, workerTotalVertices, workerActiveVertices);
+		return new QueryDistribution(queryIds, queryMachinesClone, currentCosts, workerTotalVertices, workerActiveVertices,
+				new HashMap<>(queryVertices));
 	}
 
 
@@ -384,6 +398,32 @@ public class QueryDistribution {
 		}
 		return workerId;
 	}
+
+
+	public int getMachineMaxQueryVertices(int queryId) {
+		int workerId = 0;
+		long maxVertices = 0;
+		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
+			long queryVertices = MiscUtil.defaultLong(worker.getValue().queryVertices.get(queryId));
+			if (queryVertices > maxVertices) {
+				maxVertices = queryVertices;
+				workerId = worker.getKey();
+			}
+		}
+		return workerId;
+	}
+
+	public long getMaxQueryPartitionSize(int queryId) {
+		long maxVertices = 0;
+		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
+			long queryVertices = MiscUtil.defaultLong(worker.getValue().queryVertices.get(queryId));
+			if (queryVertices > maxVertices) {
+				maxVertices = queryVertices;
+			}
+		}
+		return maxVertices;
+	}
+
 
 	//	// Testing
 	//	public static void main(String[] args) {

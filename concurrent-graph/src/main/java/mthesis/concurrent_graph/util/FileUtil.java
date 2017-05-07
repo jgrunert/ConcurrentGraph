@@ -16,7 +16,7 @@ public class FileUtil {
 		}
 	}
 
-	public static void createEmptyDir(String dir) {
+	public static void createNewEmptyDir(String dir) {
 		final File dirFile = new File(dir);
 		if (dirFile.exists()) {
 			for (final File f : dirFile.listFiles()) {
