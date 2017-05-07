@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -1200,13 +1201,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		// Remove queries from chunk set that are not active anymore or cant be moved
 		Set<Integer> chunkQueries = new HashSet<>();
-		WorkerQuery<V, E, M, Q> firstChunkQuery = null;
+		WorkerQuery<V, E, M, Q> smallestQuery = null;
 		for (Integer qId : queryChunk) {
 			WorkerQuery<V, E, M, Q> q = activeQueries.get(qId);
 			if (q != null) {
 				if (q.ActiveVerticesNext.isEmpty()) {
-					if (firstChunkQuery == null)
-						firstChunkQuery = q;
+					if (smallestQuery == null || q.VerticesEverActive.size() < smallestQuery.VerticesEverActive.size())
+						smallestQuery = q;
 					chunkQueries.add(qId);
 				}
 				else {
@@ -1223,41 +1224,42 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, chunkQueries, new ArrayList<>(), true);
 			return;
 		}
-		assert firstChunkQuery != null;
+		assert smallestQuery != null;
 
-
-		// Find queries that are not part of this chunk
-		Set<Integer> nonChunkQueries = new HashSet<>();
-		for (Integer aQ : activeQueries.keySet()) {
-			if (!chunkQueries.contains(aQ))
-				nonChunkQueries.add(aQ);
+		Map<Integer, WorkerQuery<V, E, M, Q>> nonChunkQueries = new HashMap<>();
+		for (Entry<Integer, WorkerQuery<V, E, M, Q>> qKv : activeQueries.entrySet()) {
+			if (!chunkQueries.contains(qKv.getKey())) {
+				nonChunkQueries.put(qKv.getKey(), qKv.getValue());
+			}
 		}
-
 
 		// Find query move vertices
 		// Only vertices that are active in query-chunks
-		IntSet moveVertices = new IntOpenHashSet(firstChunkQuery.VerticesEverActive);
+		IntSet moveVerticesCandidates = new IntOpenHashSet(smallestQuery.VerticesEverActive);
 		for (Integer qId : chunkQueries) {
-			if (qId.equals(firstChunkQuery.QueryId)) continue;
+			if (qId.equals(smallestQuery.QueryId)) continue;
 			WorkerQuery<V, E, M, Q> q = activeQueries.get(qId);
 			removeBuffer.clear();
-			for (IntIterator it = moveVertices.iterator(); it.hasNext();) {
+			for (IntIterator it = moveVerticesCandidates.iterator(); it.hasNext();) {
 				int next = it.nextInt();
 				if (!q.VerticesEverActive.contains(next))
 					removeBuffer.add(next);
 			}
-			moveVertices.removeAll(removeBuffer);
+			moveVerticesCandidates.removeAll(removeBuffer);
 		}
 		// Only vertices that are not active in non-query-chunks
-		for (Integer qId : nonChunkQueries) {
-			WorkerQuery<V, E, M, Q> q = activeQueries.get(qId);
-			removeBuffer.clear();
-			for (IntIterator it = moveVertices.iterator(); it.hasNext();) {
-				int next = it.nextInt();
-				if (q.VerticesEverActive.contains(next))
-					removeBuffer.add(next);
+		IntSet moveVertices = new IntOpenHashSet();
+		for (IntIterator it = moveVerticesCandidates.iterator(); it.hasNext();) {
+			int next = it.nextInt();
+			boolean isInChunk = true;
+			for (Entry<Integer, WorkerQuery<V, E, M, Q>> qKv : nonChunkQueries.entrySet()) {
+				if (qKv.getValue().VerticesEverActive.contains(next)) {
+					isInChunk = false;
+					break;
+				}
 			}
-			moveVertices.removeAll(removeBuffer);
+			if (isInChunk)
+				moveVertices.add(next);
 		}
 
 		// Move vertices
