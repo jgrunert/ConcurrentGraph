@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.util.MiscUtil;
@@ -147,6 +148,16 @@ public class QueryWorkerMachine {
 			}
 		}
 		return minChunk;
+	}
+
+
+	public long getNumVerticesWithQueries(IntSet queries) {
+		long verts = 0;
+		for (Entry<Integer, Long> qVerts : queryVertices.entrySet()) {
+			if (queries.contains(qVerts.getKey()))
+				verts += qVerts.getValue();
+		}
+		return verts;
 	}
 
 

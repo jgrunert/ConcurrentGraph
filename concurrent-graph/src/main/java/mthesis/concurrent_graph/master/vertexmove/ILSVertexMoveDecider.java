@@ -35,7 +35,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private final long MaxTotalImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT;
 	private final long MaxGreedyImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT / 4; // TODO Config
 	private final long MinMoveTotalVertices = 500; // TODO Config
-	private final int MaxImproveIterations = 30; // TODO Config
+	private final int MaxImproveIterations = 100; // TODO Config
 	private final double QueryKeepLocalThreshold = 0.5; // TODO Config
 	private final double QueryForceLocalThreshold = 0.8; // TODO Config
 	private boolean saveIlsStats = true; // TODO Config
@@ -242,36 +242,52 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			QueryDistribution iterBestDistribution = bestDistribution.clone();
 			boolean anyImproves = false;
 
-			// TODO Move chunks instead of queries?
-			for (Integer queryId : movableQueries) {
+			for (Integer fromWorkerId : workerIds) {
+				// TODO Soft limits for worker balance?
 
-				for (Integer fromWorkerId : workerIds) {
+				QueryWorkerMachine fromWorker = baseDistribution.getQueryMachines().get(fromWorkerId);
+				for (QueryVertexChunk chunk : fromWorker.queryChunks) {
 					// Dont move from worker if worker has too few vertices afterwards
-					QueryWorkerMachine fromWorker = baseDistribution.getQueryMachines().get(fromWorkerId);
-					long fromWorkerQueryVertices = MiscUtil.defaultLong(fromWorker.queryVertices.get(queryId));
-					if (fromWorkerQueryVertices == 0) continue;
-					if (fromWorker.activeVertices - fromWorkerQueryVertices < minActiveVertices
-							|| fromWorker.totalVertices - fromWorkerQueryVertices < minTotalVertices)
+					if (chunk.numVertices == 0) continue;
+					if (fromWorker.activeVertices - chunk.numVertices < minActiveVertices
+							|| fromWorker.totalVertices - chunk.numVertices < minTotalVertices) {
 						continue;
+					}
+
+					// Dont move chunk if contains immovable query
+					boolean nonMovable = false;
+					for (Integer chunkQuery : chunk.queries) {
+						if (nonMovableQueries.contains(chunkQuery)) {
+							nonMovable = true;
+							break;
+						}
+					}
+					if (nonMovable) {
+						continue;
+					}
+
 
 					for (Integer toWorkerId : workerIds) {
-						if (fromWorkerId == toWorkerId) continue;
+						if (fromWorker.equals(toWorkerId)) continue;
+
+						// TODO Soft limits for worker balance?
+
 						// Dont move to worker if has too many vertices afterwards
 						QueryWorkerMachine toWorker = baseDistribution.getQueryMachines().get(toWorkerId);
-						long toWorkerQueryVertices = MiscUtil.defaultLong(toWorker.queryVertices.get(queryId));
-						if (toWorkerQueryVertices == 0) continue;
-						if (toWorker.activeVertices + toWorkerQueryVertices > maxActiveVertices
-								|| toWorker.totalVertices + toWorkerQueryVertices > maxTotalVertices)
+						if (chunk.numVertices == 0) continue;
+						if (toWorker.activeVertices + chunk.numVertices > maxActiveVertices
+								|| toWorker.totalVertices + chunk.numVertices > maxTotalVertices) {
 							continue;
+						}
 
-						// Only move smaller to larger partition
-						if (fromWorkerQueryVertices > toWorkerQueryVertices) continue;
+						// Dont move if has more common vertices on src machine
+						if (fromWorker.getNumVerticesWithQueries(chunk.queries) > toWorker.getNumVerticesWithQueries(chunk.queries)) {
+							continue;
+						}
 
-						// TODO Optimize, neglect cases.
-
+						// Try move
 						QueryDistribution newDistribution = bestDistribution.clone();
-						// TODO Move chunks
-						newDistribution.moveAllQueryVertices(queryId, fromWorkerId, toWorkerId, true);
+						newDistribution.moveSingleChunkVertices(chunk, fromWorkerId, toWorkerId);
 
 						boolean isGoodNew = (newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
 								&& checkActiveVertsOkOrBetter(bestDistribution, newDistribution, fromWorkerId)
@@ -291,11 +307,17 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			}
 
 			if (!anyImproves) {
+				if (saveIlsStats) {
+					ilsLogWriter.println("No more improves after\t" + i + " " + iterBestDistribution.getCurrentCosts());
+				}
 				logger.info("No more improves after " + i + " " + iterBestDistribution.getCurrentCosts());
 				break;
 			}
 			bestDistribution = iterBestDistribution;
 			//totalVerticesMoved += verticesMovedIter;
+		}
+		if (saveIlsStats) {
+			ilsLogWriter.println("Finished greedy after\t" + i + " " + bestDistribution.getCurrentCosts());
 		}
 		logger.info("+ Stopped greedy after " + i + " iterations in " + (System.currentTimeMillis() - decideStartTime) + "ms" + " "
 				+ bestDistribution.getCurrentCosts());
