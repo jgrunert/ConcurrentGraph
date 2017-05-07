@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.communication.Messages;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage;
@@ -20,11 +21,6 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
  */
 public class QueryDistribution {
 
-	// Move costs per vertex to move, relative to a vertex separated from its larger partition
-	//private static final double VertexMoveCosts = Configuration.getPropertyDoubleDefault("VertexMoveCosts", 0.7); // TODO smarter
-
-	/** Map<QueryId, Map<MachineId, ActiveVertexCount>> */
-	//	private final Map<Integer, Map<Integer, Integer>> actQueryWorkerActiveVerts;
 	/** Map<Machine, Map<QueryId, QueryVerticesOnMachine>> */
 	private final Map<Integer, QueryWorkerMachine> queryMachines;
 	private final Set<Integer> queryIds;
@@ -94,18 +90,62 @@ public class QueryDistribution {
 	 * @param moveIntersects If true, vertices of intersecting queries will be moved as well
 	 * @return Number of moved vertices, 0 if no move possible
 	 */
-	public int moveVertices(int queryId, int fromWorkerId, int toWorkerId, boolean moveIntersecting) {
+	public int moveAllQueryVertices(int queryId, int fromWorkerId, int toWorkerId, boolean moveIntersecting) {
 		if (fromWorkerId == toWorkerId) return 0;
 
 		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
 		QueryWorkerMachine toWorker = queryMachines.get(toWorkerId);
 
-		List<QueryVertexChunk> moved = fromWorker.removeQueryVertices(queryId, moveIntersecting);
-		toWorker.addQueryVertices(moved);
+		List<QueryVertexChunk> moved = fromWorker.removeAllQueryVertices(queryId, moveIntersecting);
+		for (QueryVertexChunk chunk : moved) {
+			toWorker.addQueryChunk(chunk);
+		}
 
 		int movedCount = 0;
 		for (QueryVertexChunk movedQ : moved) {
 			movedCount += movedQ.numVertices;
+		}
+
+		currentCosts = calculateCosts(queryIds, queryMachines);
+		return movedCount;
+	}
+
+	/**
+	 * @return Number of moved vertices, 0 if no move possible
+	 */
+	public int moveAllChunkVertices(IntSet chunkQueries, int fromWorkerId, int toWorkerId) {
+		if (fromWorkerId == toWorkerId) return 0;
+
+		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
+		QueryWorkerMachine toWorker = queryMachines.get(toWorkerId);
+
+		List<QueryVertexChunk> moved = fromWorker.removeAllQueryChunkVertices(chunkQueries);
+		for (QueryVertexChunk chunk : moved) {
+			toWorker.addQueryChunk(chunk);
+		}
+
+		int movedCount = 0;
+		for (QueryVertexChunk movedQ : moved) {
+			movedCount += movedQ.numVertices;
+		}
+
+		currentCosts = calculateCosts(queryIds, queryMachines);
+		return movedCount;
+	}
+
+	/**
+	 * @return Number of moved vertices, 0 if no move possible
+	 */
+	public int moveSingleChunkVertices(QueryVertexChunk chunk, int fromWorkerId, int toWorkerId) {
+		if (fromWorkerId == toWorkerId) return 0;
+
+		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
+		QueryWorkerMachine toWorker = queryMachines.get(toWorkerId);
+
+		int movedCount = 0;
+		if (fromWorker.removeSingleQueryChunkVertices(chunk)) {
+			toWorker.addQueryChunk(chunk);
+			movedCount = chunk.numVertices;
 		}
 
 		currentCosts = calculateCosts(queryIds, queryMachines);
@@ -126,7 +166,6 @@ public class QueryDistribution {
 	}
 
 	private static double calculateVerticesSeparatedCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		// TODO Better, use max instead of sum?
 		double costs = 0;
 		for (Integer queryId : queryIds) {
 			// Find largest partition

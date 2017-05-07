@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.util.MiscUtil;
 
 /**
@@ -54,12 +54,12 @@ public class QueryWorkerMachine {
 
 
 	/**
-	 * Removes vertices of a query
+	 * Removes all vertices of a query
 	 * @param queryId ID of the query to remove
 	 * @param moveIntersecting If false only moves vertices that are not active in an other query
 	 * @return List of removed QueryVertexChunks
 	 */
-	public List<QueryVertexChunk> removeQueryVertices(int queryId, boolean moveIntersecting) {
+	public List<QueryVertexChunk> removeAllQueryVertices(int queryId, boolean moveIntersecting) {
 		List<QueryVertexChunk> removedQueryChunks = new ArrayList<>();
 		for (int i = 0; i < queryChunks.size(); i++) {
 			QueryVertexChunk chunk = queryChunks.get(i);
@@ -74,38 +74,79 @@ public class QueryWorkerMachine {
 				i--;
 			}
 		}
-
 		return removedQueryChunks;
 	}
+
+	/**
+	 * Removes vertices of a query chunk
+	 * @param queryId ID of the query to remove
+	 * @param moveIntersecting If false only moves vertices that are not active in an other query
+	 * @return Removed QueryVertexChunks or NULL if not existing
+	 */
+	public List<QueryVertexChunk> removeAllQueryChunkVertices(IntSet chunkQueries) {
+		List<QueryVertexChunk> removedQueryChunks = new ArrayList<>();
+		for (int i = 0; i < queryChunks.size(); i++) {
+			QueryVertexChunk chunk = queryChunks.get(i);
+			if (chunk.queries.equals(chunkQueries)) {
+				removedQueryChunks.add(chunk);
+				queryChunks.remove(i);
+				activeVertices -= chunk.numVertices;
+				totalVertices -= chunk.numVertices;
+				for (int query : chunk.queries) {
+					queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) - chunk.numVertices);
+				}
+				i--;
+			}
+		}
+		return removedQueryChunks;
+	}
+
+	/**
+	 * Removes vertices of a query chunk
+	 * @param queryId ID of the query to remove
+	 * @param moveIntersecting If false only moves vertices that are not active in an other query
+	 * @return Removed QueryVertexChunks or NULL if not existing
+	 */
+	public boolean removeSingleQueryChunkVertices(QueryVertexChunk queryChunk) {
+		if (queryChunks.remove(queryChunk)) {
+			activeVertices -= queryChunk.numVertices;
+			totalVertices -= queryChunk.numVertices;
+			for (int query : queryChunk.queries) {
+				queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) - queryChunk.numVertices);
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
 
 	/**
 	 * Adds QueryVertexChunks to this machine
 	 * @param chunksToAdd Chunks to add
 	 */
-	public void addQueryVertices(List<QueryVertexChunk> chunksToAdd) {
-		for (QueryVertexChunk chunk : chunksToAdd) {
-			queryChunks.add(chunk);
-			activeVertices += chunk.numVertices;
-			totalVertices += chunk.numVertices;
-			for (int query : chunk.queries) {
-				queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) + chunk.numVertices);
-			}
+	public void addQueryChunk(QueryVertexChunk chunk) {
+		queryChunks.add(chunk);
+		activeVertices += chunk.numVertices;
+		totalVertices += chunk.numVertices;
+		for (int query : chunk.queries) {
+			queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) + chunk.numVertices);
 		}
 	}
 
 
 	/** Returns query with least active vertices on this machine */
-	public int getSmallestPartitionQuery() {
-		int minQuery = 0;
-		long minQuerySize = Long.MAX_VALUE;
-		for (Entry<Integer, Long> queryVerts : queryVertices.entrySet()) {
-			long querySize = queryVerts.getValue();
-			if (querySize > 0 && querySize < minQuerySize) {
-				minQuerySize = querySize;
-				minQuery = queryVerts.getKey();
+	public QueryVertexChunk getSmallestChunk() {
+		QueryVertexChunk minChunk = null;
+		long minChunkSize = Long.MAX_VALUE;
+		for (QueryVertexChunk chunk : queryChunks) {
+			if (chunk.numVertices > 0 && chunk.numVertices < minChunkSize) {
+				minChunkSize = chunk.numVertices;
+				minChunk = chunk;
 			}
 		}
-		return minQuery;
+		return minChunk;
 	}
 
 

@@ -190,7 +190,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						// TODO Optimize, neglect cases.
 
 						QueryDistribution newDistribution = bestDistribution.clone();
-						int movedVerts = newDistribution.moveVertices(queryId, fromWorkerId, toWorkerId, true);
+						// TODO Move chunks
+						int movedVerts = newDistribution.moveAllQueryVertices(queryId, fromWorkerId, toWorkerId, true);
 
 						//						System.out.println();
 						//						System.out.println(newDistribution.getCurrentCosts() + " vs " + iterBestDistribution.getCurrentCosts() + " after "
@@ -240,21 +241,21 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			while (!workloadActiveBalanceOk(newDistribution)) {
 				int minLoadedId = newDistribution.getMachineMinActiveVertices();
 				int maxLoadedId = newDistribution.getMachineMaxActiveVertices();
-				int moveQuery = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestPartitionQuery();
-				//				System.out.println("A " + moveQuery + " " + maxLoadedId + "->" + minLoadedId + " "
-				//						+ newDistribution.moveVertices(moveQuery, maxLoadedId, minLoadedId, true));
-				newDistribution.moveVertices(moveQuery, maxLoadedId, minLoadedId, true);
+				QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
+				//				System.out.println("A " + moveChunk + " " + maxLoadedId + "->" + minLoadedId + " "
+				//						+ newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId));
+				newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId);
 			}
 
 			while (!workloadTotalBalanceOk(newDistribution)) {
 				int minLoadedId = newDistribution.getMachineMinTotalVertices();
 				int maxLoadedId = newDistribution.getMachineMaxTotalVertices();
-				int moveQuery = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestPartitionQuery();
-				//				System.out.println("T " + moveQuery + " " + maxLoadedId + "->" + minLoadedId + " "
-				//						+ newDistribution.moveVertices(moveQuery, maxLoadedId, minLoadedId, true)
+				QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
+				//				System.out.println("T " + moveChunk + " " + maxLoadedId + "->" + minLoadedId + " "
+				//						+ newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId)
 				//						+ "  " + newDistribution.getQueryMachines().get(minLoadedId).totalVertices + "  "
 				//						+ newDistribution.getQueryMachines().get(maxLoadedId).totalVertices + " avg " + newDistribution.avgTotalVertices);
-				newDistribution.moveVertices(moveQuery, maxLoadedId, minLoadedId, true);
+				newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId);
 			}
 
 			// Workers sorted by increasing total vertices
@@ -281,23 +282,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		for (int worker : workerIds) {
 			if (worker != bestWorkerId) {
-				newDistribution.moveVertices(pertubationQuery, worker, bestWorkerId, true);
-			}
-		}
-
-		return newDistribution;
-	}
-
-	/**
-	 * Moving all partitions of a query to machine with largest partition
-	 */
-	private QueryDistribution unifyQueryAtWorker(int pertubationQuery, int workerId, List<Integer> workerIds,
-			QueryDistribution baseDistribution) {
-		QueryDistribution newDistribution = baseDistribution.clone();
-
-		for (int worker : workerIds) {
-			if (worker != workerId) {
-				newDistribution.moveVertices(pertubationQuery, worker, workerId, true);
+				newDistribution.moveAllQueryVertices(pertubationQuery, worker, bestWorkerId, true);
 			}
 		}
 
