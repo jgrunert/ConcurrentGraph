@@ -355,15 +355,17 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				// Log worker superstep stats
 				if (enableQueryStats && controlMsg.getSuperstepNo() >= 0) {
 					List<SortedMap<Integer, Q>> queryStepList = queryStatsStepMachines.get(msgQueryOnWorker.QueryId);
-					SortedMap<Integer, Q> queryStepWorkerMap;
-					if (queryStepList != null && queryStepList.size() <= controlMsg.getSuperstepNo()) {
-						queryStepWorkerMap = new TreeMap<>();
-						queryStepList.add(queryStepWorkerMap);
+					if (queryStepList != null) {
+						SortedMap<Integer, Q> queryStepWorkerMap;
+						if (queryStepList.size() <= controlMsg.getSuperstepNo()) {
+							queryStepWorkerMap = new TreeMap<>();
+							queryStepList.add(queryStepWorkerMap);
+						}
+						else {
+							queryStepWorkerMap = queryStepList.get(controlMsg.getSuperstepNo());
+						}
+						queryStepWorkerMap.put(srcMachine, msgQueryOnWorker);
 					}
-					else {
-						queryStepWorkerMap = queryStepList.get(controlMsg.getSuperstepNo());
-					}
-					queryStepWorkerMap.put(srcMachine, msgQueryOnWorker);
 				}
 
 				// Check if all workers finished superstep
@@ -395,7 +397,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					int superstepNo = controlMsg.getSuperstepNo();
 
 					// Log query superstep stats
-					if (enableQueryStats && superstepNo >= 0) {
+					if (enableQueryStats && superstepNo >= 0 && queryStatsSteps != null) {
 						queryStatsSteps.get(msgQueryOnWorker.QueryId).add(msgActiveQuery.QueryStepAggregator);
 						queryStatsStepTimes.get(msgQueryOnWorker.QueryId).add((System.nanoTime() - msgActiveQuery.LastStepTime));
 					}
@@ -748,10 +750,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap(workerIds.size());
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -801,10 +803,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap(workerIds.size());
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
