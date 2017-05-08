@@ -28,12 +28,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 	private static final Logger logger = LoggerFactory.getLogger(ILSVertexMoveDecider.class);
 
-	private final double VerticesActiveImbalanceThreshold = Configuration.getPropertyDoubleDefault("VertexMoveActiveBalance", 0.1);
-	private final double VerticesActiveImbalanceMin = 1 - VerticesActiveImbalanceThreshold;
-	private final double VerticesActiveImbalanceMax = 1 + VerticesActiveImbalanceThreshold;
-	private final double VerticesTotalImbalanceThreshold = Configuration.getPropertyDoubleDefault("VertexMoveTotalBalance", 0.1);
-	private final double VerticesTotalImbalanceMin = 1 - VerticesTotalImbalanceThreshold;
-	private final double VerticesTotalImbalanceMax = 1 + VerticesTotalImbalanceThreshold;
+	private final double VertexMoveActiveImbalance = Configuration.getPropertyDoubleDefault("VertexMoveActiveImbalance", 0.4);
+	private final double VertexMoveTotalImbalance = Configuration.getPropertyDoubleDefault("VertexMoveTotalImbalance", 0.1);
 	private final long MaxTotalImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT;
 	private final long MaxGreedyImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT / 4; // TODO Config
 	private final long MinMoveTotalVertices = 500; // TODO Config
@@ -203,10 +199,12 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 	private QueryDistribution optimizeGreedy(Set<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution) {
-		long minActiveVertices = (long) (baseDistribution.workerActiveVertices / workerIds.size() * VerticesActiveImbalanceMin);
-		long maxActiveVertices = (long) (baseDistribution.workerActiveVertices / workerIds.size() * VerticesActiveImbalanceMax);
-		long minTotalVertices = (long) (baseDistribution.workerTotalVertices / workerIds.size() * VerticesTotalImbalanceMin);
-		long maxTotalVertices = (long) (baseDistribution.workerTotalVertices / workerIds.size() * VerticesTotalImbalanceMax);
+		long minActiveVertices = (long) (baseDistribution.workerActiveVertices / workerIds.size() * (1.0 - VertexMoveActiveImbalance));
+		long maxActiveVertices = Math.min((long) (baseDistribution.workerActiveVertices / workerIds.size() / (1.0 - VertexMoveActiveImbalance)),
+				Long.MAX_VALUE / 4);
+		long minTotalVertices = (long) (baseDistribution.workerTotalVertices / workerIds.size() * (1.0 - VertexMoveActiveImbalance));
+		long maxTotalVertices = Math.min((long) (baseDistribution.workerTotalVertices / workerIds.size() / (1.0 - VertexMoveTotalImbalance)),
+				Long.MAX_VALUE / 4);
 
 		QueryDistribution bestDistribution = baseDistribution.clone();
 
@@ -500,8 +498,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	 */
 	private boolean workloadBalanceOk(QueryDistribution distribution) {
 		for (Integer worker : distribution.getQueryMachines().keySet()) {
-			if (distribution.getWorkerActiveVerticesImbalanceFactor(worker) > VerticesActiveImbalanceThreshold
-					|| distribution.getWorkerTotalVerticesImbalanceFactor(worker) > VerticesTotalImbalanceThreshold)
+			if (distribution.getWorkerActiveVerticesImbalanceFactor(worker) > VertexMoveActiveImbalance
+					|| distribution.getWorkerTotalVerticesImbalanceFactor(worker) > VertexMoveTotalImbalance)
 				return false;
 		}
 		return true;
@@ -512,7 +510,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	 */
 	private boolean workloadActiveBalanceOk(QueryDistribution distribution) {
 		for (Integer worker : distribution.getQueryMachines().keySet()) {
-			if (distribution.getWorkerActiveVerticesImbalanceFactor(worker) > VerticesActiveImbalanceThreshold) return false;
+			if (distribution.getWorkerActiveVerticesImbalanceFactor(worker) > VertexMoveActiveImbalance) return false;
 		}
 		return true;
 	}
@@ -522,7 +520,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	 */
 	private boolean workloadTotalBalanceOk(QueryDistribution distribution) {
 		for (Integer worker : distribution.getQueryMachines().keySet()) {
-			if (distribution.getWorkerTotalVerticesImbalanceFactor(worker) > VerticesTotalImbalanceThreshold) return false;
+			if (distribution.getWorkerTotalVerticesImbalanceFactor(worker) > VertexMoveTotalImbalance) return false;
 		}
 		return true;
 	}
@@ -552,13 +550,13 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private boolean checkActiveVertsOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution, int worker) {
 		double oldImbalance = oldDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
 		double newImbalance = newDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
-		return (newImbalance <= oldImbalance || newImbalance <= VerticesActiveImbalanceThreshold);
+		return (newImbalance <= oldImbalance || newImbalance <= VertexMoveActiveImbalance);
 	}
 
 	private boolean checkTotalVertsOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution, int worker) {
 		double oldImbalance = oldDistribution.getWorkerTotalVerticesImbalanceFactor(worker);
 		double newImbalance = newDistribution.getWorkerTotalVerticesImbalanceFactor(worker);
-		return (newImbalance <= oldImbalance || newImbalance <= VerticesTotalImbalanceThreshold);
+		return (newImbalance <= oldImbalance || newImbalance <= VertexMoveTotalImbalance);
 	}
 
 
