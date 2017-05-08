@@ -7,13 +7,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,10 +198,12 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 	private QueryDistribution optimizeGreedy(Set<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution) {
 		long minActiveVertices = (long) (baseDistribution.workerActiveVertices / workerIds.size() * (1.0 - VertexMoveActiveImbalance));
-		long maxActiveVertices = Math.min((long) (baseDistribution.workerActiveVertices / workerIds.size() / (1.0 - VertexMoveActiveImbalance)),
+		long maxActiveVertices = Math.min(
+				(long) (baseDistribution.workerActiveVertices / workerIds.size() / (1.0 - VertexMoveActiveImbalance)),
 				Long.MAX_VALUE / 4);
 		long minTotalVertices = (long) (baseDistribution.workerTotalVertices / workerIds.size() * (1.0 - VertexMoveActiveImbalance));
-		long maxTotalVertices = Math.min((long) (baseDistribution.workerTotalVertices / workerIds.size() / (1.0 - VertexMoveTotalImbalance)),
+		long maxTotalVertices = Math.min(
+				(long) (baseDistribution.workerTotalVertices / workerIds.size() / (1.0 - VertexMoveTotalImbalance)),
 				Long.MAX_VALUE / 4);
 
 		QueryDistribution bestDistribution = baseDistribution.clone();
@@ -216,38 +216,38 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		}
 
 		// Force local queries
-		Map<Integer, Double> sortedQueryLocalities = queryLocalities.entrySet().stream()
-				.sorted(Entry.comparingByValue())
-				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
-						(e1, e2) -> e1, LinkedHashMap::new));
-		for (Entry<Integer, Double> query : sortedQueryLocalities.entrySet()) {
-			if (query.getValue() > QueryForceLocalThreshold) {
-				int targetMachine = bestDistribution.getMachineMaxQueryVertices(query.getKey());
-				QueryDistribution newDistribution = unifyQueryAtWorker(query.getKey(), workerIds, targetMachine, bestDistribution);
-
-				boolean isGoodNew = (newDistribution.getCurrentCosts() < bestDistribution.getCurrentCosts())
-						&& checkActiveVertsOkOrBetter(bestDistribution, newDistribution)
-						&& checkActiveVertsOkOrBetter(bestDistribution, newDistribution)
-						&& checkTotalVertsOkOrBetter(bestDistribution, newDistribution)
-						&& checkTotalVertsOkOrBetter(bestDistribution, newDistribution);
-				if (query.getValue() >= 1.0 || isGoodNew) {
-					if (saveIlsStats) {
-						double costs = newDistribution.getCurrentCosts();
-						ilsStepsLog.add(new IlsLogItem(costs, latestPertubatedDistributionCosts, currentlyBestDistributionCosts));
-					}
-					bestDistribution = newDistribution;
-					if (saveIlsStats) {
-						ilsLogWriter.println("Do Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
-					}
-				}
-				else {
-					if (saveIlsStats) {
-						ilsLogWriter.println("No Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
-					}
-				}
-
-			}
-		}
+		//		Map<Integer, Double> sortedQueryLocalities = queryLocalities.entrySet().stream()
+		//				.sorted(Entry.comparingByValue())
+		//				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
+		//						(e1, e2) -> e1, LinkedHashMap::new));
+		//		for (Entry<Integer, Double> query : sortedQueryLocalities.entrySet()) {
+		//			if (query.getValue() > QueryForceLocalThreshold) {
+		//				int targetMachine = bestDistribution.getMachineMaxQueryVertices(query.getKey());
+		//				QueryDistribution newDistribution = unifyQueryAtWorker(query.getKey(), workerIds, targetMachine, bestDistribution);
+		//
+		//				boolean isGoodNew = (newDistribution.getCurrentCosts() < bestDistribution.getCurrentCosts())
+		//						&& checkActiveVertsOkOrBetter(bestDistribution, newDistribution)
+		//						&& checkActiveVertsOkOrBetter(bestDistribution, newDistribution)
+		//						&& checkTotalVertsOkOrBetter(bestDistribution, newDistribution)
+		//						&& checkTotalVertsOkOrBetter(bestDistribution, newDistribution);
+		//				if (query.getValue() >= 1.0 || isGoodNew) {
+		//					if (saveIlsStats) {
+		//						double costs = newDistribution.getCurrentCosts();
+		//						ilsStepsLog.add(new IlsLogItem(costs, latestPertubatedDistributionCosts, currentlyBestDistributionCosts));
+		//					}
+		//					bestDistribution = newDistribution;
+		//					if (saveIlsStats) {
+		//						ilsLogWriter.println("Do Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
+		//					}
+		//				}
+		//				else {
+		//					if (saveIlsStats) {
+		//						ilsLogWriter.println("No Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
+		//					}
+		//				}
+		//
+		//			}
+		//		}
 
 		// Find non-keep-local-queries that can be moved
 		queryLocalities = bestDistribution.getQueryLoclities();
