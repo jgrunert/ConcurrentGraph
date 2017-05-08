@@ -79,6 +79,35 @@ public class QueryWorkerMachine {
 	}
 
 	/**
+	 * Removes all vertices of a query
+	 * @param queryId ID of the query to remove
+	 * @param moveIntersecting If false only moves vertices that are not active in an other query
+	 * @return List of removed QueryVertexChunks
+	 */
+	public List<QueryVertexChunk> removeAllQueryVertices(int queryId, IntSet immovableQueries) {
+		List<QueryVertexChunk> removedQueryChunks = new ArrayList<>();
+		for (int i = 0; i < queryChunks.size(); i++) {
+			QueryVertexChunk chunk = queryChunks.get(i);
+			if (chunk.queries.contains(queryId)) {
+				for (Integer chunkQuery : chunk.queries) {
+					if (immovableQueries.contains(chunkQuery))
+						continue;
+				}
+
+				removedQueryChunks.add(chunk);
+				queryChunks.remove(i);
+				activeVertices -= chunk.numVertices;
+				totalVertices -= chunk.numVertices;
+				for (int query : chunk.queries) {
+					queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) - chunk.numVertices);
+				}
+				i--;
+			}
+		}
+		return removedQueryChunks;
+	}
+
+	/**
 	 * Removes vertices of a query chunk
 	 * @param queryId ID of the query to remove
 	 * @param moveIntersecting If false only moves vertices that are not active in an other query
