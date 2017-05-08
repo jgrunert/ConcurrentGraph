@@ -3,6 +3,7 @@ package mthesis.concurrent_graph;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -89,6 +90,10 @@ public class Configuration {
 			for (Entry<String, String> config : overrideConfigs.entrySet()) {
 				Properties.put(config.getKey(), config.getValue());
 			}
+
+			// Save effective config to output
+			Properties.store(new FileOutputStream("output" + File.separator + "configuration_effective.properties"),
+					"Effective configuration");
 
 			// Write important values from properties file to constants to improve performance.
 			// We dont want to do a map lookup on every message.
