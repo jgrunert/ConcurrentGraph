@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1532,7 +1533,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		System.out.println("IntersectCalcTime " + (System.currentTimeMillis() - startTimeMs) + "ms");
 		logger.info("IntersectCalcTime {}ms", (System.currentTimeMillis() - startTimeMs)); // TODO debug
 
-		return intersectChunks;
+		Map<IntSet, Integer> limitedIntersectChunks = intersectChunks.entrySet().stream()
+				.limit(200) // TODO Config
+				.sorted(Map.Entry.<IntSet, Integer>comparingByValue().reversed())
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
+						(e1, e2) -> e1, LinkedHashMap::new));
+		return limitedIntersectChunks;
 	}
 
 
