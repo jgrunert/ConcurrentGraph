@@ -29,12 +29,12 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private final double VertexMoveActiveImbalance = Configuration.getPropertyDoubleDefault("VertexMoveActiveImbalance", 0.4);
 	private final double VertexMoveTotalImbalance = Configuration.getPropertyDoubleDefault("VertexMoveTotalImbalance", 0.1);
 	private final long MaxTotalImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT;
-	private final long MaxGreedyImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT / 4; // TODO Config
-	private final long MinMoveTotalVertices = 500; // TODO Config
-	private final int MaxImproveIterations = 100; // TODO Config
-	private final double QueryKeepLocalThreshold = 0.5; // TODO Config
-	private final double QueryForceLocalThreshold = 0.8; // TODO Config
-	private boolean saveIlsStats = true; // TODO Config
+	private final long MaxGreedyImproveTime = Configuration.getPropertyLongDefault("VertexMoveMaxGreedyTime", 500);
+	private final long MinMoveTotalVertices = Configuration.getPropertyLongDefault("VertexMoveMinMoveVertices", 500);
+	private final int MaxILSIterations = Configuration.getPropertyIntDefault("VertexMoveMaxILSIterations", 20);
+	private final int MaxGreedyIterations = Configuration.getPropertyIntDefault("VertexMoveMaxGreedyIterations", 100);
+	private final double QueryKeepLocalThreshold = Configuration.getPropertyDoubleDefault("QueryKeepLocalThreshold", 0.5);
+	private boolean saveIlsStats = Configuration.getPropertyBoolDefault("SaveIlsStats", false);
 
 	private long decideStartTime;
 	private int ilsRunNumber = 0;
@@ -118,23 +118,21 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			double costs = bestDistribution.getCurrentCosts();
 			currentlyBestDistributionCosts = costs;
 			ilsStepsLog.add(new IlsLogItem(costs, latestPertubatedDistributionCosts, currentlyBestDistributionCosts));
-			ilsLogWriter.println(
-					"After greedy\t" + costs);
+			ilsLogWriter.println("After greedy\t" + costs + "\t" + (System.currentTimeMillis() - decideStartTime) + "ms");
 		}
 
 
 		// Do ILS with pertubations followed by greedy optimize
-		int maxIlsIteraions = 20;
 		Random rd = new Random(0);
 		int i = 0;
-		for (; i < maxIlsIteraions && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
+		for (; i < MaxILSIterations && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
 			// Pertubation
 			QueryDistribution ilsDistribution = pertubationQueryUnifyLargestPartition(queryIdsList, workerIds, bestDistribution, rd);
 			latestPertubatedDistributionCosts = ilsDistribution.getCurrentCosts();
 			if (saveIlsStats) {
 				ilsLogWriter.println();
 				ilsLogWriter.println(
-						"pertubation run \t" + i + "\t" + latestPertubatedDistributionCosts);
+						"pertubation run \t" + i + "\t" + latestPertubatedDistributionCosts + "\t" + (System.currentTimeMillis() - decideStartTime) + "ms");
 			}
 
 			// Greedy after pertubation
@@ -152,14 +150,16 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 					currentlyBestDistributionCosts = costs;
 					ilsStepsLog.add(new IlsLogItem(costs, latestPertubatedDistributionCosts, currentlyBestDistributionCosts));
 					ilsLogWriter.println(
-							"better greedy run\t" + i + "\t" + ilsDistribution.getCurrentCosts());
+							"better greedy run\t" + i + "\t" + ilsDistribution.getCurrentCosts() + "\t" + (System.currentTimeMillis() - decideStartTime)
+							+ "ms");
 				}
-				logger.info("Improved pertubation\t" + ilsDistribution.getCurrentCosts()); // TODO Debug
+				logger.debug("Improved pertubation\t" + ilsDistribution.getCurrentCosts());
 			}
 			else {
 				if (saveIlsStats) {
 					ilsLogWriter.println(
-							"discard greedy run\t" + i + "\t" + ilsDistribution.getCurrentCosts());
+							"discard greedy run\t" + i + "\t" + ilsDistribution.getCurrentCosts() + "\t" + (System.currentTimeMillis() - decideStartTime)
+							+ "ms");
 				}
 			}
 			if (saveIlsStats) ilsStepsLog.add(new IlsLogItem(ilsDistribution.getCurrentCosts(), latestPertubatedDistributionCosts,
@@ -274,7 +274,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		// Greedy iterative move queries
 		int i = 0;
-		for (; i < MaxImproveIterations && (System.currentTimeMillis() - decideStartTime) < MaxGreedyImproveTime; i++) {
+		for (; i < MaxGreedyIterations && (System.currentTimeMillis() - decideStartTime) < MaxGreedyImproveTime; i++) {
 			QueryDistribution iterBestDistribution = bestDistribution.clone();
 			boolean anyImproves = false;
 
@@ -479,6 +479,11 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				bestWorkerPartitionSize = partitionSize;
 				bestWorkerId = machine.getKey();
 			}
+		}
+
+		if (saveIlsStats) {
+			ilsLogWriter.println("unifyQueryAtLargestPartition " + pertubationQuery + " at " + bestWorkerId + " " + bestWorkerPartitionSize + "/"
+					+ baseDistribution.queryVertices.get(pertubationQuery));
 		}
 
 		return unifyQueryAtWorker(pertubationQuery, workerIds, bestWorkerId, baseDistribution);
