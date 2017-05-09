@@ -1484,13 +1484,15 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
 				long qAge = (startTimeMs - query.startTime);
 				if (qAge > Configuration.QUERY_CUT_TIME_WINDOW || qlocalSuperstepRatio < Configuration.QUERY_CUT_KEEP_MIN_LOCALITY) {
-					//System.err.println(ownId + " REM " + query.QueryId + " " + qAge+ " " + qlocalSuperstepRatio); // TODO
 					queriesForQueryCut.remove(i);
 					queriesLocalSupersteps.remove(query.QueryId);
 					i--;
 				}
-				//else System.err.println(ownId + " KEEP " + query.QueryId + " " + qAge + " " + qlocalSuperstepRatio); // TODO
 			}
+		}
+		// Remove older if to many queries
+		while(queriesForQueryCut.size() > Configuration.QUERY_CUT_MAX_QUERIES) {
+			queriesForQueryCut.remove(0);
 		}
 
 		//long start2 = System.currentTimeMillis();
