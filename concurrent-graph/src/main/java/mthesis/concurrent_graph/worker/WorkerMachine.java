@@ -69,7 +69,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -677,13 +677,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
@@ -701,12 +701,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryChunkMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
-									.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
+							.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
 						}
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -727,35 +727,35 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-						return true;
+					return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Receive_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -779,8 +779,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				if (activeQuery.BarrierSyncWaitSet.size() == 0) {
 					// Received barrier from worker executing local query before received superstepStart from master
 					activeQuery.onFinishedLocalmodeSuperstepCompute(message.getSuperstepNo());
-					activeQuery.BarrierSyncPostponedSet.add(message.getSrcMachine());
-					logger.trace("Worker received localOnOther barrier before next superstep "
+					activeQuery.BarrierSyncPostponedList.add(message.getSrcMachine());
+					logger.debug("Worker received localOnOther barrier before next superstep "
 							+ activeQuery.Query.QueryId + ":" + activeQuery.getMasterStartedSuperstep());
 				}
 				else {
@@ -815,7 +815,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					}
 				}
 				else {
-					activeQuery.BarrierSyncPostponedSet.add(message.getSrcMachine());
+					activeQuery.BarrierSyncPostponedList.add(message.getSrcMachine());
 				}
 			}
 			else {
@@ -950,7 +950,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		WorkerQueryExecutionMode queryExecutionMode = message.getStartSuperstep().getWorkerQueryExecution();
 		// Indicates if received barrier sync from machine running query in localmode before superstep start
 		boolean receivedLocalOnOtherBarrier = (queryExecutionMode == WorkerQueryExecutionMode.LocalOnOther
-				&& query.BarrierSyncPostponedSet.size() == 1);
+				&& query.BarrierSyncPostponedList.size() > 0);
 
 		// Checks
 		if (query == null) {
@@ -964,18 +964,27 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1
 				&& !receivedLocalOnOtherBarrier) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-					+ " should be " + (query.getMasterStartedSuperstep() + 1) + ", "
-					+ query.getSuperstepNosLog());
+			+ " localExecution=" + query.localExecution + " executionMode=" + query.getExecutionMode() + "/" + queryExecutionMode
+			+ " superstep should be " + (query.getMasterStartedSuperstep() + 1) + ", " + query.getSuperstepNosLog());
 			return;
 		}
 
 		// Initialize wait set for next barrier, apply all postponed premature barrier syncs
 		query.BarrierSyncWaitSet.addAll(message.getStartSuperstep().getWorkersWaitForList());
-		for (Integer postponed : query.BarrierSyncPostponedSet) {
-			if (!query.BarrierSyncWaitSet.remove(postponed))
-				logger.error("Postponed worker barrier sync from worker not waiting for: " + postponed);
+
+		if (receivedLocalOnOtherBarrier) {
+			for (Integer postponed : new ArrayList<>(query.BarrierSyncPostponedList)) {
+				if (query.BarrierSyncWaitSet.remove(postponed)) query.BarrierSyncPostponedList.remove(postponed);
+			}
 		}
-		query.BarrierSyncPostponedSet.clear();
+		else {
+			for (Integer postponed : query.BarrierSyncPostponedList) {
+				if (!query.BarrierSyncWaitSet.remove(postponed))
+					logger.error("Postponed worker barrier sync from worker not waiting for: " + postponed + " query " + query.QueryId);
+			}
+			query.BarrierSyncPostponedList.clear();
+		}
+
 		if (query.BarrierSyncWaitSet.isEmpty()) {
 			if (!receivedLocalOnOtherBarrier) {
 				query.onFinishedWorkerSuperstepBarrierSync(query.getBarrierSyncedSuperstep() + 1);
@@ -1491,8 +1500,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 		}
 		// Remove older if to many queries
-		while(queriesForQueryCut.size() > Configuration.QUERY_CUT_MAX_QUERIES) {
-			queriesForQueryCut.remove(0);
+		for (int i = 0; i < queriesForQueryCut.size() && queriesForQueryCut.size() > Configuration.QUERY_CUT_MAX_QUERIES; i++) {
+			if (!activeQueries.containsKey(queriesForQueryCut.get(i).QueryId)) {
+				queriesForQueryCut.remove(i);
+				i--;
+			}
 		}
 
 		//long start2 = System.currentTimeMillis();
