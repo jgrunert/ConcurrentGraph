@@ -92,6 +92,7 @@ public class Configuration {
 			}
 
 			// Save effective config to output
+			new File("output").mkdirs();
 			Properties.store(new FileOutputStream("output" + File.separator + "configuration_effective.properties"),
 					"Effective configuration");
 
