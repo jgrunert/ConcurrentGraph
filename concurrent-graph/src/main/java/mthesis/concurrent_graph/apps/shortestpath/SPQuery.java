@@ -54,12 +54,12 @@ public class SPQuery extends BaseQuery {
 	public boolean onMasterAllVerticesFinished() {
 		if (!ReconstructionPhaseActive) {
 			// Start reconstruction phase
-			logger.info(QueryId + " start reconstruction phase");
+			logger.debug(QueryId + " start reconstruction phase");
 			ReconstructionPhaseActive = true;
 			return false;
 		}
 		// Reconstruction finished
-		logger.info(QueryId + " finished reconstruction phase");
+		logger.debug(QueryId + " finished reconstruction phase");
 		return true;
 	}
 

@@ -82,15 +82,18 @@ public class QueryWorkerMachine {
 	 * Removes all vertices of a query
 	 * @param queryId ID of the query to remove
 	 * @param moveIntersecting If false only moves vertices that are not active in an other query
+	 * @movingTo Machine moving vertex to after removal
+	 * @param localQueries Local queries, can move only to their largest partition.
 	 * @return List of removed QueryVertexChunks
 	 */
-	public List<QueryVertexChunk> removeAllQueryVertices(int queryId, IntSet immovableQueries) {
+	public List<QueryVertexChunk> removeAllQueryVertices(int queryId, int movingTo, Map<Integer, Integer> localQueries) {
 		List<QueryVertexChunk> removedQueryChunks = new ArrayList<>();
 		for (int i = 0; i < queryChunks.size(); i++) {
 			QueryVertexChunk chunk = queryChunks.get(i);
 			if (chunk.queries.contains(queryId)) {
 				for (Integer chunkQuery : chunk.queries) {
-					if (immovableQueries.contains(chunkQuery))
+					Integer chunkLocal = localQueries.get(chunkQuery);
+					if (chunkLocal != null && !chunkLocal.equals(movingTo))
 						continue;
 				}
 

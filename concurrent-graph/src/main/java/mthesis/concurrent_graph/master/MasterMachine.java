@@ -397,7 +397,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					int superstepNo = controlMsg.getSuperstepNo();
 
 					// Log query superstep stats
-					if (enableQueryStats && superstepNo >= 0 && queryStatsSteps != null) {
+					if (enableQueryStats && superstepNo >= 0 && queryStatsSteps != null && msgActiveQuery != null) {
 						queryStatsSteps.get(msgQueryOnWorker.QueryId).add(msgActiveQuery.QueryStepAggregator);
 						queryStatsStepTimes.get(msgQueryOnWorker.QueryId).add((System.nanoTime() - msgActiveQuery.LastStepTime));
 					}
@@ -424,7 +424,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 						// All workers finished, finish query
 						msgActiveQuery.workersFinished(workerIds);
 						signalWorkersQueryFinish(msgActiveQuery.BaseQuery);
-						logger.info("All workers no more active for query " + msgActiveQuery.BaseQuery.QueryId + ":"
+						logger.debug("All workers no more active for query " + msgActiveQuery.BaseQuery.QueryId + ":"
 								+ msgActiveQuery.StartedSuperstepNo + " after "
 								+ (System.nanoTime() - msgActiveQuery.StartTime) / 1000000 + "ms");
 

@@ -129,16 +129,16 @@ public class QueryDistribution {
 	 * @param queryId
 	 * @param fromWorker
 	 * @param toWorker
-	 * @param immovableQueries Queries not movable. Wont move chunks with this query
+	 * @param localQueries Local queries, can move only to their largest partition.
 	 * @return Number of moved vertices, 0 if no move possible
 	 */
-	public int moveAllQueryVertices(int queryId, int fromWorkerId, int toWorkerId, IntSet immovableQueries) {
+	public int moveAllQueryVertices(int queryId, int fromWorkerId, int toWorkerId, Map<Integer, Integer> localQueries) {
 		if (fromWorkerId == toWorkerId) return 0;
 
 		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
 		QueryWorkerMachine toWorker = queryMachines.get(toWorkerId);
 
-		List<QueryVertexChunk> moved = fromWorker.removeAllQueryVertices(queryId, immovableQueries);
+		List<QueryVertexChunk> moved = fromWorker.removeAllQueryVertices(queryId, toWorkerId, localQueries);
 		for (QueryVertexChunk chunk : moved) {
 			toWorker.addQueryChunk(chunk);
 		}
@@ -460,6 +460,14 @@ public class QueryDistribution {
 		for (Integer queryId : queryIds) {
 			long maxPartition = getMaxQueryPartitionSize(queryId);
 			queryLocalities.put(queryId, (double) maxPartition / queryVertices.get(queryId));
+		}
+		return queryLocalities;
+	}
+
+	public Map<Integer, Integer> getQueryLargestPartitions() {
+		Map<Integer, Integer> queryLocalities = new HashMap<>();
+		for (Integer queryId : queryIds) {
+			queryLocalities.put(queryId, getMachineMaxQueryVertices(queryId));
 		}
 		return queryLocalities;
 	}

@@ -208,13 +208,6 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		QueryDistribution bestDistribution = baseDistribution.clone();
 
-		// Get query localities
-		Map<Integer, Double> queryLocalities = bestDistribution.getQueryLoclities();
-		if (saveIlsStats) {
-			ilsLogWriter.println("queryVertices\t" + bestDistribution.queryVertices);
-			ilsLogWriter.println("queryLocalities1\t" + queryLocalities);
-		}
-
 		// Force local queries
 		//		Map<Integer, Double> sortedQueryLocalities = queryLocalities.entrySet().stream()
 		//				.sorted(Entry.comparingByValue())
@@ -249,24 +242,33 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		//			}
 		//		}
 
+		// Get query localities
+		Map<Integer, Double> queryLocalities = bestDistribution.getQueryLoclities();
+		Map<Integer, Integer> queryLargestPartitions = bestDistribution.getQueryLargestPartitions();
+		if (saveIlsStats) {
+			ilsLogWriter.println("queryVertices\t" + bestDistribution.queryVertices);
+			ilsLogWriter.println("queryLocalities\t" + queryLocalities);
+			ilsLogWriter.println("queryLargestPartitions\t" + queryLargestPartitions);
+		}
+
 		// Find non-keep-local-queries that can be moved
 		queryLocalities = bestDistribution.getQueryLoclities();
 		if (saveIlsStats) {
 			ilsLogWriter.println("queryLocalities2\t" + queryLocalities);
 		}
-		IntSet nonMovableQueries = new IntOpenHashSet();
-		IntSet movableQueries = new IntOpenHashSet();
+		Map<Integer, Integer> localQueries = new HashMap<>(); // Queries with high locality (key) and their largest partition (value)
+		IntSet nonlocalQueries = new IntOpenHashSet();
 		for (Entry<Integer, Double> query : queryLocalities.entrySet()) {
 			if (query.getValue() > QueryKeepLocalThreshold) {
-				nonMovableQueries.add(query.getKey());
+				localQueries.put(query.getKey(), queryLargestPartitions.get(query.getKey()));
 			}
 			else {
-				movableQueries.add(query.getKey());
+				nonlocalQueries.add(query.getKey());
 			}
 		}
 		if (saveIlsStats) {
-			ilsLogWriter.println("movableQueries\t" + movableQueries);
-			ilsLogWriter.println("nonMovableQueries\t" + nonMovableQueries);
+			ilsLogWriter.println("nonlocalQueries\t" + nonlocalQueries);
+			ilsLogWriter.println("localQueries\t" + localQueries);
 		}
 
 
@@ -276,7 +278,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			QueryDistribution iterBestDistribution = bestDistribution.clone();
 			boolean anyImproves = false;
 
-			for (Integer queryId : movableQueries) {
+			for (Integer queryId : queryIds) {
+				Integer queryLocality = localQueries.get(queryId);
 
 				for (Integer fromWorkerId : workerIds) {
 					// Dont move from worker if worker has too few vertices afterwards
@@ -289,6 +292,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 					for (Integer toWorkerId : workerIds) {
 						if (fromWorkerId == toWorkerId) continue;
+
 						// Dont move to worker if has too many vertices afterwards
 						QueryWorkerMachine toWorker = baseDistribution.getQueryMachines().get(toWorkerId);
 						long toWorkerQueryVertices = MiscUtil.defaultLong(toWorker.queryVertices.get(queryId));
@@ -297,14 +301,19 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 								|| toWorker.totalVertices + toWorkerQueryVertices > maxTotalVertices)
 							continue;
 
+						// Only move local queries to their largest partition
+						if (queryLocality != null && !queryLocality.equals(toWorkerId)) {
+							continue;
+						}
+
 						// Only move smaller to larger partition
-						if (fromWorkerQueryVertices > toWorkerQueryVertices) continue;
+						//if (fromWorkerQueryVertices > toWorkerQueryVertices) continue;
 
 						// TODO Optimize, neglect cases.
 
 						QueryDistribution newDistribution = bestDistribution.clone();
 						// TODO Move chunks
-						newDistribution.moveAllQueryVertices(queryId, fromWorkerId, toWorkerId, nonMovableQueries);
+						newDistribution.moveAllQueryVertices(queryId, fromWorkerId, toWorkerId, localQueries);
 
 						boolean isGoodNew = (newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
 								&& checkActiveVertsOkOrBetter(bestDistribution, newDistribution, fromWorkerId)

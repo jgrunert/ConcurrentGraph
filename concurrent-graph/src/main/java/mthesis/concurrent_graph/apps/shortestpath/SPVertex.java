@@ -76,7 +76,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 				return;
 			}
 			else {
-				logger.info(query.QueryId + ":" + superstepNo + " start vertex compute start");
+				logger.debug(query.QueryId + ":" + superstepNo + " start vertex compute start");
 				SPVertexWritable mutableValue = new SPVertexWritable(-1, 0, false, false);
 				setValue(mutableValue, query.QueryId);
 				for (Edge<DoubleWritable> edge : getEdges()) {
@@ -97,7 +97,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 				// Start reconstruction at target vertex
 				if (ID == query.Query.To) {
 					if (mutableValue.Dist != Double.POSITIVE_INFINITY) {
-						logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " start reconstructing");
+						logger.debug(query.QueryId + ":" + superstepNo + " target vertex " + ID + " start reconstructing");
 						mutableValue.OnShortestPath = true;
 						sendMessageToVertex(
 								new SPMessageWritable(ID, mutableValue.Dist, mutableValue.Pre, superstepNo + 1),
@@ -198,7 +198,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		if (ID == query.Query.To) {
 			// Target vertex found.  Now start limiting max dist to target dist.
 			if (query.QueryLocal.MaxDist == Double.POSITIVE_INFINITY)
-				logger.info(query.QueryId + ":" + superstepNo + " target vertex " + ID + " found with dist " + minDist);
+				logger.debug(query.QueryId + ":" + superstepNo + " target vertex " + ID + " found with dist " + minDist);
 			query.QueryLocal.MaxDist = minDist;
 		}
 		//		else {
