@@ -75,6 +75,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final Map<Integer, List<Long>> queryStatsStepTimes = new HashMap<>();
 	private final Map<Integer, Q> queryStatsTotals = new HashMap<>();
 	private final Map<Integer, Long> queryDurations = new HashMap<>();
+	private long finishedTimeSinceStart;
+	private long finishedTimeSinceFirstQuery;
 
 	// Map WorkerId->(timestamp, workerStatsSample)
 	private Map<Integer, List<Pair<Long, WorkerStats>>> workerStats = new HashMap<>();
@@ -703,8 +705,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	// #################### Stop, save and print #################### //
 	@Override
 	public void stop() {
-		logger.info("Stopping master after " + (System.currentTimeMillis() - masterStartTimeMs) + "ms");
-		logger.info("--- Time since first query " + (System.currentTimeMillis() - firstQueryStartTimeMs) + "ms ---");
+		finishedTimeSinceStart = (System.currentTimeMillis() - masterStartTimeMs);
+		finishedTimeSinceFirstQuery = (System.currentTimeMillis() - firstQueryStartTimeMs);
+		logger.info("Stopping master after " + finishedTimeSinceStart + "ms");
+		logger.info("--- Time since first query " + finishedTimeSinceFirstQuery + "ms ---");
 
 		signalWorkersShutdown();
 		vertexMoveDeciderService.stop();
@@ -750,10 +754,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap(workerIds.size());
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -803,10 +807,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap(workerIds.size());
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -896,6 +900,19 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			logger.error("Exception when saveWorkerStats", e);
 		}
 		logger.info("Saved worker stats");
+
+		try (PrintWriter writer = new PrintWriter(new FileWriter(outputDir + File.separator + "summary.txt"))) {
+			writer.println("TimeSinceStart: " + finishedTimeSinceStart);
+			writer.println("TimeSinceFirstQuery: " + finishedTimeSinceFirstQuery);
+			writer.println("LocalSuperstepsRatio: " + workerStatsSums.get("LocalSuperstepsRatio"));
+			writer.println("LocalSuperstepsRatioUnique: " + workerStatsSums.get("LocalSuperstepsRatioUnique"));
+			writer.println("SuperstepsComputed: " + workerStatsSums.get("SuperstepsComputed"));
+			writer.println("SuperstepsComputedUnique: " + workerStatsSums.get("SuperstepsComputedUnique"));
+		}
+		catch (Exception e) {
+			logger.error("Exception when saveWorkerStats", e);
+		}
+		logger.info("Saved summary");
 	}
 
 	private void saveQueryStats() {

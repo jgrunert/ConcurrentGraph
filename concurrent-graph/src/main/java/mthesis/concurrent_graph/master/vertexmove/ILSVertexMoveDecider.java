@@ -302,12 +302,10 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 							continue;
 
 						// Only move local queries to their largest partition
-						if (queryLocality != null && !queryLocality.equals(toWorkerId)) {
-							continue;
-						}
+						if (queryLocality != null && !queryLocality.equals(toWorkerId)) continue;
 
 						// Only move smaller to larger partition
-						//if (fromWorkerQueryVertices > toWorkerQueryVertices) continue;
+						if (fromWorkerQueryVertices > toWorkerQueryVertices) continue;
 
 						// TODO Optimize, neglect cases.
 
