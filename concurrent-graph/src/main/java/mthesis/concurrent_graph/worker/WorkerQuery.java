@@ -178,4 +178,10 @@ public class WorkerQuery<V extends BaseWritable, E extends BaseWritable, M exten
 	public WorkerQueryExecutionMode getExecutionMode() {
 		return executionMode;
 	}
+
+
+	@Override
+	public String toString() {
+		return QueryId + ":" + masterStartedSuperstepNo;
+	}
 }

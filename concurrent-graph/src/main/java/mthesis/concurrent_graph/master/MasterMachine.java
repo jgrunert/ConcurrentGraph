@@ -183,6 +183,16 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			}
 		}
 
+		long startDelay = Configuration.getPropertyLongDefault("QueryStartDelay", 100);
+		if (startDelay > 0) {
+			try {
+				Thread.sleep(startDelay);
+			}
+			catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		if (enableQueryStats) {
 			queryStatsStepMachines.put(query.QueryId, new ArrayList<>());
 			queryStatsSteps.put(query.QueryId, new ArrayList<>());
@@ -614,6 +624,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		// TODO Query stat and master/worker stat: Active workers
 		logger.trace("Next superstep {}:{} with {}/{} {}", new Object[] { queryToStart.BaseQuery.QueryId,
 				queryToStart.StartedSuperstepNo, queryActiveWorkers.size(), workerIds.size(), queryActiveWorkers });
+		logger.info("#+# " + queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo); // TODO
 
 		if (queryActiveWorkers.isEmpty()) {
 			System.err.println("WF");

@@ -304,6 +304,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						Thread.sleep(2000);
 					}
 				}
+				logger.info("+ aqts " + activeQueriesThisStep); // TODO
 				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
 
 
