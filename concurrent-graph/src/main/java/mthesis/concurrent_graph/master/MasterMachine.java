@@ -95,8 +95,9 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	/** Indicates if global barrier should be active as soon as all queries in standby */
 	private volatile boolean globalBarrierPlanned = false;
 	private final Set<Integer> globalBarrierWaitSet = new HashSet<>();
-	// Queries that are delayed because of the active global barrier
-	private final Set<MasterQuery<Q>> barrierDelayedQueryNextSteps = new HashSet<>();
+	/** Queries that are ready for the next superstep.
+	 *  The next superstep wil be started once all active queries are ready. */
+	private final Set<MasterQuery<Q>> queriesReadyForNextStep = new HashSet<>();
 	@SuppressWarnings("unused") // TODO
 	private final Set<Integer> barrierDelayedQueryStarts = new HashSet<>();
 	private VertexMoveDecision moveDecission = null;
@@ -469,6 +470,9 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
 							+ (duration / 1000000) + "ms, " + msgActiveQuery.StartedSuperstepNo + " steps, "
 							+ msgActiveQuery.QueryTotalAggregator.toString());
+
+					// Start next query batch if ready for this now
+					if (queriesReadyForNextStep.size() >= activeQueries.size()) startReadyQueriesSupersteps();
 				}
 			}
 		}
@@ -546,12 +550,17 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	/**
 	 * Let workers start next superstep of a query. Make decisions about vertices to move.
 	 */
-	private void queryNextSuperstepReady(MasterQuery<Q> queryToStart, int superstepNo) {
+	private void queryNextSuperstepReady(MasterQuery<Q> queryReady, int superstepNo) {
 
-		Q queryStats = queryToStart.QueryStepAggregator;
+		queriesReadyForNextStep.add(queryReady);
+		logger.info("#+# " + queryReady.BaseQuery.QueryId + ":" + queryReady.StartedSuperstepNo + " " + queriesReadyForNextStep); // TODO
+
+		// Only start queries in a batch. Avoids superstep chaos and allows global barriers.
+		if (queriesReadyForNextStep.size() < activeQueries.size()) return;
+
+		logger.info("#+-------------------------------------------------"); // TODO
 
 		if (vertexMoveDeciderService.hasNewDecission()) {
-			//moveDecission = vertexMoveDeciderService.getNewDecission();
 			VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();
 			if (!globalBarrierPlanned) {
 				if (newMoveDecission != null) {
@@ -569,43 +578,38 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		}
 
 		if (globalBarrierPlanned) {
-			barrierDelayedQueryNextSteps.add(queryToStart);
-			logger.debug("Delay query superstep " + queryStats.QueryId + ":" + (superstepNo + 1));
-		}
-
-		if (globalBarrierPlanned) {
-			if (barrierDelayedQueryNextSteps.size() == activeQueries.size()) {
-				globalBarrierPlanned = false;
-				if (moveDecission == null) {
-					logger.error("Global barrier planned but no moveDecission");
-					globalBarrierFinished();
-					return;
-				}
-
-				logger.info("Starting barrier for move");
-				globalBarrierWaitSet.addAll(workerIds);
-
-				// Map of query finished supersteps for this barrier
-				Map<Integer, Integer> queryFinishedSupersteps = new HashMap<>(activeQueries.size());
-				for (MasterQuery<Q> q : activeQueries.values()) {
-					// Activate all workers for following superstep - vertices might be moved
-					q.ActiveWorkers.addAll(workerIds);
-					queryFinishedSupersteps.put(q.BaseQuery.QueryId, q.StartedSuperstepNo);
-				}
-
-				// Send barrier move messages
-				for (int workerId : workerIds) {
-					messaging.sendControlMessageUnicast(workerId, ControlMessageBuildUtil.Build_Master_StartBarrier_VertexMove(ownId,
-							moveDecission.WorkerVertSendMsgs.get(workerId), moveDecission.WorkerVertRecvMsgs.get(workerId),
-							queryFinishedSupersteps), true);
-				}
-				logger.info("Started barrier with vertex move");
-				logger.debug("Supersteps at vertex move: {}", queryFinishedSupersteps);
-				moveDecission = null;
+			// Start global barrier and move vertices
+			globalBarrierPlanned = false;
+			if (moveDecission == null) {
+				logger.error("Global barrier planned but no moveDecission");
+				globalBarrierFinished();
+				return;
 			}
+
+			logger.info("Starting barrier for move");
+			globalBarrierWaitSet.addAll(workerIds);
+
+			// Map of query finished supersteps for this barrier
+			Map<Integer, Integer> queryFinishedSupersteps = new HashMap<>(activeQueries.size());
+			for (MasterQuery<Q> q : activeQueries.values()) {
+				// Activate all workers for following superstep - vertices might be moved
+				q.ActiveWorkers.addAll(workerIds);
+				queryFinishedSupersteps.put(q.BaseQuery.QueryId, q.StartedSuperstepNo);
+			}
+
+			// Send barrier move messages
+			for (int workerId : workerIds) {
+				messaging.sendControlMessageUnicast(workerId, ControlMessageBuildUtil.Build_Master_StartBarrier_VertexMove(ownId,
+						moveDecission.WorkerVertSendMsgs.get(workerId), moveDecission.WorkerVertRecvMsgs.get(workerId),
+						queryFinishedSupersteps), true);
+			}
+			logger.info("Started barrier with vertex move");
+			logger.debug("Supersteps at vertex move: {}", queryFinishedSupersteps);
+			moveDecission = null;
 		}
 		else {
-			startQueryNextSuperstep(queryToStart);
+			// Normal start next superstep of queries
+			startReadyQueriesSupersteps();
 		}
 	}
 
@@ -624,11 +628,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		// TODO Query stat and master/worker stat: Active workers
 		logger.trace("Next superstep {}:{} with {}/{} {}", new Object[] { queryToStart.BaseQuery.QueryId,
 				queryToStart.StartedSuperstepNo, queryActiveWorkers.size(), workerIds.size(), queryActiveWorkers });
-		logger.info("#+# " + queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo); // TODO
-
-		if (queryActiveWorkers.isEmpty()) {
-			System.err.println("WF");
-		}
 
 		if (queryActiveWorkers.size() == 1 && localQueryExecution) {
 			logger.trace("localmode on {} {}:{}", new Object[] { queryActiveWorkers, queryToStart.BaseQuery.QueryId,
@@ -691,14 +690,23 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private void globalBarrierFinished() {
 		logger.info("Global barrier finished");
-		logger.debug("Start delayed supersteps: {}", barrierDelayedQueryNextSteps);
-		for (MasterQuery<Q> delayedQueryNextStep : barrierDelayedQueryNextSteps) {
+		startReadyQueriesSupersteps();
+		// TODO Delayed query starts
+	}
+
+	/**
+	 * Starts all quries ready in readyQueryNextSteps.
+	 */
+	private void startReadyQueriesSupersteps() {
+		logger.debug("Start query supersteps batch: {}", queriesReadyForNextStep);
+		logger.info("/////// Start query supersteps batch: {}", queriesReadyForNextStep);//TODO
+
+		for (MasterQuery<Q> delayedQueryNextStep : queriesReadyForNextStep) {
 			logger.debug(
 					"Start delayed query superstep " + delayedQueryNextStep.BaseQuery.QueryId);
 			startQueryNextSuperstep(delayedQueryNextStep);
 		}
-		barrierDelayedQueryNextSteps.clear();
-		// TODO Delayed query starts
+		queriesReadyForNextStep.clear();
 	}
 
 
