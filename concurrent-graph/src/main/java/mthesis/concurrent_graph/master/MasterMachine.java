@@ -582,6 +582,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		}
 
 		if (globalBarrierPlanned) {
+			if (queriesReadyForNextStep.size() < activeQueries.size()) return;
+
 			// Start global barrier and move vertices
 			globalBarrierPlanned = false;
 			if (moveDecission == null) {
