@@ -274,7 +274,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		// Greedy iterative move queries
 		int i = 0;
-		for (; i < MaxGreedyIterations && (System.currentTimeMillis() - decideStartTime) < MaxGreedyImproveTime; i++) {
+		long greedyStartTime = System.currentTimeMillis();
+		for (; i < MaxGreedyIterations && (System.currentTimeMillis() - greedyStartTime) < MaxGreedyImproveTime
+				&& (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
 			QueryDistribution iterBestDistribution = bestDistribution.clone();
 			boolean anyImproves = false;
 
@@ -439,8 +441,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		QueryDistribution newDistribution = unifyQueryAtLargestPartition(getRandomFromList(queryIds, rd), workerIds, baseDistribution);
 
 		// Now unify until workload balancing reached. Move smallest partition from most loaded worker to least loaded worker
-		while (!workloadBalanceOk(newDistribution)) {
-			while (!workloadActiveBalanceOk(newDistribution)) {
+		while (!workloadBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
+			while (!workloadActiveBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
 				int minLoadedId = newDistribution.getMachineMinActiveVertices();
 				int maxLoadedId = newDistribution.getMachineMaxActiveVertices();
 				QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
@@ -449,7 +451,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId);
 			}
 
-			while (!workloadTotalBalanceOk(newDistribution)) {
+			while (!workloadTotalBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
 				int minLoadedId = newDistribution.getMachineMinTotalVertices();
 				int maxLoadedId = newDistribution.getMachineMaxTotalVertices();
 				QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
