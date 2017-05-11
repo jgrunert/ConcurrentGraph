@@ -41,6 +41,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
+import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
@@ -69,7 +70,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -299,12 +300,14 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 					handleReceivedMessagesWait();
 
-					if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
+					//if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
+					if ((System.nanoTime() - startTime) > 1000000000L) {// Warn after 1s TODO
 						logger.warn("Waiting long time for active queries");
-						Thread.sleep(2000);
+						//Thread.sleep(2000);
+						Thread.sleep(200);//TODO
 					}
 				}
-				logger.info("+ aqts " + activeQueriesThisStep); // TODO
+				logger.info("+++ " + activeQueriesThisStep); // TODO
 				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
 
 
@@ -591,6 +594,16 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	// #################### Handle incoming messages #################### //
 	@Override
 	public void onIncomingMessage(ChannelMessage message) {
+		if (message.getTypeCode() == 1) {
+			ProtoEnvelopeMessage msgEnvelope = ((ProtoEnvelopeMessage) message);
+			if (msgEnvelope.message.hasControlMessage()) {
+				ControlMessage controlMsg = msgEnvelope.message.getControlMessage();
+				if (controlMsg.getType() == ControlMessageType.Master_Query_Next_Superstep) {
+					Q msgQuery = deserializeQuery(controlMsg.getQueryValues());
+					logger.info("-- " + msgQuery.QueryId + ":" + controlMsg.getSuperstepNo());
+				}
+			}
+		}
 		receivedMessages.add(message);
 	}
 
@@ -600,7 +613,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	 * Waits until at least one message has been handled.
 	 */
 	private void handleReceivedMessagesWait() throws InterruptedException {
-		handleWaitNextReceivedMessage();
+		//handleWaitNextReceivedMessage(); TODO
 		handleReceivedMessagesNoWait();
 	}
 
@@ -678,13 +691,13 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-					break;
+						break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-					break;
+						break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
@@ -702,12 +715,12 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryChunkMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
-							.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
+									.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
 						}
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-					break;
+						break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -728,35 +741,35 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-					return true;
+						return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 					case Worker_Barrier_Receive_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 					case Worker_Barrier_Finished: {
 						logger.debug(ownId + " Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-					return true;
+						return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-					break;
+						break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -965,8 +978,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1
 				&& !receivedLocalOnOtherBarrier) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-			+ " localExecution=" + query.localExecution + " executionMode=" + query.getExecutionMode() + "/" + queryExecutionMode
-			+ " superstep should be " + (query.getMasterStartedSuperstep() + 1) + ", " + query.getSuperstepNosLog());
+					+ " localExecution=" + query.localExecution + " executionMode=" + query.getExecutionMode() + "/" + queryExecutionMode
+					+ " superstep should be " + (query.getMasterStartedSuperstep() + 1) + ", " + query.getSuperstepNosLog());
 			return;
 		}
 
@@ -1091,6 +1104,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(workerQuery.getMasterStartedSuperstep(), ownId,
 						workerQuery.QueryLocal, workerStatsSamplesToSend),
 				true);
+		logger.info("** " + workerQuery.QueryId + ":" + workerQuery.getMasterStartedSuperstep() + " " + workerQuery.getExecutionMode()); // TODO
 		workerStatsSamplesToSend.clear();
 	}
 
