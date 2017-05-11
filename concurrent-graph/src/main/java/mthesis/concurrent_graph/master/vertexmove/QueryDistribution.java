@@ -203,8 +203,8 @@ public class QueryDistribution {
 	}
 
 	private static double calculateCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-		//return calculateVerticesSeparatedCosts(queryIds, queryMachines) + calculateMoveCostsTotal(queryIds, queryMachines);
 		return calculateQueryPartitionsCosts(queryIds, queryMachines);
+		//return calculateVerticesSeparatedCosts(queryIds, queryMachines);
 	}
 
 	private static double calculateQueryPartitionsCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
@@ -221,32 +221,32 @@ public class QueryDistribution {
 		return costs;
 	}
 
-	//	private static double calculateVerticesSeparatedCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-	//		double costs = 0;
-	//		for (Integer queryId : queryIds) {
-	//			// Find largest partition
-	//			Integer largestPartitionMachine = null;
-	//			long largestPartitionSize = -1;
-	//			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-	//				Long q = machine.getValue().queryVertices.get(queryId);
-	//				if (q != null && q > largestPartitionSize) {
-	//					largestPartitionMachine = machine.getKey();
-	//					largestPartitionSize = q;
-	//				}
-	//			}
-	//
-	//			// Calculate vertices separated from largest partition
-	//			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-	//				if (machine.getKey() != largestPartitionMachine) {
-	//					Long q = machine.getValue().queryVertices.get(queryId);
-	//					if (q != null) {
-	//						costs += q;
-	//					}
-	//				}
-	//			}
-	//		}
-	//		return costs;
-	//	}
+	private static double calculateVerticesSeparatedCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+		double costs = 0;
+		for (Integer queryId : queryIds) {
+			// Find largest partition
+			Integer largestPartitionMachine = null;
+			long largestPartitionSize = -1;
+			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+				Long q = machine.getValue().queryVertices.get(queryId);
+				if (q != null && q > largestPartitionSize) {
+					largestPartitionMachine = machine.getKey();
+					largestPartitionSize = q;
+				}
+			}
+
+			// Calculate vertices separated from largest partition
+			for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
+				if (machine.getKey() != largestPartitionMachine) {
+					Long q = machine.getValue().queryVertices.get(queryId);
+					if (q != null) {
+						costs += q;
+					}
+				}
+			}
+		}
+		return costs;
+	}
 
 	//	private static double calculateMoveCostsMachineMax(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
 	//		int hightestMachineCost = 0;
@@ -374,14 +374,14 @@ public class QueryDistribution {
 		for (VertexMoveOperation moveOperation : allMoves) {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.newBuilder()
-					.setMaxMoveCount(Integer.MAX_VALUE)
-					.addAllChunkQueries(moveOperation.QueryChunk)
-					.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
-					.build());
+							.setMaxMoveCount(Integer.MAX_VALUE)
+							.addAllChunkQueries(moveOperation.QueryChunk)
+							.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
+							.build());
 			workerVertRecvMsgs.get(moveOperation.ToMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage.newBuilder()
-					.addAllChunkQueries(moveOperation.QueryChunk)
-					.setReceiveFromMachine(moveOperation.FromMachine).build());
+							.addAllChunkQueries(moveOperation.QueryChunk)
+							.setReceiveFromMachine(moveOperation.FromMachine).build());
 		}
 
 		return new VertexMoveDecision(workerVertSendMsgs, workerVertRecvMsgs);
