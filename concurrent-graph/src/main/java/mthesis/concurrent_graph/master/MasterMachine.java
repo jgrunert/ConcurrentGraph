@@ -304,7 +304,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 			workersToInitialize.remove(srcMachine);
 			vertexCount += controlMsg.getWorkerInitialized().getVertexCount();
-			logger.debug("Worker initialized: " + srcMachine);
+			logger.debug("Worker initialized: {}", srcMachine);
 
 			if (workersToInitialize.isEmpty()) {
 				logger.info("All workers initialized, " + workerIds.size() + " workers, " + vertexCount
@@ -459,7 +459,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				}
 
 				msgActiveQuery.workersWaitingFor.remove(srcMachine);
-				logger.debug("Worker " + srcMachine + " finished query " + msgActiveQuery.BaseQuery.QueryId);
+				logger.debug("Worker {} finished query {}", new Object[] { srcMachine, msgActiveQuery.BaseQuery.QueryId });
 
 				if (msgActiveQuery.workersWaitingFor.isEmpty()) {
 					// All workers have query finished
@@ -520,7 +520,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		}
 		for (final Integer workerId : workerIds) {
 			List<String> partitions = assignedPartitions.get(workerId);
-			logger.debug("Assign partitions to " + workerId + ": " + partitions);
+			logger.debug("Assign partitions to {}: {}", new Object[] { workerId, partitions });
 			messaging.sendControlMessageUnicast(workerId,
 					ControlMessageBuildUtil.Build_Master_WorkerInitialize(ownId, partitions, masterStartTimeMs), true);
 		}
@@ -556,12 +556,12 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private void queryNextSuperstepReady(MasterQuery<Q> queryReady, int superstepNo) {
 
 		queriesReadyForNextStep.add(queryReady);
-		logger.info("#+# " + queryReady.BaseQuery.QueryId + ":" + queryReady.StartedSuperstepNo + " " + queriesReadyForNextStep); // TODO
+		//logger.info("#+# " + queryReady.BaseQuery.QueryId + ":" + queryReady.StartedSuperstepNo + " " + queriesReadyForNextStep);
 
 		// Only start queries in a batch. Avoids superstep chaos and allows global barriers.
 		if (queriesReadyForNextStep.size() < activeQueries.size()) return;
 
-		logger.info("#+-------------------------------------------------"); // TODO
+		//logger.info("#+-------------------------------------------------");
 
 		if (vertexMoveDeciderService.hasNewDecission()) {
 			VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();
@@ -667,12 +667,11 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 				WorkerQueryExecutionMode skipMode = (skipInactiveWorkers && !queryActiveWorkers.contains(workerId))
 						? WorkerQueryExecutionMode.NonLocalSkip : WorkerQueryExecutionMode.NonLocal;
-				int sent = messaging.sendControlMessageUnicast(workerId,
+				messaging.sendControlMessageUnicast(workerId,
 						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo, ownId,
 								queryToStart.QueryStepAggregator, skipMode,
 								otherActiveWorkers),
 						true);
-				logger.info("Sent start query " + queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo + " " + sent); // TODO Test
 			}
 			finishStartNextSuperstep(queryToStart);
 		}
@@ -685,8 +684,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				+ ((System.nanoTime() - queryToStart.StartTime) / 1000000) + "ms. Active: "
 				+ queryToStart.QueryStepAggregator.getActiveVertices());
 		queryToStart.finishStartNextSuperstep();
-		logger.trace("Next master superstep query " + queryToStart.BaseQuery.QueryId + ":"
-				+ queryToStart.StartedSuperstepNo);
+		logger.trace("Next master superstep query {}:{}", new Object[] { queryToStart.BaseQuery.QueryId, queryToStart.StartedSuperstepNo });
 	}
 
 	private void globalBarrierFinished() {
@@ -700,10 +698,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	 */
 	private void startReadyQueriesSupersteps() {
 		logger.debug("Start query supersteps batch: {}", queriesReadyForNextStep);
-		logger.info("/////// Start query supersteps batch: {}", queriesReadyForNextStep);//TODO
+		//logger.info("/////// Start query supersteps batch: {}", queriesReadyForNextStep);
 
 		for (MasterQuery<Q> delayedQueryNextStep : queriesReadyForNextStep) {
-			logger.debug("Start query superstep " + delayedQueryNextStep.BaseQuery.QueryId);
+			logger.debug("Start query superstep {}", delayedQueryNextStep.BaseQuery.QueryId);
 			startQueryNextSuperstep(delayedQueryNextStep);
 		}
 		for (Integer workerId : workerIds) {

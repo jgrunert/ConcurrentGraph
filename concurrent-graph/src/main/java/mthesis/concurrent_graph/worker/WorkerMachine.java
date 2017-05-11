@@ -41,7 +41,6 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage.WorkerStatsMessage.WorkerStatSample;
-import mthesis.concurrent_graph.communication.Messages.ControlMessageType;
 import mthesis.concurrent_graph.communication.Messages.MessageEnvelope;
 import mthesis.concurrent_graph.communication.Messages.WorkerQueryExecutionMode;
 import mthesis.concurrent_graph.communication.MoveVerticesMessage;
@@ -202,7 +201,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 		}
 
-		logger.debug("Worker started query " + query.QueryId);
+		logger.debug("Worker started query {}", query.QueryId);
 	}
 
 	private void finishQuery(WorkerQuery<V, E, M, Q> activeQuery) {
@@ -213,7 +212,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		for (final AbstractVertex<V, E, M, Q> vertex : localVertices.values()) {
 			vertex.finishQuery(activeQuery.Query.QueryId);
 		}
-		logger.debug("Worker finished query " + activeQuery.Query.QueryId);
+		logger.debug("Worker finished query {}", activeQuery.Query.QueryId);
 		activeQueries.remove(activeQuery.Query.QueryId);
 	}
 
@@ -300,14 +299,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 					handleReceivedMessagesWait();
 
-					//if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
-					if ((System.nanoTime() - startTime) > 1000000000L) {// Warn after 1s TODO
+					if ((System.nanoTime() - startTime) > 10000000000L) {// Warn after 10s
+						//if ((System.nanoTime() - startTime) > 1000000000L) {// Warn after 1s
 						logger.warn("Waiting long time for active queries");
-						//Thread.sleep(2000);
-						Thread.sleep(200);//TODO
+						Thread.sleep(2000);
+						//Thread.sleep(200);
 					}
 				}
-				logger.info("+++ " + activeQueriesThisStep); // TODO
+				//logger.info("+++ " + activeQueriesThisStep);
 				workerStats.QueryWaitTime += (System.nanoTime() - startTime);
 
 
@@ -388,7 +387,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					}
 					long barrierFinishWaitTime = System.nanoTime() - startTime;
 
-					logger.debug("Global barrier finished on worker " + ownId);
+					logger.debug("Global barrier finished on worker {}", ownId);
 					workerStats.BarrierStartWaitTime += barrierStartWaitTime;
 					workerStats.BarrierFinishWaitTime += barrierFinishWaitTime;
 					globalBarrierRequested = false;
@@ -594,16 +593,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	// #################### Handle incoming messages #################### //
 	@Override
 	public void onIncomingMessage(ChannelMessage message) {
-		if (message.getTypeCode() == 1) {
-			ProtoEnvelopeMessage msgEnvelope = ((ProtoEnvelopeMessage) message);
-			if (msgEnvelope.message.hasControlMessage()) {
-				ControlMessage controlMsg = msgEnvelope.message.getControlMessage();
-				if (controlMsg.getType() == ControlMessageType.Master_Query_Next_Superstep) {
-					Q msgQuery = deserializeQuery(controlMsg.getQueryValues());
-					logger.info("-- " + msgQuery.QueryId + ":" + controlMsg.getSuperstepNo());
-				}
-			}
-		}
+		//		if (message.getTypeCode() == 1) {
+		//			ProtoEnvelopeMessage msgEnvelope = ((ProtoEnvelopeMessage) message);
+		//			if (msgEnvelope.message.hasControlMessage()) {
+		//				ControlMessage controlMsg = msgEnvelope.message.getControlMessage();
+		//				if (controlMsg.getType() == ControlMessageType.Master_Query_Next_Superstep) {
+		//					Q msgQuery = deserializeQuery(controlMsg.getQueryValues());
+		//					logger.info("-- " + msgQuery.QueryId + ":" + controlMsg.getSuperstepNo());
+		//				}
+		//			}
+		//		}
 		receivedMessages.add(message);
 	}
 
@@ -613,7 +612,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 * Waits until at least one message has been handled.
 	 */
 	private void handleReceivedMessagesWait() throws InterruptedException {
-		//handleWaitNextReceivedMessage(); TODO
+		handleWaitNextReceivedMessage();
 		handleReceivedMessagesNoWait();
 	}
 
@@ -729,7 +728,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						// We have to wait if the query is not already started
 						if (activeQuery == null) {
-							logger.debug("Postpone barrier message for not yet started query " + query.QueryId);
+							logger.debug("Postpone barrier message for not yet started query {}", query.QueryId);
 							List<ControlMessage> postponedForQuery = postponedBarrierMessages.get(query.QueryId);
 							if (postponedForQuery == null) {
 								postponedForQuery = new ArrayList<>();
@@ -750,14 +749,14 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					}
 						return true;
 					case Worker_Barrier_Receive_Finished: {
-						logger.debug(ownId + " Worker_Barrier_Finished");
+						logger.debug("Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
 						return true;
 					case Worker_Barrier_Finished: {
-						logger.debug(ownId + " Worker_Barrier_Finished");
+						logger.debug("Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
@@ -794,8 +793,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					// Received barrier from worker executing local query before received superstepStart from master
 					activeQuery.onFinishedLocalmodeSuperstepCompute(message.getSuperstepNo());
 					activeQuery.BarrierSyncPostponedList.add(message.getSrcMachine());
-					logger.debug("Worker received localOnOther barrier before next superstep "
-							+ activeQuery.Query.QueryId + ":" + activeQuery.getMasterStartedSuperstep());
+					logger.debug("Worker received localOnOther barrier before next superstep {}:{}" + new Object[] {
+							activeQuery.Query.QueryId, activeQuery.getMasterStartedSuperstep() });
 				}
 				else {
 					// Already received superstepStart from master
@@ -1023,9 +1022,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Finish superstep, start next
 			query.onMasterNextSuperstep(message.getSuperstepNo(), queryExecutionMode);
 			logger.trace(
-					"Worker starting next superstep " + query.Query.QueryId + ":"
-							+ query.getMasterStartedSuperstep()
-							+ ". Active: " + query.ActiveVerticesThis.size());
+					"Worker starting next superstep {}:{}. Active: {}",
+					new Object[] { query.Query.QueryId, query.getMasterStartedSuperstep(), query.ActiveVerticesThis.size() });
 
 			// Skip superstep if master says so
 			if (queryExecutionMode == WorkerQueryExecutionMode.NonLocalSkip
@@ -1048,8 +1046,9 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		sendMasterSuperstepFinished(query);
 		query.onLocalFinishSuperstep(query.getMasterStartedSuperstep());
 
-		logger.trace("Worker finished local superstep " + query.Query.QueryId + ":"
-				+ query.getMasterStartedSuperstep() + ". Active: " + query.ActiveVerticesThis.size());
+		logger.trace(
+				"Worker finished local superstep {}:{}. Active: {}",
+				new Object[] { query.Query.QueryId, query.getMasterStartedSuperstep(), query.ActiveVerticesThis.size() });
 	}
 
 	private void finishQuerySuperstep(WorkerQuery<V, E, M, Q> query) {
@@ -1104,7 +1103,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				ControlMessageBuildUtil.Build_Worker_QuerySuperstepFinished(workerQuery.getMasterStartedSuperstep(), ownId,
 						workerQuery.QueryLocal, workerStatsSamplesToSend),
 				true);
-		logger.info("** " + workerQuery.QueryId + ":" + workerQuery.getMasterStartedSuperstep() + " " + workerQuery.getExecutionMode()); // TODO
+		//logger.info("** " + workerQuery.QueryId + ":" + workerQuery.getMasterStartedSuperstep() + " " + workerQuery.getExecutionMode());
 		workerStatsSamplesToSend.clear();
 	}
 
@@ -1245,7 +1244,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 		}
 		if (chunkQueries.isEmpty()) {
-			logger.debug("Vertices not moved because all chunk queries inactive: " + queryChunk);
+			logger.debug("Vertices not moved because all chunk queries inactive: {}", queryChunk);
 			messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, chunkQueries, new ArrayList<>(), true);
 			return;
 		}
@@ -1335,8 +1334,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		verticesSent += verticesToSend.size();
 
 		verticesToMove += verticesToSend.size();
-		logger.debug(ownId + " Sent " + verticesToMove + " and skipped " + verticesNotSent + " to " + sendToWorker + " for query chunk "
-				+ queryChunk);
+		logger.debug("Sent {} and skipped {} to {} for query chunk {}",
+				new Object[] { verticesToMove, verticesNotSent, sendToWorker, queryChunk });
 
 		workerStats.MoveSendVertices += verticesSent;
 		workerStats.MoveSendVerticesTime += (System.nanoTime() - startTime);

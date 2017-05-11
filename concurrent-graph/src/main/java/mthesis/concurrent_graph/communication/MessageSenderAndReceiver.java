@@ -170,7 +170,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	/**
 	 * Sends a message through the channel asynchronously, without acknowledgement
 	 */
-	public int sendUnicastMessageAsync(int dstMachine, ChannelMessage message) {
+	public int sendUnicastMessageSync(int dstMachine, ChannelMessage message) {
 		final ChannelAsyncMessageSender<V, E, M, Q> ch = channelAsyncSenders.get(dstMachine);
 		return ch.sendMessageSync(message);
 	}
@@ -178,7 +178,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	/**
 	 * Sends a message through the channel asynchronously, without acknowledgement
 	 */
-	public int sendMulticastMessageAsync(List<Integer> dstMachines, ChannelMessage message) {
+	public int sendMulticastMessageSync(List<Integer> dstMachines, ChannelMessage message) {
 		int length = 0;
 		for (final Integer machineId : dstMachines) {
 			final ChannelAsyncMessageSender<V, E, M, Q> ch = channelAsyncSenders.get(machineId);
@@ -189,11 +189,11 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 
 
 	public int sendControlMessageUnicast(int dstMachine, MessageEnvelope message, boolean flush) {
-		return sendUnicastMessageAsync(dstMachine, new ProtoEnvelopeMessage(message, flush));
+		return sendUnicastMessageSync(dstMachine, new ProtoEnvelopeMessage(message, flush));
 	}
 
 	public int sendControlMessageMulticast(List<Integer> dstMachines, MessageEnvelope message, boolean flush) {
-		return sendMulticastMessageAsync(dstMachines, new ProtoEnvelopeMessage(message, flush));
+		return sendMulticastMessageSync(dstMachines, new ProtoEnvelopeMessage(message, flush));
 	}
 
 
@@ -201,7 +201,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 			boolean fromLocalMode,
 			List<Pair<Integer, M>> vertexMessages) {
 		if (vertexMessages.isEmpty()) return;
-		sendUnicastMessageAsync(dstMachine,
+		sendUnicastMessageSync(dstMachine,
 				//				new VertexMessage<>(superstepNo, ownId, false, queryId, vertexMessages, 1));
 				new VertexMessage<>(superstepNo, ownId, false, queryId, fromLocalMode, vertexMessages));
 	}
@@ -214,24 +214,24 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		//			sendUnicastMessageAsync(dstMachine,
 		//					vertexMessagePool.getPooledVertexMessage(superstepNo, ownId, true, queryId, vertexMessages, 1));
 		//		}
-		sendMulticastMessageAsync(otherWorkers,
+		sendMulticastMessageSync(otherWorkers,
 				//				new VertexMessage<>(superstepNo, ownId, true, queryId, vertexMessages, otherWorkers.size()));
 				new VertexMessage<>(superstepNo, ownId, true, queryId, fromLocalMode, vertexMessages));
 	}
 
 
 	public void sendGetToKnownMessage(int dstMachine, Collection<Integer> vertices, int queryId) {
-		sendUnicastMessageAsync(dstMachine, new GetToKnowMessage(ownId, queryId, vertices));
+		sendUnicastMessageSync(dstMachine, new GetToKnowMessage(ownId, queryId, vertices));
 	}
 
 	public void sendMoveVerticesMessage(int dstMachine, Set<Integer> chunkQueries, Set<Integer> vertexQueries,
 			List<AbstractVertex<V, E, M, Q>> vertices,
 			boolean lastSegment) {
-		sendUnicastMessageAsync(dstMachine, new MoveVerticesMessage<>(ownId, chunkQueries, vertexQueries, vertices, lastSegment));
+		sendUnicastMessageSync(dstMachine, new MoveVerticesMessage<>(ownId, chunkQueries, vertexQueries, vertices, lastSegment));
 	}
 
 	public void sendInvalidateRegisteredVerticesMessage(int dstMachine, Collection<Integer> vertices, int movedTo) {
-		sendUnicastMessageAsync(dstMachine, new UpdateRegisteredVerticesMessage(ownId, movedTo, vertices));
+		sendUnicastMessageSync(dstMachine, new UpdateRegisteredVerticesMessage(ownId, movedTo, vertices));
 	}
 
 
