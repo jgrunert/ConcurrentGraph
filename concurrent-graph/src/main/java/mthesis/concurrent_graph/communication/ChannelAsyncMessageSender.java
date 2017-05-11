@@ -87,7 +87,8 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	// Sends message via stream.
 	// THREADING NOTE: Not threadsafe
 	// Format: int MsgLength, byte MsgType, byte[] MsgContent
-	private void sendMessageViaStream(final ChannelMessage message) throws IOException {
+	private synchronized int sendMessageViaStream(final ChannelMessage message) throws IOException {
+		int msgLength = 0;
 		if (message.hasContent()) {
 			outBuffer.clear();
 			//			outBuffer.position(4); // Leave 4 bytes for content length
@@ -99,15 +100,15 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 				logger.error("Sending " + message + " failed", e);
 			}
 
-			final int msgLength = outBuffer.position();
+			msgLength = outBuffer.position();
 			if (msgLength <= 0) {
 				logger.error("Unable to send message with non positive length " + msgLength);
-				return;
+				return 0;
 			}
 			//			if ((msgLength + 4) > Configuration.MAX_MESSAGE_SIZE) {
 			if (msgLength > Configuration.MAX_MESSAGE_SIZE) {
 				logger.error("Unable to send message with too long length " + msgLength);
-				return;
+				return 0;
 			}
 
 			//			outBuffer.putInt(msgLength); // TODO Test to doublecheck length
@@ -138,6 +139,7 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 		// ACK
 		//		int ack = reader.read();
 		//		if (ack != 123) logger.error("Invalid ACK: " + ack);
+		return msgLength;
 	}
 
 	public void close() {
@@ -177,12 +179,25 @@ public class ChannelAsyncMessageSender<V extends BaseWritable, E extends BaseWri
 	/**
 	 * Sends a message through the channel asynchronously, without acknowledgement
 	 */
-	public void sendMessageAsync(ChannelMessage message) {
-		outMessages.add(message);
+	public int sendMessageSync(ChannelMessage message) {
+		//outMessages.add(message);
+		try {
+			return sendMessageViaStream(message);
+		}
+		catch (IOException e) {
+			logger.error("", e);
+			return 0;
+		} // TODO Test
 	}
 
 	public void flush() {
-		outMessages.add(new FlushDummyMessage());
+		//outMessages.add(new FlushDummyMessage());
+		try {
+			sendMessageViaStream(new FlushDummyMessage());
+		}
+		catch (IOException e) {
+			logger.error("", e);
+		} // TODO Test
 	}
 
 

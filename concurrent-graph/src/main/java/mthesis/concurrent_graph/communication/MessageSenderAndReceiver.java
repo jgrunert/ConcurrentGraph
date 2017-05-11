@@ -170,28 +170,30 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 	/**
 	 * Sends a message through the channel asynchronously, without acknowledgement
 	 */
-	public void sendUnicastMessageAsync(int dstMachine, ChannelMessage message) {
+	public int sendUnicastMessageAsync(int dstMachine, ChannelMessage message) {
 		final ChannelAsyncMessageSender<V, E, M, Q> ch = channelAsyncSenders.get(dstMachine);
-		ch.sendMessageAsync(message);
+		return ch.sendMessageSync(message);
 	}
 
 	/**
 	 * Sends a message through the channel asynchronously, without acknowledgement
 	 */
-	public void sendMulticastMessageAsync(List<Integer> dstMachines, ChannelMessage message) {
+	public int sendMulticastMessageAsync(List<Integer> dstMachines, ChannelMessage message) {
+		int length = 0;
 		for (final Integer machineId : dstMachines) {
 			final ChannelAsyncMessageSender<V, E, M, Q> ch = channelAsyncSenders.get(machineId);
-			ch.sendMessageAsync(message);
+			length += ch.sendMessageSync(message);
 		}
+		return length;
 	}
 
 
-	public void sendControlMessageUnicast(int dstMachine, MessageEnvelope message, boolean flush) {
-		sendUnicastMessageAsync(dstMachine, new ProtoEnvelopeMessage(message, flush));
+	public int sendControlMessageUnicast(int dstMachine, MessageEnvelope message, boolean flush) {
+		return sendUnicastMessageAsync(dstMachine, new ProtoEnvelopeMessage(message, flush));
 	}
 
-	public void sendControlMessageMulticast(List<Integer> dstMachines, MessageEnvelope message, boolean flush) {
-		sendMulticastMessageAsync(dstMachines, new ProtoEnvelopeMessage(message, flush));
+	public int sendControlMessageMulticast(List<Integer> dstMachines, MessageEnvelope message, boolean flush) {
+		return sendMulticastMessageAsync(dstMachines, new ProtoEnvelopeMessage(message, flush));
 	}
 
 

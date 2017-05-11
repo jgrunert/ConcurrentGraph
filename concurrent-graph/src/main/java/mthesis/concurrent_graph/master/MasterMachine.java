@@ -667,11 +667,12 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 				WorkerQueryExecutionMode skipMode = (skipInactiveWorkers && !queryActiveWorkers.contains(workerId))
 						? WorkerQueryExecutionMode.NonLocalSkip : WorkerQueryExecutionMode.NonLocal;
-				messaging.sendControlMessageUnicast(workerId,
+				int sent = messaging.sendControlMessageUnicast(workerId,
 						ControlMessageBuildUtil.Build_Master_QueryNextSuperstep(queryToStart.StartedSuperstepNo, ownId,
 								queryToStart.QueryStepAggregator, skipMode,
 								otherActiveWorkers),
 						true);
+				logger.info("Sent start query " + queryToStart.BaseQuery.QueryId + ":" + queryToStart.StartedSuperstepNo + " " + sent); // TODO Test
 			}
 			finishStartNextSuperstep(queryToStart);
 		}
