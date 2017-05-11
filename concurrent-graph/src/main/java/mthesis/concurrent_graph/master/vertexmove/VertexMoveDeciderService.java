@@ -115,10 +115,16 @@ public class VertexMoveDeciderService {
 			newQueryIntersectsReady = false;
 		}
 
-		VertexMoveDecision newDecission = moveDecider.decide(queryIds, queryChunks, latestWorkerTotalVertices);
-		synchronized (latestDecissionLock) {
-			latestDecission = newDecission;
-			newDecissionFinished = true;
+		try {
+			VertexMoveDecision newDecission = moveDecider.decide(queryIds, queryChunks, latestWorkerTotalVertices);
+
+			synchronized (latestDecissionLock) {
+				latestDecission = newDecission;
+				newDecissionFinished = true;
+			}
+		}
+		catch (Exception e) {
+			logger.error("Exception in move decider", e);
 		}
 	}
 }
