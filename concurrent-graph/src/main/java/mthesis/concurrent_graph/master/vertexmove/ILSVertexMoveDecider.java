@@ -98,9 +98,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				FileUtil.createDirOrEmptyFiles("output" + File.separator + "stats" + File.separator + "ils");
 
 			double costs = bestDistribution.getCurrentCosts();
-			ilsStepsLog.add(new IlsLogItem(costs, costs, costs));
 			latestPertubatedDistributionCosts = costs;
 			currentlyBestDistributionCosts = costs;
+			logIlsStep(bestDistribution);
 
 			try {
 				ilsLogWriter = new PrintWriter(new FileWriter(ilsLogDir + File.separator + ilsRunNumber + "_log.txt"));
@@ -110,14 +110,16 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				return null;
 			}
 
-			ilsLogWriter.println("Initial costs\t" + bestDistribution.getCurrentCosts());
-			ilsLogWriter.print("workerVertices\t");
+			printIlsLog("Initial costs\t" + bestDistribution.getCurrentCosts());
+			printIlsLog("Initial imbalance\t" + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
+					+ bestDistribution.getAverageTotalVerticesImbalanceFactor());
+			String msg = ("workerVertices\t");
 			for (int worker : workerIds) {
-				ilsLogWriter.print(worker + ": "
+				msg += (worker + ": "
 						+ bestDistribution.getQueryMachines().get(worker).activeVertices + "/"
 						+ bestDistribution.getQueryMachines().get(worker).totalVertices + " ");
 			}
-			ilsLogWriter.println();
+			printIlsLog(msg);
 		}
 
 
@@ -126,8 +128,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		if (saveIlsStats) {
 			double costs = bestDistribution.getCurrentCosts();
 			currentlyBestDistributionCosts = costs;
-			ilsStepsLog.add(new IlsLogItem(costs, latestPertubatedDistributionCosts, currentlyBestDistributionCosts));
-			ilsLogWriter.println("After greedy\t" + costs + "\t" + (System.currentTimeMillis() - decideStartTime) + "ms");
+			logIlsStep(bestDistribution);
+			printIlsLog("After greedy\t" + costs + "\t" + (System.currentTimeMillis() - decideStartTime) + "ms");
 		}
 
 
@@ -140,7 +142,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			latestPertubatedDistributionCosts = ilsDistribution.getCurrentCosts();
 			if (saveIlsStats) {
 				ilsLogWriter.println();
-				ilsLogWriter.println(
+				printIlsLog(
 						"pertubation run \t" + i + "\t" + latestPertubatedDistributionCosts + "\t"
 								+ (System.currentTimeMillis() - decideStartTime) + "ms");
 			}
@@ -156,10 +158,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				bestDistribution = ilsDistribution;
 
 				if (saveIlsStats) {
-					double costs = bestDistribution.getCurrentCosts();
-					currentlyBestDistributionCosts = costs;
-					ilsStepsLog.add(new IlsLogItem(costs, latestPertubatedDistributionCosts, currentlyBestDistributionCosts));
-					ilsLogWriter.println(
+					currentlyBestDistributionCosts = bestDistribution.getCurrentCosts();
+					logIlsStep(bestDistribution);
+					printIlsLog(
 							"better greedy run\t" + i + "\t" + ilsDistribution.getCurrentCosts() + "\t"
 									+ (System.currentTimeMillis() - decideStartTime)
 									+ "ms");
@@ -168,14 +169,13 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			}
 			else {
 				if (saveIlsStats) {
-					ilsLogWriter.println(
+					printIlsLog(
 							"discard greedy run\t" + i + "\t" + ilsDistribution.getCurrentCosts() + "\t"
 									+ (System.currentTimeMillis() - decideStartTime)
 									+ "ms");
 				}
 			}
-			if (saveIlsStats) ilsStepsLog.add(new IlsLogItem(ilsDistribution.getCurrentCosts(), latestPertubatedDistributionCosts,
-					currentlyBestDistributionCosts));
+			if (saveIlsStats) logIlsStep(ilsDistribution);
 		}
 
 		int movedVertices = bestDistribution.calculateMovedVertices();
@@ -184,12 +184,36 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				+ movedVertices);
 
 
+
+		logIlsStep(bestDistribution);
+		VertexMoveDecision moveDecission;
+		if (movedVertices < MinMoveTotalVertices) {
+			String printMsg = "Decided not move, not enough vertices: " + totalVerticesMoved + " costs: "
+					+ bestDistribution.getCurrentCosts()
+					+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
+					+ bestDistribution.getAverageTotalVerticesImbalanceFactor();
+			printIlsLog(printMsg);
+			logger.info(printMsg);
+			moveDecission = null;
+		}
+		else {
+			moveDecission = bestDistribution.toMoveDecision(workerIds);
+			String printMsg = "Decided move, moves: " + moveDecission.moveMessages + " movedVertices: " + movedVertices + " costs: "
+					+ bestDistribution.getCurrentCosts()
+					+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
+					+ bestDistribution.getAverageTotalVerticesImbalanceFactor();
+			printIlsLog(printMsg);
+			logger.info(printMsg);
+			moveDecission.printDecission(ilsLogWriter);
+		}
+
 		if (saveIlsStats) {
 			try (PrintWriter writer = new PrintWriter(new FileWriter(ilsLogDir + File.separator + ilsRunNumber + "_steps.csv"))) {
-				writer.println("Costs;CurrentlyBest;LastPertubationCosts;");
+				writer.println("Time;Costs;CurrentlyBest;LastPertubationCosts;ActiveImbalance;TotalImbalance");
 				for (IlsLogItem ilsLogItem : ilsStepsLog) {
-					writer.println(ilsLogItem.costs + ";" + ilsLogItem.currentlyBestDistributionCosts + ";"
-							+ ilsLogItem.lastPertubationCosts + ";");
+					writer.println((ilsLogItem.time + ";"
+							+ ilsLogItem.costs + ";" + ilsLogItem.currentlyBestDistributionCosts + ";" + ilsLogItem.lastPertubationCosts
+							+ ";" + ilsLogItem.vertActiveImbalance + ";" + ilsLogItem.vertTotalImbalance).replace('.', ','));
 				}
 				ilsLogWriter.close();
 			}
@@ -199,12 +223,19 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		}
 		ilsRunNumber++;
 
-		if (movedVertices < MinMoveTotalVertices) {
-			logger.info("Decided not move, not enough vertices: " + totalVerticesMoved);
-			return null;
-		}
-		logger.info("Decided move, vertices: " + totalVerticesMoved);
-		return bestDistribution.toMoveDecision(workerIds);
+		return moveDecission;
+	}
+
+	private void logIlsStep(QueryDistribution currentDistribution) {
+		ilsStepsLog.add(
+				new IlsLogItem(System.currentTimeMillis() - decideStartTime, currentDistribution.getCurrentCosts(),
+						latestPertubatedDistributionCosts, currentlyBestDistributionCosts,
+						currentDistribution.getAverageActiveVerticesImbalanceFactor(),
+						currentDistribution.getAverageTotalVerticesImbalanceFactor()));
+	}
+
+	private void printIlsLog(String message) {
+		ilsLogWriter.println(System.currentTimeMillis() - decideStartTime + "\t" + message);
 	}
 
 
@@ -242,12 +273,12 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		//					}
 		//					bestDistribution = newDistribution;
 		//					if (saveIlsStats) {
-		//						ilsLogWriter.println("Do Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
+		//						printIlsLog("Do Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
 		//					}
 		//				}
 		//				else {
 		//					if (saveIlsStats) {
-		//						ilsLogWriter.println("No Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
+		//						printIlsLog("No Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
 		//					}
 		//				}
 		//
@@ -258,15 +289,15 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		Map<Integer, Double> queryLocalities = bestDistribution.getQueryLoclities();
 		Map<Integer, Integer> queryLargestPartitions = bestDistribution.getQueryLargestPartitions();
 		if (saveIlsStats) {
-			ilsLogWriter.println("queryVertices\t" + bestDistribution.queryVertices);
-			ilsLogWriter.println("queryLocalities\t" + queryLocalities);
-			ilsLogWriter.println("queryLargestPartitions\t" + queryLargestPartitions);
+			printIlsLog("queryVertices\t" + bestDistribution.queryVertices);
+			printIlsLog("queryLocalities\t" + queryLocalities);
+			printIlsLog("queryLargestPartitions\t" + queryLargestPartitions);
 		}
 
 		// Find non-keep-local-queries that can be moved
 		queryLocalities = bestDistribution.getQueryLoclities();
 		if (saveIlsStats) {
-			ilsLogWriter.println("queryLocalities2\t" + queryLocalities);
+			printIlsLog("queryLocalities2\t" + queryLocalities);
 		}
 		Map<Integer, Integer> localQueries = new HashMap<>(); // Queries with high locality (key) and their largest partition (value)
 		IntSet nonlocalQueries = new IntOpenHashSet();
@@ -279,15 +310,15 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			}
 		}
 		if (saveIlsStats) {
-			ilsLogWriter.println("nonlocalQueries\t" + nonlocalQueries);
-			ilsLogWriter.println("localQueries\t" + localQueries);
-			ilsLogWriter.print("workerBalances\t");
+			printIlsLog("nonlocalQueries\t" + nonlocalQueries);
+			printIlsLog("localQueries\t" + localQueries);
+			String msg = ("workerBalances\t");
 			for (int worker : workerIds) {
-				ilsLogWriter.print(worker + ": "
+				msg += (worker + ": "
 						+ (double) ((int) (baseDistribution.getWorkerActiveVerticesImbalanceFactor(worker) * 100)) / 100 + "/"
 						+ (double) ((int) (baseDistribution.getWorkerTotalVerticesImbalanceFactor(worker) * 100)) / 100 + " ");
 			}
-			ilsLogWriter.println();
+			printIlsLog(msg);
 		}
 
 
@@ -339,8 +370,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 								&& checkTotalVertsOkOrBetter(bestDistribution, newDistribution);
 						if (isGoodNew) {
 							if (saveIlsStats) {
-								double costs = iterBestDistribution.getCurrentCosts();
-								ilsStepsLog.add(new IlsLogItem(costs, latestPertubatedDistributionCosts, currentlyBestDistributionCosts));
+								logIlsStep(iterBestDistribution);
 							}
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
@@ -351,7 +381,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 			if (!anyImproves) {
 				if (saveIlsStats) {
-					ilsLogWriter.println("No more improves after " + i + " " + iterBestDistribution.getCurrentCosts());
+					printIlsLog("No more improves after " + i + " " + iterBestDistribution.getCurrentCosts());
 				}
 				break;
 			}
@@ -431,7 +461,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		//
 		//			if (!anyImproves) {
 		//				if (saveIlsStats) {
-		//					ilsLogWriter.println("No more improves after\t" + i + " " + iterBestDistribution.getCurrentCosts());
+		//					printIlsLog("No more improves after\t" + i + " " + iterBestDistribution.getCurrentCosts());
 		//				}
 		//				logger.info("No more improves after " + i + " " + iterBestDistribution.getCurrentCosts());
 		//				break;
@@ -440,7 +470,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		//			//totalVerticesMoved += verticesMovedIter;
 		//		}
 		//		if (saveIlsStats) {
-		//			ilsLogWriter.println("Finished greedy after\t" + i + " " + bestDistribution.getCurrentCosts());
+		//			printIlsLog("Finished greedy after\t" + i + " " + bestDistribution.getCurrentCosts());
 		//		}
 		//		logger.info("+ Stopped greedy after " + i + " iterations in " + (System.currentTimeMillis() - decideStartTime) + "ms" + " "
 		//				+ bestDistribution.getCurrentCosts());
@@ -502,7 +532,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		}
 
 		if (saveIlsStats) {
-			ilsLogWriter.println(
+			printIlsLog(
 					"unifyQueryAtLargestPartition " + pertubationQuery + " at " + bestWorkerId + " " + bestWorkerPartitionSize + "/"
 							+ baseDistribution.queryVertices.get(pertubationQuery));
 		}
@@ -635,7 +665,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		ILSVertexMoveDecider decider = new ILSVertexMoveDecider();
 		VertexMoveDecision decission = decider.decide(queryIds, workerQueryChunks, workerTotalVertices);
-		decission.printDecission();
+		decission.printDecission(System.out);
 	}
 
 	private static <T> T getRandomFromList(List<T> list, Random rd) {
@@ -645,15 +675,23 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 	private class IlsLogItem {
 
-		public final int costs;
-		public final int lastPertubationCosts;
-		public final int currentlyBestDistributionCosts;
+		public final long time;
+		public final double costs;
+		public final double lastPertubationCosts;
+		public final double currentlyBestDistributionCosts;
+		public final double vertActiveImbalance;
+		public final double vertTotalImbalance;
 
-		public IlsLogItem(double costs, double lastPertubationCosts, double currentlyBestDistributionCosts) {
+		public IlsLogItem(long time, double costs, double lastPertubationCosts, double currentlyBestDistributionCosts,
+				double vertActiveImbalance,
+				double vertTotalImbalance) {
 			super();
-			this.costs = (int) costs;
-			this.lastPertubationCosts = (int) lastPertubationCosts;
-			this.currentlyBestDistributionCosts = (int) currentlyBestDistributionCosts;
+			this.time = time;
+			this.costs = costs;
+			this.lastPertubationCosts = lastPertubationCosts;
+			this.currentlyBestDistributionCosts = currentlyBestDistributionCosts;
+			this.vertActiveImbalance = vertActiveImbalance;
+			this.vertTotalImbalance = vertTotalImbalance;
 		}
 	}
 }

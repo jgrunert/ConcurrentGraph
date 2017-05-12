@@ -305,6 +305,22 @@ public class QueryDistribution {
 		return (double) Math.abs(workerVerts - avgTotalVertices) / avgTotalVertices;
 	}
 
+	public double getAverageActiveVerticesImbalanceFactor() {
+		double avg = 0;
+		for (Integer workerId : queryMachines.keySet()) {
+			avg += getWorkerActiveVerticesImbalanceFactor(workerId);
+		}
+		return avg / queryMachines.size();
+	}
+
+	public double getAverageTotalVerticesImbalanceFactor() {
+		double avg = 0;
+		for (Integer workerId : queryMachines.keySet()) {
+			avg += getWorkerTotalVerticesImbalanceFactor(workerId);
+		}
+		return avg / queryMachines.size();
+	}
+
 
 
 	//	private double getLoadImbalanceCosts() {

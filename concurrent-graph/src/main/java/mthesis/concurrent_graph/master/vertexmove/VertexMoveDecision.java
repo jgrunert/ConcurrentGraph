@@ -1,5 +1,7 @@
 package mthesis.concurrent_graph.master.vertexmove;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,6 +18,7 @@ import mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarri
  */
 public class VertexMoveDecision {
 
+	public final int moveMessages;
 	public final Map<Integer, List<SendQueryChunkMessage>> WorkerVertSendMsgs;
 	public final Map<Integer, List<ReceiveQueryChunkMessage>> WorkerVertRecvMsgs;
 
@@ -25,13 +28,27 @@ public class VertexMoveDecision {
 		super();
 		WorkerVertSendMsgs = workerVertSendMsgs;
 		WorkerVertRecvMsgs = workerVertRecvMsgs;
+		int mvs = 0;
+		for (List<SendQueryChunkMessage> msgs : WorkerVertSendMsgs.values()) {
+			mvs += msgs.size();
+		}
+		moveMessages = mvs;
 	}
 
-	public void printDecission() {
+	public void printDecission(PrintStream stream) {
 		for (Entry<Integer, List<ReceiveQueryChunkMessage>> receiver : WorkerVertRecvMsgs.entrySet()) {
-			System.out.println(receiver.getKey());
+			stream.println(receiver.getKey());
 			for (ReceiveQueryChunkMessage recvMsg : receiver.getValue()) {
-				System.out.println("   " + recvMsg.getChunkQueriesList() + " from " + recvMsg.getReceiveFromMachine());
+				stream.println("   " + recvMsg.getChunkQueriesList() + " from " + recvMsg.getReceiveFromMachine());
+			}
+		}
+	}
+
+	public void printDecission(PrintWriter stream) {
+		for (Entry<Integer, List<ReceiveQueryChunkMessage>> receiver : WorkerVertRecvMsgs.entrySet()) {
+			stream.println(receiver.getKey());
+			for (ReceiveQueryChunkMessage recvMsg : receiver.getValue()) {
+				stream.println("   " + recvMsg.getChunkQueriesList() + " " + recvMsg.getReceiveFromMachine() + "->" + receiver.getKey());
 			}
 		}
 	}
