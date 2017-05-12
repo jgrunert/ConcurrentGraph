@@ -90,8 +90,7 @@ public class JFreeChartPlotter {
 
 			if (workerStatsCaptions != null) {
 				for (int iStat = 1; iStat < workerStatsCaptions.length; iStat++) {
-					plotWorkerStats(statsFolder, "WorkerStats_" + workerStatsCaptions[iStat], workerStatsCaptions[iStat], workerStatsCsvs,
-							iStat, 1);
+					plotWorkerStats(statsFolder, "WorkerStats_" + workerStatsCaptions[iStat], workerStatsCaptions[iStat], workerStatsCsvs, iStat, 1);
 				}
 			}
 
@@ -114,6 +113,13 @@ public class JFreeChartPlotter {
 				}
 				plotCsvColumns(statsFolder, "WorkerTimes_normed_" + workerId, "Sample", "Time (ms)", 1, timeColumns);
 			}
+
+			// Plot query times
+			List<ColumnToPlot> timeColumns = new ArrayList<>();
+			timeColumns.add(new ColumnToPlot(null, queriesCsv, 2, 1));
+			timeColumns.add(new ColumnToPlot(null, queriesCsv, 3, 1));
+			timeColumns.add(new ColumnToPlot(null, queriesCsv, 4, 1));
+			plotCsvColumns(statsFolder, "QueriesTimes", "Query", "Time", 1, timeColumns);
 
 			logger.info("Finished plotting worker stats");
 		}
@@ -319,7 +325,7 @@ public class JFreeChartPlotter {
 		try {
 			// By default only worker stats
 			Configuration.Properties.put("PlotWorkerStats", "true");
-			//			Configuration.Properties.put("PlotQueryStats", "true");
+			//Configuration.Properties.put("PlotQueryStats", "true");
 			plotStats(args[0]);
 			System.out.println("Plot finished");
 		}
