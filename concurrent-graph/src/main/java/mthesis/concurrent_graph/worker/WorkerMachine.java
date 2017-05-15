@@ -88,8 +88,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 	// Global, aggregated QueryGlobalValues. Aggregated and sent by master
 	private final Map<Integer, WorkerQuery<V, E, M, Q>> activeQueries = new HashMap<>();
-	// List of currently and previously active queries for query cut
-	private final List<WorkerQuery<V, E, M, Q>> queriesForQueryCut = new ArrayList<>();
+	// List of finished queries, not older than QUERY_CUT_TIME_WINDOW
+	private final List<WorkerQuery<V, E, M, Q>> queriesHistoryList = new ArrayList<>();
+	private final Map<Integer, WorkerQuery<V, E, M, Q>> queriesHistoryMap = new HashMap<>();
 	// Counter of supersteps/localSupersteps per query. Resets when query vertices moved.
 	private final Map<Integer, Pair<Integer, Integer>> queriesLocalSupersteps = new HashMap<>();
 	// Barrier messages that arrived before a became was active
@@ -189,9 +190,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		activeQuery.BarrierSyncWaitSet.addAll(otherWorkerIds);
 
 		activeQueries.put(query.QueryId, activeQuery);
-		if (Configuration.VERTEX_BARRIER_MOVE_ENABLED) {
-			queriesForQueryCut.add(activeQuery);
-		}
 
 		// Handle postponed barrier messages if there are any
 		List<ControlMessage> postponedBarrierMsgs = postponedBarrierMessages.get(query.QueryId);
@@ -214,6 +212,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 		logger.debug("Worker finished query {}", activeQuery.Query.QueryId);
 		activeQueries.remove(activeQuery.Query.QueryId);
+		if (Configuration.VERTEX_BARRIER_MOVE_ENABLED) {
+			queriesHistoryList.add(activeQuery);
+			queriesHistoryMap.put(activeQuery.QueryId, activeQuery);
+		}
 	}
 
 
@@ -851,9 +853,9 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 	/**
 	 * Handling for vertices which are moved
 	 */
-	private void handleVerticesMoving(List<AbstractVertex<V, E, M, Q>> verticesMoving, int movedTo) {
+	private void handleVerticesMoving(List<Pair<AbstractVertex<V, E, M, Q>, Integer[]>> verticesMoving, int movedTo) {
 		if (verticesMoving.isEmpty()) return;
-		List<Integer> vertexMoveIds = verticesMoving.stream().map(v -> v.ID)
+		List<Integer> vertexMoveIds = verticesMoving.stream().map(v -> v.first.ID)
 				.collect(Collectors.toCollection(ArrayList::new));
 
 		// Broadcast vertex invalidate message
@@ -1228,7 +1230,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		Set<Integer> chunkQueries = new HashSet<>();
 		WorkerQuery<V, E, M, Q> smallestQuery = null;
 		for (Integer qId : queryChunk) {
-			WorkerQuery<V, E, M, Q> q = activeQueries.get(qId);
+			WorkerQuery<V, E, M, Q> q = queriesHistoryMap.get(qId);
 			if (q != null) {
 				if (q.ActiveVerticesNext.isEmpty()) {
 					if (smallestQuery == null || q.VerticesEverActive.size() < smallestQuery.VerticesEverActive.size())
@@ -1239,20 +1241,20 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 					// Dont send vertices
 					logger.warn(
 							"Cant move vertecies of query, has ActiveVerticesNext " + q.QueryId + ":" + q.getMasterStartedSuperstep());
-					messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, chunkQueries, new ArrayList<>(), true);
+					messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, new ArrayList<>(), true);
 					return;
 				}
 			}
 		}
 		if (chunkQueries.isEmpty()) {
 			logger.debug("Vertices not moved because all chunk queries inactive: {}", queryChunk);
-			messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, chunkQueries, new ArrayList<>(), true);
+			messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, new ArrayList<>(), true);
 			return;
 		}
 		assert smallestQuery != null;
 
 		Map<Integer, WorkerQuery<V, E, M, Q>> nonChunkQueries = new HashMap<>();
-		for (Entry<Integer, WorkerQuery<V, E, M, Q>> qKv : activeQueries.entrySet()) {
+		for (Entry<Integer, WorkerQuery<V, E, M, Q>> qKv : queriesHistoryMap.entrySet()) {
 			if (!chunkQueries.contains(qKv.getKey())) {
 				nonChunkQueries.put(qKv.getKey(), qKv.getValue());
 			}
@@ -1263,7 +1265,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		IntSet moveVerticesCandidates = new IntOpenHashSet(smallestQuery.VerticesEverActive);
 		for (Integer qId : chunkQueries) {
 			if (qId.equals(smallestQuery.QueryId)) continue;
-			WorkerQuery<V, E, M, Q> q = activeQueries.get(qId);
+			WorkerQuery<V, E, M, Q> q = queriesHistoryMap.get(qId);
 			removeBuffer.clear();
 			for (IntIterator it = moveVerticesCandidates.iterator(); it.hasNext();) {
 				int next = it.nextInt();
@@ -1288,7 +1290,8 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		}
 
 		// Move vertices
-		List<AbstractVertex<V, E, M, Q>> verticesToSend = new ArrayList<>();
+		List<Integer> vertexActiveQueriesBuffer = new ArrayList<>();
+		List<Pair<AbstractVertex<V, E, M, Q>, Integer[]>> verticesToSend = new ArrayList<>();
 		for (IntIterator it = moveVertices.iterator(); it.hasNext();) {
 			int moveVertexId = it.nextInt();
 			AbstractVertex<V, E, M, Q> moveVertex = localVertices.get(moveVertexId);
@@ -1303,23 +1306,26 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 				continue;
 			}
 
-			verticesToMove++;
-			verticesToSend.add(moveVertex);
-
 			// Remove vertex
 			localVertices.remove(moveVertexId);
-			for (Integer qActiveIn : chunkQueries) {
-				WorkerQuery<V, E, M, Q> query = activeQueries.get(qActiveIn);
-				query.ActiveVerticesThis.remove(moveVertexId);
-				query.VerticesEverActive.remove(moveVertexId);
-				// Reset local query locality stat
-				queriesLocalSupersteps.remove(query.QueryId);
+			vertexActiveQueriesBuffer.clear();
+			for (WorkerQuery<V, E, M, Q> q : activeQueries.values()) {
+				if (q.ActiveVerticesThis.containsKey(moveVertexId)) {
+					q.ActiveVerticesThis.remove(moveVertexId);
+					q.VerticesEverActive.remove(moveVertexId);
+					vertexActiveQueriesBuffer.add(q.QueryId);
+					// Reset local query locality stat
+					queriesLocalSupersteps.remove(q.QueryId);
+				}
 			}
+
+			verticesToMove++;
+			verticesToSend.add(new Pair<>(moveVertex, vertexActiveQueriesBuffer.toArray(new Integer[0])));
 
 			// Send vertices now if bucket full
 			if (verticesToSend.size() >= Configuration.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
 				handleVerticesMoving(verticesToSend, sendToWorker);
-				messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, chunkQueries, verticesToSend, false);
+				messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, verticesToSend, false);
 				verticesSent += verticesToSend.size();
 				verticesToSend = new ArrayList<>();
 			}
@@ -1331,7 +1337,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 		// Send remaining vertices (or empty message if none)
 		handleVerticesMoving(verticesToSend, sendToWorker);
-		messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, chunkQueries, verticesToSend, true);
+		messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, verticesToSend, true);
 		verticesSent += verticesToSend.size();
 
 		verticesToMove += verticesToSend.size();
@@ -1365,9 +1371,10 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		long startTime = System.nanoTime();
 
 		for (MoveVerticesMessage<V, E, M, Q> message : queuedMoveMessages) {
-			for (AbstractVertex<V, E, M, Q> movedVertInfo : message.vertices) {
-				AbstractVertex<V, E, M, Q> movedVert = movedVertInfo;
-				for (Integer queryActiveInId : message.vertexQueries) {
+			for (Pair<AbstractVertex<V, E, M, Q>, Integer[]> movedVertInfo : message.vertices) {
+				Pair<AbstractVertex<V, E, M, Q>, Integer[]> movedVertPair = movedVertInfo;
+				AbstractVertex<V, E, M, Q> movedVert = movedVertPair.first;
+				for (Integer queryActiveInId : movedVertPair.second) {
 					WorkerQuery<V, E, M, Q> queryActiveIn = activeQueries.get(queryActiveInId);
 					if (queryActiveIn != null) {
 						queryActiveIn.ActiveVerticesThis.put(movedVert.ID, movedVert);
@@ -1503,24 +1510,25 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 		Random rd = new Random(0);
 
 		// Remove older and inactive queries from query cut
-		for (int i = 0; i < queriesForQueryCut.size(); i++) {
-			WorkerQuery<V, E, M, Q> query = queriesForQueryCut.get(i);
-			if (!activeQueries.containsKey(query.QueryId)) {
-				double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
-				long qAge = (startTimeMs - query.startTime);
-				if (qAge > Configuration.QUERY_CUT_TIME_WINDOW || qlocalSuperstepRatio < Configuration.QUERY_CUT_KEEP_MIN_LOCALITY) {
-					queriesForQueryCut.remove(i);
-					queriesLocalSupersteps.remove(query.QueryId);
-					i--;
-				}
+		for (int i = 0; i < queriesHistoryList.size(); i++) {
+			WorkerQuery<V, E, M, Q> query = queriesHistoryList.get(i);
+			//double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
+			long qAge = (startTimeMs - query.startTime);
+			if (qAge > Configuration.QUERY_CUT_TIME_WINDOW
+					//|| qlocalSuperstepRatio < Configuration.QUERY_CUT_KEEP_MIN_LOCALITY
+					) {
+				queriesHistoryList.remove(i);
+				queriesHistoryMap.remove(query.QueryId);
+				queriesLocalSupersteps.remove(query.QueryId);
+				i--;
 			}
 		}
 		// Remove older if to many queries
-		for (int i = 0; i < queriesForQueryCut.size() && queriesForQueryCut.size() > Configuration.QUERY_CUT_MAX_QUERIES; i++) {
-			if (!activeQueries.containsKey(queriesForQueryCut.get(i).QueryId)) {
-				queriesForQueryCut.remove(i);
-				i--;
-			}
+		while (queriesHistoryList.size() > Configuration.QUERY_CUT_MAX_QUERIES && queriesHistoryList.size() > 0) {
+			WorkerQuery<V, E, M, Q> query = queriesHistoryList.get(0);
+			queriesHistoryList.remove(0);
+			queriesHistoryMap.remove(query.QueryId);
+			queriesLocalSupersteps.remove(query.QueryId);
 		}
 
 		//long start2 = System.currentTimeMillis();
@@ -1528,7 +1536,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 
 		// Find all active vertics
 		IntSet allActiveVertices = new IntOpenHashSet();
-		for (WorkerQuery<V, E, M, Q> query : queriesForQueryCut) {
+		for (WorkerQuery<V, E, M, Q> query : queriesHistoryList) {
 			allActiveVertices.addAll(query.VerticesEverActive);
 		}
 
@@ -1538,7 +1546,7 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			int vertex = it.nextInt();
 			if (samplingFactor > 1 && rd.nextInt(samplingFactor) != 0) continue;
 
-			for (WorkerQuery<V, E, M, Q> query : queriesForQueryCut) {
+			for (WorkerQuery<V, E, M, Q> query : queriesHistoryList) {
 				if (query.VerticesEverActive.contains(vertex))
 					vertexQueriesSet.add(query.QueryId);
 			}

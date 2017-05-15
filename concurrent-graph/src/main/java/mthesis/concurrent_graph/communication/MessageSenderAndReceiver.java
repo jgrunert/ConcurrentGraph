@@ -123,7 +123,7 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		final long timeoutTime = System.currentTimeMillis() + Configuration.CONNECT_TIMEOUT;
 		while (System.currentTimeMillis() <= timeoutTime &&
 				!(channelAsyncReceivers.size() == (machineConfigs.size() - 1)
-						&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
+				&& channelAsyncSenders.size() == (machineConfigs.size() - 1))) {
 			try {
 				Thread.sleep(1);
 			}
@@ -224,10 +224,9 @@ public class MessageSenderAndReceiver<V extends BaseWritable, E extends BaseWrit
 		sendUnicastMessageSync(dstMachine, new GetToKnowMessage(ownId, queryId, vertices));
 	}
 
-	public void sendMoveVerticesMessage(int dstMachine, Set<Integer> chunkQueries, Set<Integer> vertexQueries,
-			List<AbstractVertex<V, E, M, Q>> vertices,
+	public void sendMoveVerticesMessage(int dstMachine, Set<Integer> vertexQueries, List<Pair<AbstractVertex<V, E, M, Q>, Integer[]>> vertices,
 			boolean lastSegment) {
-		sendUnicastMessageSync(dstMachine, new MoveVerticesMessage<>(ownId, chunkQueries, vertexQueries, vertices, lastSegment));
+		sendUnicastMessageSync(dstMachine, new MoveVerticesMessage<>(ownId, vertexQueries, vertices, lastSegment));
 	}
 
 	public void sendInvalidateRegisteredVerticesMessage(int dstMachine, Collection<Integer> vertices, int movedTo) {

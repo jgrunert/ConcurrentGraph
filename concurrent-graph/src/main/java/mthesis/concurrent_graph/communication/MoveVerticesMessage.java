@@ -8,30 +8,26 @@ import java.util.Set;
 
 import mthesis.concurrent_graph.BaseQuery;
 import mthesis.concurrent_graph.JobConfiguration;
+import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.vertex.VertexFactory;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
 import mthesis.concurrent_graph.writable.BaseWritable;
 
 public class MoveVerticesMessage<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-		implements ChannelMessage {
+implements ChannelMessage {
 
 	public final int srcMachine;
 	// Queries of this chunk to send
 	public final Set<Integer> chunkQueries;
-	// Queries of vertices that were really send (less than chunkQueries if quries inactive now)
-	public final Set<Integer> vertexQueries;
-	public final List<AbstractVertex<V, E, M, Q>> vertices;
+	public final List<Pair<AbstractVertex<V, E, M, Q>, Integer[]>> vertices;
 	public final boolean lastSegment;
 
-	public MoveVerticesMessage(int srcMachine, Set<Integer> chunkQueries, Set<Integer> vertexQueries,
-			List<AbstractVertex<V, E, M, Q>> vertices,
-			boolean lastSegment) {
+	public MoveVerticesMessage(int srcMachine, Set<Integer> chunkQueries, List<Pair<AbstractVertex<V, E, M, Q>, Integer[]>> vertices, boolean lastSegment) {
 		super();
 		this.srcMachine = srcMachine;
 		this.lastSegment = lastSegment;
 		this.chunkQueries = chunkQueries;
-		this.vertexQueries = vertexQueries;
 		this.vertices = vertices;
 	}
 
@@ -47,16 +43,18 @@ public class MoveVerticesMessage<V extends BaseWritable, E extends BaseWritable,
 			chunkQueries.add(buffer.getInt());
 		}
 
-		int numVertexQueries = buffer.getInt();
-		vertexQueries = new HashSet<>(numVertexQueries);
-		for (int j = 0; j < numVertexQueries; j++) {
-			vertexQueries.add(buffer.getInt());
-		}
-
 		int numVertices = buffer.getInt();
 		vertices = new ArrayList<>(numVertices);
 		for (int i = 0; i < numVertices; i++) {
-			vertices.add(vertexFactory.newInstance(buffer, worker, jobConfig));
+			AbstractVertex<V, E, M, Q> vert = vertexFactory.newInstance(buffer, worker, jobConfig);
+
+			int numVertQueries = buffer.getInt();
+			Integer[] vertQueries = new Integer[numVertQueries];
+			for (int j = 0; j < numVertQueries; j++) {
+				vertQueries[j] = buffer.getInt();
+			}
+
+			vertices.add(new Pair<>(vert, vertQueries));
 		}
 	}
 
@@ -74,15 +72,15 @@ public class MoveVerticesMessage<V extends BaseWritable, E extends BaseWritable,
 			buffer.putInt(q);
 		}
 
-		buffer.putInt(vertexQueries.size());
-		for (final Integer q : vertexQueries) {
-			buffer.putInt(q);
-		}
-
-
 		buffer.putInt(vertices.size());
-		for (final AbstractVertex<V, E, M, Q> vert : vertices) {
-			vert.writeToBuffer(buffer);
+		for (final Pair<AbstractVertex<V, E, M, Q>, Integer[]> vert : vertices) {
+			vert.first.writeToBuffer(buffer);
+
+			Integer[] vertQueries = vert.second;
+			buffer.putInt(vertQueries.length);
+			for (final Integer q : vertQueries) {
+				buffer.putInt(q);
+			}
 		}
 	}
 
