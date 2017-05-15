@@ -17,12 +17,12 @@ public class CsvDataFile {
 	public final String[] Captions;
 	public final double[][] Data;
 
-	public CsvDataFile(String file) throws IOException {
+	public CsvDataFile(String file, int samplingFactor) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		Captions = reader.readLine().split(";");
 		NumDataColumns = Captions.length;
 
-		List<double[]> dataLines = new ArrayList<>();
+		List<double[]> dataLinesRead = new ArrayList<>();
 		String line;
 		while ((line = reader.readLine()) != null) {
 			String[] lineSplit = line.split(";");
@@ -30,7 +30,30 @@ public class CsvDataFile {
 			for (int i = 0; i < NumDataColumns && i < lineSplit.length; i++) {
 				dataLine[i] = Double.parseDouble(lineSplit[i]);
 			}
-			dataLines.add(dataLine);
+			dataLinesRead.add(dataLine);
+		}
+
+		List<double[]> dataLines;
+		if (samplingFactor <= 1) {
+			dataLines = dataLinesRead;
+		}
+		else {
+			dataLines = new ArrayList<>();
+			for (int iLine = 0; iLine < dataLinesRead.size(); iLine++) {
+				int iSample = 1;
+				double[] sum = dataLinesRead.get(iLine);
+				for (; iSample < samplingFactor && iLine + 1 < dataLinesRead.size(); iSample++) {
+					iLine++;
+					double[] sample = dataLinesRead.get(iLine);
+					for (int iCol = 0; iCol < sum.length; iCol++) {
+						sum[iCol] += sample[iCol];
+					}
+				}
+				for (int iCol = 0; iCol < sum.length; iCol++) {
+					sum[iCol] /= iSample;
+				}
+				dataLines.add(sum);
+			}
 		}
 
 		NumDataRows = dataLines.size();
