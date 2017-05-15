@@ -134,7 +134,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 		// Do ILS with pertubations followed by greedy optimize
-		Random rd = new Random(0);
+		Random rd = new Random(ilsRunNumber);
 		int i = 0;
 		for (; i < MaxILSIterations && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
 			// Pertubation

@@ -513,7 +513,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				if (Configuration.VERTEX_BARRIER_MOVE_ENABLED &&
 						(System.currentTimeMillis() - lastSendMasterQueryIntersects) >= Configuration.WORKER_QUERY_INTERSECT_INTERVAL) {
-					MessageEnvelope msg = ControlMessageBuildUtil.Build_Worker_QueryVertexChunks(ownId, calculateQueryIntersectChunks(),
+					Map<IntSet, Integer> intersects = calculateQueryIntersectChunks();
+					Map<IntSet, Integer> intersectsSampled = calculateQueryIntersectChunksSampled(10);// TODO Config
+					System.out.println(ownId + " intersects: " + intersects);
+					System.out.println(ownId + " intersectsSampled: " + intersectsSampled);
+					MessageEnvelope msg = ControlMessageBuildUtil.Build_Worker_QueryVertexChunks(ownId, intersects,
 							activeQueries.keySet(),
 							queriesLocalSupersteps);
 					messaging.sendControlMessageUnicast(masterId, msg, true);
@@ -1560,6 +1564,87 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		workerStats.IntersectCalcTime += System.nanoTime() - startTimeNano;
 		System.out.println("IntersectCalcTime " + (System.currentTimeMillis() - startTimeMs) + "ms");
 		logger.info("IntersectCalcTime {}ms", (System.currentTimeMillis() - startTimeMs)); // TODO debug
+
+		Map<IntSet, Integer> limitedIntersectChunks = intersectChunks.entrySet().stream()
+				.limit(200) // TODO Config
+				.sorted(Map.Entry.<IntSet, Integer>comparingByValue().reversed())
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
+						(e1, e2) -> e1, LinkedHashMap::new));
+		return limitedIntersectChunks;
+	}
+
+
+
+	private Map<IntSet, Integer> calculateQueryIntersectChunksSampled(int samplingFactor) {
+		long startTimeMs = System.currentTimeMillis();
+		long startTimeNano = System.nanoTime();
+		Random rd = new Random(0);
+
+		// Remove older and inactive queries from query cut
+		for (int i = 0; i < queriesForQueryCut.size(); i++) {
+			WorkerQuery<V, E, M, Q> query = queriesForQueryCut.get(i);
+			if (!activeQueries.containsKey(query.QueryId)) {
+				double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
+				long qAge = (startTimeMs - query.startTime);
+				if (qAge > Configuration.QUERY_CUT_TIME_WINDOW || qlocalSuperstepRatio < Configuration.QUERY_CUT_KEEP_MIN_LOCALITY) {
+					queriesForQueryCut.remove(i);
+					queriesLocalSupersteps.remove(query.QueryId);
+					i--;
+				}
+			}
+		}
+		// Remove older if to many queries
+		for (int i = 0; i < queriesForQueryCut.size() && queriesForQueryCut.size() > Configuration.QUERY_CUT_MAX_QUERIES; i++) {
+			if (!activeQueries.containsKey(queriesForQueryCut.get(i).QueryId)) {
+				queriesForQueryCut.remove(i);
+				i--;
+			}
+		}
+
+		//long start2 = System.currentTimeMillis();
+		Map<IntSet, Integer> intersectChunks = new HashMap<>();
+
+		// Find all active vertics
+		IntSet allActiveVertices = new IntOpenHashSet();
+		for (WorkerQuery<V, E, M, Q> query : queriesForQueryCut) {
+			allActiveVertices.addAll(query.VerticesEverActive);
+		}
+
+		// Find queries vertices are active in
+		IntSet vertexQueriesSet = new IntOpenHashSet();
+		for (IntIterator it = allActiveVertices.iterator(); it.hasNext();) {
+			int vertex = it.nextInt();
+			if (rd.nextInt(samplingFactor) != 0) continue;
+
+			for (WorkerQuery<V, E, M, Q> query : queriesForQueryCut) {
+				if (query.VerticesEverActive.contains(vertex))
+					vertexQueriesSet.add(query.QueryId);
+			}
+
+			Integer countNow = intersectChunks.get(vertexQueriesSet);
+			if (countNow != null) {
+				intersectChunks.put(vertexQueriesSet, countNow + 1);
+			}
+			else {
+				intersectChunks.put(new IntOpenHashSet(vertexQueriesSet), 1);
+			}
+			vertexQueriesSet.clear();
+		}
+
+		// Sort out neglegible small chunks and multiply with samplingFactor
+		for (IntSet chunk : new ArrayList<>(intersectChunks.keySet())) {
+			int chunkSize = intersectChunks.get(chunk) * samplingFactor;
+			if (chunkSize < Configuration.QUERY_CUT_CHUNK_MIN_SIZE) {
+				intersectChunks.remove(chunk);
+			}
+			else {
+				intersectChunks.put(chunk, chunkSize);
+			}
+		}
+
+		workerStats.IntersectCalcTime += System.nanoTime() - startTimeNano;
+		System.out.println("Sampled IntersectCalcTime " + (System.currentTimeMillis() - startTimeMs) + "ms");
+		logger.info("Sampled IntersectCalcTime {}ms", (System.currentTimeMillis() - startTimeMs)); // TODO debug
 
 		Map<IntSet, Integer> limitedIntersectChunks = intersectChunks.entrySet().stream()
 				.limit(200) // TODO Config
