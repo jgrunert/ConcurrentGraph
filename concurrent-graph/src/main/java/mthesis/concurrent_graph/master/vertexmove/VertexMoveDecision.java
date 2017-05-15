@@ -36,19 +36,21 @@ public class VertexMoveDecision {
 	}
 
 	public void printDecission(PrintStream stream) {
-		for (Entry<Integer, List<ReceiveQueryChunkMessage>> receiver : WorkerVertRecvMsgs.entrySet()) {
-			stream.println(receiver.getKey());
-			for (ReceiveQueryChunkMessage recvMsg : receiver.getValue()) {
-				stream.println("   " + recvMsg.getChunkQueriesList() + " from " + recvMsg.getReceiveFromMachine());
+		for (Entry<Integer, List<SendQueryChunkMessage>> sender : WorkerVertSendMsgs.entrySet()) {
+			stream.println(sender.getKey());
+			for (SendQueryChunkMessage sendMsg : sender.getValue()) {
+				stream.println("   " + sendMsg.getChunkQueriesList() + " " + sender.getKey() + "->" + sendMsg.getMoveToMachine() + " "
+						+ sendMsg.getMaxMoveCount());
 			}
 		}
 	}
 
 	public void printDecission(PrintWriter stream) {
-		for (Entry<Integer, List<ReceiveQueryChunkMessage>> receiver : WorkerVertRecvMsgs.entrySet()) {
-			stream.println(receiver.getKey());
-			for (ReceiveQueryChunkMessage recvMsg : receiver.getValue()) {
-				stream.println("   " + recvMsg.getChunkQueriesList() + " " + recvMsg.getReceiveFromMachine() + "->" + receiver.getKey());
+		for (Entry<Integer, List<SendQueryChunkMessage>> sender : WorkerVertSendMsgs.entrySet()) {
+			stream.println(sender.getKey());
+			for (SendQueryChunkMessage sendMsg : sender.getValue()) {
+				stream.println("   " + sendMsg.getChunkQueriesList() + " " + sender.getKey() + "->" + sendMsg.getMoveToMachine() + " "
+						+ sendMsg.getMaxMoveCount());
 			}
 		}
 	}

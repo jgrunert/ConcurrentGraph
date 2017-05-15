@@ -382,7 +382,7 @@ public class QueryDistribution {
 		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
 			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
 				if (chunk.homeMachine != machine.getKey()) {
-					allMoves.add(new VertexMoveOperation(chunk.queries, chunk.homeMachine, machine.getKey()));
+					allMoves.add(new VertexMoveOperation(chunk.queries, chunk.numVertices, chunk.homeMachine, machine.getKey()));
 				}
 			}
 		}
@@ -390,9 +390,9 @@ public class QueryDistribution {
 		for (VertexMoveOperation moveOperation : allMoves) {
 			workerVertSendMsgs.get(moveOperation.FromMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.newBuilder()
-							.setMaxMoveCount(Integer.MAX_VALUE)
+							.setMaxMoveCount(moveOperation.ChunkVertices)
 							.addAllChunkQueries(moveOperation.QueryChunk)
-							.setMoveToMachine(moveOperation.ToMachine).setMaxMoveCount(Integer.MAX_VALUE)
+							.setMoveToMachine(moveOperation.ToMachine)
 							.build());
 			workerVertRecvMsgs.get(moveOperation.ToMachine).add(
 					Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage.newBuilder()

@@ -12,13 +12,15 @@ import java.util.Set;
 public class VertexMoveOperation {
 
 	public final Set<Integer> QueryChunk;
+	public final int ChunkVertices;
 	public final int FromMachine;
 	public final int ToMachine;
 
 
-	public VertexMoveOperation(Set<Integer> queryChunk, int fromMachine, int toMachine) {
+	public VertexMoveOperation(Set<Integer> queryChunk, int chunkSize, int fromMachine, int toMachine) {
 		super();
 		QueryChunk = queryChunk;
+		ChunkVertices = chunkSize;
 		FromMachine = fromMachine;
 		ToMachine = toMachine;
 	}

@@ -120,6 +120,16 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						+ bestDistribution.getQueryMachines().get(worker).totalVertices + " ");
 			}
 			printIlsLog(msg);
+
+			// Warning: Can be very long log. Consider disabling for large setups
+			printIlsLog("query partitions: ");
+			for (Entry<Integer, Map<IntSet, Integer>> workerChunks : workerQueryChunks.entrySet()) {
+				ilsLogWriter.println("  " + workerChunks.getKey() + ": " + workerChunks.getValue());
+			}
+			printIlsLog("worker query vertices: ");
+			for (Entry<Integer, QueryWorkerMachine> worker : originalDistribution.getQueryMachines().entrySet()) {
+				ilsLogWriter.println("  " + worker.getKey() + ": " + worker.getValue().queryVertices);
+			}
 		}
 
 
@@ -354,6 +364,11 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				&& (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
 			QueryDistribution iterBestDistribution = bestDistribution.clone();
 			boolean anyImproves = false;
+			int bestFrom = 0;
+			int bestTo = 0;
+			int bestQuery = 0;
+			int bestNumMoved = Integer.MAX_VALUE;
+			double iterInitialCosts = bestDistribution.getCurrentCosts();
 
 			for (Integer queryId : queryIds) {
 				Integer queryLocality = localQueries.get(queryId);
@@ -388,28 +403,43 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 						QueryDistribution newDistribution = bestDistribution.clone();
 						// TODO Move chunks
-						newDistribution.moveAllQueryVertices(queryId, fromWorkerId, toWorkerId, localQueries);
+						int moved = newDistribution.moveAllQueryVertices(queryId, fromWorkerId, toWorkerId, localQueries);
+						if (moved == 0) continue;
 
-						boolean isGoodNew = (newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
-								&& checkActiveVertsOkOrBetter(baseDistribution, newDistribution)
+						boolean isValid = checkActiveVertsOkOrBetter(baseDistribution, newDistribution)
 								&& checkTotalVertsOkOrBetter(baseDistribution, newDistribution);
-						if (isGoodNew) {
-							if (saveIlsStats) {
-								logIlsStep(iterBestDistribution);
-							}
+						if (!isValid) continue;
+
+						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts()) ||
+								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
+										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
+							bestFrom = fromWorkerId;
+							bestTo = toWorkerId;
+							bestQuery = queryId;
+							bestNumMoved = moved;
 						}
 					}
 				}
 			}
 
-			if (!anyImproves) {
+			if (saveIlsStats) {
+				logIlsStep(iterBestDistribution);
+			}
+
+			if (anyImproves) {
+				if (saveIlsStats) {
+					printIlsLog("Improve " + i + " " + bestQuery + " " + bestFrom + "->" + bestTo + " " + bestNumMoved);
+				}
+			}
+			else {
 				if (saveIlsStats) {
 					printIlsLog("No more improves after " + i + " " + iterBestDistribution.getCurrentCosts());
 				}
 				break;
 			}
+
 			bestDistribution = iterBestDistribution;
 			//totalVerticesMoved += verticesMovedIter;
 		}
