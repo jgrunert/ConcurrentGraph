@@ -26,10 +26,10 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 	private static final Logger logger = LoggerFactory.getLogger(ILSVertexMoveDecider.class);
 
-	private final double VertexWorkerActiveImbalance = Configuration.getPropertyDoubleDefault("VertexMoveActiveImbalance", 0.4);
-	private final double VertexWorkerTotalImbalance = Configuration.getPropertyDoubleDefault("VertexMoveTotalImbalance", 0.1);
-	private final double VertexAvgActiveImbalance = VertexWorkerActiveImbalance;//TODO Config
-	private final double VertexAvgTotalImbalance = VertexWorkerTotalImbalance;//TODO Config
+	private final double VertexWorkerActiveImbalance = Configuration.getPropertyDoubleDefault("VertexMoveActiveImbalance", 0.6);
+	private final double VertexWorkerTotalImbalance = Configuration.getPropertyDoubleDefault("VertexMoveTotalImbalance", 0.3);
+	private final double VertexAvgActiveImbalance = Configuration.getPropertyDoubleDefault("VertexAvgActiveImbalance", 0.4);
+	private final double VertexAvgTotalImbalance = Configuration.getPropertyDoubleDefault("VertexAvgTotalImbalance", 0.2);
 	private final long MaxTotalImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT;
 	private final long MaxGreedyImproveTime = Configuration.getPropertyLongDefault("VertexMoveMaxGreedyTime", 500);
 	private final long MinMoveTotalVertices = Configuration.getPropertyLongDefault("VertexMoveMinMoveVertices", 500);
@@ -185,6 +185,19 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 
+		String workerVertsMsg = "workerVertives: ";
+		for (Integer worker : bestDistribution.getQueryMachines().keySet()) {
+			workerVertsMsg += worker + ": " + bestDistribution.getQueryMachines().get(worker).activeVertices + "/" +
+					bestDistribution.getQueryMachines().get(worker).totalVertices + ", ";
+		}
+		printIlsLog(workerVertsMsg);
+		String workerBalanceMsg = "workerBalances: ";
+		for (Integer worker : bestDistribution.getQueryMachines().keySet()) {
+			workerBalanceMsg += worker + ": " + bestDistribution.getWorkerActiveVerticesImbalanceFactor(worker) + "/" +
+					bestDistribution.getWorkerTotalVerticesImbalanceFactor(worker) + ", ";
+		}
+		printIlsLog(workerBalanceMsg);
+
 		logIlsStep(bestDistribution);
 		VertexMoveDecision moveDecission;
 		if (movedVertices < MinMoveTotalVertices) {
@@ -197,14 +210,26 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			moveDecission = null;
 		}
 		else {
-			moveDecission = bestDistribution.toMoveDecision(workerIds);
-			String printMsg = "Decided move, moves: " + moveDecission.moveMessages + " movedVertices: " + movedVertices + " costs: "
-					+ bestDistribution.getCurrentCosts()
-					+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
-					+ bestDistribution.getAverageTotalVerticesImbalanceFactor();
-			printIlsLog(printMsg);
-			logger.info(printMsg);
-			moveDecission.printDecission(ilsLogWriter);
+			if (checkActiveVertsOkOrBetter(originalDistribution, bestDistribution)
+					&& checkTotalVertsOkOrBetter(originalDistribution, bestDistribution)) {
+				moveDecission = bestDistribution.toMoveDecision(workerIds);
+				String printMsg = "Decided move, moves: " + moveDecission.moveMessages + " movedVertices: " + movedVertices + " costs: "
+						+ bestDistribution.getCurrentCosts()
+						+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
+						+ bestDistribution.getAverageTotalVerticesImbalanceFactor();
+				printIlsLog(printMsg);
+				logger.info(printMsg);
+				moveDecission.printDecission(ilsLogWriter);
+			}
+			else {
+				String printMsg = "ERROR, no move, result with too high imbalance: " + totalVerticesMoved + " costs: "
+						+ bestDistribution.getCurrentCosts()
+						+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
+						+ bestDistribution.getAverageTotalVerticesImbalanceFactor();
+				printIlsLog(printMsg);
+				logger.error(printMsg);
+				moveDecission = null;
+			}
 		}
 
 		if (saveIlsStats) {
@@ -366,8 +391,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						newDistribution.moveAllQueryVertices(queryId, fromWorkerId, toWorkerId, localQueries);
 
 						boolean isGoodNew = (newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
-								&& checkActiveVertsOkOrBetter(bestDistribution, newDistribution)
-								&& checkTotalVertsOkOrBetter(bestDistribution, newDistribution);
+								&& checkActiveVertsOkOrBetter(baseDistribution, newDistribution)
+								&& checkTotalVertsOkOrBetter(baseDistribution, newDistribution);
 						if (isGoodNew) {
 							if (saveIlsStats) {
 								logIlsStep(iterBestDistribution);
@@ -610,28 +635,14 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		double oldAvgImbalance = 0.0;
 		double newAvgImbalance = 0.0;
 		for (Integer worker : workers.keySet()) {
-			double oldImb = oldDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
-			double newImb = newDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
+			double oldImb = oldDistribution.getWorkerTotalVerticesImbalanceFactor(worker);
+			double newImb = newDistribution.getWorkerTotalVerticesImbalanceFactor(worker);
 			if (newImb > VertexWorkerTotalImbalance && newImb > oldImb) return false;
 			oldAvgImbalance += oldImb;
 			newAvgImbalance += newImb;
 		}
 		return (newAvgImbalance / workers.size()) <= VertexAvgTotalImbalance || newAvgImbalance <= oldAvgImbalance;
 	}
-
-
-	//	private boolean checkActiveVertsOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution, int worker) {
-	//		double oldImbalance = oldDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
-	//		double newImbalance = newDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
-	//		return (newImbalance <= oldImbalance || newImbalance <= VertexWorkerActiveImbalance);
-	//	}
-	//
-	//	private boolean checkTotalVertsOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution, int worker) {
-	//		double oldImbalance = oldDistribution.getWorkerTotalVerticesImbalanceFactor(worker);
-	//		double newImbalance = newDistribution.getWorkerTotalVerticesImbalanceFactor(worker);
-	//		return (newImbalance <= oldImbalance || newImbalance <= VertexWorkerTotalImbalance);
-	//	}
-
 
 
 	// Testing

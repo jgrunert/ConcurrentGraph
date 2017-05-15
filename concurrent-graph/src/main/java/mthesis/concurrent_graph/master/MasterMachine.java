@@ -419,7 +419,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 						List<Q> step = queryStatsSteps.get(msgQueryOnWorker.QueryId);
 						if (step != null) {
 							step.add(msgActiveQuery.QueryStepAggregator);
-							queryStatsStepTimes.get(msgQueryOnWorker.QueryId).add((System.nanoTime() - msgActiveQuery.LastStepTime));
+							List<Long> statsTimes = queryStatsStepTimes.get(msgQueryOnWorker.QueryId);
+							if (statsTimes != null) {
+								statsTimes.add((System.nanoTime() - msgActiveQuery.LastStepTime));
+							}
 						}
 					}
 
