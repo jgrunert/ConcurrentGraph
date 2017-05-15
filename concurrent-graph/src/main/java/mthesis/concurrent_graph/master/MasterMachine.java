@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1041,8 +1040,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				|| Configuration.getPropertyBoolDefault("PlotQueryStats", false)) {
 			try {
 				JFreeChartPlotter.plotStats(outputDir, 4);
-				Files.move(Paths.get(outputDir + File.separator + "stats" + File.separator + "plots"),
-						Paths.get(outputDir + File.separator + "stats" + File.separator + "plots4"));
 				JFreeChartPlotter.plotStats(outputDir, 1);
 			}
 			catch (Exception e) {

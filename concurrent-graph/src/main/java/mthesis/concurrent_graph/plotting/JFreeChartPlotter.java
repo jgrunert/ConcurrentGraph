@@ -6,8 +6,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +38,8 @@ public class JFreeChartPlotter {
 		logger.info("Start plotting");
 
 		String statsFolder = outputFolder + File.separator + "stats";
-		FileUtil.createDirOrEmptyFiles(statsFolder + File.separator + "plots");
+		String plotsOutDir = statsFolder + File.separator + "plots" + samplingFactor;
+		FileUtil.createDirOrEmptyFiles(plotsOutDir);
 
 		List<Integer> workers = new ArrayList<>();
 		List<Integer> queries = new ArrayList<>();
@@ -92,7 +91,8 @@ public class JFreeChartPlotter {
 
 			if (workerStatsCaptions != null) {
 				for (int iStat = 1; iStat < workerStatsCaptions.length; iStat++) {
-					plotWorkerStats(statsFolder, "WorkerStats_" + workerStatsCaptions[iStat], workerStatsCaptions[iStat], workerStatsCsvs, iStat, 1);
+					plotWorkerStats(statsFolder, "WorkerStats_" + workerStatsCaptions[iStat], workerStatsCaptions[iStat], workerStatsCsvs, iStat, 1,
+							plotsOutDir);
 				}
 			}
 
@@ -103,7 +103,7 @@ public class JFreeChartPlotter {
 				for (int i = 0; i < timesCsv.Captions.length; i++) {
 					timeColumns.add(new ColumnToPlot(null, timesCsv, i, 1));
 				}
-				plotCsvColumns(statsFolder, "WorkerTimes_" + workerId, "Sample", "Time (ms)", 1, timeColumns);
+				plotCsvColumns(statsFolder, "WorkerTimes_" + workerId, "Sample", "Time (ms)", 1, timeColumns, plotsOutDir);
 			}
 
 			for (Integer workerId : workers) {
@@ -113,7 +113,7 @@ public class JFreeChartPlotter {
 				for (int i = 0; i < timesCsv.Captions.length; i++) {
 					timeColumns.add(new ColumnToPlot(null, timesCsv, i, 1));
 				}
-				plotCsvColumns(statsFolder, "WorkerTimes_normed_" + workerId, "Sample", "Time (ms)", 1, timeColumns);
+				plotCsvColumns(statsFolder, "WorkerTimes_normed_" + workerId, "Sample", "Time (ms)", 1, timeColumns, plotsOutDir);
 			}
 
 			// Plot query times
@@ -121,7 +121,7 @@ public class JFreeChartPlotter {
 			timeColumns.add(new ColumnToPlot(null, queriesCsv, 2, 1));
 			timeColumns.add(new ColumnToPlot(null, queriesCsv, 3, 1));
 			timeColumns.add(new ColumnToPlot(null, queriesCsv, 4, 1));
-			plotCsvColumns(statsFolder, "QueriesTimes", "Query", "Time", 1, timeColumns);
+			plotCsvColumns(statsFolder, "QueriesTimes", "Query", "Time", 1, timeColumns, plotsOutDir);
 
 			logger.info("Finished plotting worker stats");
 		}
@@ -139,12 +139,12 @@ public class JFreeChartPlotter {
 						new ColumnToPlot[] {
 								new ColumnToPlot(null, timesCsv, 0, 1),
 								new ColumnToPlot(null, timesCsv, 1, 1)
-				});
+				}, plotsOutDir);
 				List<ColumnToPlot> timeColumns = new ArrayList<>();
 				for (int i = 2; i < timesCsv.Captions.length; i++) {
 					timeColumns.add(new ColumnToPlot(null, timesCsv, i, 1));
 				}
-				plotCsvColumns(statsFolder, "Query_AllWorkerTimes_" + queryName, "Superstep", "Time (ms)", 1, timeColumns);
+				plotCsvColumns(statsFolder, "Query_AllWorkerTimes_" + queryName, "Superstep", "Time (ms)", 1, timeColumns, plotsOutDir);
 
 
 				// Plot stats per worker
@@ -161,17 +161,16 @@ public class JFreeChartPlotter {
 				//			plotWorkerStats(statsFolder, "WorkerTimes_" + queryName, "WorkerTimes", workerCsvs, 1, 1);
 				for (int iCol = 0; iCol < workerCsvCaptions.length; iCol++) {
 					plotWorkerQueryStats(statsFolder, "QueryWorker_" + workerCsvCaptions[iCol] + "_" + queryName, workerCsvCaptions[iCol],
-							workerCsvs,
-							iCol, 1);
+							workerCsvs, iCol, 1, plotsOutDir);
 				}
 			}
 			logger.info("Finished plotting single queries");
 
 
 			// Plot query compares
-			plotQueryComparisons(statsFolder, "all", queries, queriesStats, samplingFactor);
+			plotQueryComparisons(statsFolder, "all", queries, queriesStats, samplingFactor, plotsOutDir);
 			for (Entry<Integer, List<Integer>> hashQueries : queriesByHash.entrySet()) {
-				plotQueryComparisons(statsFolder, "" + hashQueries.getKey(), hashQueries.getValue(), queriesStats, samplingFactor);
+				plotQueryComparisons(statsFolder, "" + hashQueries.getKey(), hashQueries.getValue(), queriesStats, samplingFactor, plotsOutDir);
 			}
 			logger.info("Finished plotting query comparisons");
 		}
@@ -179,7 +178,7 @@ public class JFreeChartPlotter {
 
 
 	private static void plotWorkerStats(String outputFolder, String plotName, String axisTitleY,
-			Map<Integer, CsvDataFile> workerStatsCsvs, int columnIndex, double factor) throws IOException {
+			Map<Integer, CsvDataFile> workerStatsCsvs, int columnIndex, double factor, String plotsOutDir) throws IOException {
 		final XYSeriesCollection dataset = new XYSeriesCollection();
 		//		for (int iQ = 0; iQ < queriesToPlot.size(); iQ++) {
 		//			series.add(iQ, queriesTimes.get(queriesToPlot.get(iQ))[column]);
@@ -192,64 +191,64 @@ public class JFreeChartPlotter {
 			}
 			dataset.addSeries(series);
 		}
-		plotDataset(outputFolder, plotName, "Time (s)", axisTitleY, dataset);
+		plotDataset(outputFolder, plotName, "Time (s)", axisTitleY, dataset, plotsOutDir);
 	}
 
 
 	private static void plotWorkerQueryStats(String outputFolder, String name, String axisTitleY,
-			Map<Integer, CsvDataFile> workerCsvs, int columnIndex, double factor) throws IOException {
+			Map<Integer, CsvDataFile> workerCsvs, int columnIndex, double factor, String plotsOutDir) throws IOException {
 		List<ColumnToPlot> columns = new ArrayList<>(workerCsvs.size());
 		for (Entry<Integer, CsvDataFile> wCsv : workerCsvs.entrySet()) {
 			columns.add(new ColumnToPlot("Worker " + wCsv.getKey(), wCsv.getValue(), columnIndex, 0));
 		}
-		plotCsvColumns(outputFolder, name, "Superstep", axisTitleY, factor, columns);
+		plotCsvColumns(outputFolder, name, "Superstep", axisTitleY, factor, columns, plotsOutDir);
 	}
 
 	private static void plotQueryComparisons(String statsFolder, String name, List<Integer> queriesToPlot,
-			Map<Integer, Double[]> queriesStats, int samplingFactor) throws IOException {
-		plotQueryTimeComparison(statsFolder, "QueriesDurations_" + name, queriesToPlot, queriesStats, 0);
-		plotQueryTimeComparison(statsFolder, "QueriesWorkerTimes_" + name, queriesToPlot, queriesStats, 1);
-		plotQueryComparisonSuperstepTimes(statsFolder, "QueriesStepDurations_" + name, queriesToPlot, 1, samplingFactor);
-		plotQueryComparisonSuperstepTimes(statsFolder, "QueriesStepWorkerTimes_" + name, queriesToPlot, 2, samplingFactor);
+			Map<Integer, Double[]> queriesStats, int samplingFactor, String plotsOutDir) throws IOException {
+		plotQueryTimeComparison(statsFolder, "QueriesDurations_" + name, queriesToPlot, queriesStats, 0, plotsOutDir);
+		plotQueryTimeComparison(statsFolder, "QueriesWorkerTimes_" + name, queriesToPlot, queriesStats, 1, plotsOutDir);
+		plotQueryComparisonSuperstepTimes(statsFolder, "QueriesStepDurations_" + name, queriesToPlot, 1, samplingFactor, plotsOutDir);
+		plotQueryComparisonSuperstepTimes(statsFolder, "QueriesStepWorkerTimes_" + name, queriesToPlot, 2, samplingFactor, plotsOutDir);
 	}
 
 	private static void plotQueryTimeComparison(String statsFolder, String plotName, List<Integer> queriesToPlot,
-			Map<Integer, Double[]> queriesTimes, int column) throws IOException {
+			Map<Integer, Double[]> queriesTimes, int column, String plotsOutDir) throws IOException {
 		final XYSeriesCollection dataset = new XYSeriesCollection();
 		final XYSeries series = new XYSeries("Query times");
 		for (int iQ = 0; iQ < queriesToPlot.size(); iQ++) {
 			series.add(iQ, queriesTimes.get(queriesToPlot.get(iQ))[column]);
 		}
 		dataset.addSeries(series);
-		plotDataset(statsFolder, plotName, "Query", "Time (ms)", dataset);
+		plotDataset(statsFolder, plotName, "Query", "Time (ms)", dataset, plotsOutDir);
 	}
 
 	private static void plotQueryComparisonSuperstepTimes(String statsFolder, String plotName, List<Integer> queriesToPlot,
-			int columnIndex, int samplingFactor)
+			int columnIndex, int samplingFactor, String plotsOutDir)
 					throws IOException {
 		final XYSeriesCollection dataset = new XYSeriesCollection();
 		for (Integer queryId : queriesToPlot) {
 			CsvDataFile timesCsv = new CsvDataFile(statsFolder + File.separator + "query" + queryId + "_times_ms.csv", samplingFactor);
 			dataset.addSeries(timesCsv.getColumnDataset(0, 1, "Query " + queryId, columnIndex));
 		}
-		plotDataset(statsFolder, plotName, "Superstep", "Time (ms)", dataset);
+		plotDataset(statsFolder, plotName, "Superstep", "Time (ms)", dataset, plotsOutDir);
 	}
 
 
 	public static void plotCsvColumns(String outputFolder, String name, String axisTitleX, String axisTitleY,
-			double factor, List<ColumnToPlot> columns)
+			double factor, List<ColumnToPlot> columns, String plotsOutDir)
 					throws IOException {
-		plotCsvColumns(outputFolder, name, axisTitleX, axisTitleY, factor, columns.toArray(new ColumnToPlot[0]));
+		plotCsvColumns(outputFolder, name, axisTitleX, axisTitleY, factor, columns.toArray(new ColumnToPlot[0]), plotsOutDir);
 	}
 
 	public static void plotCsvColumns(String outputFolder, String name, String axisTitleX, String axisTitleY,
-			double factor, ColumnToPlot[] columns)
+			double factor, ColumnToPlot[] columns, String plotsOutDir)
 					throws IOException {
 		final XYSeriesCollection dataset = new XYSeriesCollection();
 		for (ColumnToPlot col : columns) {
 			dataset.addSeries(col.Table.getColumnDataset(col.ColumnIndex, factor, col.OptionalName, col.StartRow));
 		}
-		plotDataset(outputFolder, name, axisTitleX, axisTitleY, dataset);
+		plotDataset(outputFolder, name, axisTitleX, axisTitleY, dataset, plotsOutDir);
 	}
 
 	//	public static void plotCsvAllColumns(String outputFolder, String name, String axisTitleX, String axisTitleY, CsvDataFile data)
@@ -258,7 +257,7 @@ public class JFreeChartPlotter {
 	//	}
 
 
-	public static void plotDataset(String outputFolder, String name, String axisTitleX, String axisTitleY, XYDataset dataset)
+	public static void plotDataset(String outputFolder, String name, String axisTitleX, String axisTitleY, XYDataset dataset, String plotsOutDir)
 			throws IOException {
 		final JFreeChart chart = ChartFactory.createXYLineChart(
 				name, // chart title
@@ -299,7 +298,7 @@ public class JFreeChartPlotter {
 		// OPTIONAL CUSTOMISATION COMPLETED.
 
 		ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
-		ChartUtilities.saveChartAsPNG(new File(outputFolder + File.separator + "plots" + File.separator + name + ".png"), chart, 1200, 900,
+		ChartUtilities.saveChartAsPNG(new File(plotsOutDir + File.separator + name + ".png"), chart, 1200, 900,
 				info);
 	}
 
@@ -330,8 +329,6 @@ public class JFreeChartPlotter {
 			//Configuration.Properties.put("PlotQueryStats", "true");
 			String outputDir = args[0];
 			plotStats(outputDir, 4);
-			Files.move(Paths.get(outputDir + File.separator + "stats" + File.separator + "plots"),
-					Paths.get(outputDir + File.separator + "stats" + File.separator + "plots4"));
 			plotStats(outputDir, 1);
 			System.out.println("Plot finished");
 		}
