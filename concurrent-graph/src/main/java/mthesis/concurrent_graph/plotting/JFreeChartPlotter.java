@@ -328,8 +328,11 @@ public class JFreeChartPlotter {
 			Configuration.Properties.put("PlotWorkerStats", "true");
 			//Configuration.Properties.put("PlotQueryStats", "true");
 			String outputDir = args[0];
-			plotStats(outputDir, 4);
-			plotStats(outputDir, 1);
+			//			plotStats(outputDir, 1);
+			//			plotStats(outputDir, 4);
+			plotStats(outputDir, 8);
+			plotStats(outputDir, 16);
+			plotStats(outputDir, 32);
 			System.out.println("Plot finished");
 		}
 		catch (Exception e) {
