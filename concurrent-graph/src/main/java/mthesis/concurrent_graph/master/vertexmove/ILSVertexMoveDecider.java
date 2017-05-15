@@ -585,6 +585,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
 	 */
 	private boolean workloadActiveBalanceOk(QueryDistribution distribution) {
+		if (VertexAvgActiveImbalance >= 1 && VertexWorkerActiveImbalance >= 1) return true;
 		Map<Integer, QueryWorkerMachine> workers = distribution.getQueryMachines();
 		double avgImbalance = 0.0;
 		for (Integer worker : workers.keySet()) {
@@ -599,6 +600,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
 	 */
 	private boolean workloadTotalBalanceOk(QueryDistribution distribution) {
+		if (VertexAvgTotalImbalance >= 1 && VertexWorkerTotalImbalance >= 1) return true;
 		Map<Integer, QueryWorkerMachine> workers = distribution.getQueryMachines();
 		double avgImbalance = 0.0;
 		for (Integer worker : workers.keySet()) {
@@ -614,6 +616,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
 	 */
 	private boolean checkActiveVertsOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution) {
+		if (VertexAvgActiveImbalance >= 1 && VertexWorkerActiveImbalance >= 1) return true;
 		Map<Integer, QueryWorkerMachine> workers = oldDistribution.getQueryMachines();
 		double oldAvgImbalance = 0.0;
 		double newAvgImbalance = 0.0;
@@ -631,6 +634,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
 	 */
 	private boolean checkTotalVertsOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution) {
+		if (VertexAvgTotalImbalance >= 1 && VertexWorkerTotalImbalance >= 1) return true;
 		Map<Integer, QueryWorkerMachine> workers = oldDistribution.getQueryMachines();
 		double oldAvgImbalance = 0.0;
 		double newAvgImbalance = 0.0;

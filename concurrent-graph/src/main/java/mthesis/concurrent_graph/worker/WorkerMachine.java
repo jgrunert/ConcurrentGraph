@@ -69,7 +69,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -513,11 +513,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				if (Configuration.VERTEX_BARRIER_MOVE_ENABLED &&
 						(System.currentTimeMillis() - lastSendMasterQueryIntersects) >= Configuration.WORKER_QUERY_INTERSECT_INTERVAL) {
-					Map<IntSet, Integer> intersects = calculateQueryIntersectChunks();
 					Map<IntSet, Integer> intersectsSampled = calculateQueryIntersectChunksSampled(10);// TODO Config
-					System.out.println(ownId + " intersects: " + intersects);
-					System.out.println(ownId + " intersectsSampled: " + intersectsSampled);
-					MessageEnvelope msg = ControlMessageBuildUtil.Build_Worker_QueryVertexChunks(ownId, intersects,
+					MessageEnvelope msg = ControlMessageBuildUtil.Build_Worker_QueryVertexChunks(ownId, intersectsSampled,
 							activeQueries.keySet(),
 							queriesLocalSupersteps);
 					messaging.sendControlMessageUnicast(masterId, msg, true);
@@ -694,13 +691,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
@@ -718,12 +715,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryChunkMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
-									.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
+							.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
 						}
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -744,35 +741,35 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-						return true;
+					return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Receive_Finished: {
 						logger.debug("Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Finished: {
 						logger.debug("Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -981,8 +978,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1
 				&& !receivedLocalOnOtherBarrier) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-					+ " localExecution=" + query.localExecution + " executionMode=" + query.getExecutionMode() + "/" + queryExecutionMode
-					+ " superstep should be " + (query.getMasterStartedSuperstep() + 1) + ", " + query.getSuperstepNosLog());
+			+ " localExecution=" + query.localExecution + " executionMode=" + query.getExecutionMode() + "/" + queryExecutionMode
+			+ " superstep should be " + (query.getMasterStartedSuperstep() + 1) + ", " + query.getSuperstepNosLog());
 			return;
 		}
 
@@ -1500,81 +1497,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		workerStats = new WorkerStats();
 	}
 
-	private Map<IntSet, Integer> calculateQueryIntersectChunks() {
-		long startTimeMs = System.currentTimeMillis();
-		long startTimeNano = System.nanoTime();
-
-		// Remove older and inactive queries from query cut
-		for (int i = 0; i < queriesForQueryCut.size(); i++) {
-			WorkerQuery<V, E, M, Q> query = queriesForQueryCut.get(i);
-			if (!activeQueries.containsKey(query.QueryId)) {
-				double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
-				long qAge = (startTimeMs - query.startTime);
-				if (qAge > Configuration.QUERY_CUT_TIME_WINDOW || qlocalSuperstepRatio < Configuration.QUERY_CUT_KEEP_MIN_LOCALITY) {
-					queriesForQueryCut.remove(i);
-					queriesLocalSupersteps.remove(query.QueryId);
-					i--;
-				}
-			}
-		}
-		// Remove older if to many queries
-		for (int i = 0; i < queriesForQueryCut.size() && queriesForQueryCut.size() > Configuration.QUERY_CUT_MAX_QUERIES; i++) {
-			if (!activeQueries.containsKey(queriesForQueryCut.get(i).QueryId)) {
-				queriesForQueryCut.remove(i);
-				i--;
-			}
-		}
-
-		//long start2 = System.currentTimeMillis();
-		Map<IntSet, Integer> intersectChunks = new HashMap<>();
-
-		// Find all active vertics
-		IntSet allActiveVertices = new IntOpenHashSet();
-		for (WorkerQuery<V, E, M, Q> query : queriesForQueryCut) {
-			allActiveVertices.addAll(query.VerticesEverActive);
-		}
-
-		// Find queries vertices are active in
-		// TODO Rather slow - 300ms sometimes. Sampling?
-		IntSet vertexQueriesSet = new IntOpenHashSet();
-		for (IntIterator it = allActiveVertices.iterator(); it.hasNext();) {
-			int vertex = it.nextInt();
-			for (WorkerQuery<V, E, M, Q> query : queriesForQueryCut) {
-				if (query.VerticesEverActive.contains(vertex))
-					vertexQueriesSet.add(query.QueryId);
-			}
-
-			Integer countNow = intersectChunks.get(vertexQueriesSet);
-			if (countNow != null) {
-				intersectChunks.put(vertexQueriesSet, countNow + 1);
-			}
-			else {
-				intersectChunks.put(new IntOpenHashSet(vertexQueriesSet), 1);
-			}
-			vertexQueriesSet.clear();
-		}
-
-		// Sort out neglegible small chunks
-		for (IntSet chunk : new ArrayList<>(intersectChunks.keySet())) {
-			if (intersectChunks.get(chunk) < Configuration.QUERY_CUT_CHUNK_MIN_SIZE) {
-				intersectChunks.remove(chunk);
-			}
-		}
-
-		workerStats.IntersectCalcTime += System.nanoTime() - startTimeNano;
-		System.out.println("IntersectCalcTime " + (System.currentTimeMillis() - startTimeMs) + "ms");
-		logger.info("IntersectCalcTime {}ms", (System.currentTimeMillis() - startTimeMs)); // TODO debug
-
-		Map<IntSet, Integer> limitedIntersectChunks = intersectChunks.entrySet().stream()
-				.limit(200) // TODO Config
-				.sorted(Map.Entry.<IntSet, Integer>comparingByValue().reversed())
-				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
-						(e1, e2) -> e1, LinkedHashMap::new));
-		return limitedIntersectChunks;
-	}
-
-
-
 	private Map<IntSet, Integer> calculateQueryIntersectChunksSampled(int samplingFactor) {
 		long startTimeMs = System.currentTimeMillis();
 		long startTimeNano = System.nanoTime();
@@ -1614,7 +1536,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		IntSet vertexQueriesSet = new IntOpenHashSet();
 		for (IntIterator it = allActiveVertices.iterator(); it.hasNext();) {
 			int vertex = it.nextInt();
-			if (rd.nextInt(samplingFactor) != 0) continue;
+			if (samplingFactor > 1 && rd.nextInt(samplingFactor) != 0) continue;
 
 			for (WorkerQuery<V, E, M, Q> query : queriesForQueryCut) {
 				if (query.VerticesEverActive.contains(vertex))
@@ -1643,7 +1565,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 
 		workerStats.IntersectCalcTime += System.nanoTime() - startTimeNano;
-		System.out.println("Sampled IntersectCalcTime " + (System.currentTimeMillis() - startTimeMs) + "ms");
 		logger.info("Sampled IntersectCalcTime {}ms", (System.currentTimeMillis() - startTimeMs)); // TODO debug
 
 		Map<IntSet, Integer> limitedIntersectChunks = intersectChunks.entrySet().stream()
