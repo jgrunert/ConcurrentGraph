@@ -188,11 +188,23 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			if (saveIlsStats) logIlsStep(ilsDistribution);
 		}
 
-		int movedVertices = bestDistribution.calculateMovedVertices();
-		logger.info("+++++++++++++ Stopped deciding after " + i + " ILS iterations in " + (System.currentTimeMillis() - decideStartTime)
-				+ "ms moving "
-				+ movedVertices);
 
+
+		// TODO Test: Unify local queries
+		//		Map<Integer, Double> queryLocalities = bestDistribution.getQueryLoclities().entrySet().stream()
+		//				.sorted(Map.Entry.<Integer, Double>comparingByValue())
+		//				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
+		//						(e1, e2) -> e1, LinkedHashMap::new));
+		//		for (Entry<Integer, Double> query : queryLocalities.entrySet()) {
+		//			if (query.getValue() > 0.5)
+		//				bestDistribution = unifyQueryAtLargestPartition(query.getKey(), workerIds, bestDistribution);
+		//		}
+
+
+		int movedVertices = bestDistribution.calculateMovedVertices();
+		//		logger.info("+++++++++++++ Stopped deciding after " + i + " ILS iterations in " + (System.currentTimeMillis() - decideStartTime)
+		//				+ "ms moving "
+		//				+ movedVertices);
 
 
 		String workerVertsMsg = "workerVertives: ";
@@ -234,7 +246,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				moveDecission.printDecission(ilsLogWriter);
 			}
 			else {
-				String printMsg = "ERROR, no move, result with too high imbalance: " + totalVerticesMoved + " costs: "
+				String printMsg = "ERROR, no move, result with too high imbalance movedVertices: " + totalVerticesMoved + " costs: "
 						+ bestDistribution.getCurrentCosts()
 						+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
 						+ bestDistribution.getAverageTotalVerticesImbalanceFactor();
