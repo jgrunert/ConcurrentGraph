@@ -207,6 +207,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 					bestDistribution.getWorkerTotalVerticesImbalanceFactor(worker) + ", ";
 		}
 		printIlsLog(workerBalanceMsg);
+		printIlsLog("worker query chunks");
+		bestDistribution.printMoveDistribution(ilsLogWriter);
 
 		logIlsStep(bestDistribution);
 		VertexMoveDecision moveDecission;
@@ -222,7 +224,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		else {
 			if (checkActiveVertsOkOrBetter(originalDistribution, bestDistribution)
 					&& checkTotalVertsOkOrBetter(originalDistribution, bestDistribution)) {
-				moveDecission = bestDistribution.toMoveDecision(workerIds);
+				moveDecission = bestDistribution.toMoveDecision(workerIds, QueryKeepLocalThreshold);
 				String printMsg = "Decided move, moves: " + moveDecission.moveMessages + " movedVertices: " + movedVertices + " costs: "
 						+ bestDistribution.getCurrentCosts()
 						+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
@@ -331,6 +333,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		// Find non-keep-local-queries that can be moved
 		queryLocalities = bestDistribution.getQueryLoclities();
+		queryLargestPartitions = bestDistribution.getQueryLargestPartitions();
 		if (saveIlsStats) {
 			printIlsLog("queryLocalities2\t" + queryLocalities);
 		}
@@ -368,7 +371,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			int bestTo = 0;
 			int bestQuery = 0;
 			int bestNumMoved = Integer.MAX_VALUE;
-			double iterInitialCosts = bestDistribution.getCurrentCosts();
+			//double iterInitialCosts = bestDistribution.getCurrentCosts();
 
 			for (Integer queryId : queryIds) {
 				Integer queryLocality = localQueries.get(queryId);

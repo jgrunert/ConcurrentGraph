@@ -356,7 +356,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					long timmmm = System.currentTimeMillis();
 					System.out.println(ownId + " start");
 					for (SendQueryChunkMessage sendVert : globalBarrierSendVerts) {
-						System.out.println(ownId + " send " + sendVert.getChunkQueriesList());
 						sendQueryVerticesToMove(new HashSet<>(sendVert.getChunkQueriesList()), sendVert.getMoveToMachine(),
 								sendVert.getMaxMoveCount());
 					}
@@ -1354,8 +1353,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		verticesSent += verticesToSend.size();
 
 		verticesToMove += verticesToSend.size();
-		logger.debug("Sent {} and skipped {} to {} for query chunk {}",
-				new Object[] { verticesToMove, verticesNotSent, sendToWorker, queryChunk });
+		logger.info("Sent {} and skipped {} to {} for query chunk {}",
+				new Object[] { verticesToMove, verticesNotSent, sendToWorker, queryChunk }); // TODO Debug
 
 		workerStats.MoveSendVertices += verticesSent;
 		workerStats.MoveSendVerticesTime += (System.nanoTime() - startTime);
@@ -1493,23 +1492,35 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		// Remove older and inactive queries from query cut
 		for (int i = 0; i < queriesHistoryList.size(); i++) {
 			WorkerQuery<V, E, M, Q> query = queriesHistoryList.get(i);
-			//double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
+			double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
 			long qAge = (startTimeMs - query.startTime);
-			if (qAge > Configuration.QUERY_CUT_TIME_WINDOW
-			//|| qlocalSuperstepRatio < Configuration.QUERY_CUT_KEEP_MIN_LOCALITY
-			) {
-				queriesHistoryList.remove(i);
-				queriesHistoryMap.remove(query.QueryId);
-				queriesLocalSupersteps.remove(query.QueryId);
-				i--;
+			if (qAge > Configuration.QUERY_CUT_TIME_WINDOW) {
+				if (qlocalSuperstepRatio < 0.8) { // TODO Test
+					System.err.println("REM " + query.QueryId + " " + qlocalSuperstepRatio);
+					queriesHistoryList.remove(i);
+					queriesHistoryMap.remove(query.QueryId);
+					queriesLocalSupersteps.remove(query.QueryId);
+					i--;
+				}
+				else {
+					System.err.println("KEEP " + query.QueryId + " " + qlocalSuperstepRatio);
+				}
 			}
 		}
 		// Remove older if to many queries
-		while (queriesHistoryList.size() > Configuration.QUERY_CUT_MAX_QUERIES && queriesHistoryList.size() > 0) {
-			WorkerQuery<V, E, M, Q> query = queriesHistoryList.get(0);
-			queriesHistoryList.remove(0);
-			queriesHistoryMap.remove(query.QueryId);
-			queriesLocalSupersteps.remove(query.QueryId);
+		for (int i = 0; queriesHistoryList.size() > Configuration.QUERY_CUT_MAX_QUERIES && i < queriesHistoryList.size(); i++) {
+			WorkerQuery<V, E, M, Q> query = queriesHistoryList.get(i);
+			double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
+			if (qlocalSuperstepRatio < 0.8) { // TODO Test
+				System.err.println("REM2 " + query.QueryId + " " + qlocalSuperstepRatio);
+				queriesHistoryList.remove(i);
+				i--;
+				queriesHistoryMap.remove(query.QueryId);
+				queriesLocalSupersteps.remove(query.QueryId);
+			}
+			else {
+				System.err.println("KEEP2 " + query.QueryId + " " + qlocalSuperstepRatio);
+			}
 		}
 
 		//long start2 = System.currentTimeMillis();
@@ -1517,7 +1528,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		// Find all active vertics
 		IntSet allActiveVertices = new IntOpenHashSet();
-		for (WorkerQuery<V, E, M, Q> query : queriesHistoryList) {
+		for (WorkerQuery<V, E, M, Q> query : queriesHistoryMap.values()) {
 			allActiveVertices.addAll(query.VerticesEverActive);
 		}
 
@@ -1527,7 +1538,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			int vertex = it.nextInt();
 			if (samplingFactor > 1 && rd.nextInt(samplingFactor) != 0) continue;
 
-			for (WorkerQuery<V, E, M, Q> query : queriesHistoryList) {
+			for (WorkerQuery<V, E, M, Q> query : queriesHistoryMap.values()) {
 				if (query.VerticesEverActive.contains(vertex))
 					vertexQueriesSet.add(query.QueryId);
 			}

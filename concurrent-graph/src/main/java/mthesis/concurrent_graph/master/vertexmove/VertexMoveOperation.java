@@ -9,6 +9,7 @@ import java.util.Set;
  * @author Jonas Grunert
  *
  */
+@Deprecated
 public class VertexMoveOperation {
 
 	public final Set<Integer> QueryChunk;

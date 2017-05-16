@@ -49,8 +49,7 @@ public class VertexMoveDecision {
 		for (Entry<Integer, List<SendQueryChunkMessage>> sender : WorkerVertSendMsgs.entrySet()) {
 			stream.println(sender.getKey());
 			for (SendQueryChunkMessage sendMsg : sender.getValue()) {
-				stream.println("   " + sendMsg.getChunkQueriesList() + " " + sender.getKey() + "->" + sendMsg.getMoveToMachine() + " "
-						+ sendMsg.getMaxMoveCount());
+				stream.println("   " + sendMsg.getChunkQueriesList() + " " + sender.getKey() + "->" + sendMsg.getMoveToMachine());
 			}
 		}
 	}
