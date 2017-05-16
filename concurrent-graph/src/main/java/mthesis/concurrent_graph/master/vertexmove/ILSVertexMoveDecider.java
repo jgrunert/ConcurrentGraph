@@ -410,9 +410,10 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 								&& checkTotalVertsOkOrBetter(baseDistribution, newDistribution);
 						if (!isValid) continue;
 
-						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts()) ||
-								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
-										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)) {
+						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
+						//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
+						//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
+						) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							bestFrom = fromWorkerId;
@@ -710,6 +711,10 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		ILSVertexMoveDecider decider = new ILSVertexMoveDecider();
 		VertexMoveDecision decission = decider.decide(queryIds, workerQueryChunks, workerTotalVertices);
+		if (decission == null) {
+			System.out.println("No decission");
+			return;
+		}
 		decission.printDecission(System.out);
 	}
 

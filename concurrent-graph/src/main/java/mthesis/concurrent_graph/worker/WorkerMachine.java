@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -48,6 +49,7 @@ import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.communication.UpdateRegisteredVerticesMessage;
 import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.communication.VertexMessageBucket;
+import mthesis.concurrent_graph.util.MiscUtil;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -1223,7 +1225,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		int verticesToMove = 0;
 		int verticesSent = 0;
 		int verticesNotSent = 0;
-		IntSet removeBuffer = new IntOpenHashSet();
 
 		if (queryChunk.isEmpty()) {
 			logger.error("Cannot send vertices for empty queryChunk set");
@@ -1265,19 +1266,27 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 
 		// Find query move vertices
+		//		IntSet removeBuffer = new IntOpenHashSet();
 		// Only vertices that are active in query-chunks
-		IntSet moveVerticesCandidates = new IntOpenHashSet(smallestQuery.VerticesEverActive);
+		//		IntSet moveVerticesCandidates = new IntOpenHashSet(smallestQuery.VerticesEverActive);
+		//		for (Integer qId : chunkQueries) {
+		//			if (qId.equals(smallestQuery.QueryId)) continue;
+		//			WorkerQuery<V, E, M, Q> q = queriesHistoryMap.get(qId);
+		//			removeBuffer.clear();
+		//			for (IntIterator it = moveVerticesCandidates.iterator(); it.hasNext();) {
+		//				int next = it.nextInt();
+		//				if (!q.VerticesEverActive.contains(next))
+		//					removeBuffer.add(next);
+		//			}
+		//			moveVerticesCandidates.removeAll(removeBuffer);
+		//		}
+
+		IntSet moveVerticesCandidates = new IntOpenHashSet();
 		for (Integer qId : chunkQueries) {
-			if (qId.equals(smallestQuery.QueryId)) continue;
 			WorkerQuery<V, E, M, Q> q = queriesHistoryMap.get(qId);
-			removeBuffer.clear();
-			for (IntIterator it = moveVerticesCandidates.iterator(); it.hasNext();) {
-				int next = it.nextInt();
-				if (!q.VerticesEverActive.contains(next))
-					removeBuffer.add(next);
-			}
-			moveVerticesCandidates.removeAll(removeBuffer);
+			moveVerticesCandidates.addAll(q.VerticesEverActive);
 		}
+
 		// Only vertices that are not active in non-query-chunks
 		IntSet moveVertices = new IntOpenHashSet();
 		for (IntIterator it = moveVerticesCandidates.iterator(); it.hasNext();) {
@@ -1402,38 +1411,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 
 	// #################### Others #################### //
-	/**
-	 * Calculates intersections between queries,
-	 */
-	//	private Map<Integer, Map<Integer, Integer>> calculateQueryIntersectsSinceBarrier() {
-	//		long startTime = System.nanoTime();
-	//
-	//		// Create empty query intersect maps
-	//		Map<Integer, Map<Integer, Integer>> allIntersects = new HashMap<>(queryActiveVerticesSinceBarrier.size());
-	//		for (Entry<Integer, IntSet> q : queryActiveVerticesSinceBarrier.entrySet()) {
-	//			Map<Integer, Integer> qIntersects = new HashMap<>(queryActiveVerticesSinceBarrier.size());
-	//			allIntersects.put(q.getKey(), qIntersects);
-	//		}
-	//
-	//		for (Entry<Integer, IntSet> q : queryActiveVerticesSinceBarrier.entrySet()) {
-	//			Map<Integer, Integer> qIntersects = allIntersects.get(q.getKey());
-	//			// Add own count (intersect with itself = own count)
-	//			qIntersects.put(q.getKey(), q.getValue().size());
-	//
-	//			// Calculate intersects with others
-	//			for (Entry<Integer, IntSet> qOther : queryActiveVerticesSinceBarrier.entrySet()) {
-	//				if (qOther.getKey().equals(q.getKey())) continue;
-	//				if (qIntersects.containsKey(qOther)) continue; // Avoids calculating same intersection twice
-	//				int intersection = MiscUtil.getIntersectCount(q.getValue(), qOther.getValue());
-	//				qIntersects.put(qOther.getKey(), intersection);
-	//				allIntersects.get(qOther.getKey()).put(q.getKey(), intersection);
-	//			}
-	//		}
-	//
-	//		workerStats.IntersectCalcTime += System.nanoTime() - startTime;
-	//
-	//		return allIntersects;
-	//	}
 
 	private void sampleWorkerStats() {
 		// Output a sample of vertices on this machine
@@ -1563,6 +1540,20 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 				intersectChunks.put(new IntOpenHashSet(vertexQueriesSet), 1);
 			}
 			vertexQueriesSet.clear();
+		}
+
+		// Limit chunk sizes, merge chunks
+		int maxChunkQueries = 3; // TODO Config
+		List<Integer> chunkQueriesBuffer = new ArrayList<>();
+		for (IntSet chunk : new ArrayList<>(intersectChunks.keySet())) {
+			if (chunk.size() > maxChunkQueries) {
+				chunkQueriesBuffer.clear();
+				chunkQueriesBuffer.addAll(chunk);
+				Collections.sort(chunkQueriesBuffer);
+				IntSet reducedChunk = new IntOpenHashSet(chunkQueriesBuffer.subList(0, maxChunkQueries));
+				int chunkSize = intersectChunks.remove(chunk);
+				intersectChunks.put(reducedChunk, MiscUtil.defaultInt(intersectChunks.get(reducedChunk)) + chunkSize);
+			}
 		}
 
 		// Sort out neglegible small chunks and multiply with samplingFactor

@@ -205,6 +205,7 @@ public class QueryDistribution {
 	private static double calculateCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
 		return calculateQueryPartitionsCosts(queryIds, queryMachines);
 		//return calculateVerticesSeparatedCosts(queryIds, queryMachines);
+		//return calculateCutCosts(queryIds, queryMachines);
 	}
 
 	private static double calculateQueryPartitionsCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
@@ -242,6 +243,20 @@ public class QueryDistribution {
 					if (q != null) {
 						costs += q;
 					}
+				}
+			}
+		}
+		return costs;
+	}
+
+	private static double calculateCutCosts(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
+		double costs = 0;
+		for (Integer queryId : queryIds) { // TODO More efficient
+			for (Entry<Integer, QueryWorkerMachine> machine1 : queryMachines.entrySet()) {
+				if (MiscUtil.defaultLong(machine1.getValue().queryVertices.get(queryId)) <= 0) continue;
+				for (Entry<Integer, QueryWorkerMachine> machine2 : queryMachines.entrySet()) {
+					if (machine1.getKey().equals(machine2.getKey())) continue;
+					costs += MiscUtil.defaultLong(machine2.getValue().queryVertices.get(queryId));
 				}
 			}
 		}
