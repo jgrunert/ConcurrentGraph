@@ -210,6 +210,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				queryClusters.put(query, cluster.getKey());
 			}
 		}
+		List<Integer> clusterIds = new ArrayList<>(queryClusterIntersects.keySet());
+		Collections.sort(clusterIds);
 		if (saveIlsStats) {
 			printIlsLog("query clusters: " + queryClusterIntersects);
 			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> qI : queryClusterIntersects.entrySet()) {
@@ -232,7 +234,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 		// Greedy improve initial distribution
-		bestDistribution = optimizeGreedy(queryIds, workerIds, bestDistribution);
+		bestDistribution = optimizeGreedy(queryIds, workerIds, bestDistribution, clusterIds);
 		if (saveIlsStats) {
 			double costs = bestDistribution.getCurrentCosts();
 			currentlyBestDistributionCosts = costs;
@@ -256,7 +258,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			}
 
 			// Greedy after pertubation
-			ilsDistribution = optimizeGreedy(queryIds, workerIds, ilsDistribution);
+			ilsDistribution = optimizeGreedy(queryIds, workerIds, ilsDistribution, clusterIds);
 
 			// Check if result has better costs and valid
 			boolean isGoodNew = (ilsDistribution.getCurrentCosts() < bestDistribution.getCurrentCosts())
@@ -386,7 +388,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	}
 
 
-	private QueryDistribution optimizeGreedy(Set<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution) {
+	private QueryDistribution optimizeGreedy(Set<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution, List<Integer> clusterIds) {
 		long minActiveVertices = (long) (baseDistribution.workerActiveVertices / workerIds.size() * (1.0 - VertexWorkerActiveImbalance));
 		long maxActiveVertices = Math.min(
 				(long) (baseDistribution.workerActiveVertices / workerIds.size() / (1.0 - VertexWorkerActiveImbalance)),
@@ -397,40 +399,6 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				Long.MAX_VALUE / 4);
 
 		QueryDistribution bestDistribution = baseDistribution.clone();
-
-		// Force local queries
-		//		Map<Integer, Double> sortedQueryLocalities = queryLocalities.entrySet().stream()
-		//				.sorted(Entry.comparingByValue())
-		//				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
-		//						(e1, e2) -> e1, LinkedHashMap::new));
-		//		for (Entry<Integer, Double> query : sortedQueryLocalities.entrySet()) {
-		//			if (query.getValue() > QueryForceLocalThreshold) {
-		//				int targetMachine = bestDistribution.getMachineMaxQueryVertices(query.getKey());
-		//				QueryDistribution newDistribution = unifyQueryAtWorker(query.getKey(), workerIds, targetMachine, bestDistribution);
-		//
-		//				boolean isGoodNew = (newDistribution.getCurrentCosts() < bestDistribution.getCurrentCosts())
-		//						&& checkActiveVertsOkOrBetter(bestDistribution, newDistribution)
-		//						&& checkActiveVertsOkOrBetter(bestDistribution, newDistribution)
-		//						&& checkTotalVertsOkOrBetter(bestDistribution, newDistribution)
-		//						&& checkTotalVertsOkOrBetter(bestDistribution, newDistribution);
-		//				if (query.getValue() >= 1.0 || isGoodNew) {
-		//					if (saveIlsStats) {
-		//						double costs = newDistribution.getCurrentCosts();
-		//						ilsStepsLog.add(new IlsLogItem(costs, latestPertubatedDistributionCosts, currentlyBestDistributionCosts));
-		//					}
-		//					bestDistribution = newDistribution;
-		//					if (saveIlsStats) {
-		//						printIlsLog("Do Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
-		//					}
-		//				}
-		//				else {
-		//					if (saveIlsStats) {
-		//						printIlsLog("No Force query local\t" + query.getKey() + "\t" + query.getValue() + "\t" + targetMachine);
-		//					}
-		//				}
-		//
-		//			}
-		//		}
 
 		// Get query localities
 		Map<Integer, Double> queryLocalities = bestDistribution.getQueryLoclities();
@@ -479,44 +447,44 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			boolean anyImproves = false;
 			int bestFrom = 0;
 			int bestTo = 0;
-			int bestQuery = 0;
+			int bestCluster = 0;
 			int bestNumMoved = Integer.MAX_VALUE;
 			//double iterInitialCosts = bestDistribution.getCurrentCosts();
 
-			for (Integer queryId : queryIds) {
-				Integer queryLocality = localQueries.get(queryId);
+			for (Integer clusterId : clusterIds) {
+				//Integer queryLocality = localQueries.get(queryId);
 
 				for (Integer fromWorkerId : workerIds) {
 					// Dont move from worker if worker has too few vertices afterwards
 					QueryWorkerMachine fromWorker = baseDistribution.getQueryMachines().get(fromWorkerId);
-					long fromWorkerQueryVertices = MiscUtil.defaultLong(fromWorker.queryVertices.get(queryId));
-					if (fromWorkerQueryVertices == 0) continue;
-					if (fromWorker.activeVertices - fromWorkerQueryVertices < minActiveVertices
-							|| fromWorker.totalVertices - fromWorkerQueryVertices < minTotalVertices)
-						continue;
+					//					long fromWorkerQueryVertices = MiscUtil.defaultLong(fromWorker.queryVertices.get(queryId));
+					//					if (fromWorkerQueryVertices == 0) continue;
+					//					if (fromWorker.activeVertices - fromWorkerQueryVertices < minActiveVertices
+					//							|| fromWorker.totalVertices - fromWorkerQueryVertices < minTotalVertices)
+					//						continue;
 
 					for (Integer toWorkerId : workerIds) {
 						if (fromWorkerId == toWorkerId) continue;
 
 						// Dont move to worker if has too many vertices afterwards
 						QueryWorkerMachine toWorker = baseDistribution.getQueryMachines().get(toWorkerId);
-						long toWorkerQueryVertices = MiscUtil.defaultLong(toWorker.queryVertices.get(queryId));
-						if (toWorkerQueryVertices == 0) continue;
-						if (toWorker.activeVertices + toWorkerQueryVertices > maxActiveVertices
-								|| toWorker.totalVertices + toWorkerQueryVertices > maxTotalVertices)
-							continue;
+						//						long toWorkerQueryVertices = MiscUtil.defaultLong(toWorker.queryVertices.get(queryId));
+						//						if (toWorkerQueryVertices == 0) continue;
+						//						if (toWorker.activeVertices + toWorkerQueryVertices > maxActiveVertices
+						//								|| toWorker.totalVertices + toWorkerQueryVertices > maxTotalVertices)
+						//							continue;
 
 						// Only move local queries to their largest partition
-						if (queryLocality != null && !queryLocality.equals(toWorkerId)) continue;
+						//						if (queryLocality != null && !queryLocality.equals(toWorkerId)) continue;
 
 						// Only move smaller to larger partition
-						if (fromWorkerQueryVertices > toWorkerQueryVertices) continue;
+						//						if (fromWorkerQueryVertices > toWorkerQueryVertices) continue;
 
 						// TODO Optimize, neglect cases.
 
 						QueryDistribution newDistribution = bestDistribution.clone();
 						// TODO Move chunks
-						int moved = newDistribution.moveAllQueryVertices(queryId, fromWorkerId, toWorkerId, localQueries);
+						int moved = newDistribution.moveAllClusterVertices(clusterId, fromWorkerId, toWorkerId, localQueries);
 						if (moved == 0) continue;
 
 						boolean isValid = checkActiveVertsOkOrBetter(baseDistribution, newDistribution)
@@ -531,7 +499,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 							anyImproves = true;
 							bestFrom = fromWorkerId;
 							bestTo = toWorkerId;
-							bestQuery = queryId;
+							bestCluster = clusterId;
 							bestNumMoved = moved;
 						}
 					}
@@ -544,7 +512,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 			if (anyImproves) {
 				if (saveIlsStats) {
-					printIlsLog("Improve " + i + " " + bestQuery + " " + bestFrom + "->" + bestTo + " " + bestNumMoved);
+					printIlsLog("Improve " + i + " " + bestCluster + " " + bestFrom + "->" + bestTo + " " + bestNumMoved);
 				}
 			}
 			else {

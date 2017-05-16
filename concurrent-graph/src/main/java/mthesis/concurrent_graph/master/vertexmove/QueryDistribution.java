@@ -153,6 +153,34 @@ public class QueryDistribution {
 		return movedCount;
 	}
 
+
+	/**
+	 * @param queryId
+	 * @param fromWorker
+	 * @param toWorker
+	 * @param localQueries Local queries, can move only to their largest partition.
+	 * @return Number of moved vertices, 0 if no move possible
+	 */
+	public int moveAllClusterVertices(int clusterId, int fromWorkerId, int toWorkerId, Map<Integer, Integer> localQueries) {
+		if (fromWorkerId == toWorkerId) return 0;
+
+		QueryWorkerMachine fromWorker = queryMachines.get(fromWorkerId);
+		QueryWorkerMachine toWorker = queryMachines.get(toWorkerId);
+
+		List<QueryVertexChunk> moved = fromWorker.removeAllClusterVertices(fromWorkerId, clusterId, toWorkerId, localQueries);
+		for (QueryVertexChunk chunk : moved) {
+			toWorker.addQueryChunk(chunk);
+		}
+
+		int movedCount = 0;
+		for (QueryVertexChunk movedQ : moved) {
+			movedCount += movedQ.numVertices;
+		}
+
+		currentCosts = calculateCosts(queryIds, queryMachines);
+		return movedCount;
+	}
+
 	/**
 	 * @return Number of moved vertices, 0 if no move possible
 	 */
@@ -526,15 +554,15 @@ public class QueryDistribution {
 				if (moveDst.getValue().isEmpty()) continue;
 				workerVertSendMsgs.get(moveSrc.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.newBuilder()
-								//.setMaxMoveCount(moveDst.getValue().second)
-								.setMaxMoveCount(Integer.MAX_VALUE)
-								.addAllChunkQueries(moveDst.getValue().keySet())
-								.setMoveToMachine(moveDst.getKey())
-								.build());
+						//.setMaxMoveCount(moveDst.getValue().second)
+						.setMaxMoveCount(Integer.MAX_VALUE)
+						.addAllChunkQueries(moveDst.getValue().keySet())
+						.setMoveToMachine(moveDst.getKey())
+						.build());
 				workerVertRecvMsgs.get(moveDst.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage.newBuilder()
-								.addAllChunkQueries(moveDst.getValue().keySet())
-								.setReceiveFromMachine(moveSrc.getKey()).build());
+						.addAllChunkQueries(moveDst.getValue().keySet())
+						.setReceiveFromMachine(moveSrc.getKey()).build());
 			}
 		}
 
