@@ -204,10 +204,28 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				}
 			}
 		}
+		Map<Integer, Integer> queryClusters = new HashMap<>();
+		for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
+			for (int query : cluster.getValue().first) {
+				queryClusters.put(query, cluster.getKey());
+			}
+		}
 		if (saveIlsStats) {
 			printIlsLog("query clusters: " + queryClusterIntersects);
 			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> qI : queryClusterIntersects.entrySet()) {
 				ilsLogWriter.println("\t" + qI);
+			}
+		}
+
+
+		// Assign chunks to clusters
+		List<Integer> chunkQueries = new ArrayList<>();
+		for (Entry<Integer, QueryWorkerMachine> worker : bestDistribution.getQueryMachines().entrySet()) {
+			for (QueryVertexChunk chunk : worker.getValue().queryChunks) {
+				chunkQueries.clear();
+				chunkQueries.addAll(chunk.queries);
+				Collections.sort(chunkQueries);
+				chunk.clusterId = queryClusters.get(chunkQueries.get(0));
 			}
 		}
 
