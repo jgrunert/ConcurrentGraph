@@ -5,8 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,6 +23,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.MiscUtil;
+import mthesis.concurrent_graph.util.Pair;
 
 public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
@@ -55,6 +58,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		if (queryIds.size() == 0 || workerQueryChunks.size() == 0) return null;
 
 		List<Integer> queryIdsList = new ArrayList<>(queryIds);
+		Collections.sort(queryIdsList);
 		List<Integer> workerIds = new ArrayList<>(workerQueryChunks.keySet());
 		Map<Integer, QueryWorkerMachine> queryMachines = new HashMap<>();
 		for (Entry<Integer, Map<IntSet, Integer>> worker : workerQueryChunks.entrySet()) {
@@ -69,6 +73,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		QueryDistribution originalDistribution = new QueryDistribution(queryIds, queryMachines);
 		QueryDistribution bestDistribution = originalDistribution;
 		System.out.println(bestDistribution.getCurrentCosts());
+
 
 		logger.info("///////////////////////////////// Move decission " + ilsRunNumber);
 		logger.debug("Move decission queries {}", queryIds);
@@ -131,6 +136,81 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				ilsLogWriter.println("  " + worker.getKey() + ": " + worker.getValue().queryVertices);
 			}
 		}
+
+
+
+		// Calculate query intersects
+		// ClusterId->(Queries,Intersects)
+		Map<Integer, Pair<List<Integer>, Map<Integer, Integer>>> queryClusterIntersects = new LinkedHashMap<>();
+		for (Integer queryId : queryIds) {
+			Map<Integer, Integer> intersects = new HashMap<>();
+
+			for (Entry<Integer, Map<IntSet, Integer>> worker : workerQueryChunks.entrySet()) {
+				for (Entry<IntSet, Integer> chunk : worker.getValue().entrySet()) {
+					if (chunk.getKey().contains(queryId)) {
+						for (Integer chunkQuery : chunk.getKey()) {
+							if (chunkQuery.equals(queryId)) continue;
+							intersects.put(chunkQuery, MiscUtil.defaultInt(intersects.get(chunkQuery)) + chunk.getValue());
+						}
+					}
+				}
+			}
+
+			List<Integer> cluster = new ArrayList<>();
+			cluster.add(queryId);
+			queryClusterIntersects.put(queryId, new Pair<>(cluster, intersects));
+		}
+		if (saveIlsStats) {
+			printIlsLog("query intersects: " + queryClusterIntersects);
+			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> qI : queryClusterIntersects.entrySet()) {
+				ilsLogWriter.println("\t" + qI);
+			}
+		}
+
+
+		// Clustering/coloring
+		int clusterCount = workerIds.size() * 2; // TODO Config
+		while (queryClusterIntersects.size() > clusterCount) {
+			// Find largest intersect
+			int largestIntersect = 0;
+			int largestIntersectFrom = 0;
+			int largestIntersectTo = 0;
+			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
+				for (Entry<Integer, Integer> intersect : cluster.getValue().second.entrySet()) {
+					if(intersect.getValue() > largestIntersect) {
+						largestIntersect = intersect.getValue();
+						largestIntersectFrom = cluster.getKey();
+						largestIntersectTo = intersect.getKey();
+					}
+				}
+			}
+
+			// Merge clusters
+			Pair<List<Integer>, Map<Integer, Integer>> clusterFrom = queryClusterIntersects.get(largestIntersectFrom);
+			Pair<List<Integer>, Map<Integer, Integer>> clusterTo = queryClusterIntersects.remove(largestIntersectTo);
+			clusterFrom.first.addAll(clusterTo.first);
+			for(Entry<Integer, Integer> intersect : clusterTo.second.entrySet()) {
+				MiscUtil.mapAdd(clusterFrom.second, intersect.getKey(), intersect.getValue());
+			}
+			clusterFrom.second.remove(largestIntersectFrom);
+			clusterFrom.second.remove(largestIntersectTo);
+
+			// Update other intersect references
+			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
+				if(cluster.getKey().equals(largestIntersectFrom)) continue;
+				int oldIntersect = MiscUtil.defaultInt(cluster.getValue().second.remove(largestIntersectTo));
+				if(oldIntersect > 0) {
+					MiscUtil.mapAdd(cluster.getValue().second, largestIntersectFrom, oldIntersect);
+				}
+			}
+		}
+		if (saveIlsStats) {
+			printIlsLog("query clusters: " + queryClusterIntersects);
+			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> qI : queryClusterIntersects.entrySet()) {
+				ilsLogWriter.println("\t" + qI);
+			}
+		}
+
 
 
 		// Greedy improve initial distribution
@@ -426,9 +506,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						if (!isValid) continue;
 
 						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
-						//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
-						//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
-						) {
+								//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
+								//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
+								) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							bestFrom = fromWorkerId;
@@ -699,6 +779,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	public static void main(String[] args) throws Exception {
 		Map<String, String> overrideConfigs = new HashMap<>();
 		overrideConfigs.put("MASTER_QUERY_MOVE_CALC_TIMEOUT", "999999999");
+		overrideConfigs.put("SaveIlsStats", "true");
 		Configuration.loadConfig("configs\\configuration.properties", overrideConfigs);
 
 		test2Equal();

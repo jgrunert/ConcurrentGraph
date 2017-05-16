@@ -12,7 +12,7 @@ public class Pair<A, B> {
 
 	@Override
 	public String toString() {
-		return "Pair[" + first + "," + second + "]";
+		return "[" + first + "," + second + "]";
 	}
 
 	protected static boolean equals(Object x, Object y) {

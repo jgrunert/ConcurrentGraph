@@ -151,4 +151,13 @@ public class MiscUtil {
 	public static double defaultDouble(Double value) {
 		return (value != null) ? (double) value : 0.0;
 	}
+
+
+	public static <K> void mapAdd(Map<K, Integer> map, K key, int add) {
+		map.put(key, defaultInt(map.get(key)) + add);
+	}
+
+	public static <K> void mapAdd(Map<K, Long> map, K key, long add) {
+		map.put(key, defaultLong(map.get(key)) + add);
+	}
 }
