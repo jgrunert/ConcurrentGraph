@@ -571,6 +571,14 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 		//logger.info("#+-------------------------------------------------");
 
+		double localSuperstepRatio = 0;
+		long lsrTimeWindow = System.currentTimeMillis() - Configuration.WORKER_QUERY_INTERSECT_INTERVAL;
+		for (List<Pair<Long, WorkerStats>> workerSamples : workerStats.values()) {
+			for (Pair<Long, WorkerStats> stat : workerSamples) {
+
+			}
+		}
+
 		if (vertexMoveDeciderService.hasNewDecission()) {
 			VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();
 			if (!globalBarrierPlanned) {
