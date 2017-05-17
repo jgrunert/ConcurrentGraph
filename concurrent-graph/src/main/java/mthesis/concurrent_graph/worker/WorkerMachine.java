@@ -71,6 +71,10 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
 		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
+	public long ActiveVertsTimeWindow = Configuration.getPropertyLongDefault("ActiveVertsTimeWindow", 60000);
+	public int IntersectSamplingFactor = Configuration.getPropertyIntDefault("IntersectSamplingFactor", 100);
+	public int IntersectChunkLimit = Configuration.getPropertyIntDefault("IntersectChunkLimit", 200);
+
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
 	private final String outputDir;
@@ -428,7 +432,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					// Next superstep. Compute and Messaging (done by vertices)
 					logger.trace("Worker start superstep compute {}:{}", new Object[] { queryId, superstepNo });
 
-					// First frame: Call all vertices, second frame only active vertices TODO more flexible, call single vertex
+					// First frame: Call all vertices, second frame only active vertices
 					startTime = System.nanoTime();
 
 					do {
@@ -472,7 +476,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						// Check if local execution possible
 						if (activeQuery.localExecution) {
-							// TODO Continue running in local mode
 							if (activeQuery.ActiveVerticesNext.isEmpty()) {
 								// Query local and no more vertices active - finished
 								logger.debug("No more vertices active while local query execution {}:{}",
@@ -522,7 +525,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				if (Configuration.VERTEX_BARRIER_MOVE_ENABLED &&
 						(System.currentTimeMillis() - lastSendMasterQueryIntersects) >= Configuration.WORKER_QUERY_INTERSECT_INTERVAL) {
-					Map<IntSet, Integer> intersectsSampled = calculateQueryIntersectChunksSampled(10);// TODO Config
+					Map<IntSet, Integer> intersectsSampled = calculateQueryIntersectChunksSampled(IntersectSamplingFactor);
 					MessageEnvelope msg = ControlMessageBuildUtil.Build_Worker_QueryVertexChunks(ownId, intersectsSampled,
 							activeQueries.keySet(),
 							queriesLocalSupersteps);
@@ -1477,10 +1480,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		workerStats.ActiveVertices = activeVertices;
 		workerStats.WorkerVertices = localVertices.size();
 
-		// TODO Rather slow
-		int activeVertsTimeWindow = 60000; // TODO Config
 		long timeNow = System.currentTimeMillis();
-		long windowLimit = timeNow - activeVertsTimeWindow;
+		long windowLimit = timeNow - ActiveVertsTimeWindow;
 		long windowActiveVerts = 0;
 		for (AbstractVertex<V, E, M, Q> vert : localVertices.values()) {
 			if (vert.lastSuperstepTime >= windowLimit) windowActiveVerts++;
@@ -1507,7 +1508,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			//double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
 			long qAge = (startTimeMs - query.startTime);
 			if (qAge > Configuration.QUERY_CUT_TIME_WINDOW) {
-				//				if (qlocalSuperstepRatio < 0.8) { // TODO Test
+				//				if (qlocalSuperstepRatio < 0.8) {
 				//System.err.println("REM " + query.QueryId + " " + qlocalSuperstepRatio);
 				queriesHistoryList.remove(i);
 				queriesHistoryMap.remove(query.QueryId);
@@ -1523,7 +1524,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		for (int i = 0; queriesHistoryList.size() > Configuration.QUERY_CUT_MAX_QUERIES && i < queriesHistoryList.size(); i++) {
 			WorkerQuery<V, E, M, Q> query = queriesHistoryList.get(i);
 			//double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
-			//			if (qlocalSuperstepRatio < 0.8) { // TODO Test
+			//			if (qlocalSuperstepRatio < 0.8) {
 			//System.err.println("REM2 " + query.QueryId + " " + qlocalSuperstepRatio);
 			queriesHistoryList.remove(i);
 			i--;
@@ -1565,20 +1566,6 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			vertexQueriesSet.clear();
 		}
 
-		// Limit chunk sizes, merge chunks
-		//		int maxChunkQueries = 3; // TODO Config
-		//		List<Integer> chunkQueriesBuffer = new ArrayList<>();
-		//		for (IntSet chunk : new ArrayList<>(intersectChunks.keySet())) {
-		//			if (chunk.size() > maxChunkQueries) {
-		//				chunkQueriesBuffer.clear();
-		//				chunkQueriesBuffer.addAll(chunk);
-		//				Collections.sort(chunkQueriesBuffer);
-		//				IntSet reducedChunk = new IntOpenHashSet(chunkQueriesBuffer.subList(0, maxChunkQueries));
-		//				int chunkSize = intersectChunks.remove(chunk);
-		//				intersectChunks.put(reducedChunk, MiscUtil.defaultInt(intersectChunks.get(reducedChunk)) + chunkSize);
-		//			}
-		//		}
-
 		// Sort out neglegible small chunks and multiply with samplingFactor
 		for (IntSet chunk : new ArrayList<>(intersectChunks.keySet())) {
 			int chunkSize = intersectChunks.get(chunk) * samplingFactor;
@@ -1592,7 +1579,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		// Limit chunks
 		Map<IntSet, Integer> limitedIntersectChunks = intersectChunks.entrySet().stream()
-				.limit(200) // TODO Config
+				.limit(IntersectChunkLimit)
 				.sorted(Map.Entry.<IntSet, Integer>comparingByValue().reversed())
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
 						(e1, e2) -> e1, LinkedHashMap::new));

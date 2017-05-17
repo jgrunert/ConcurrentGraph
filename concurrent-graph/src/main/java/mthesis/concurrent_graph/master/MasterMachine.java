@@ -71,8 +71,14 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private static final boolean localQueryExecution = Configuration.getPropertyBoolDefault("LocalQueryExecution", true);
 	private static final boolean queryGlobalBarrier = Configuration.getPropertyBoolDefault("QueryGlobalBarrier", false);
 
+	private final boolean EnableQueryStats = Configuration.getPropertyBoolDefault("EnableQueryStats", true);
+	private final long LocalSuperstepTimeWindow = Configuration.getPropertyLongDefault("LocalSuperstepTimeWindow", 40000);
+	private final double LsruExtraShotsLow = Configuration.getPropertyDoubleDefault("LsruExtraShotsLow", 0.3);
+	private final double LsruExtraShotsDeltaThreshNeg = Configuration.getPropertyDoubleDefault("LsruExtraShotsDeltaThreshNeg", 0.3);
+	private final double LsruExtraShotsDeltaThreshPos = Configuration.getPropertyDoubleDefault("LsruExtraShotsDeltaThreshPos", 0.3);
+	private final int LsruExtraShots = Configuration.getPropertyIntDefault("LsruExtraShots", 3);
+
 	// Query logging for later evaluation
-	private final boolean enableQueryStats = true; // TODO Config
 	private final String queryStatsDir;
 	private final Map<Integer, List<SortedMap<Integer, Q>>> queryStatsStepMachines = new HashMap<>();
 	private final Map<Integer, List<Q>> queryStatsSteps = new HashMap<>();
@@ -102,15 +108,12 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	/** Queries that are ready for the next superstep.
 	 *  The next superstep wil be started once all active queries are ready. */
 	private final Set<MasterQuery<Q>> queriesReadyForNextStep = new HashSet<>();
-	@SuppressWarnings("unused") // TODO
-	private final Set<Integer> barrierDelayedQueryStarts = new HashSet<>();
 	private VertexMoveDecision moveDecission = null;
 
 	private final VertexMoveDeciderService vertexMoveDeciderService;
 
 	private final Map<Integer, Long> latestWorkerTotalVertices = new HashMap<>();
 	private final Map<Integer, Long> latestWorkerActiveVerticesWindows = new HashMap<>();
-	private double localSuperstepsRatio = 0;
 	private double localSuperstepsRatioUnique = 0;
 	private double lastQMoveLSRU = 0;
 	private int remainingLsruExtraShots = 1;
@@ -203,7 +206,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			}
 		}
 
-		if (enableQueryStats) {
+		if (EnableQueryStats) {
 			queryStatsStepMachines.put(query.QueryId, new ArrayList<>());
 			queryStatsSteps.put(query.QueryId, new ArrayList<>());
 			queryStatsStepTimes.put(query.QueryId, new ArrayList<>());
@@ -368,7 +371,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 					double lsrSupersteps = 0;
 					double lsrLocalSupersteps = 0;
-					long lsrTimeWindow = System.currentTimeMillis() - masterStartTimeMs - Configuration.WORKER_QUERY_INTERSECT_INTERVAL * 4; // TODO Config
+					long lsrTimeWindow = System.currentTimeMillis() - masterStartTimeMs - LocalSuperstepTimeWindow;
 					for (List<Pair<Long, WorkerStats>> workerSamples : workerStats.values()) {
 						for (Pair<Long, WorkerStats> stat : workerSamples) {
 							if (stat.first >= lsrTimeWindow) {
@@ -379,7 +382,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					}
 					double lsrNonlocalSuperstepsUnique = (lsrSupersteps - lsrLocalSupersteps) / workerIds.size();
 					double lsrSuperstepsUnique = lsrNonlocalSuperstepsUnique + lsrLocalSupersteps;
-					localSuperstepsRatio = lsrSupersteps > 0 ? (double) lsrLocalSupersteps / lsrSupersteps : 0;
 					localSuperstepsRatioUnique = lsrSupersteps > 0 ? (double) lsrLocalSupersteps / lsrSuperstepsUnique : 0;
 				}
 			}
@@ -394,7 +396,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				msgActiveQuery.aggregateQuery(msgQueryOnWorker, controlMsg.getSrcMachine());
 
 				// Log worker superstep stats
-				if (enableQueryStats && controlMsg.getSuperstepNo() >= 0) {
+				if (EnableQueryStats && controlMsg.getSuperstepNo() >= 0) {
 					List<SortedMap<Integer, Q>> queryStepList = queryStatsStepMachines.get(msgQueryOnWorker.QueryId);
 					if (queryStepList != null) {
 						SortedMap<Integer, Q> queryStepWorkerMap;
@@ -438,7 +440,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					int superstepNo = controlMsg.getSuperstepNo();
 
 					// Log query superstep stats
-					if (enableQueryStats && superstepNo >= 0 && queryStatsSteps != null && msgActiveQuery != null
+					if (EnableQueryStats && superstepNo >= 0 && queryStatsSteps != null && msgActiveQuery != null
 							&& msgQueryOnWorker != null) {
 						List<Q> step = queryStatsSteps.get(msgQueryOnWorker.QueryId);
 						if (step != null) {
@@ -477,7 +479,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 								+ (System.nanoTime() - msgActiveQuery.StartTime) / 1000000 + "ms");
 
 						// Log query total stats
-						if (enableQueryStats) {
+						if (EnableQueryStats) {
 							queryStatsTotals.put(msgQueryOnWorker.QueryId, msgActiveQuery.QueryTotalAggregator);
 						}
 					}
@@ -598,21 +600,22 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 		if (vertexMoveDeciderService.hasNewDecission()) {
 			double delta = localSuperstepsRatioUnique - lastQMoveLSRU;
-			boolean lsruThreshold = localSuperstepsRatioUnique < 0.3 || delta < -0.05 || delta > 0.02;
-			if (lsruThreshold || remainingLsruExtraShots > 0) { // TODO Config
-				System.err.println("Start QMove: " + localSuperstepsRatioUnique + " last " + lastQMoveLSRU + " delta " + delta);
+			boolean lsruThreshold = localSuperstepsRatioUnique < LsruExtraShotsLow
+					|| delta < LsruExtraShotsDeltaThreshNeg || delta > LsruExtraShotsDeltaThreshPos;
+			if (lsruThreshold || remainingLsruExtraShots > 0) {
+				System.err.println("Start QMove: " + localSuperstepsRatioUnique + " last " + lastQMoveLSRU + " delta " + delta);//TODO Log
 
 				// Allow extra shot of one move wasnt successful
 				if (lsruThreshold) {
 					lastQMoveLSRU = localSuperstepsRatioUnique;
-					remainingLsruExtraShots = 3; // TODO Config
+					remainingLsruExtraShots = LsruExtraShots;
 				}
 				else {
 					remainingLsruExtraShots--;
-					System.err.println("Used LsruExtraShot, remaining " + remainingLsruExtraShots);
+					System.err.println("Used LsruExtraShot, remaining " + remainingLsruExtraShots);//TODO Log
 				}
 
-				VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();//TODO Log.info
+				VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();
 				if (!globalBarrierPlanned) {
 					if (newMoveDecission != null) {
 						// New move decision
@@ -676,7 +679,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			queryActiveWorkers = new HashSet<>(queryToStart.ActiveWorkers);
 		else queryActiveWorkers = new HashSet<>(workerIds);
 
-		// TODO Query stat and master/worker stat: Active workers
 		logger.trace("Next superstep {}:{} with {}/{} {}", new Object[] { queryToStart.BaseQuery.QueryId,
 				queryToStart.StartedSuperstepNo, queryActiveWorkers.size(), workerIds.size(), queryActiveWorkers });
 
@@ -741,7 +743,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private void globalBarrierFinished() {
 		logger.info("Global barrier finished");
 		startReadyQueriesSupersteps();
-		// TODO Delayed query starts
 	}
 
 	/**
@@ -987,7 +988,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	}
 
 	private void saveQueryStats() {
-		if (!enableQueryStats) return;
+		if (!EnableQueryStats) return;
 		StringBuilder sb = new StringBuilder();
 
 		// Query times in milliseconds. Step time is how long a step took, worker time is the time workers spent calculating.
@@ -1035,7 +1036,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 					for (int i = 0; i < querySteps.getValue().size(); i++) {
 						Q step = querySteps.getValue().get(i).get(workerId);
-						if (step == null) continue; // TODO Missing steps when doing localmode
+						if (step == null) continue; // Missing steps when doing localmode
 
 						sb.append(step.getActiveVertices());
 						sb.append(';');
