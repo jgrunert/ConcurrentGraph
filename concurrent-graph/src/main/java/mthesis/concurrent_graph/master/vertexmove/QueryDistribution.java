@@ -405,47 +405,6 @@ public class QueryDistribution {
 		}
 	}
 
-	//	public void printMoveDecissions() {
-	//		for (Entry<VertexMoveOperation, Integer> moveOperationEntry : moveOperationsSoFar.entrySet()) {
-	//			VertexMoveOperation moveOperation = moveOperationEntry.getKey();
-	//			System.out.println(moveOperation.QueryId + ": " + moveOperation.FromMachine + "->" + moveOperation.ToMachine + " "
-	//					+ moveOperationEntry.getValue());
-	//		}
-	//	}
-
-	//	public VertexMoveDecision toMoveDecision(List<Integer> workerIds) {
-	//		Map<Integer, List<SendQueryChunkMessage>> workerVertSendMsgs = new HashMap<>();
-	//		Map<Integer, List<ReceiveQueryChunkMessage>> workerVertRecvMsgs = new HashMap<>();
-	//		for (int workerId : workerIds) {
-	//			workerVertSendMsgs.put(workerId, new ArrayList<>());
-	//			workerVertRecvMsgs.put(workerId, new ArrayList<>());
-	//		}
-	//
-	//		// Find all chunks that are not on their home machines
-	//		Set<VertexMoveOperation> allMoves = new HashSet<>();
-	//		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-	//			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
-	//				if (chunk.homeMachine != machine.getKey()) {
-	//					allMoves.add(new VertexMoveOperation(chunk.queries, chunk.numVertices, chunk.homeMachine, machine.getKey()));
-	//				}
-	//			}
-	//		}
-	//
-	//		for (VertexMoveOperation moveOperation : allMoves) {
-	//			workerVertSendMsgs.get(moveOperation.FromMachine).add(
-	//					Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.newBuilder()
-	//							.setMaxMoveCount(moveOperation.ChunkVertices)
-	//							.addAllChunkQueries(moveOperation.QueryChunk)
-	//							.setMoveToMachine(moveOperation.ToMachine)
-	//							.build());
-	//			workerVertRecvMsgs.get(moveOperation.ToMachine).add(
-	//					Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage.newBuilder()
-	//							.addAllChunkQueries(moveOperation.QueryChunk)
-	//							.setReceiveFromMachine(moveOperation.FromMachine).build());
-	//		}
-	//
-	//		return new VertexMoveDecision(workerVertSendMsgs, workerVertRecvMsgs);
-	//	}
 
 	public VertexMoveDecision toMoveDecision(List<Integer> workerIds, double QueryKeepLocalThreshold) {
 		Map<Integer, Double> queryLocalities = getQueryLoclities();

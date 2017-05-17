@@ -196,10 +196,11 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		//			if (queryClusterIntersects.size() <= clusterCount) break;
 		while (clusters.size() > clusterCount) {
 
-			//			printIlsLog("cluster intersects: ");
-			//			for (QueryCluster c : clusters.values()) {
-			//				ilsLogWriter.println("\t" + c.id + " " + c.intersects);
-			//			}
+			// TODO Testcode
+			printIlsLog("clusters: ");
+			for (QueryCluster c : clusters.values()) {
+				ilsLogWriter.println("\t" + c + "\t" + c.vertices + "\t" + c.intersects);
+			}
 
 			// Merge largest cluster intersect
 			Integer clusterIdA = 0;
@@ -288,24 +289,42 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		// Assign chunks to clusters
 		Map<Integer, Double> chunkClusterScores = new HashMap<>();
+		int multiClusterChunks = 0;
+		int chunkCount = 0;
 		for (Entry<Integer, QueryWorkerMachine> worker : bestDistribution.getQueryMachines().entrySet()) {
+			boolean multiClusterChunk = false;
 			for (QueryVertexChunk chunk : worker.getValue().queryChunks) {
 				chunkClusterScores.clear();
 				double bestClusterScore = 0;
 				int bestCluster = 0;
+				int cluster0 = -1;
 				for (int chunkQuery : chunk.queries) {
 					int clusterID = queryClusterIds.get(chunkQuery);
-					QueryCluster cluster = clusters.get(clusterID);
-					double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0 / cluster.queries.size());
+					//					QueryCluster cluster = clusters.get(clusterID);
+					//double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0 / cluster.queries.size());
+					double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0);
 					if (score > bestClusterScore) {
 						bestClusterScore = score;
 						bestCluster = clusterID;
 					}
+
+					if(cluster0 == -1) cluster0 = clusterID;
+					else{
+						if(cluster0 != clusterID)
+							multiClusterChunk = true;
+					}
 				}
 
 				chunk.clusterId = bestCluster;
+				chunkCount += chunk.numVertices;
+				if (multiClusterChunk) {
+					multiClusterChunks += chunk.numVertices;
+					//chunk.clusterId = -1;
+				}
 			}
 		}
+		System.err.println("multiClusterChunks: " + multiClusterChunks  + "/" +chunkCount + " " + ((double)multiClusterChunks / chunkCount));
+		printIlsLog("multiClusterChunks: " + multiClusterChunks  + "/" +chunkCount + " " + ((double)multiClusterChunks / chunkCount));
 
 
 
