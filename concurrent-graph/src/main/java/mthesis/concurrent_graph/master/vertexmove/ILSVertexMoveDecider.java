@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,6 +142,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		// Calculate query intersects
 		// ClusterId->(Queries,Intersects)
+		Map<Integer, Integer> queryClusters = new HashMap<>();
 		Map<Integer, Pair<List<Integer>, Map<Integer, Integer>>> queryClusterIntersects = new LinkedHashMap<>();
 		for (Integer queryId : queryIds) {
 			Map<Integer, Integer> intersects = new HashMap<>();
@@ -159,62 +161,100 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			List<Integer> cluster = new ArrayList<>();
 			cluster.add(queryId);
 			queryClusterIntersects.put(queryId, new Pair<>(cluster, intersects));
+			queryClusters.put(queryId, queryId);
 		}
 		if (saveIlsStats) {
-			printIlsLog("query intersects: " + queryClusterIntersects);
+			printIlsLog("query intersects: ");
 			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> qI : queryClusterIntersects.entrySet()) {
 				ilsLogWriter.println("\t" + qI);
 			}
 		}
 
 
-		// Clustering/coloring
-		int clusterCount = workerIds.size() * 2; // TODO Config
-		while (queryClusterIntersects.size() > clusterCount) {
-			// Find largest intersect
-			int largestIntersect = 0;
-			int largestIntersectFrom = 0;
-			int largestIntersectTo = 0;
-			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
-				for (Entry<Integer, Integer> intersect : cluster.getValue().second.entrySet()) {
-					if(intersect.getValue() > largestIntersect) {
-						largestIntersect = intersect.getValue();
-						largestIntersectFrom = cluster.getKey();
-						largestIntersectTo = intersect.getKey();
-					}
-				}
+		// Clustering/merging
+		Map<IntSet, Double> clusterIntersects = new HashMap<>();
+		for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
+			for (Entry<Integer, Integer> intersect : cluster.getValue().second.entrySet()) {
+				IntSet intersectQueries = new IntOpenHashSet(2);
+				int q1 = cluster.getKey();
+				int q2 = intersect.getKey();
+				intersectQueries.add(q1);
+				intersectQueries.add(q2);
+				int intersectSize = intersect.getValue();
+				long queriesSize = bestDistribution.queryVertices.get(q1) + bestDistribution.queryVertices.get(q2) / 2;
+				clusterIntersects.put(intersectQueries, (double) intersectSize / queriesSize);
+			}
+		}
+		LinkedHashMap<IntSet, Double> clusterIntersectsSorted = clusterIntersects.entrySet().stream()
+				.sorted(Map.Entry.<IntSet, Double>comparingByValue().reversed())
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
+						(e1, e2) -> e1, LinkedHashMap::new));
+		printIlsLog("clusterIntersectsSorted: " + clusterIntersectsSorted);
+		printIlsLog("queryClusterIntersects: " + queryClusterIntersects);
+
+		int clusterCount = workerIds.size() * 4; // TODO Config
+		for (Entry<IntSet, Double> mergeIntersect : clusterIntersectsSorted.entrySet()) {
+			if (queryClusterIntersects.size() <= clusterCount) break;
+
+			// Merge largest intersect
+			int largestIntersectA = -1;
+			int largestIntersectB = -1;
+			for (int c : mergeIntersect.getKey()) {
+				if (largestIntersectA == -1) largestIntersectA = c;
+				else largestIntersectB = c;
 			}
 
-			// Merge clusters
-			Pair<List<Integer>, Map<Integer, Integer>> clusterFrom = queryClusterIntersects.get(largestIntersectFrom);
-			Pair<List<Integer>, Map<Integer, Integer>> clusterTo = queryClusterIntersects.remove(largestIntersectTo);
-			clusterFrom.first.addAll(clusterTo.first);
-			for(Entry<Integer, Integer> intersect : clusterTo.second.entrySet()) {
-				MiscUtil.mapAdd(clusterFrom.second, intersect.getKey(), intersect.getValue());
+			int clusterIdA = queryClusters.get(largestIntersectA);
+			int clusterIdB = queryClusters.get(largestIntersectB);
+
+			if (clusterIdA == clusterIdB) {
+				continue;
 			}
-			clusterFrom.second.remove(largestIntersectFrom);
-			clusterFrom.second.remove(largestIntersectTo);
+
+			//			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
+			//				for (Entry<Integer, Integer> intersect : cluster.getValue().second.entrySet()) {
+			//					if (intersect.getValue() > largestIntersect) {
+			//						largestIntersect = intersect.getValue();
+			//						largestIntersectFrom = cluster.getKey();
+			//						largestIntersectTo = intersect.getKey();
+			//					}
+			//				}
+			//			}
+
+			// Merge clusters
+			Pair<List<Integer>, Map<Integer, Integer>> clusterA = queryClusterIntersects.get(clusterIdA);
+			Pair<List<Integer>, Map<Integer, Integer>> clusterB = queryClusterIntersects.remove(clusterIdB);
+
+
+			clusterA.first.addAll(clusterB.first);
+			for (int mergedQuery : clusterB.first) {
+				queryClusters.put(mergedQuery, clusterIdA);
+			}
+			for (Entry<Integer, Integer> intersect : clusterB.second.entrySet()) {
+				MiscUtil.mapAdd(clusterA.second, intersect.getKey(), intersect.getValue());
+			}
+			clusterA.second.remove(largestIntersectA);
+			clusterA.second.remove(largestIntersectB);
 
 			// Update other intersect references
 			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
-				if(cluster.getKey().equals(largestIntersectFrom)) continue;
-				int oldIntersect = MiscUtil.defaultInt(cluster.getValue().second.remove(largestIntersectTo));
-				if(oldIntersect > 0) {
-					MiscUtil.mapAdd(cluster.getValue().second, largestIntersectFrom, oldIntersect);
+				if (cluster.getKey().equals(largestIntersectA)) continue;
+				int oldIntersect = MiscUtil.defaultInt(cluster.getValue().second.remove(largestIntersectB));
+				if (oldIntersect > 0) {
+					MiscUtil.mapAdd(cluster.getValue().second, largestIntersectA, oldIntersect);
 				}
 			}
 		}
-		Map<Integer, Integer> queryClusters = new HashMap<>();
-		for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
-			for (int query : cluster.getValue().first) {
-				queryClusters.put(query, cluster.getKey());
-			}
-		}
+
 		List<Integer> clusterIds = new ArrayList<>(queryClusterIntersects.keySet());
 		Collections.sort(clusterIds);
 		if (saveIlsStats) {
-			printIlsLog("query clusters: " + queryClusterIntersects);
+			printIlsLog("clusters: ");
 			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> qI : queryClusterIntersects.entrySet()) {
+				ilsLogWriter.println("\t" + qI.getKey() + ": " + qI.getValue().first);
+			}
+			printIlsLog("query clusters: ");
+			for (Entry<Integer, Integer> qI : queryClusters.entrySet()) {
 				ilsLogWriter.println("\t" + qI);
 			}
 		}
@@ -234,7 +274,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 		// Greedy improve initial distribution
-		bestDistribution = optimizeGreedy(queryIds, workerIds, bestDistribution, clusterIds);
+		bestDistribution =
+
+				optimizeGreedy(queryIds, workerIds, bestDistribution, clusterIds);
 		if (saveIlsStats) {
 			double costs = bestDistribution.getCurrentCosts();
 			currentlyBestDistributionCosts = costs;
@@ -388,7 +430,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	}
 
 
-	private QueryDistribution optimizeGreedy(Set<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution, List<Integer> clusterIds) {
+	private QueryDistribution optimizeGreedy(Set<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution,
+			List<Integer> clusterIds) {
 		long minActiveVertices = (long) (baseDistribution.workerActiveVertices / workerIds.size() * (1.0 - VertexWorkerActiveImbalance));
 		long maxActiveVertices = Math.min(
 				(long) (baseDistribution.workerActiveVertices / workerIds.size() / (1.0 - VertexWorkerActiveImbalance)),
@@ -400,34 +443,120 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		QueryDistribution bestDistribution = baseDistribution.clone();
 
-		// Get query localities
-		Map<Integer, Double> queryLocalities = bestDistribution.getQueryLoclities();
-		Map<Integer, Integer> queryLargestPartitions = bestDistribution.getQueryLargestPartitions();
-		if (saveIlsStats) {
-			printIlsLog("queryVertices\t" + bestDistribution.queryVertices);
-			printIlsLog("queryLocalities\t" + queryLocalities);
-			printIlsLog("queryLargestPartitions\t" + queryLargestPartitions);
+
+		//		// Get query localities
+		//		Map<Integer, Double> queryLocalities = bestDistribution.getQueryLoclities();
+		//		Map<Integer, Integer> queryLargestPartitions = bestDistribution.getQueryLargestPartitions();
+		//		if (saveIlsStats) {
+		//			printIlsLog("queryVertices\t" + bestDistribution.queryVertices);
+		//			printIlsLog("queryLocalities\t" + queryLocalities);
+		//			printIlsLog("queryLargestPartitions\t" + queryLargestPartitions);
+		//		}
+		//
+		//		// Find non-keep-local-queries that can be moved
+		//		Map<Integer, Integer> localQueries = new HashMap<>(); // Queries with high locality (key) and their largest partition (value)
+		//		IntSet nonlocalQueries = new IntOpenHashSet();
+		//		for (Entry<Integer, Double> query : queryLocalities.entrySet()) {
+		//			if (query.getValue() > QueryKeepLocalThreshold) {
+		//				localQueries.put(query.getKey(), queryLargestPartitions.get(query.getKey()));
+		//			}
+		//			else {
+		//				nonlocalQueries.add(query.getKey());
+		//			}
+		//		}
+		//		if (saveIlsStats) {
+		//			printIlsLog("nonlocalQueries\t" + nonlocalQueries);
+		//			printIlsLog("localQueries\t" + localQueries);
+		//			String msg = ("workerBalances\t");
+		//			for (int worker : workerIds) {
+		//				msg += (worker + ": "
+		//						+ (double) ((int) (baseDistribution.getWorkerActiveVerticesImbalanceFactor(worker) * 100)) / 100 + "/"
+		//						+ (double) ((int) (baseDistribution.getWorkerTotalVerticesImbalanceFactor(worker) * 100)) / 100 + " ");
+		//			}
+		//			printIlsLog(msg);
+		//		}
+
+		//		// Find non-keep-local-queries that can be moved
+		//				Map<Integer, Integer> localQueries = new HashMap<>(); // Queries with high locality (key) and their largest partition (value)
+		//				IntSet nonlocalQueries = new IntOpenHashSet();
+		//				for (Entry<Integer, Double> query : queryLocalities.entrySet()) {
+		//					if (query.getValue() > QueryKeepLocalThreshold) {
+		//						localQueries.put(query.getKey(), queryLargestPartitions.get(query.getKey()));
+		//					}
+		//					else {
+		//						nonlocalQueries.add(query.getKey());
+		//					}
+		//				}
+		//				if (saveIlsStats) {
+		//					printIlsLog("nonlocalQueries\t" + nonlocalQueries);
+		//					printIlsLog("localQueries\t" + localQueries);
+		//					String msg = ("workerBalances\t");
+		//					for (int worker : workerIds) {
+		//						msg += (worker + ": "
+		//								+ (double) ((int) (baseDistribution.getWorkerActiveVerticesImbalanceFactor(worker) * 100)) / 100 + "/"
+		//								+ (double) ((int) (baseDistribution.getWorkerTotalVerticesImbalanceFactor(worker) * 100)) / 100 + " ");
+		//					}
+		//					printIlsLog(msg);
+		//				}
+
+
+
+		// Get cluster localities
+		Map<Integer, Map<Integer, Integer>> clusterPartitions = new HashMap<>();
+		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
+			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
+				Map<Integer, Integer> clusterVertCounts = clusterPartitions.get(chunk.clusterId);
+				if (clusterVertCounts == null) {
+					clusterVertCounts = new HashMap<>();
+					clusterPartitions.put(chunk.clusterId, clusterVertCounts);
+				}
+				MiscUtil.mapAdd(clusterVertCounts, machine.getKey(), chunk.numVertices);
+			}
 		}
 
-		// Find non-keep-local-queries that can be moved
-		queryLocalities = bestDistribution.getQueryLoclities();
-		queryLargestPartitions = bestDistribution.getQueryLargestPartitions();
-		if (saveIlsStats) {
-			printIlsLog("queryLocalities2\t" + queryLocalities);
+		Map<Integer, Integer> clusterVertices = new HashMap<>();
+		Map<Integer, Double> clusterLocalities = new HashMap<>();
+		Map<Integer, Integer> clusterLargestPartitions = new HashMap<>();
+		for (Entry<Integer, Map<Integer, Integer>> clusterP : clusterPartitions.entrySet()) {
+			int clusterId = clusterP.getKey();
+			int largestSize = 0;
+			int largest = 0;
+			int totalSize = 0;
+			for (Entry<Integer, Integer> p : clusterP.getValue().entrySet()) {
+				totalSize += p.getValue();
+				if (p.getValue() > largestSize) {
+					largestSize = p.getValue();
+					largest = p.getKey();
+				}
+			}
+			clusterVertices.put(clusterId, totalSize);
+			clusterLargestPartitions.put(clusterId, largest);
+			clusterLocalities.put(clusterId, (double) largestSize / totalSize);
 		}
-		Map<Integer, Integer> localQueries = new HashMap<>(); // Queries with high locality (key) and their largest partition (value)
-		IntSet nonlocalQueries = new IntOpenHashSet();
-		for (Entry<Integer, Double> query : queryLocalities.entrySet()) {
-			if (query.getValue() > QueryKeepLocalThreshold) {
-				localQueries.put(query.getKey(), queryLargestPartitions.get(query.getKey()));
+
+
+		if (saveIlsStats) {
+			printIlsLog("clusterVertices\t" + clusterVertices);
+			printIlsLog("clusterLargestPartitions\t" + clusterLargestPartitions);
+			printIlsLog("clusterLocalities\t" + clusterLocalities);
+		}
+
+
+
+		// Find non-keep-local-queries that can be moved
+		Map<Integer, Integer> localClusters = new HashMap<>(); // Cluster with high locality (key) and their largest partition (value)
+		IntSet nonlocalClusters = new IntOpenHashSet();
+		for (Entry<Integer, Double> cluster : clusterLocalities.entrySet()) {
+			if (cluster.getValue() > QueryKeepLocalThreshold) {
+				localClusters.put(cluster.getKey(), clusterLargestPartitions.get(cluster.getKey()));
 			}
 			else {
-				nonlocalQueries.add(query.getKey());
+				nonlocalClusters.add(cluster.getKey());
 			}
 		}
 		if (saveIlsStats) {
-			printIlsLog("nonlocalQueries\t" + nonlocalQueries);
-			printIlsLog("localQueries\t" + localQueries);
+			printIlsLog("nonlocalQueries\t" + nonlocalClusters);
+			printIlsLog("localQueries\t" + localClusters);
 			String msg = ("workerBalances\t");
 			for (int worker : workerIds) {
 				msg += (worker + ": "
@@ -436,6 +565,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			}
 			printIlsLog(msg);
 		}
+
 
 
 		// Greedy iterative move queries
@@ -453,6 +583,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 			for (Integer clusterId : clusterIds) {
 				//Integer queryLocality = localQueries.get(queryId);
+				Map<Integer, Integer> clusterPartitionVerts = clusterPartitions.get(clusterId);
+				if (clusterPartitionVerts == null) continue;
 
 				for (Integer fromWorkerId : workerIds) {
 					// Dont move from worker if worker has too few vertices afterwards
@@ -462,6 +594,11 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 					//					if (fromWorker.activeVertices - fromWorkerQueryVertices < minActiveVertices
 					//							|| fromWorker.totalVertices - fromWorkerQueryVertices < minTotalVertices)
 					//						continue;
+					int fromWorkerClusterVertices = MiscUtil.defaultInt(clusterPartitionVerts.get(fromWorkerId));
+					if (fromWorkerClusterVertices == 0) continue;
+					if (fromWorker.activeVertices - fromWorkerClusterVertices < minActiveVertices
+							|| fromWorker.totalVertices - fromWorkerClusterVertices < minTotalVertices)
+						continue;
 
 					for (Integer toWorkerId : workerIds) {
 						if (fromWorkerId == toWorkerId) continue;
@@ -473,18 +610,24 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						//						if (toWorker.activeVertices + toWorkerQueryVertices > maxActiveVertices
 						//								|| toWorker.totalVertices + toWorkerQueryVertices > maxTotalVertices)
 						//							continue;
+						long toWorkerClusterVertices = MiscUtil.defaultInt(clusterPartitionVerts.get(toWorkerId));
+						if (toWorkerClusterVertices == 0) continue;
+						if (toWorker.activeVertices + toWorkerClusterVertices > maxActiveVertices
+								|| toWorker.totalVertices + toWorkerClusterVertices > maxTotalVertices)
+							continue;
 
 						// Only move local queries to their largest partition
 						//						if (queryLocality != null && !queryLocality.equals(toWorkerId)) continue;
 
 						// Only move smaller to larger partition
 						//						if (fromWorkerQueryVertices > toWorkerQueryVertices) continue;
+						if (fromWorkerClusterVertices > toWorkerClusterVertices) continue;
 
 						// TODO Optimize, neglect cases.
 
 						QueryDistribution newDistribution = bestDistribution.clone();
 						// TODO Move chunks
-						int moved = newDistribution.moveAllClusterVertices(clusterId, fromWorkerId, toWorkerId, localQueries);
+						int moved = newDistribution.moveAllClusterVertices(clusterId, fromWorkerId, toWorkerId);
 						if (moved == 0) continue;
 
 						boolean isValid = checkActiveVertsOkOrBetter(baseDistribution, newDistribution)
@@ -492,9 +635,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						if (!isValid) continue;
 
 						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
-								//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
-								//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
-								) {
+						//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
+						//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
+						) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							bestFrom = fromWorkerId;

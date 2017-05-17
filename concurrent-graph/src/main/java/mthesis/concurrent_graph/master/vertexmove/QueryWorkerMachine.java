@@ -120,16 +120,16 @@ public class QueryWorkerMachine {
 	 * @param localQueries Local queries, can move only to their largest partition.
 	 * @return List of removed QueryVertexChunks
 	 */
-	public List<QueryVertexChunk> removeAllClusterVertices(int workerId, int clusterId, int movingTo, Map<Integer, Integer> localQueries) {
+	public List<QueryVertexChunk> removeAllClusterVertices(int workerId, int clusterId, int movingTo) {
 		List<QueryVertexChunk> removedQueryChunks = new ArrayList<>();
 		for (int i = 0; i < queryChunks.size(); i++) {
 			QueryVertexChunk chunk = queryChunks.get(i);
 			if (chunk.clusterId == clusterId) {
-				for (Integer chunkQuery : chunk.queries) {
-					Integer chunkLocal = localQueries.get(chunkQuery);
-					//if (chunkLocal != null && !chunkLocal.equals(movingTo))
-					if (chunkLocal != null && chunkLocal.equals(workerId)) continue;
-				}
+				//				for (Integer chunkQuery : chunk.queries) {
+				//					Integer chunkLocal = localQueries.get(chunkQuery);
+				//					//if (chunkLocal != null && !chunkLocal.equals(movingTo))
+				//					if (chunkLocal != null && chunkLocal.equals(workerId)) continue;
+				//				}
 
 				removedQueryChunks.add(chunk);
 				queryChunks.remove(i);

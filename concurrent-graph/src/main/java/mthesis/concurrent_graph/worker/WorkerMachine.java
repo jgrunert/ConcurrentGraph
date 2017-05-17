@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -49,7 +48,6 @@ import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.communication.UpdateRegisteredVerticesMessage;
 import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.communication.VertexMessageBucket;
-import mthesis.concurrent_graph.util.MiscUtil;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -1495,32 +1493,32 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
 			long qAge = (startTimeMs - query.startTime);
 			if (qAge > Configuration.QUERY_CUT_TIME_WINDOW) {
-				if (qlocalSuperstepRatio < 0.8) { // TODO Test
-					System.err.println("REM " + query.QueryId + " " + qlocalSuperstepRatio);
-					queriesHistoryList.remove(i);
-					queriesHistoryMap.remove(query.QueryId);
-					queriesLocalSupersteps.remove(query.QueryId);
-					i--;
-				}
-				else {
-					System.err.println("KEEP " + query.QueryId + " " + qlocalSuperstepRatio);
-				}
+				//				if (qlocalSuperstepRatio < 0.8) { // TODO Test
+				System.err.println("REM " + query.QueryId + " " + qlocalSuperstepRatio);
+				queriesHistoryList.remove(i);
+				queriesHistoryMap.remove(query.QueryId);
+				queriesLocalSupersteps.remove(query.QueryId);
+				i--;
+				//				}
+				//				else {
+				//					System.err.println("KEEP " + query.QueryId + " " + qlocalSuperstepRatio);
+				//				}
 			}
 		}
 		// Remove older if to many queries
 		for (int i = 0; queriesHistoryList.size() > Configuration.QUERY_CUT_MAX_QUERIES && i < queriesHistoryList.size(); i++) {
 			WorkerQuery<V, E, M, Q> query = queriesHistoryList.get(i);
 			double qlocalSuperstepRatio = getQueryLocalSuperstepRatio(query.QueryId);
-			if (qlocalSuperstepRatio < 0.8) { // TODO Test
-				System.err.println("REM2 " + query.QueryId + " " + qlocalSuperstepRatio);
-				queriesHistoryList.remove(i);
-				i--;
-				queriesHistoryMap.remove(query.QueryId);
-				queriesLocalSupersteps.remove(query.QueryId);
-			}
-			else {
-				System.err.println("KEEP2 " + query.QueryId + " " + qlocalSuperstepRatio);
-			}
+			//			if (qlocalSuperstepRatio < 0.8) { // TODO Test
+			System.err.println("REM2 " + query.QueryId + " " + qlocalSuperstepRatio);
+			queriesHistoryList.remove(i);
+			i--;
+			queriesHistoryMap.remove(query.QueryId);
+			queriesLocalSupersteps.remove(query.QueryId);
+			//			}
+			//			else {
+			//				System.err.println("KEEP2 " + query.QueryId + " " + qlocalSuperstepRatio);
+			//			}
 		}
 
 		//long start2 = System.currentTimeMillis();
@@ -1554,18 +1552,18 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 
 		// Limit chunk sizes, merge chunks
-		int maxChunkQueries = 3; // TODO Config
-		List<Integer> chunkQueriesBuffer = new ArrayList<>();
-		for (IntSet chunk : new ArrayList<>(intersectChunks.keySet())) {
-			if (chunk.size() > maxChunkQueries) {
-				chunkQueriesBuffer.clear();
-				chunkQueriesBuffer.addAll(chunk);
-				Collections.sort(chunkQueriesBuffer);
-				IntSet reducedChunk = new IntOpenHashSet(chunkQueriesBuffer.subList(0, maxChunkQueries));
-				int chunkSize = intersectChunks.remove(chunk);
-				intersectChunks.put(reducedChunk, MiscUtil.defaultInt(intersectChunks.get(reducedChunk)) + chunkSize);
-			}
-		}
+		//		int maxChunkQueries = 3; // TODO Config
+		//		List<Integer> chunkQueriesBuffer = new ArrayList<>();
+		//		for (IntSet chunk : new ArrayList<>(intersectChunks.keySet())) {
+		//			if (chunk.size() > maxChunkQueries) {
+		//				chunkQueriesBuffer.clear();
+		//				chunkQueriesBuffer.addAll(chunk);
+		//				Collections.sort(chunkQueriesBuffer);
+		//				IntSet reducedChunk = new IntOpenHashSet(chunkQueriesBuffer.subList(0, maxChunkQueries));
+		//				int chunkSize = intersectChunks.remove(chunk);
+		//				intersectChunks.put(reducedChunk, MiscUtil.defaultInt(intersectChunks.get(reducedChunk)) + chunkSize);
+		//			}
+		//		}
 
 		// Sort out neglegible small chunks and multiply with samplingFactor
 		for (IntSet chunk : new ArrayList<>(intersectChunks.keySet())) {
@@ -1578,14 +1576,16 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 		}
 
-		workerStats.IntersectCalcTime += System.nanoTime() - startTimeNano;
-		logger.info("Sampled IntersectCalcTime {}ms", (System.currentTimeMillis() - startTimeMs)); // TODO debug
-
+		// Limit chunks
 		Map<IntSet, Integer> limitedIntersectChunks = intersectChunks.entrySet().stream()
 				.limit(200) // TODO Config
 				.sorted(Map.Entry.<IntSet, Integer>comparingByValue().reversed())
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
 						(e1, e2) -> e1, LinkedHashMap::new));
+
+		workerStats.IntersectCalcTime += System.nanoTime() - startTimeNano;
+		logger.info("Sampled IntersectCalcTime {}ms", (System.currentTimeMillis() - startTimeMs)); // TODO debug
+
 		return limitedIntersectChunks;
 	}
 
