@@ -1,6 +1,5 @@
 package mthesis.concurrent_graph.master.vertexmove;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,17 +11,20 @@ public class QueryCluster {
 
 	public final int id;
 	public final Set<Integer> queries = new HashSet<>();
-	public final Map<Integer, Integer> intersects = new HashMap<>();
+	public final Map<Integer, Integer> intersects;
 	public long vertices;
 
-	public QueryCluster(int startQuery, long vertices) {
+	public QueryCluster(int startQuery, long vertices, Map<Integer, Integer> intersects) {
 		this.id = startQuery;
 		this.vertices = vertices;
+		this.intersects = intersects;
 		queries.add(startQuery);
 	}
 
 	public void mergeOtherCluster(QueryCluster clusterToMerge, Map<Integer, Integer> queryClusterIds, Map<Integer, QueryCluster> clusters) {
+
 		clusters.remove(clusterToMerge.id);
+		vertices += clusterToMerge.vertices;
 
 		// Merge cluster queries
 		queries.addAll(clusterToMerge.queries);

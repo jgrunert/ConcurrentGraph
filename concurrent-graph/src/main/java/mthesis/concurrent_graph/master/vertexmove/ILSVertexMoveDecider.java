@@ -23,7 +23,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.util.FileUtil;
 import mthesis.concurrent_graph.util.MiscUtil;
-import mthesis.concurrent_graph.util.Pair;
 
 public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
@@ -159,13 +158,13 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 			List<Integer> cluster = new ArrayList<>();
 			cluster.add(queryId);
-			clusters.put(queryId, new QueryCluster(queryId, bestDistribution.queryVertices.get(queryId)));
+			clusters.put(queryId, new QueryCluster(queryId, bestDistribution.queryVertices.get(queryId), intersects));
 			queryClusterIds.put(queryId, queryId);
 		}
 		if (saveIlsStats) {
-			printIlsLog("query intersects: ");
+			printIlsLog("initial cluster intersects: ");
 			for (QueryCluster qI : clusters.values()) {
-				ilsLogWriter.println("\t" + qI);
+				ilsLogWriter.println("\t" + qI + ": " + qI.intersects);
 			}
 		}
 
@@ -190,24 +189,52 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		//			printIlsLog("clusterIntersectsSorted: " + clusterIntersectsPairsSorted);
 		//		}
 
+		printIlsLog("Start clustering");
 		//		Random rdCluster = new Random(0);
-		int clusterCount = workerIds.size() * 4; // TODO Config
-		for (Entry<Pair<Integer, Integer>, Double> mergeIntersect : clusterIntersectsPairsSorted.entrySet()) {
-			if (queryClusterIntersects.size() <= clusterCount) break;
-			//		while (queryClusterIntersects.size() > clusterCount) { // TODO Terminate if no more intersects
+		int clusterCount = workerIds.size() * 2; // TODO Config
+		//		for (Entry<Pair<Integer, Integer>, Double> mergeIntersect : clusterIntersectsPairsSorted.entrySet()) {
+		//			if (queryClusterIntersects.size() <= clusterCount) break;
+		while (clusters.size() > clusterCount) {
+
+			//			printIlsLog("cluster intersects: ");
+			//			for (QueryCluster c : clusters.values()) {
+			//				ilsLogWriter.println("\t" + c.id + " " + c.intersects);
+			//			}
+
+			// Merge largest cluster intersect
+			Integer clusterIdA = 0;
+			Integer clusterIdB = 0;
+			double bestIntersect = 0;
+			for (QueryCluster c0 : clusters.values()) {
+				for (Entry<Integer, Integer> cIntersect : c0.intersects.entrySet()) {
+					long c1Verts = clusters.get(cIntersect.getKey()).vertices;
+					double intersect = (double) cIntersect.getValue() / Math.min(c0.vertices, c1Verts);
+					if (intersect > bestIntersect) {
+						bestIntersect = intersect;
+						clusterIdA = c0.id;
+						clusterIdB = cIntersect.getKey();
+					}
+				}
+			}
+
+			// Terminate if no more intersects
+			if(bestIntersect <= 0) {
+				printIlsLog("No more intersections, terminate with more clusters: " + clusters.size());
+				break;
+			}
 
 			// Merge largest intersect
-			int largestIntersectA = mergeIntersect.getKey().first;
-			int largestIntersectB = mergeIntersect.getKey().second;
-			int clusterIdA = queryClusters.get(largestIntersectA);
-			int clusterIdB = queryClusters.get(largestIntersectB);
+			//			int largestIntersectA = mergeIntersect.getKey().first;
+			//			int largestIntersectB = mergeIntersect.getKey().second;
+			//			Integer clusterIdA = queryClusters.get(largestIntersectA);
+			//			Integer clusterIdB = queryClusters.get(largestIntersectB);
 
 			// Merge random
 			//			List<Integer> clusterIds = new ArrayList<>(queryClusterIntersects.keySet());
-			//			int clusterIdA = clusterIds.get(rdCluster.nextInt(clusterIds.size()));
+			//			Integer clusterIdA = clusterIds.get(rdCluster.nextInt(clusterIds.size()));
 			//			List<Integer> clusterOtherIntersects = new ArrayList<>(queryClusterIntersects.get(clusterIdA).second.keySet());
 			//			if (clusterOtherIntersects.size() == 0) continue;
-			//			int clusterIdB = clusterOtherIntersects.get(rdCluster.nextInt(clusterOtherIntersects.size()));
+			//			Integer clusterIdB = clusterOtherIntersects.get(rdCluster.nextInt(clusterOtherIntersects.size()));
 			//			Map<Integer, Integer> clusterAIntersects = queryClusterIntersects.get(clusterIdA).second;
 			//			int largestIntersectTmp = 0;
 			//			for (Entry<Integer, Integer> intersect : clusterAIntersects.entrySet()) {
@@ -234,22 +261,27 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			//			}
 
 			if (saveIlsStats) {
-				printIlsLog("merge: " + clusterIdA + " " + clusterIdB);
+				printIlsLog("merge: " + clusterIdA + " " + clusterIdB + " intersecting " + bestIntersect);
 			}
 
-			mergeClusters(clusterIdA, clusterIdB, queryClusterIntersects);
+			clusters.get(clusterIdA).mergeOtherCluster(clusters.get(clusterIdB), queryClusterIds, clusters);
 		}
+		printIlsLog("Finished clustering");
 
-		List<Integer> clusterIds = new ArrayList<>(queryClusterIntersects.keySet());
+		List<Integer> clusterIds = new ArrayList<>(clusters.keySet());
 		Collections.sort(clusterIds);
 		if (saveIlsStats) {
+			//			printIlsLog("clusters: ");
+			//			for (QueryCluster c : clusters.values()) {
+			//				ilsLogWriter.println("\t" + qI.getKey() + ": " + qI.getValue().);
+			//			}
+			//			printIlsLog("query clusters: ");
+			//			for (Entry<Integer, Integer> qI : queryClusters.entrySet()) {
+			//				ilsLogWriter.println("\t" + qI);
+			//			}
 			printIlsLog("clusters: ");
-			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> qI : queryClusterIntersects.entrySet()) {
-				ilsLogWriter.println("\t" + qI.getKey() + ": " + qI.getValue().first);
-			}
-			printIlsLog("query clusters: ");
-			for (Entry<Integer, Integer> qI : queryClusters.entrySet()) {
-				ilsLogWriter.println("\t" + qI);
+			for (QueryCluster c : clusters.values()) {
+				ilsLogWriter.println("\t" + c + "\t" + c.vertices + "\t" + c.intersects);
 			}
 		}
 
@@ -261,7 +293,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				chunkQueries.clear();
 				chunkQueries.addAll(chunk.queries);
 				Collections.sort(chunkQueries);
-				chunk.clusterId = queryClusters.get(chunkQueries.get(0));
+				chunk.clusterId = queryClusterIds.get(chunkQueries.get(0));
 			}
 		}
 
