@@ -51,6 +51,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private double latestPertubatedDistributionCosts;
 	private double currentlyBestDistributionCosts;
 
+	private Map<Integer, Integer> queryClusters;
+
 
 
 	@Override
@@ -142,7 +144,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		// Calculate query intersects
 		// ClusterId->(Queries,Intersects)
-		Map<Integer, Integer> queryClusters = new HashMap<>();
+		queryClusters = new HashMap<>();
 		Map<Integer, Pair<List<Integer>, Map<Integer, Integer>>> queryClusterIntersects = new LinkedHashMap<>();
 		for (Integer queryId : queryIds) {
 			Map<Integer, Integer> intersects = new HashMap<>();
@@ -172,40 +174,50 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 		// Clustering/merging
-		Map<IntSet, Double> clusterIntersects = new HashMap<>();
+		Map<Pair<Integer, Integer>, Double> clusterIntersects = new HashMap<>();
 		for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
 			for (Entry<Integer, Integer> intersect : cluster.getValue().second.entrySet()) {
-				IntSet intersectQueries = new IntOpenHashSet(2);
+				int intersectSize = intersect.getValue();
 				int q1 = cluster.getKey();
 				int q2 = intersect.getKey();
-				intersectQueries.add(q1);
-				intersectQueries.add(q2);
-				int intersectSize = intersect.getValue();
 				long queriesSize = bestDistribution.queryVertices.get(q1) + bestDistribution.queryVertices.get(q2) / 2;
-				clusterIntersects.put(intersectQueries, (double) intersectSize / queriesSize);
+				clusterIntersects.put(new Pair<>(q1, q2), (double) intersectSize / queriesSize);
 			}
 		}
-		LinkedHashMap<IntSet, Double> clusterIntersectsSorted = clusterIntersects.entrySet().stream()
-				.sorted(Map.Entry.<IntSet, Double>comparingByValue().reversed())
+		LinkedHashMap<Pair<Integer, Integer>, Double> clusterIntersectsSorted = clusterIntersects.entrySet().stream()
+				.sorted(Map.Entry.<Pair<Integer, Integer>, Double>comparingByValue().reversed())
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
 						(e1, e2) -> e1, LinkedHashMap::new));
 		printIlsLog("clusterIntersectsSorted: " + clusterIntersectsSorted);
 		printIlsLog("queryClusterIntersects: " + queryClusterIntersects);
 
-		int clusterCount = workerIds.size() * 4; // TODO Config
-		for (Entry<IntSet, Double> mergeIntersect : clusterIntersectsSorted.entrySet()) {
-			if (queryClusterIntersects.size() <= clusterCount) break;
+		Random rdCluster = new Random(0);
+		int clusterCount = workerIds.size(); // TODO Config
+		//		for (Entry<Pair<Integer, Integer>, Double> mergeIntersect : clusterIntersectsSorted.entrySet()) {
+		//			if (queryClusterIntersects.size() <= clusterCount) break;
+		while (queryClusterIntersects.size() > clusterCount) { // TODO Terminate if no more intersects
 
 			// Merge largest intersect
-			int largestIntersectA = -1;
-			int largestIntersectB = -1;
-			for (int c : mergeIntersect.getKey()) {
-				if (largestIntersectA == -1) largestIntersectA = c;
-				else largestIntersectB = c;
-			}
+			//			int largestIntersectA = mergeIntersect.getKey().first;
+			//			int largestIntersectB = mergeIntersect.getKey().second;
+			//			int clusterIdA = queryClusters.get(largestIntersectA);
+			//			int clusterIdB = queryClusters.get(largestIntersectB);
 
-			int clusterIdA = queryClusters.get(largestIntersectA);
-			int clusterIdB = queryClusters.get(largestIntersectB);
+			// Merge random
+			List<Integer> clusterIds = new ArrayList<>(queryClusterIntersects.keySet());
+			int clusterIdA = clusterIds.get(rdCluster.nextInt(clusterIds.size()));
+			List<Integer> clusterOtherIntersects = new ArrayList<>(queryClusterIntersects.get(clusterIdA).second.keySet());
+			int clusterIdB = clusterOtherIntersects.get(rdCluster.nextInt(clusterOtherIntersects.size()));
+			//			Map<Integer, Integer> clusterAIntersects = queryClusterIntersects.get(clusterIdA).second;
+			//			int largestIntersectTmp = 0;
+			//			for (Entry<Integer, Integer> intersect : clusterAIntersects.entrySet()) {
+			//				if (intersect.getValue() > largestIntersectTmp) {
+			//					largestIntersectTmp = intersect.getValue();
+			//					clusterIdB = intersect.getKey();
+			//				}
+			//			}
+
+
 
 			if (clusterIdA == clusterIdB) {
 				continue;
@@ -221,29 +233,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			//				}
 			//			}
 
-			// Merge clusters
-			Pair<List<Integer>, Map<Integer, Integer>> clusterA = queryClusterIntersects.get(clusterIdA);
-			Pair<List<Integer>, Map<Integer, Integer>> clusterB = queryClusterIntersects.remove(clusterIdB);
-
-
-			clusterA.first.addAll(clusterB.first);
-			for (int mergedQuery : clusterB.first) {
-				queryClusters.put(mergedQuery, clusterIdA);
-			}
-			for (Entry<Integer, Integer> intersect : clusterB.second.entrySet()) {
-				MiscUtil.mapAdd(clusterA.second, intersect.getKey(), intersect.getValue());
-			}
-			clusterA.second.remove(largestIntersectA);
-			clusterA.second.remove(largestIntersectB);
-
-			// Update other intersect references
-			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
-				if (cluster.getKey().equals(largestIntersectA)) continue;
-				int oldIntersect = MiscUtil.defaultInt(cluster.getValue().second.remove(largestIntersectB));
-				if (oldIntersect > 0) {
-					MiscUtil.mapAdd(cluster.getValue().second, largestIntersectA, oldIntersect);
-				}
-			}
+			mergeClusters(clusterIdA, clusterIdB, queryClusterIntersects);
 		}
 
 		List<Integer> clusterIds = new ArrayList<>(queryClusterIntersects.keySet());
@@ -415,6 +405,35 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		ilsRunNumber++;
 
 		return moveDecission;
+	}
+
+	private void mergeClusters(int clusterIdA, int clusterIdB,
+			Map<Integer, Pair<List<Integer>, Map<Integer, Integer>>> queryClusterIntersects) {
+		Pair<List<Integer>, Map<Integer, Integer>> clusterA = queryClusterIntersects.get(clusterIdA);
+		Pair<List<Integer>, Map<Integer, Integer>> clusterB = queryClusterIntersects.remove(clusterIdB);
+
+		// Merge cluster queries
+		clusterA.first.addAll(clusterB.first);
+		for (int mergedQuery : clusterB.first) {
+			queryClusters.put(mergedQuery, clusterIdA);
+		}
+
+		// Merge intersects
+		for (Entry<Integer, Integer> intersect : clusterB.second.entrySet()) {
+			MiscUtil.mapAdd(clusterA.second, intersect.getKey(), intersect.getValue());
+		}
+		for (int clusterQuery : clusterA.first) {
+			clusterA.second.remove(clusterQuery);
+		}
+
+		// Update other intersect references
+		for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
+			if (cluster.getKey().equals(clusterIdA)) continue;
+			int oldIntersect = MiscUtil.defaultInt(cluster.getValue().second.remove(clusterIdB));
+			if (oldIntersect > 0) {
+				MiscUtil.mapAdd(cluster.getValue().second, clusterIdA, oldIntersect);
+			}
+		}
 	}
 
 	private void logIlsStep(QueryDistribution currentDistribution) {
