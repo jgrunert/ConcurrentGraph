@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +49,6 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private PrintWriter ilsLogWriter;
 	private double latestPertubatedDistributionCosts;
 	private double currentlyBestDistributionCosts;
-
-	private Map<Integer, Integer> queryClusters;
 
 
 
@@ -144,8 +141,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		// Calculate query intersects
 		// ClusterId->(Queries,Intersects)
-		queryClusters = new HashMap<>();
-		Map<Integer, Pair<List<Integer>, Map<Integer, Integer>>> queryClusterIntersects = new LinkedHashMap<>();
+		Map<Integer, Integer> queryClusterIds = new HashMap<>();
+		Map<Integer, QueryCluster> clusters = new LinkedHashMap<>();
 		for (Integer queryId : queryIds) {
 			Map<Integer, Integer> intersects = new HashMap<>();
 
@@ -162,52 +159,55 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 			List<Integer> cluster = new ArrayList<>();
 			cluster.add(queryId);
-			queryClusterIntersects.put(queryId, new Pair<>(cluster, intersects));
-			queryClusters.put(queryId, queryId);
+			clusters.put(queryId, new QueryCluster(queryId, bestDistribution.queryVertices.get(queryId)));
+			queryClusterIds.put(queryId, queryId);
 		}
 		if (saveIlsStats) {
 			printIlsLog("query intersects: ");
-			for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> qI : queryClusterIntersects.entrySet()) {
+			for (QueryCluster qI : clusters.values()) {
 				ilsLogWriter.println("\t" + qI);
 			}
 		}
 
 
 		// Clustering/merging
-		Map<Pair<Integer, Integer>, Double> clusterIntersects = new HashMap<>();
-		for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
-			for (Entry<Integer, Integer> intersect : cluster.getValue().second.entrySet()) {
-				int intersectSize = intersect.getValue();
-				int q1 = cluster.getKey();
-				int q2 = intersect.getKey();
-				long queriesSize = bestDistribution.queryVertices.get(q1) + bestDistribution.queryVertices.get(q2) / 2;
-				clusterIntersects.put(new Pair<>(q1, q2), (double) intersectSize / queriesSize);
-			}
-		}
-		LinkedHashMap<Pair<Integer, Integer>, Double> clusterIntersectsSorted = clusterIntersects.entrySet().stream()
-				.sorted(Map.Entry.<Pair<Integer, Integer>, Double>comparingByValue().reversed())
-				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
-						(e1, e2) -> e1, LinkedHashMap::new));
-		printIlsLog("clusterIntersectsSorted: " + clusterIntersectsSorted);
-		printIlsLog("queryClusterIntersects: " + queryClusterIntersects);
+		//		Map<Pair<Integer, Integer>, Double> clusterIntersectPairs = new HashMap<>();
+		//		for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
+		//			for (Entry<Integer, Integer> intersect : cluster.getValue().second.entrySet()) {
+		//				int intersectSize = intersect.getValue();
+		//				int q1 = cluster.getKey();
+		//				int q2 = intersect.getKey();
+		//				long queriesSize = (bestDistribution.queryVertices.get(q1) + bestDistribution.queryVertices.get(q2)) / 2;
+		//				clusterIntersectPairs.put(new Pair<>(q1, q2), (double) intersectSize / queriesSize);
+		//			}
+		//		}
+		//		LinkedHashMap<Pair<Integer, Integer>, Double> clusterIntersectsPairsSorted = clusterIntersectPairs.entrySet().stream()
+		//				.sorted(Map.Entry.<Pair<Integer, Integer>, Double>comparingByValue().reversed())
+		//				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
+		//						(e1, e2) -> e1, LinkedHashMap::new));
+		//		if (saveIlsStats) {
+		//			printIlsLog("queryClusterIntersects: " + queryClusterIntersects);
+		//			printIlsLog("clusterIntersectsSorted: " + clusterIntersectsPairsSorted);
+		//		}
 
-		Random rdCluster = new Random(0);
-		int clusterCount = workerIds.size(); // TODO Config
-		//		for (Entry<Pair<Integer, Integer>, Double> mergeIntersect : clusterIntersectsSorted.entrySet()) {
-		//			if (queryClusterIntersects.size() <= clusterCount) break;
-		while (queryClusterIntersects.size() > clusterCount) { // TODO Terminate if no more intersects
+		//		Random rdCluster = new Random(0);
+		int clusterCount = workerIds.size() * 4; // TODO Config
+		for (Entry<Pair<Integer, Integer>, Double> mergeIntersect : clusterIntersectsPairsSorted.entrySet()) {
+			if (queryClusterIntersects.size() <= clusterCount) break;
+			//		while (queryClusterIntersects.size() > clusterCount) { // TODO Terminate if no more intersects
 
 			// Merge largest intersect
-			//			int largestIntersectA = mergeIntersect.getKey().first;
-			//			int largestIntersectB = mergeIntersect.getKey().second;
-			//			int clusterIdA = queryClusters.get(largestIntersectA);
-			//			int clusterIdB = queryClusters.get(largestIntersectB);
+			int largestIntersectA = mergeIntersect.getKey().first;
+			int largestIntersectB = mergeIntersect.getKey().second;
+			int clusterIdA = queryClusters.get(largestIntersectA);
+			int clusterIdB = queryClusters.get(largestIntersectB);
 
 			// Merge random
-			List<Integer> clusterIds = new ArrayList<>(queryClusterIntersects.keySet());
-			int clusterIdA = clusterIds.get(rdCluster.nextInt(clusterIds.size()));
-			List<Integer> clusterOtherIntersects = new ArrayList<>(queryClusterIntersects.get(clusterIdA).second.keySet());
-			int clusterIdB = clusterOtherIntersects.get(rdCluster.nextInt(clusterOtherIntersects.size()));
+			//			List<Integer> clusterIds = new ArrayList<>(queryClusterIntersects.keySet());
+			//			int clusterIdA = clusterIds.get(rdCluster.nextInt(clusterIds.size()));
+			//			List<Integer> clusterOtherIntersects = new ArrayList<>(queryClusterIntersects.get(clusterIdA).second.keySet());
+			//			if (clusterOtherIntersects.size() == 0) continue;
+			//			int clusterIdB = clusterOtherIntersects.get(rdCluster.nextInt(clusterOtherIntersects.size()));
 			//			Map<Integer, Integer> clusterAIntersects = queryClusterIntersects.get(clusterIdA).second;
 			//			int largestIntersectTmp = 0;
 			//			for (Entry<Integer, Integer> intersect : clusterAIntersects.entrySet()) {
@@ -232,6 +232,10 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			//					}
 			//				}
 			//			}
+
+			if (saveIlsStats) {
+				printIlsLog("merge: " + clusterIdA + " " + clusterIdB);
+			}
 
 			mergeClusters(clusterIdA, clusterIdB, queryClusterIntersects);
 		}
@@ -407,34 +411,6 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		return moveDecission;
 	}
 
-	private void mergeClusters(int clusterIdA, int clusterIdB,
-			Map<Integer, Pair<List<Integer>, Map<Integer, Integer>>> queryClusterIntersects) {
-		Pair<List<Integer>, Map<Integer, Integer>> clusterA = queryClusterIntersects.get(clusterIdA);
-		Pair<List<Integer>, Map<Integer, Integer>> clusterB = queryClusterIntersects.remove(clusterIdB);
-
-		// Merge cluster queries
-		clusterA.first.addAll(clusterB.first);
-		for (int mergedQuery : clusterB.first) {
-			queryClusters.put(mergedQuery, clusterIdA);
-		}
-
-		// Merge intersects
-		for (Entry<Integer, Integer> intersect : clusterB.second.entrySet()) {
-			MiscUtil.mapAdd(clusterA.second, intersect.getKey(), intersect.getValue());
-		}
-		for (int clusterQuery : clusterA.first) {
-			clusterA.second.remove(clusterQuery);
-		}
-
-		// Update other intersect references
-		for (Entry<Integer, Pair<List<Integer>, Map<Integer, Integer>>> cluster : queryClusterIntersects.entrySet()) {
-			if (cluster.getKey().equals(clusterIdA)) continue;
-			int oldIntersect = MiscUtil.defaultInt(cluster.getValue().second.remove(clusterIdB));
-			if (oldIntersect > 0) {
-				MiscUtil.mapAdd(cluster.getValue().second, clusterIdA, oldIntersect);
-			}
-		}
-	}
 
 	private void logIlsStep(QueryDistribution currentDistribution) {
 		ilsStepsLog.add(
@@ -654,9 +630,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						if (!isValid) continue;
 
 						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
-						//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
-						//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
-						) {
+								//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
+								//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
+								) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							bestFrom = fromWorkerId;

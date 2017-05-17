@@ -1486,7 +1486,6 @@ extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q>
 			if (vert.lastSuperstepTime >= windowLimit) windowActiveVerts++;
 		}
 		workerStats.ActiveVerticesTimeWindow = windowActiveVerts;
-		System.err.println("ActiveVerticesTimeWindow in " + (System.currentTimeMillis() - timeNow));
 
 		try {
 			workerStatsSamplesToSend.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
