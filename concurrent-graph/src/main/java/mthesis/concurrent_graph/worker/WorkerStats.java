@@ -29,6 +29,7 @@ public class WorkerStats {
 	// Direct variables for quick access of frequently changed variables
 	public long WorkerVertices;
 	public long ActiveVertices;
+	public long ActiveVerticesTimeWindow;
 	public long IdleTime;
 	public long QueryWaitTime;
 	public long HandleMessagesTime;
@@ -83,6 +84,7 @@ public class WorkerStats {
 
 		WorkerVertices = bytes.getLong();
 		ActiveVertices = bytes.getLong();
+		ActiveVerticesTimeWindow = bytes.getLong();
 		IdleTime = bytes.getLong();
 		QueryWaitTime = bytes.getLong();
 		HandleMessagesTime = bytes.getLong();
@@ -110,6 +112,7 @@ public class WorkerStats {
 	private void writeToStream(DataOutputStream stream) throws IOException {
 		stream.writeLong(WorkerVertices);
 		stream.writeLong(ActiveVertices);
+		stream.writeLong(ActiveVerticesTimeWindow);
 		stream.writeLong(IdleTime);
 		stream.writeLong(QueryWaitTime);
 		stream.writeLong(HandleMessagesTime);
@@ -139,6 +142,7 @@ public class WorkerStats {
 
 		statsMap.put("WorkerVertices", (double) WorkerVertices);
 		statsMap.put("ActiveVertices", (double) ActiveVertices);
+		statsMap.put("ActiveVerticesTimeWindow", (double) ActiveVerticesTimeWindow);
 		statsMap.put("IdleTime", (double) IdleTime);
 		statsMap.put("QueryWaitTime", (double) QueryWaitTime);
 		statsMap.put("HandleMessagesTime", (double) HandleMessagesTime);

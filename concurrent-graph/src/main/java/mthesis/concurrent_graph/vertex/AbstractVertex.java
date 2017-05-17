@@ -18,6 +18,7 @@ import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.JobConfiguration;
 import mthesis.concurrent_graph.worker.VertexMoveFailureException;
 import mthesis.concurrent_graph.worker.VertexWorkerInterface;
+import mthesis.concurrent_graph.worker.WorkerMachine;
 import mthesis.concurrent_graph.worker.WorkerQuery;
 import mthesis.concurrent_graph.writable.BaseWritable;
 import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
@@ -40,6 +41,8 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public Int2ObjectMap<List<M>> queryMessagesThisSuperstep = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
 	public Int2ObjectMap<List<M>> queryMessagesNextSuperstep = new Int2ObjectOpenHashMap<>(Configuration.DEFAULT_QUERY_SLOTS);
 	//	public Int2IntMap querySuperstepNumbers = new Int2IntOpenHashMap(Configuration.DEFAULT_QUERY_SLOTS); // For consistency check
+
+	public long lastSuperstepTime;
 
 	private final VertexWorkerInterface<V, E, M, Q> worker;
 
@@ -219,6 +222,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	public void superstep(int superstepNo, WorkerQuery<V, E, M, Q> query, boolean forceCompute) {
 		int queryId = query.Query.QueryId;
+		lastSuperstepTime = WorkerMachine.lastUpdateTime;
 		List<M> messagesThisSuperstep = queryMessagesThisSuperstep.get(queryId);
 
 		if (forceCompute

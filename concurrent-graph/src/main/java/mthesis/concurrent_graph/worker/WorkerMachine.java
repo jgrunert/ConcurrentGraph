@@ -69,7 +69,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	private final List<Integer> otherWorkerIds;
 	private final int masterId;
@@ -142,6 +142,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 	// Most recent calculated query intersections
 	//	private Map<Integer, Map<Integer, Integer>> currentQueryIntersects = new HashMap<>();
+
+	public static long lastUpdateTime = System.currentTimeMillis();
 
 
 
@@ -417,6 +419,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 				// ++++++++++ Compute active and ready queries ++++++++++
 				for (WorkerQuery<V, E, M, Q> activeQuery : activeQueriesThisStep) {
+					lastUpdateTime = System.currentTimeMillis();
+
 					int queryId = activeQuery.Query.QueryId;
 					int superstepNo = activeQuery.getMasterStartedSuperstep();
 					SuperstepInstructions stepInstructions = activeQuery.QueryLocal.onWorkerSuperstepStart(superstepNo);
@@ -696,13 +700,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
@@ -720,12 +724,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryChunkMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
-									.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
+							.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
 						}
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -746,35 +750,35 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-						return true;
+					return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Receive_Finished: {
 						logger.debug("Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Finished: {
 						logger.debug("Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -983,8 +987,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1
 				&& !receivedLocalOnOtherBarrier) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-					+ " localExecution=" + query.localExecution + " executionMode=" + query.getExecutionMode() + "/" + queryExecutionMode
-					+ " superstep should be " + (query.getMasterStartedSuperstep() + 1) + ", " + query.getSuperstepNosLog());
+			+ " localExecution=" + query.localExecution + " executionMode=" + query.getExecutionMode() + "/" + queryExecutionMode
+			+ " superstep should be " + (query.getMasterStartedSuperstep() + 1) + ", " + query.getSuperstepNosLog());
 			return;
 		}
 
@@ -1472,6 +1476,17 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			activeVertices += query.ActiveVerticesThis.size();
 		workerStats.ActiveVertices = activeVertices;
 		workerStats.WorkerVertices = localVertices.size();
+
+		// TODO Rather slow
+		int activeVertsTimeWindow = 60000; // TODO Config
+		long timeNow = System.currentTimeMillis();
+		long windowLimit = timeNow - activeVertsTimeWindow;
+		long windowActiveVerts = 0;
+		for (AbstractVertex<V, E, M, Q> vert : localVertices.values()) {
+			if (vert.lastSuperstepTime >= windowLimit) windowActiveVerts++;
+		}
+		workerStats.ActiveVerticesTimeWindow = windowActiveVerts;
+		System.err.println("ActiveVerticesTimeWindow in " + (System.currentTimeMillis() - timeNow));
 
 		try {
 			workerStatsSamplesToSend.add(workerStats.getSample(System.currentTimeMillis() - masterStartTime));
