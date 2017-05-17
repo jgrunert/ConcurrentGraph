@@ -531,7 +531,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			}
 			int workerId = controlMsg.getSrcMachine();
 			vertexMoveDeciderService.updateQueryIntersects(workerId, queryChunks,
-					MiscUtil.defaultLong(latestWorkerTotalVertices.get(workerId)));
+					MiscUtil.defaultLong(latestWorkerActiveVerticesWindows.get(workerId))); // TODO Ok?
+			//MiscUtil.defaultLong(latestWorkerTotalVertices2.get(workerId)));
 		}
 		else {
 			logger.error("Unexpected control message type in message " + message);
