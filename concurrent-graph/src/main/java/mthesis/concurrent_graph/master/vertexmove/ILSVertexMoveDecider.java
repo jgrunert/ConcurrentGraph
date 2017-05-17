@@ -191,7 +191,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		printIlsLog("Start clustering");
 		//		Random rdCluster = new Random(0);
-		int clusterCount = workerIds.size() * 2; // TODO Config
+		int clusterCount = workerIds.size() * 4; // TODO Config
 		//		for (Entry<Pair<Integer, Integer>, Double> mergeIntersect : clusterIntersectsPairsSorted.entrySet()) {
 		//			if (queryClusterIntersects.size() <= clusterCount) break;
 		while (clusters.size() > clusterCount) {
@@ -287,13 +287,23 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 		// Assign chunks to clusters
-		List<Integer> chunkQueries = new ArrayList<>();
+		Map<Integer, Double> chunkClusterScores = new HashMap<>();
 		for (Entry<Integer, QueryWorkerMachine> worker : bestDistribution.getQueryMachines().entrySet()) {
 			for (QueryVertexChunk chunk : worker.getValue().queryChunks) {
-				chunkQueries.clear();
-				chunkQueries.addAll(chunk.queries);
-				Collections.sort(chunkQueries);
-				chunk.clusterId = queryClusterIds.get(chunkQueries.get(0));
+				chunkClusterScores.clear();
+				double bestClusterScore = 0;
+				int bestCluster = 0;
+				for (int chunkQuery : chunk.queries) {
+					int clusterID = queryClusterIds.get(chunkQuery);
+					QueryCluster cluster = clusters.get(clusterID);
+					double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0 / cluster.queries.size());
+					if (score > bestClusterScore) {
+						bestClusterScore = score;
+						bestCluster = clusterID;
+					}
+				}
+
+				chunk.clusterId = bestCluster;
 			}
 		}
 
@@ -430,7 +440,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				for (IlsLogItem ilsLogItem : ilsStepsLog) {
 					writer.println((ilsLogItem.time + ";"
 							+ ilsLogItem.costs + ";" + ilsLogItem.currentlyBestDistributionCosts + ";" + ilsLogItem.lastPertubationCosts
-							+ ";" + ilsLogItem.vertActiveImbalance + ";" + ilsLogItem.vertTotalImbalance).replace('.', ','));
+							+ ";" + ilsLogItem.vertActiveImbalance + ";" + ilsLogItem.vertTotalImbalance));
 				}
 				ilsLogWriter.close();
 			}

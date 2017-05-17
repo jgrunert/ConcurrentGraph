@@ -153,11 +153,21 @@ public class MiscUtil {
 	}
 
 
-	public static <K> void mapAdd(Map<K, Integer> map, K key, int add) {
-		map.put(key, defaultInt(map.get(key)) + add);
+	public static <K> int mapAdd(Map<K, Integer> map, K key, int add) {
+		int sum = defaultInt(map.get(key)) + add;
+		map.put(key, sum);
+		return sum;
 	}
 
-	public static <K> void mapAdd(Map<K, Long> map, K key, long add) {
-		map.put(key, defaultLong(map.get(key)) + add);
+	public static <K> long mapAdd(Map<K, Long> map, K key, long add) {
+		long sum = defaultLong(map.get(key)) + add;
+		map.put(key, sum);
+		return sum;
+	}
+
+	public static <K> double mapAdd(Map<K, Double> map, K key, double add) {
+		double sum = defaultDouble(map.get(key)) + add;
+		map.put(key, sum);
+		return sum;
 	}
 }
