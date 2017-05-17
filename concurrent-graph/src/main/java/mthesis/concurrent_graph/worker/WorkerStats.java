@@ -170,6 +170,24 @@ public class WorkerStats {
 	}
 
 
+	public long getStepFinishTime() {
+		return aggregatedQueryStats.StepFinishTime;
+	}
+
+	public long getSuperstepsComputed() {
+		return aggregatedQueryStats.SuperstepsComputed;
+	}
+
+	public long getLocalSuperstepsComputed() {
+		return aggregatedQueryStats.LocalSuperstepsComputed;
+	}
+
+	public long getLocalmodeStops() {
+		return aggregatedQueryStats.LocalmodeStops;
+	}
+
+
+
 	public void addQueryStatsstepStats(QueryStats stats) {
 		aggregatedQueryStats.combine(stats);
 	}

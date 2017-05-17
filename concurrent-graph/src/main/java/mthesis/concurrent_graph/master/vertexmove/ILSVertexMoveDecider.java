@@ -219,7 +219,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			}
 
 			// Terminate if no more intersects
-			if(bestIntersect <= 0) {
+			if (bestIntersect <= 0) {
 				printIlsLog("No more intersections, terminate with more clusters: " + clusters.size());
 				break;
 			}
@@ -308,9 +308,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						bestCluster = clusterID;
 					}
 
-					if(cluster0 == -1) cluster0 = clusterID;
-					else{
-						if(cluster0 != clusterID)
+					if (cluster0 == -1) cluster0 = clusterID;
+					else {
+						if (cluster0 != clusterID)
 							multiClusterChunk = true;
 					}
 				}
@@ -323,8 +323,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				}
 			}
 		}
-		System.err.println("multiClusterChunks: " + multiClusterChunks  + "/" +chunkCount + " " + ((double)multiClusterChunks / chunkCount));
-		printIlsLog("multiClusterChunks: " + multiClusterChunks  + "/" +chunkCount + " " + ((double)multiClusterChunks / chunkCount));
+		System.err
+				.println("multiClusterChunks: " + multiClusterChunks + "/" + chunkCount + " " + ((double) multiClusterChunks / chunkCount));
+		printIlsLog("multiClusterChunks: " + multiClusterChunks + "/" + chunkCount + " " + ((double) multiClusterChunks / chunkCount));
 
 
 
@@ -691,9 +692,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						if (!isValid) continue;
 
 						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
-								//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
-								//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
-								) {
+						//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
+						//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
+						) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							bestFrom = fromWorkerId;

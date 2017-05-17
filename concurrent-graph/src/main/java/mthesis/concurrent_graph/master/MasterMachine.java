@@ -109,6 +109,11 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final VertexMoveDeciderService vertexMoveDeciderService;
 
 	private final Map<Integer, Long> latestWorkerTotalVertices = new HashMap<>();
+	private final Map<Integer, Long> latestWorkerActiveVerticesWindows = new HashMap<>();
+	private double localSuperstepsRatio = 0;
+	private double localSuperstepsRatioUnique = 0;
+	private double lastQMoveLSRU = 0;
+	private int remainingLsruExtraShots = 1;
 
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
@@ -353,10 +358,29 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			// Get latest worker stats
 			if (controlMsg.hasWorkerStats()) {
 				List<WorkerStatSample> samples = controlMsg.getWorkerStats().getSamplesList();
-				for (WorkerStatSample sample : samples) {
-					WorkerStats stats = new WorkerStats(sample.getStatsBytes());
-					workerStats.get(controlMsg.getSrcMachine()).add(new Pair<Long, WorkerStats>(sample.getTime(), stats));
-					latestWorkerTotalVertices.put(controlMsg.getSrcMachine(), stats.WorkerVertices);
+				if (samples.size() > 0) {
+					for (WorkerStatSample sample : samples) {
+						WorkerStats stats = new WorkerStats(sample.getStatsBytes());
+						workerStats.get(controlMsg.getSrcMachine()).add(new Pair<Long, WorkerStats>(sample.getTime(), stats));
+						latestWorkerTotalVertices.put(controlMsg.getSrcMachine(), stats.WorkerVertices);
+						latestWorkerActiveVerticesWindows.put(controlMsg.getSrcMachine(), stats.ActiveVerticesTimeWindow);
+					}
+
+					double lsrSupersteps = 0;
+					double lsrLocalSupersteps = 0;
+					long lsrTimeWindow = System.currentTimeMillis() - masterStartTimeMs - Configuration.WORKER_QUERY_INTERSECT_INTERVAL * 4; // TODO Config
+					for (List<Pair<Long, WorkerStats>> workerSamples : workerStats.values()) {
+						for (Pair<Long, WorkerStats> stat : workerSamples) {
+							if (stat.first >= lsrTimeWindow) {
+								lsrSupersteps += stat.second.getSuperstepsComputed();
+								lsrLocalSupersteps += stat.second.getLocalSuperstepsComputed();
+							}
+						}
+					}
+					double lsrNonlocalSuperstepsUnique = (lsrSupersteps - lsrLocalSupersteps) / workerIds.size();
+					double lsrSuperstepsUnique = lsrNonlocalSuperstepsUnique + lsrLocalSupersteps;
+					localSuperstepsRatio = lsrSupersteps > 0 ? (double) lsrLocalSupersteps / lsrSupersteps : 0;
+					localSuperstepsRatioUnique = lsrSupersteps > 0 ? (double) lsrLocalSupersteps / lsrSuperstepsUnique : 0;
 				}
 			}
 
@@ -571,28 +595,36 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 		//logger.info("#+-------------------------------------------------");
 
-		double localSuperstepRatio = 0;
-		long lsrTimeWindow = System.currentTimeMillis() - Configuration.WORKER_QUERY_INTERSECT_INTERVAL;
-		for (List<Pair<Long, WorkerStats>> workerSamples : workerStats.values()) {
-			for (Pair<Long, WorkerStats> stat : workerSamples) {
-
-			}
-		}
-
 		if (vertexMoveDeciderService.hasNewDecission()) {
-			VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();
-			if (!globalBarrierPlanned) {
-				if (newMoveDecission != null) {
-					// New move decision
-					moveDecission = newMoveDecission;
-					globalBarrierPlanned = true;
-					logger.info("New move decission, plan barrier");
+			double delta = localSuperstepsRatioUnique - lastQMoveLSRU;
+			boolean lsruThreshold = localSuperstepsRatioUnique < 0.3 || delta < -0.05 || delta > 0.02;
+			if (lsruThreshold || remainingLsruExtraShots > 0) { // TODO Config
+				System.err.println("Start QMove: " + localSuperstepsRatioUnique + " last " + lastQMoveLSRU + " delta " + delta);
+
+				// Allow extra shot of one move wasnt successful
+				if (lsruThreshold) {
+					lastQMoveLSRU = localSuperstepsRatioUnique;
+					remainingLsruExtraShots = 3; // TODO Config
 				}
-			}
-			else if (newMoveDecission != null) {
-				// Replace previous move decision
-				moveDecission = newMoveDecission;
-				logger.info("Replace move decission, barrier already planned");
+				else {
+					remainingLsruExtraShots--;
+					System.err.println("Used LsruExtraShot, remaining " + remainingLsruExtraShots);
+				}
+
+				VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();//TODO Log.info
+				if (!globalBarrierPlanned) {
+					if (newMoveDecission != null) {
+						// New move decision
+						moveDecission = newMoveDecission;
+						globalBarrierPlanned = true;
+						logger.info("New move decission, plan barrier");
+					}
+				}
+				else if (newMoveDecission != null) {
+					// Replace previous move decision
+					moveDecission = newMoveDecission;
+					logger.info("Replace move decission, barrier already planned");
+				}
 			}
 		}
 
@@ -792,10 +824,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap(workerIds.size());
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -845,10 +877,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					Map<String, Double> statsMap = statSample.second.getStatsMap(workerIds.size());
 
 					double sumTime = statsMap.get("ComputeTime") + statsMap.get("StepFinishTime") + statsMap.get("IntersectCalcTime")
-					+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
-					+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
-					+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
-					+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
+							+ statsMap.get("IdleTime") + statsMap.get("QueryWaitTime")
+							+ statsMap.get("MoveSendVerticesTime") + statsMap.get("MoveRecvVerticesTime")
+							+ statsMap.get("HandleMessagesTime") + statsMap.get("BarrierStartWaitTime")
+							+ statsMap.get("BarrierFinishWaitTime") + statsMap.get("BarrierVertexMoveTime");
 					sb.append(sumTime / 1000000 * timeNormFactor);
 					sb.append(';');
 					sb.append(statsMap.get("ComputeTime") / 1000000 * timeNormFactor);
@@ -1063,7 +1095,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			logger.error("Exception when saveQueryStats", e);
 		}
 
-		logger.info("Saved worker stats");
+		logger.info("Saved query stats");
 	}
 
 	private void plotStats() {
