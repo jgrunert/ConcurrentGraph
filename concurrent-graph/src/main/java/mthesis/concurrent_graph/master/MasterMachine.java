@@ -1029,6 +1029,31 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		catch (Exception e) {
 			logger.error("Exception when saveQueryStats", e);
 		}
+		try (PrintWriter writer = new PrintWriter(new FileWriter(queryStatsDir + File.separator + "queries_all.csv"))) {
+			List<String> statNames = null;
+			for (Q query : queryStatsTotals.values()) {
+				statNames = new ArrayList<>(query.Stats.getStatsMap(workerIds.size()).keySet());
+				break;
+			}
+			if (statNames != null) {
+				Collections.sort(statNames);
+				writer.println(String.join(";", statNames));
+
+				for (Entry<Integer, Q> query : queryStatsTotals.entrySet()) {
+					sb.setLength(0);
+					Map<String, Double> qStats = query.getValue().Stats.getStatsMap(workerIds.size());
+
+					for (String stat : statNames) {
+						sb.append(qStats.get(stat));
+						sb.append(';');
+					}
+					writer.println(sb.toString());
+				}
+			}
+		}
+		catch (Exception e) {
+			logger.error("Exception when saveQueryStats", e);
+		}
 
 		logger.info("Saved worker stats");
 	}
