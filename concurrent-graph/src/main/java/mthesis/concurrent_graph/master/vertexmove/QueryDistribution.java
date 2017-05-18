@@ -453,38 +453,38 @@ public class QueryDistribution {
 		}
 
 		// Remove queries from move chunks if has remainders on src machine
-		//		for (Entry<Integer, Map<Integer, Pair<IntSet, Integer>>> moveSrc : machineMoveQueries.entrySet()) {
-		//			for (Entry<Integer, Pair<IntSet, Integer>> moveDst : moveSrc.getValue().entrySet()) {
-		//				for (int moveQuery : new ArrayList<>(moveDst.getValue().first)) {
+		//		for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> moveSrc : machineMoveQueries.entrySet()) {
+		//			for (Entry<Integer, Map<Integer, Integer>> moveDst : moveSrc.getValue().entrySet()) {
+		//				for (int moveQuery : new ArrayList<>(moveDst.getValue().keySet())) {
 		//					if (MiscUtil.defaultLong(queryMachines.get(moveSrc.getKey()).queryVertices.get(moveQuery)) > 0) {
-		//						moveDst.getValue().first.rem(moveQuery);
+		//						moveDst.getValue().remove(moveQuery);
 		//					}
 		//				}
 		//			}
 		//		}
 		// Move chunks on machine if more vertices there or move to machine with most vertices of query moved there
-		for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> moveSrc : machineMoveQueries.entrySet()) {
-			for (Entry<Integer, Map<Integer, Integer>> moveDst : moveSrc.getValue().entrySet()) {
-				for (Entry<Integer, Integer> moveQuery : new HashMap<>(moveDst.getValue()).entrySet()) {
-					int queryMoveVertices = moveQuery.getValue();
-					Map<Integer, Long> machineVerts = queryMachines.get(moveSrc.getKey()).queryVertices;
-					long queryVerticesOnmachine = MiscUtil.defaultLong(machineVerts.get(moveQuery.getKey()));
-					// Remove if more vertices remain on machine
-					if (queryMoveVertices < queryVerticesOnmachine) {
-						moveDst.getValue().remove(moveQuery.getKey());
-					}
-					else {
-						// Remove if other move has more vertices of this query
-						for (Entry<Integer, Map<Integer, Integer>> otherMoveDst : moveSrc.getValue().entrySet()) {
-							if (otherMoveDst.getKey().equals(moveDst.getKey())) continue;
-							if (MiscUtil.defaultInt(otherMoveDst.getValue().get(moveQuery.getKey())) > queryMoveVertices) {
-								moveDst.getValue().remove(moveQuery.getKey());
-							}
-						}
-					}
-				}
-			}
-		}
+		//		for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> moveSrc : machineMoveQueries.entrySet()) {
+		//			for (Entry<Integer, Map<Integer, Integer>> moveDst : moveSrc.getValue().entrySet()) {
+		//				for (Entry<Integer, Integer> moveQuery : new HashMap<>(moveDst.getValue()).entrySet()) {
+		//					int queryMoveVertices = moveQuery.getValue();
+		//					Map<Integer, Long> machineVerts = queryMachines.get(moveSrc.getKey()).queryVertices;
+		//					long queryVerticesOnmachine = MiscUtil.defaultLong(machineVerts.get(moveQuery.getKey()));
+		//					// Remove if more vertices remain on machine
+		//					if (queryMoveVertices < queryVerticesOnmachine) {
+		//						moveDst.getValue().remove(moveQuery.getKey());
+		//					}
+		//					else {
+		//						// Remove if other move has more vertices of this query
+		//						for (Entry<Integer, Map<Integer, Integer>> otherMoveDst : moveSrc.getValue().entrySet()) {
+		//							if (otherMoveDst.getKey().equals(moveDst.getKey())) continue;
+		//							if (MiscUtil.defaultInt(otherMoveDst.getValue().get(moveQuery.getKey())) > queryMoveVertices) {
+		//								moveDst.getValue().remove(moveQuery.getKey());
+		//							}
+		//						}
+		//					}
+		//				}
+		//			}
+		//		}
 		// Remove queries from move chunks that are local
 		//		for (Entry<Integer, Map<Integer, Pair<IntSet, Integer>>> moveSrc : machineMoveQueries.entrySet()) {
 		//			for (Entry<Integer, Pair<IntSet, Integer>> moveDst : moveSrc.getValue().entrySet()) {
@@ -513,15 +513,15 @@ public class QueryDistribution {
 				if (moveDst.getValue().isEmpty()) continue;
 				workerVertSendMsgs.get(moveSrc.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.newBuilder()
-						//.setMaxMoveCount(moveDst.getValue().second)
-						.setMaxMoveCount(Integer.MAX_VALUE)
-						.addAllChunkQueries(moveDst.getValue().keySet())
-						.setMoveToMachine(moveDst.getKey())
-						.build());
+								//.setMaxMoveCount(moveDst.getValue().second)
+								.setMaxMoveCount(Integer.MAX_VALUE)
+								.addAllChunkQueries(moveDst.getValue().keySet())
+								.setMoveToMachine(moveDst.getKey())
+								.build());
 				workerVertRecvMsgs.get(moveDst.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage.newBuilder()
-						.addAllChunkQueries(moveDst.getValue().keySet())
-						.setReceiveFromMachine(moveSrc.getKey()).build());
+								.addAllChunkQueries(moveDst.getValue().keySet())
+								.setReceiveFromMachine(moveSrc.getKey()).build());
 			}
 		}
 

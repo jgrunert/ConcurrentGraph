@@ -319,7 +319,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				chunkCount += chunk.numVertices;
 				if (multiClusterChunk) {
 					multiClusterChunks += chunk.numVertices;
-					//chunk.clusterId = -1;
+					chunk.clusterId = -1;
 				}
 			}
 		}
