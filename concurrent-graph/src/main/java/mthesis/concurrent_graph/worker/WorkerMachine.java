@@ -167,7 +167,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		this.jobConfig = jobConfig;
 		this.vertexReader = vertexReader;
 
-		lastSendMasterQueryIntersects = System.currentTimeMillis();
+		lastSendMasterQueryIntersects = System.currentTimeMillis() + Configuration.WORKER_QUERY_INTERSECT_INTERVAL;
 	}
 
 	private void loadVertices(List<String> partitions) {

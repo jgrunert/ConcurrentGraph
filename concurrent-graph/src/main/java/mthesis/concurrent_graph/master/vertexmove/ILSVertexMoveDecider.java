@@ -28,9 +28,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 	private static final Logger logger = LoggerFactory.getLogger(ILSVertexMoveDecider.class);
 
-	private final double VertexWorkerActiveImbalance = Configuration.getPropertyDoubleDefault("VertexMoveActiveImbalance", 0.6);
+	//	private final double VertexWorkerActiveImbalance = Configuration.getPropertyDoubleDefault("VertexMoveActiveImbalance", 0.6);
 	private final double VertexWorkerTotalImbalance = Configuration.getPropertyDoubleDefault("VertexMoveTotalImbalance", 0.3);
-	private final double VertexAvgActiveImbalance = Configuration.getPropertyDoubleDefault("VertexAvgActiveImbalance", 0.4);
+	//	private final double VertexAvgActiveImbalance = Configuration.getPropertyDoubleDefault("VertexAvgActiveImbalance", 0.4);
 	private final double VertexAvgTotalImbalance = Configuration.getPropertyDoubleDefault("VertexAvgTotalImbalance", 0.2);
 	private final long MaxTotalImproveTime = Configuration.MASTER_QUERY_MOVE_CALC_TIMEOUT;
 	private final long MaxGreedyImproveTime = Configuration.getPropertyLongDefault("VertexMoveMaxGreedyTime", 500);
@@ -115,12 +115,10 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			}
 
 			printIlsLog("Initial costs\t" + bestDistribution.getCurrentCosts());
-			printIlsLog("Initial imbalance\t" + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
-					+ bestDistribution.getAverageTotalVerticesImbalanceFactor());
+			printIlsLog("Initial imbalance\t" + bestDistribution.getAverageTotalVerticesImbalanceFactor());
 			String msg = ("workerVertices\t");
 			for (int worker : workerIds) {
 				msg += (worker + ": "
-						+ bestDistribution.getQueryMachines().get(worker).activeVertices + "/"
 						+ bestDistribution.getQueryMachines().get(worker).totalVertices + " ");
 			}
 			printIlsLog(msg);
@@ -194,14 +192,13 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		int clusterCount = workerIds.size() * 4; // TODO Config
 		//		for (Entry<Pair<Integer, Integer>, Double> mergeIntersect : clusterIntersectsPairsSorted.entrySet()) {
 		//			if (queryClusterIntersects.size() <= clusterCount) break;
-		//		while (clusters.size() > clusterCount) {
-		while (true) {
+		while (clusters.size() > clusterCount) {
+			//		while (true) {
 
-			// TODO Testcode
-			printIlsLog("clusters: ");
-			for (QueryCluster c : clusters.values()) {
-				ilsLogWriter.println("\t" + c + "\t" + c.vertices + "\t" + c.intersects);
-			}
+			//			printIlsLog("clusters: ");
+			//			for (QueryCluster c : clusters.values()) {
+			//				ilsLogWriter.println("\t" + c + "\t" + c.vertices + "\t" + c.intersects);
+			//			}
 
 			// Merge largest cluster intersect
 			Integer clusterIdA = 0;
@@ -211,6 +208,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				for (Entry<Integer, Integer> cIntersect : c0.intersects.entrySet()) {
 					long c1Verts = clusters.get(cIntersect.getKey()).vertices;
 					double intersect = (double) cIntersect.getValue() / ((c0.vertices + c1Verts) / 2);
+					//double intersect = (double) cIntersect.getValue() / (Math.min(c0.vertices, c1Verts));
 					if (intersect > bestIntersect) {
 						bestIntersect = intersect;
 						clusterIdA = c0.id;
@@ -220,8 +218,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			}
 
 			// Terminate if no more intersects
-			if (bestIntersect < 0.5) {
-				//				if (bestIntersect <= 0) {
+			//			if (bestIntersect < 0.5) {
+			if (bestIntersect < 0.2) {
+				//								if (bestIntersect <= 0) {
 				printIlsLog("No more intersections, terminate with more clusters: " + clusters.size());
 				break;
 			}
@@ -290,7 +289,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 		// Assign chunks to clusters
-		Map<Integer, Double> chunkClusterScores = new HashMap<>();
+		//		Map<Integer, Double> chunkClusterScores = new HashMap<>();
 		int multiClusterChunks = 0;
 		int chunkCount = 0;
 		for (Entry<Integer, QueryWorkerMachine> worker : bestDistribution.getQueryMachines().entrySet()) {
@@ -305,9 +304,10 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				//				int cluster0 = -1;
 				//				for (int chunkQuery : chunk.queries) {
 				//					int clusterID = queryClusterIds.get(chunkQuery);
-				//					//					QueryCluster cluster = clusters.get(clusterID);
+				//					QueryCluster cluster = clusters.get(clusterID);
 				//					//double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0 / cluster.queries.size());
-				//					double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0);
+				//					double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, cluster.queries.size());
+				//					//double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0);
 				//					if (score > bestClusterScore) {
 				//						bestClusterScore = score;
 				//						bestCluster = clusterID;
@@ -319,12 +319,13 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				//							multiClusterChunk = true;
 				//					}
 				//				}
-				//
+
 				//				chunk.clusterId = bestCluster;
+				//				chunk.clusters.add(bestCluster);
 				//				chunkCount += chunk.numVertices;
 				//				if (multiClusterChunk) {
 				//					multiClusterChunks += chunk.numVertices;
-				//					chunk.clusterId = -1;
+				//					//					chunk.clusterId = -1;
 				//				}
 			}
 		}
@@ -365,7 +366,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 			// Check if result has better costs and valid
 			boolean isGoodNew = (ilsDistribution.getCurrentCosts() < bestDistribution.getCurrentCosts())
-					&& checkActiveVertsOkOrBetter(bestDistribution, ilsDistribution)
+					//					&& checkActiveVertsOkOrBetter(bestDistribution, ilsDistribution)
 					&& checkTotalVertsOkOrBetter(bestDistribution, ilsDistribution);
 			if (isGoodNew) {
 				bestDistribution = ilsDistribution;
@@ -412,14 +413,12 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		String workerVertsMsg = "workerVertives: ";
 		for (Integer worker : bestDistribution.getQueryMachines().keySet()) {
-			workerVertsMsg += worker + ": " + bestDistribution.getQueryMachines().get(worker).activeVertices + "/" +
-					bestDistribution.getQueryMachines().get(worker).totalVertices + ", ";
+			workerVertsMsg += worker + ": " + bestDistribution.getQueryMachines().get(worker).totalVertices + ", ";
 		}
 		printIlsLog(workerVertsMsg);
 		String workerBalanceMsg = "workerBalances: ";
 		for (Integer worker : bestDistribution.getQueryMachines().keySet()) {
-			workerBalanceMsg += worker + ": " + bestDistribution.getWorkerActiveVerticesImbalanceFactor(worker) + "/" +
-					bestDistribution.getWorkerTotalVerticesImbalanceFactor(worker) + ", ";
+			workerBalanceMsg += worker + ": " + bestDistribution.getWorkerTotalVerticesImbalanceFactor(worker) + ", ";
 		}
 		printIlsLog(workerBalanceMsg);
 		printIlsLog("worker query chunks");
@@ -430,19 +429,18 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		if (movedVertices < MinMoveTotalVertices) {
 			String printMsg = "Decided not move, not enough vertices: " + totalVerticesMoved + " costs: "
 					+ bestDistribution.getCurrentCosts()
-					+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
-					+ bestDistribution.getAverageTotalVerticesImbalanceFactor();
+					+ " imbalance: " + bestDistribution.getAverageTotalVerticesImbalanceFactor();
 			printIlsLog(printMsg);
 			logger.info(printMsg);
 			moveDecission = null;
 		}
 		else {
-			if (checkActiveVertsOkOrBetter(originalDistribution, bestDistribution)
-					&& checkTotalVertsOkOrBetter(originalDistribution, bestDistribution)) {
+			if (//checkActiveVertsOkOrBetter(originalDistribution, bestDistribution)					&&
+			checkTotalVertsOkOrBetter(originalDistribution, bestDistribution)) {
 				moveDecission = bestDistribution.toMoveDecision(workerIds, QueryKeepLocalThreshold);
 				String printMsg = "Decided move, moves: " + moveDecission.moveMessages + " movedVertices: " + movedVertices + " costs: "
 						+ bestDistribution.getCurrentCosts()
-						+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
+						+ " imbalance: "
 						+ bestDistribution.getAverageTotalVerticesImbalanceFactor();
 				printIlsLog(printMsg);
 				logger.info(printMsg);
@@ -451,8 +449,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			else {
 				String printMsg = "ERROR, no move, result with too high imbalance movedVertices: " + totalVerticesMoved + " costs: "
 						+ bestDistribution.getCurrentCosts()
-						+ " imbalance: " + bestDistribution.getAverageActiveVerticesImbalanceFactor() + "/"
-						+ bestDistribution.getAverageTotalVerticesImbalanceFactor();
+						+ " imbalance: " + bestDistribution.getAverageTotalVerticesImbalanceFactor();
 				printIlsLog(printMsg);
 				logger.error(printMsg);
 				moveDecission = null;
@@ -465,7 +462,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				for (IlsLogItem ilsLogItem : ilsStepsLog) {
 					writer.println((ilsLogItem.time + ";"
 							+ ilsLogItem.costs + ";" + ilsLogItem.currentlyBestDistributionCosts + ";" + ilsLogItem.lastPertubationCosts
-							+ ";" + ilsLogItem.vertActiveImbalance + ";" + ilsLogItem.vertTotalImbalance));
+							+ ";" + ilsLogItem.vertTotalImbalance));
 				}
 				ilsLogWriter.close();
 			}
@@ -483,7 +480,6 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		ilsStepsLog.add(
 				new IlsLogItem(System.currentTimeMillis() - decideStartTime, currentDistribution.getCurrentCosts(),
 						latestPertubatedDistributionCosts, currentlyBestDistributionCosts,
-						currentDistribution.getAverageActiveVerticesImbalanceFactor(),
 						currentDistribution.getAverageTotalVerticesImbalanceFactor()));
 	}
 
@@ -494,11 +490,11 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 	private QueryDistribution optimizeGreedy(Set<Integer> queryIds, List<Integer> workerIds, QueryDistribution baseDistribution,
 			List<Integer> clusterIds) {
-		long minActiveVertices = (long) (baseDistribution.workerActiveVertices / workerIds.size() * (1.0 - VertexWorkerActiveImbalance));
-		long maxActiveVertices = Math.min(
-				(long) (baseDistribution.workerActiveVertices / workerIds.size() / (1.0 - VertexWorkerActiveImbalance)),
-				Long.MAX_VALUE / 4);
-		long minTotalVertices = (long) (baseDistribution.workerTotalVertices / workerIds.size() * (1.0 - VertexWorkerActiveImbalance));
+		//		long minActiveVertices = (long) (baseDistribution.workerActiveVertices / workerIds.size() * (1.0 - VertexWorkerActiveImbalance));
+		//		long maxActiveVertices = Math.min(
+		//				(long) (baseDistribution.workerActiveVertices / workerIds.size() / (1.0 - VertexWorkerActiveImbalance)),
+		//				Long.MAX_VALUE / 4);
+		long minTotalVertices = (long) (baseDistribution.workerTotalVertices / workerIds.size() * (1.0 - VertexWorkerTotalImbalance));
 		long maxTotalVertices = Math.min(
 				(long) (baseDistribution.workerTotalVertices / workerIds.size() / (1.0 - VertexWorkerTotalImbalance)),
 				Long.MAX_VALUE / 4);
@@ -624,7 +620,6 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			String msg = ("workerBalances\t");
 			for (int worker : workerIds) {
 				msg += (worker + ": "
-						+ (double) ((int) (baseDistribution.getWorkerActiveVerticesImbalanceFactor(worker) * 100)) / 100 + "/"
 						+ (double) ((int) (baseDistribution.getWorkerTotalVerticesImbalanceFactor(worker) * 100)) / 100 + " ");
 			}
 			printIlsLog(msg);
@@ -660,8 +655,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 					//						continue;
 					int fromWorkerClusterVertices = MiscUtil.defaultInt(clusterPartitionVerts.get(fromWorkerId));
 					if (fromWorkerClusterVertices == 0) continue;
-					if (fromWorker.activeVertices - fromWorkerClusterVertices < minActiveVertices
-							|| fromWorker.totalVertices - fromWorkerClusterVertices < minTotalVertices)
+					if (fromWorker.totalVertices - fromWorkerClusterVertices < minTotalVertices)
 						continue;
 
 					for (Integer toWorkerId : workerIds) {
@@ -676,8 +670,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						//							continue;
 						long toWorkerClusterVertices = MiscUtil.defaultInt(clusterPartitionVerts.get(toWorkerId));
 						if (toWorkerClusterVertices == 0) continue;
-						if (toWorker.activeVertices + toWorkerClusterVertices > maxActiveVertices
-								|| toWorker.totalVertices + toWorkerClusterVertices > maxTotalVertices)
+						if (toWorker.totalVertices + toWorkerClusterVertices > maxTotalVertices)
 							continue;
 
 						// Only move local queries to their largest partition
@@ -694,8 +687,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						int moved = newDistribution.moveAllClusterVertices(clusterId, fromWorkerId, toWorkerId);
 						if (moved == 0) continue;
 
-						boolean isValid = checkActiveVertsOkOrBetter(baseDistribution, newDistribution)
-								&& checkTotalVertsOkOrBetter(baseDistribution, newDistribution);
+						boolean isValid = checkTotalVertsOkOrBetter(baseDistribution, newDistribution);
+						//						boolean isValid = checkActiveVertsOkOrBetter(baseDistribution, newDistribution)
+						//								&& checkTotalVertsOkOrBetter(baseDistribution, newDistribution);
 						if (!isValid) continue;
 
 						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
@@ -832,27 +826,27 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		QueryDistribution newDistribution = unifyQueryAtLargestPartition(getRandomFromList(queryIds, rd), workerIds, baseDistribution);
 
 		// Now unify until workload balancing reached. Move smallest partition from most loaded worker to least loaded worker
-		while (!(workloadActiveBalanceOk(newDistribution) && workloadTotalBalanceOk(newDistribution))
+		while (!workloadTotalBalanceOk(newDistribution)
 				&& (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
-			while (!workloadActiveBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
-				int minLoadedId = newDistribution.getMachineMinActiveVertices();
-				int maxLoadedId = newDistribution.getMachineMaxActiveVertices();
-				QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
-				//				System.out.println("A " + moveChunk + " " + maxLoadedId + "->" + minLoadedId + " "
-				//						+ newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId));
-				newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId);
-			}
-
-			while (!workloadTotalBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
-				int minLoadedId = newDistribution.getMachineMinTotalVertices();
-				int maxLoadedId = newDistribution.getMachineMaxTotalVertices();
-				QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
-				//				System.out.println("T " + moveChunk + " " + maxLoadedId + "->" + minLoadedId + " "
-				//						+ newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId)
-				//						+ "  " + newDistribution.getQueryMachines().get(minLoadedId).totalVertices + "  "
-				//						+ newDistribution.getQueryMachines().get(maxLoadedId).totalVertices + " avg " + newDistribution.avgTotalVertices);
-				newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId);
-			}
+			//			while (!workloadActiveBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
+			//				int minLoadedId = newDistribution.getMachineMinActiveVertices();
+			//				int maxLoadedId = newDistribution.getMachineMaxActiveVertices();
+			//				QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
+			//				//				System.out.println("A " + moveChunk + " " + maxLoadedId + "->" + minLoadedId + " "
+			//				//						+ newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId));
+			//				newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId);
+			//			}
+			//
+			//			while (!workloadTotalBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
+			int minLoadedId = newDistribution.getMachineMinTotalVertices();
+			int maxLoadedId = newDistribution.getMachineMaxTotalVertices();
+			QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
+			//				System.out.println("T " + moveChunk + " " + maxLoadedId + "->" + minLoadedId + " "
+			//						+ newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId)
+			//						+ "  " + newDistribution.getQueryMachines().get(minLoadedId).totalVertices + "  "
+			//						+ newDistribution.getQueryMachines().get(maxLoadedId).totalVertices + " avg " + newDistribution.avgTotalVertices);
+			newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId);
+			//			}
 
 			// Workers sorted by increasing total vertices
 		}
@@ -900,20 +894,20 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 
-	/**
-	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
-	 */
-	private boolean workloadActiveBalanceOk(QueryDistribution distribution) {
-		if (VertexAvgActiveImbalance >= 1 && VertexWorkerActiveImbalance >= 1) return true;
-		Map<Integer, QueryWorkerMachine> workers = distribution.getQueryMachines();
-		double avgImbalance = 0.0;
-		for (Integer worker : workers.keySet()) {
-			double imb = distribution.getWorkerActiveVerticesImbalanceFactor(worker);
-			if (imb > VertexWorkerActiveImbalance) return false;
-			avgImbalance += imb;
-		}
-		return (avgImbalance / workers.size()) <= VertexAvgActiveImbalance;
-	}
+	//	/**
+	//	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
+	//	 */
+	//	private boolean workloadActiveBalanceOk(QueryDistribution distribution) {
+	//		if (VertexAvgActiveImbalance >= 1 && VertexWorkerActiveImbalance >= 1) return true;
+	//		Map<Integer, QueryWorkerMachine> workers = distribution.getQueryMachines();
+	//		double avgImbalance = 0.0;
+	//		for (Integer worker : workers.keySet()) {
+	//			double imb = distribution.getWorkerActiveVerticesImbalanceFactor(worker);
+	//			if (imb > VertexWorkerActiveImbalance) return false;
+	//			avgImbalance += imb;
+	//		}
+	//		return (avgImbalance / workers.size()) <= VertexAvgActiveImbalance;
+	//	}
 
 	/**
 	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
@@ -931,23 +925,23 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	}
 
 
-	/**
-	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
-	 */
-	private boolean checkActiveVertsOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution) {
-		if (VertexAvgActiveImbalance >= 1 && VertexWorkerActiveImbalance >= 1) return true;
-		Map<Integer, QueryWorkerMachine> workers = oldDistribution.getQueryMachines();
-		double oldAvgImbalance = 0.0;
-		double newAvgImbalance = 0.0;
-		for (Integer worker : workers.keySet()) {
-			double oldImb = oldDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
-			double newImb = newDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
-			if (newImb > VertexWorkerActiveImbalance && newImb > oldImb) return false;
-			oldAvgImbalance += oldImb;
-			newAvgImbalance += newImb;
-		}
-		return (newAvgImbalance / workers.size()) <= VertexAvgActiveImbalance || newAvgImbalance <= oldAvgImbalance;
-	}
+	//	/**
+	//	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
+	//	 */
+	//	private boolean checkActiveVertsOkOrBetter(QueryDistribution oldDistribution, QueryDistribution newDistribution) {
+	//		if (VertexAvgActiveImbalance >= 1 && VertexWorkerActiveImbalance >= 1) return true;
+	//		Map<Integer, QueryWorkerMachine> workers = oldDistribution.getQueryMachines();
+	//		double oldAvgImbalance = 0.0;
+	//		double newAvgImbalance = 0.0;
+	//		for (Integer worker : workers.keySet()) {
+	//			double oldImb = oldDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
+	//			double newImb = newDistribution.getWorkerActiveVerticesImbalanceFactor(worker);
+	//			if (newImb > VertexWorkerActiveImbalance && newImb > oldImb) return false;
+	//			oldAvgImbalance += oldImb;
+	//			newAvgImbalance += newImb;
+	//		}
+	//		return (newAvgImbalance / workers.size()) <= VertexAvgActiveImbalance || newAvgImbalance <= oldAvgImbalance;
+	//	}
 
 	/**
 	 * Checks if a new distribution is better than the old one and has sufficient workload balancing at all workers.
@@ -1018,18 +1012,15 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		public final double costs;
 		public final double lastPertubationCosts;
 		public final double currentlyBestDistributionCosts;
-		public final double vertActiveImbalance;
 		public final double vertTotalImbalance;
 
 		public IlsLogItem(long time, double costs, double lastPertubationCosts, double currentlyBestDistributionCosts,
-				double vertActiveImbalance,
 				double vertTotalImbalance) {
 			super();
 			this.time = time;
 			this.costs = costs;
 			this.lastPertubationCosts = lastPertubationCosts;
 			this.currentlyBestDistributionCosts = currentlyBestDistributionCosts;
-			this.vertActiveImbalance = vertActiveImbalance;
 			this.vertTotalImbalance = vertTotalImbalance;
 		}
 	}

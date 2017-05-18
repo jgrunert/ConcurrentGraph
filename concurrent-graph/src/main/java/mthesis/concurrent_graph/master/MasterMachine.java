@@ -78,6 +78,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final double LsruExtraShotsDeltaThreshNeg = Configuration.getPropertyDoubleDefault("LsruExtraShotsDeltaThreshNeg", 0.3);
 	private final double LsruExtraShotsDeltaThreshPos = Configuration.getPropertyDoubleDefault("LsruExtraShotsDeltaThreshPos", 0.3);
 	private final int LsruExtraShots = Configuration.getPropertyIntDefault("LsruExtraShots", 3);
+	private final double VertexMoveTotalImbalance = Configuration.getPropertyDoubleDefault("VertexMoveTotalImbalance", 0.3);
+	private final double VertexAvgTotalImbalance = Configuration.getPropertyDoubleDefault("VertexAvgTotalImbalance", 0.2);
 
 	// Query logging for later evaluation
 	private final String queryStatsDir;
@@ -115,6 +117,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private final Map<Integer, Long> latestWorkerTotalVertices = new HashMap<>();
 	private final Map<Integer, Long> latestWorkerActiveVerticesWindows = new HashMap<>();
+	private double latestWavwMaxImbalance = 0;
+	private double latestWavwAvgImbalance = 0;
 	private double localSuperstepsRatioUnique = 0;
 	private double lastQMoveLSRU = 0;
 	private int remainingLsruExtraShots = 1;
@@ -370,6 +374,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 						latestWorkerActiveVerticesWindows.put(controlMsg.getSrcMachine(), stats.ActiveVerticesTimeWindow);
 					}
 
+					// Update local supersteps stat
 					double lsrSupersteps = 0;
 					double lsrLocalSupersteps = 0;
 					long lsrTimeWindow = System.currentTimeMillis() - masterStartTimeMs - LocalSuperstepTimeWindow;
@@ -384,6 +389,25 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					double lsrNonlocalSuperstepsUnique = (lsrSupersteps - lsrLocalSupersteps) / workerIds.size();
 					double lsrSuperstepsUnique = lsrNonlocalSuperstepsUnique + lsrLocalSupersteps;
 					localSuperstepsRatioUnique = lsrSupersteps > 0 ? (double) lsrLocalSupersteps / lsrSuperstepsUnique : 0;
+
+					// Update imbalance stat
+					long avgVerts = 0;
+					for (Long workerVerts : latestWorkerActiveVerticesWindows.values()) {
+						avgVerts += workerVerts;
+					}
+					avgVerts /= latestWorkerActiveVerticesWindows.size();
+					double avgImbalance = 0;
+					double maxImbalance = 0;
+					if (avgVerts > 0) {
+						for (Long workerVerts : latestWorkerActiveVerticesWindows.values()) {
+							double imbalance = (double) Math.abs(workerVerts - avgVerts) / avgVerts;
+							avgImbalance += imbalance;
+							maxImbalance = Math.max(maxImbalance, imbalance);
+						}
+						avgImbalance /= latestWorkerActiveVerticesWindows.size();
+						latestWavwMaxImbalance = maxImbalance;
+						latestWavwAvgImbalance = avgImbalance;
+					}
 				}
 			}
 
@@ -603,17 +627,26 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			double delta = localSuperstepsRatioUnique - lastQMoveLSRU;
 			boolean lsruThreshold = localSuperstepsRatioUnique < LsruExtraShotsLow
 					|| delta < LsruExtraShotsDeltaThreshNeg || delta > LsruExtraShotsDeltaThreshPos;
-			if (lsruThreshold || remainingLsruExtraShots > 0) {
-				System.err.println("Start QMove: " + localSuperstepsRatioUnique + " last " + lastQMoveLSRU + " delta " + delta);//TODO Log
+			boolean imbalanceThreshold = latestWavwAvgImbalance > (VertexAvgTotalImbalance + 0.05)
+					|| latestWavwMaxImbalance > (VertexMoveTotalImbalance + 0.05); // TODO Config
+
+			if (lsruThreshold || imbalanceThreshold || remainingLsruExtraShots > 0) {
+				System.err.println("Start QMove: " + localSuperstepsRatioUnique + " last " + lastQMoveLSRU + " delta " + delta
+						+ " avgImbalance " + latestWavwAvgImbalance + " maxImbalance " + latestWavwMaxImbalance + " "
+						+ latestWorkerActiveVerticesWindows);//TODO Testcode
+				logger.info("Start QMove: " + localSuperstepsRatioUnique + " last " + lastQMoveLSRU + " delta " + delta
+						+ " avgImbalance " + latestWavwAvgImbalance + " maxImbalance " + latestWavwMaxImbalance + " "
+						+ latestWorkerActiveVerticesWindows);
 
 				// Allow extra shot of one move wasnt successful
 				if (lsruThreshold) {
 					lastQMoveLSRU = localSuperstepsRatioUnique;
 					remainingLsruExtraShots = LsruExtraShots;
 				}
-				else {
+				else if (!imbalanceThreshold) {
 					remainingLsruExtraShots--;
 					System.err.println("Used LsruExtraShot, remaining " + remainingLsruExtraShots);//TODO Log
+					logger.info("Used LsruExtraShot, remaining " + remainingLsruExtraShots);//TODO Log
 				}
 
 				VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();

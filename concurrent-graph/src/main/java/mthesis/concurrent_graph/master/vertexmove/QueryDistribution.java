@@ -32,8 +32,6 @@ public class QueryDistribution {
 
 	public final long workerTotalVertices;
 	public final long avgTotalVertices;
-	public final long workerActiveVertices;
-	public final long avgActiveVertices;
 	public final Map<Integer, Long> queryVertices;
 
 
@@ -42,7 +40,7 @@ public class QueryDistribution {
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
 		this(queryIds, queryMachines, calculateCosts(queryIds, queryMachines), getWorkerTotalVertices(queryMachines),
-				getWorkerActiveVertices(queryMachines), getWorkerQueryVertices(queryMachines));
+				getWorkerQueryVertices(queryMachines));
 	}
 
 	private static long getWorkerTotalVertices(Map<Integer, QueryWorkerMachine> queryMachines) {
@@ -53,13 +51,6 @@ public class QueryDistribution {
 		return vertices;
 	}
 
-	private static long getWorkerActiveVertices(Map<Integer, QueryWorkerMachine> queryMachines) {
-		long vertices = 0;
-		for (QueryWorkerMachine worker : queryMachines.values()) {
-			vertices += worker.activeVertices;
-		}
-		return vertices;
-	}
 
 	private static Map<Integer, Long> getWorkerQueryVertices(Map<Integer, QueryWorkerMachine> queryMachines) {
 		Map<Integer, Long> vertices = new HashMap<>();
@@ -75,15 +66,13 @@ public class QueryDistribution {
 	 * Copy constructor
 	 */
 	public QueryDistribution(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines,
-			double currentCosts, long workerTotalVertices, long workerActiveVertices, Map<Integer, Long> queryVertices) {
+			double currentCosts, long workerTotalVertices, Map<Integer, Long> queryVertices) {
 		super();
 		this.queryIds = queryIds;
 		this.queryMachines = queryMachines;
 		this.currentCosts = currentCosts;
 		this.workerTotalVertices = workerTotalVertices;
 		this.avgTotalVertices = workerTotalVertices / queryMachines.size();
-		this.workerActiveVertices = workerActiveVertices;
-		this.avgActiveVertices = workerActiveVertices / queryMachines.size();
 		this.queryVertices = queryVertices;
 	}
 
@@ -93,7 +82,7 @@ public class QueryDistribution {
 		for (Entry<Integer, QueryWorkerMachine> entry : queryMachines.entrySet()) {
 			queryMachinesClone.put(entry.getKey(), entry.getValue().createClone());
 		}
-		return new QueryDistribution(queryIds, queryMachinesClone, currentCosts, workerTotalVertices, workerActiveVertices,
+		return new QueryDistribution(queryIds, queryMachinesClone, currentCosts, workerTotalVertices,
 				new HashMap<>(queryVertices));
 	}
 
@@ -292,30 +281,6 @@ public class QueryDistribution {
 		return costs;
 	}
 
-	//	private static double calculateMoveCostsMachineMax(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-	//		int hightestMachineCost = 0;
-	//		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-	//			int machineCosts = 0;
-	//			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
-	//				if (chunk.homeMachine != machine.getKey())
-	//					machineCosts += chunk.numVertices;
-	//			}
-	//			hightestMachineCost = Math.max(machineCosts, hightestMachineCost);
-	//		}
-	//		return (double) hightestMachineCost * VertexMoveCosts;
-	//	}
-	//
-	//	private static double calculateMoveCostsTotal(Set<Integer> queryIds, Map<Integer, QueryWorkerMachine> queryMachines) {
-	//		int costSum = 0;
-	//		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-	//			int machineCosts = 0;
-	//			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
-	//				if (chunk.homeMachine != machine.getKey()) machineCosts += chunk.numVertices;
-	//			}
-	//			costSum += machineCosts;
-	//		}
-	//		return (double) costSum * VertexMoveCosts;
-	//	}
 
 	public int calculateMovedVertices() {
 		int movedVertices = 0;
@@ -330,16 +295,6 @@ public class QueryDistribution {
 	}
 
 
-
-	/**
-	 * Fraction of active vertices away from average vertices.
-	 */
-	public double getWorkerActiveVerticesImbalanceFactor(int workerId) {
-		long workerVerts = queryMachines.get(workerId).activeVertices;
-		if (avgActiveVertices == 0) return 0;
-		return (double) Math.abs(workerVerts - avgActiveVertices) / avgActiveVertices;
-	}
-
 	/**
 	 * Fraction of total vertices away from average vertices.
 	 */
@@ -347,14 +302,6 @@ public class QueryDistribution {
 		long workerVerts = queryMachines.get(workerId).totalVertices;
 		if (avgTotalVertices == 0) return 0;
 		return (double) Math.abs(workerVerts - avgTotalVertices) / avgTotalVertices;
-	}
-
-	public double getAverageActiveVerticesImbalanceFactor() {
-		double avg = 0;
-		for (Integer workerId : queryMachines.keySet()) {
-			avg += getWorkerActiveVerticesImbalanceFactor(workerId);
-		}
-		return avg / queryMachines.size();
 	}
 
 	public double getAverageTotalVerticesImbalanceFactor() {
@@ -365,35 +312,6 @@ public class QueryDistribution {
 		return avg / queryMachines.size();
 	}
 
-
-
-	//	private double getLoadImbalanceCosts() {
-	//		// TODO Also queries per machine?
-	//		Map<Integer, Integer> workerVertices = new HashMap<>(workerIds.size());
-	//		for (int workerId : workerIds) {
-	//			workerVertices.put(workerId, 0);
-	//		}
-	//		for (Entry<Integer, Map<Integer, Integer>> queryWorkerVertices : actQueryWorkerActiveVerts.entrySet()) {
-	//			for (Entry<Integer, Integer> partition : queryWorkerVertices.getValue().entrySet()) {
-	//				workerVertices.put(partition.getKey(), workerVertices.get(partition.getKey()) + partition.getValue());
-	//			}
-	//		}
-	//
-	//		// TODO Other cost model?
-	//		int largest = 0;
-	//		int smallest = Integer.MAX_VALUE;
-	//		for (int workerId : workerIds) {
-	//			largest = Math.max(largest, workerVertices.get(workerId));
-	//			smallest = Math.min(smallest, workerVertices.get(workerId));
-	//		}
-	//		double imbalance = (double) (largest - smallest) / (double) largest;
-	//
-	//		// TODO Quantify costs instead of only one hard limit?
-	//		if (imbalance > 0.6)
-	//			return Double.POSITIVE_INFINITY;
-	//		else
-	//			return 0;
-	//	}
 
 
 	public void printMoveDistribution(PrintWriter writer) {
@@ -552,7 +470,6 @@ public class QueryDistribution {
 		for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> moveSrcInclude : machineMoveIncludeQueries.entrySet()) {
 			Map<Integer, Map<Integer, Integer>> moveSrcTolerate = machineMoveTolerateQueries.get(moveSrcInclude.getKey());
 			if (moveSrcInclude.getValue().isEmpty()) {
-				System.err.println("No include queries, only tolerate " + moveSrcTolerate);
 				continue;
 			}
 
@@ -587,29 +504,6 @@ public class QueryDistribution {
 	}
 
 
-	public int getMachineMinActiveVertices() {
-		int workerId = 0;
-		long minVertices = Long.MAX_VALUE;
-		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
-			if (worker.getValue().activeVertices < minVertices) {
-				minVertices = worker.getValue().activeVertices;
-				workerId = worker.getKey();
-			}
-		}
-		return workerId;
-	}
-
-	public int getMachineMaxActiveVertices() {
-		int workerId = 0;
-		long maxVertices = 0;
-		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
-			if (worker.getValue().activeVertices > maxVertices) {
-				maxVertices = worker.getValue().activeVertices;
-				workerId = worker.getKey();
-			}
-		}
-		return workerId;
-	}
 
 	public int getMachineMinTotalVertices() {
 		int workerId = 0;

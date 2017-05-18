@@ -18,7 +18,7 @@ import mthesis.concurrent_graph.util.MiscUtil;
 public class QueryWorkerMachine {
 
 	// Total number of vertices active in a query (if a vertex is active in n queries it counts as n vertices)
-	public long activeVertices;
+	public long chunkVertices;
 	public long totalVertices;
 	// Active queries on this machine
 	public List<QueryVertexChunk> queryChunks;
@@ -31,26 +31,26 @@ public class QueryWorkerMachine {
 		this.queryChunks = queryChunks;
 		this.queryVertices = new HashMap<>();
 		this.totalVertices = totalVertices;
-		activeVertices = 0;
+		chunkVertices = 0;
 		for (QueryVertexChunk qChunk : queryChunks) {
-			activeVertices += qChunk.numVertices;
+			chunkVertices += qChunk.numVertices;
 			for (int query : qChunk.queries) {
 				queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) + qChunk.numVertices);
 			}
 		}
 	}
 
-	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, long activeVertices, long totalVertices,
+	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, long chunkVertices, long totalVertices,
 			Map<Integer, Long> queryVertices) {
 		super();
 		this.queryChunks = queryChunks;
 		this.queryVertices = queryVertices;
-		this.activeVertices = activeVertices;
+		this.chunkVertices = chunkVertices;
 		this.totalVertices = totalVertices;
 	}
 
 	public QueryWorkerMachine createClone() {
-		return new QueryWorkerMachine(new ArrayList<>(queryChunks), activeVertices, totalVertices, new HashMap<>(queryVertices));
+		return new QueryWorkerMachine(new ArrayList<>(queryChunks), chunkVertices, totalVertices, new HashMap<>(queryVertices));
 	}
 
 
@@ -67,7 +67,7 @@ public class QueryWorkerMachine {
 			if ((moveIntersecting || chunk.queries.size() == 1) && chunk.queries.contains(queryId)) {
 				removedQueryChunks.add(chunk);
 				queryChunks.remove(i);
-				activeVertices -= chunk.numVertices;
+				chunkVertices -= chunk.numVertices;
 				totalVertices -= chunk.numVertices;
 				for (int query : chunk.queries) {
 					queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) - chunk.numVertices);
@@ -100,7 +100,7 @@ public class QueryWorkerMachine {
 
 				removedQueryChunks.add(chunk);
 				queryChunks.remove(i);
-				activeVertices -= chunk.numVertices;
+				chunkVertices -= chunk.numVertices;
 				totalVertices -= chunk.numVertices;
 				for (int query : chunk.queries) {
 					queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) - chunk.numVertices);
@@ -133,7 +133,7 @@ public class QueryWorkerMachine {
 
 				removedQueryChunks.add(chunk);
 				queryChunks.remove(i);
-				activeVertices -= chunk.numVertices;
+				chunkVertices -= chunk.numVertices;
 				totalVertices -= chunk.numVertices;
 				for (int query : chunk.queries) {
 					queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) - chunk.numVertices);
@@ -157,7 +157,7 @@ public class QueryWorkerMachine {
 			if (chunk.queries.equals(chunkQueries)) {
 				removedQueryChunks.add(chunk);
 				queryChunks.remove(i);
-				activeVertices -= chunk.numVertices;
+				chunkVertices -= chunk.numVertices;
 				totalVertices -= chunk.numVertices;
 				for (int query : chunk.queries) {
 					queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) - chunk.numVertices);
@@ -176,7 +176,7 @@ public class QueryWorkerMachine {
 	 */
 	public boolean removeSingleQueryChunkVertices(QueryVertexChunk queryChunk) {
 		if (queryChunks.remove(queryChunk)) {
-			activeVertices -= queryChunk.numVertices;
+			chunkVertices -= queryChunk.numVertices;
 			totalVertices -= queryChunk.numVertices;
 			for (int query : queryChunk.queries) {
 				queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) - queryChunk.numVertices);
@@ -195,7 +195,7 @@ public class QueryWorkerMachine {
 	 */
 	public void addQueryChunk(QueryVertexChunk chunk) {
 		queryChunks.add(chunk);
-		activeVertices += chunk.numVertices;
+		chunkVertices += chunk.numVertices;
 		totalVertices += chunk.numVertices;
 		for (int query : chunk.queries) {
 			queryVertices.put(query, MiscUtil.defaultLong(queryVertices.get(query)) + chunk.numVertices);
@@ -229,6 +229,6 @@ public class QueryWorkerMachine {
 
 	@Override
 	public String toString() {
-		return QueryWorkerMachine.class.getSimpleName() + "(" + activeVertices + " activeVertices)";
+		return QueryWorkerMachine.class.getSimpleName() + "(" + totalVertices + " totalVertices " + chunkVertices + " chunkVertices)";
 	}
 }
