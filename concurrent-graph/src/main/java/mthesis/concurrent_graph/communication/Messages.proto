@@ -102,12 +102,14 @@ message MessageEnvelope {
 			
 			// Message to signal workers to make a system wide barrier to perform tasks
 			message SendQueryChunkMessage {
-				// Queries to send vertices for
-				repeated int32 ChunkQueries = 1;
+				// Queries to include vertices for
+				repeated int32 IncludeQueries = 1;
+				// Queries to tolerate vertices for
+				repeated int32 TolreateQueries = 2;
 				// Target machine to send vertices to
-				optional int32 MoveToMachine = 2;
+				optional int32 MoveToMachine = 3;
 				// Max. number of vertices to move
-				optional int32 MaxMoveCount = 3;
+				optional int32 MaxMoveCount = 4;
 			}
 			
 			// Message to signal workers to make a system wide barrier to perform tasks

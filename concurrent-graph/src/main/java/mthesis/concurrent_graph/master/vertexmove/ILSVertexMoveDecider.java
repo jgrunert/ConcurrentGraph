@@ -194,7 +194,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		int clusterCount = workerIds.size() * 4; // TODO Config
 		//		for (Entry<Pair<Integer, Integer>, Double> mergeIntersect : clusterIntersectsPairsSorted.entrySet()) {
 		//			if (queryClusterIntersects.size() <= clusterCount) break;
-		while (clusters.size() > clusterCount) {
+		//		while (clusters.size() > clusterCount) {
+		while (true) {
 
 			// TODO Testcode
 			printIlsLog("clusters: ");
@@ -209,7 +210,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			for (QueryCluster c0 : clusters.values()) {
 				for (Entry<Integer, Integer> cIntersect : c0.intersects.entrySet()) {
 					long c1Verts = clusters.get(cIntersect.getKey()).vertices;
-					double intersect = (double) cIntersect.getValue() / Math.min(c0.vertices, c1Verts);
+					double intersect = (double) cIntersect.getValue() / ((c0.vertices + c1Verts) / 2);
 					if (intersect > bestIntersect) {
 						bestIntersect = intersect;
 						clusterIdA = c0.id;
@@ -219,7 +220,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			}
 
 			// Terminate if no more intersects
-			if (bestIntersect <= 0) {
+			if (bestIntersect < 0.5) {
+				//				if (bestIntersect <= 0) {
 				printIlsLog("No more intersections, terminate with more clusters: " + clusters.size());
 				break;
 			}
@@ -292,39 +294,42 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		int multiClusterChunks = 0;
 		int chunkCount = 0;
 		for (Entry<Integer, QueryWorkerMachine> worker : bestDistribution.getQueryMachines().entrySet()) {
-			boolean multiClusterChunk = false;
+			//			boolean multiClusterChunk = false;
 			for (QueryVertexChunk chunk : worker.getValue().queryChunks) {
-				chunkClusterScores.clear();
-				double bestClusterScore = 0;
-				int bestCluster = 0;
-				int cluster0 = -1;
 				for (int chunkQuery : chunk.queries) {
-					int clusterID = queryClusterIds.get(chunkQuery);
-					//					QueryCluster cluster = clusters.get(clusterID);
-					//double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0 / cluster.queries.size());
-					double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0);
-					if (score > bestClusterScore) {
-						bestClusterScore = score;
-						bestCluster = clusterID;
-					}
-
-					if (cluster0 == -1) cluster0 = clusterID;
-					else {
-						if (cluster0 != clusterID)
-							multiClusterChunk = true;
-					}
+					chunk.clusters.add(queryClusterIds.get(chunkQuery));
 				}
-
-				chunk.clusterId = bestCluster;
-				chunkCount += chunk.numVertices;
-				if (multiClusterChunk) {
-					multiClusterChunks += chunk.numVertices;
-					chunk.clusterId = -1;
-				}
+				//				chunkClusterScores.clear();
+				//				double bestClusterScore = 0;
+				//				int bestCluster = 0;
+				//				int cluster0 = -1;
+				//				for (int chunkQuery : chunk.queries) {
+				//					int clusterID = queryClusterIds.get(chunkQuery);
+				//					//					QueryCluster cluster = clusters.get(clusterID);
+				//					//double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0 / cluster.queries.size());
+				//					double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0);
+				//					if (score > bestClusterScore) {
+				//						bestClusterScore = score;
+				//						bestCluster = clusterID;
+				//					}
+				//
+				//					if (cluster0 == -1) cluster0 = clusterID;
+				//					else {
+				//						if (cluster0 != clusterID)
+				//							multiClusterChunk = true;
+				//					}
+				//				}
+				//
+				//				chunk.clusterId = bestCluster;
+				//				chunkCount += chunk.numVertices;
+				//				if (multiClusterChunk) {
+				//					multiClusterChunks += chunk.numVertices;
+				//					chunk.clusterId = -1;
+				//				}
 			}
 		}
-		System.err
-				.println("multiClusterChunks: " + multiClusterChunks + "/" + chunkCount + " " + ((double) multiClusterChunks / chunkCount));
+		//		System.err
+		//				.println("multiClusterChunks: " + multiClusterChunks + "/" + chunkCount + " " + ((double) multiClusterChunks / chunkCount));
 		printIlsLog("multiClusterChunks: " + multiClusterChunks + "/" + chunkCount + " " + ((double) multiClusterChunks / chunkCount));
 
 
@@ -562,12 +567,14 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		Map<Integer, Map<Integer, Integer>> clusterPartitions = new HashMap<>();
 		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
 			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
-				Map<Integer, Integer> clusterVertCounts = clusterPartitions.get(chunk.clusterId);
-				if (clusterVertCounts == null) {
-					clusterVertCounts = new HashMap<>();
-					clusterPartitions.put(chunk.clusterId, clusterVertCounts);
+				for (int chunkCluster : chunk.clusters) {
+					Map<Integer, Integer> clusterVertCounts = clusterPartitions.get(chunkCluster);
+					if (clusterVertCounts == null) {
+						clusterVertCounts = new HashMap<>();
+						clusterPartitions.put(chunkCluster, clusterVertCounts);
+					}
+					MiscUtil.mapAdd(clusterVertCounts, machine.getKey(), chunk.numVertices);
 				}
-				MiscUtil.mapAdd(clusterVertCounts, machine.getKey(), chunk.numVertices);
 			}
 		}
 

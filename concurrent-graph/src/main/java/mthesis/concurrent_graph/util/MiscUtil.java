@@ -159,6 +159,12 @@ public class MiscUtil {
 		return sum;
 	}
 
+	public static <K> int mapAvg(Map<K, Integer> map, K key, int add) {
+		int sum = (defaultInt(map.get(key)) + add) / 2;
+		map.put(key, sum);
+		return sum;
+	}
+
 	public static <K> long mapAdd(Map<K, Long> map, K key, long add) {
 		long sum = defaultLong(map.get(key)) + add;
 		map.put(key, sum);

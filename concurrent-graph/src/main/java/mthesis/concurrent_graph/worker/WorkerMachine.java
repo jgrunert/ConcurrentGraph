@@ -360,7 +360,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 					long timmmm = System.currentTimeMillis();
 					System.out.println(ownId + " start");
 					for (SendQueryChunkMessage sendVert : globalBarrierSendVerts) {
-						sendQueryVerticesToMove(new HashSet<>(sendVert.getChunkQueriesList()), sendVert.getMoveToMachine(),
+						sendQueryVerticesToMove(new HashSet<>(sendVert.getIncludeQueriesList()),
+								new HashSet<>(sendVert.getTolreateQueriesList()), sendVert.getMoveToMachine(),
 								sendVert.getMaxMoveCount());
 					}
 					System.out.println(ownId + " stap " + (System.currentTimeMillis() - timmmm));
@@ -1223,48 +1224,48 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 	 * Sends all active vertices of a query if they are only active at this query.
 	 * Used for incremental vertex migration.
 	 */
-	private void sendQueryVerticesToMove(Set<Integer> queryChunk, int sendToWorker, int maxVertices) {
+	private void sendQueryVerticesToMove(Set<Integer> includeQueries, Set<Integer> tolreateQueries, int sendToWorker, int maxVertices) {
 		long startTime = System.nanoTime();
 		int verticesMessagesSent = 0;
 		int verticesToMove = 0;
 		int verticesSent = 0;
 		int verticesNotSent = 0;
 
-		if (queryChunk.isEmpty()) {
+		if (includeQueries.isEmpty()) {
 			logger.error("Cannot send vertices for empty queryChunk set");
 			return;
 		}
 
 		// Remove queries from chunk set that are not active anymore or cant be moved
-		Set<Integer> chunkQueries = new HashSet<>();
+		Set<Integer> includeSendQueries = new HashSet<>();
 		WorkerQuery<V, E, M, Q> smallestQuery = null;
-		for (Integer qId : queryChunk) {
+		for (Integer qId : includeQueries) {
 			WorkerQuery<V, E, M, Q> q = queriesHistoryMap.get(qId);
 			if (q != null) {
 				if (q.ActiveVerticesNext.isEmpty()) {
 					if (smallestQuery == null || q.VerticesEverActive.size() < smallestQuery.VerticesEverActive.size())
 						smallestQuery = q;
-					chunkQueries.add(qId);
+					includeSendQueries.add(qId);
 				}
 				else {
 					// Dont send vertices
 					logger.warn(
 							"Cant move vertecies of query, has ActiveVerticesNext " + q.QueryId + ":" + q.getMasterStartedSuperstep());
-					messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, new ArrayList<>(), true);
+					messaging.sendMoveVerticesMessage(sendToWorker, includeQueries, new ArrayList<>(), true);
 					return;
 				}
 			}
 		}
-		if (chunkQueries.isEmpty()) {
-			logger.debug("Vertices not moved because all chunk queries inactive: {}", queryChunk);
-			messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, new ArrayList<>(), true);
+		if (includeSendQueries.isEmpty()) {
+			logger.debug("Vertices not moved because all chunk queries missing: {}", includeQueries);
+			messaging.sendMoveVerticesMessage(sendToWorker, includeQueries, new ArrayList<>(), true);
 			return;
 		}
 		assert smallestQuery != null;
 
 		Map<Integer, WorkerQuery<V, E, M, Q>> nonChunkQueries = new HashMap<>();
 		for (Entry<Integer, WorkerQuery<V, E, M, Q>> qKv : queriesHistoryMap.entrySet()) {
-			if (!chunkQueries.contains(qKv.getKey())) {
+			if (!includeSendQueries.contains(qKv.getKey()) && !tolreateQueries.contains(qKv.getKey())) {
 				nonChunkQueries.put(qKv.getKey(), qKv.getValue());
 			}
 		}
@@ -1286,7 +1287,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		//		}
 
 		IntSet moveVerticesCandidates = new IntOpenHashSet();
-		for (Integer qId : chunkQueries) {
+		for (Integer qId : includeSendQueries) {
 			WorkerQuery<V, E, M, Q> q = queriesHistoryMap.get(qId);
 			moveVerticesCandidates.addAll(q.VerticesEverActive);
 		}
@@ -1342,7 +1343,7 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			// Send vertices now if bucket full
 			if (verticesToSend.size() >= Configuration.VERTEX_MOVE_BUCKET_MAX_VERTICES) {
 				handleVerticesMoving(verticesToSend, sendToWorker);
-				messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, verticesToSend, false);
+				messaging.sendMoveVerticesMessage(sendToWorker, includeQueries, verticesToSend, false);
 				verticesSent += verticesToSend.size();
 				verticesToSend = new ArrayList<>();
 			}
@@ -1354,12 +1355,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 		// Send remaining vertices (or empty message if none)
 		handleVerticesMoving(verticesToSend, sendToWorker);
-		messaging.sendMoveVerticesMessage(sendToWorker, queryChunk, verticesToSend, true);
+		messaging.sendMoveVerticesMessage(sendToWorker, includeQueries, verticesToSend, true);
 		verticesSent += verticesToSend.size();
 
 		verticesToMove += verticesToSend.size();
-		logger.info("Sent {} and skipped {} to {} for query chunk {}",
-				new Object[] { verticesToMove, verticesNotSent, sendToWorker, queryChunk }); // TODO Debug
+		logger.info("Sent {} and skipped {} to {} for query chunk {} {} {}",
+				new Object[] { verticesToMove, verticesNotSent, sendToWorker, includeQueries, includeSendQueries, tolreateQueries }); // TODO Debug
 
 		workerStats.MoveSendVertices += verticesSent;
 		workerStats.MoveSendVerticesTime += (System.nanoTime() - startTime);

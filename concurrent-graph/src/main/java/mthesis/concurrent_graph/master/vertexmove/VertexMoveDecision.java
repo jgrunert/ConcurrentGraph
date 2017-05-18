@@ -39,8 +39,8 @@ public class VertexMoveDecision {
 		for (Entry<Integer, List<SendQueryChunkMessage>> sender : WorkerVertSendMsgs.entrySet()) {
 			stream.println(sender.getKey());
 			for (SendQueryChunkMessage sendMsg : sender.getValue()) {
-				stream.println("   " + sendMsg.getChunkQueriesList() + " " + sender.getKey() + "->" + sendMsg.getMoveToMachine() + " "
-						+ sendMsg.getMaxMoveCount());
+				stream.println("\t" + sendMsg.getIncludeQueriesList() + " " + sendMsg.getTolreateQueriesList() + " " + sender.getKey()
+						+ "->" + sendMsg.getMoveToMachine() + " " + sendMsg.getMaxMoveCount());
 			}
 		}
 	}
@@ -49,7 +49,8 @@ public class VertexMoveDecision {
 		for (Entry<Integer, List<SendQueryChunkMessage>> sender : WorkerVertSendMsgs.entrySet()) {
 			stream.println(sender.getKey());
 			for (SendQueryChunkMessage sendMsg : sender.getValue()) {
-				stream.println("   " + sendMsg.getChunkQueriesList() + " " + sender.getKey() + "->" + sendMsg.getMoveToMachine());
+				stream.println("\t" + sendMsg.getIncludeQueriesList() + " " + sendMsg.getTolreateQueriesList() + " " + sender.getKey()
+						+ "->" + sendMsg.getMoveToMachine() + " " + sendMsg.getMaxMoveCount());
 			}
 		}
 	}

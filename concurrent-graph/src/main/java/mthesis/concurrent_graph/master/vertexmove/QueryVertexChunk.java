@@ -1,5 +1,6 @@
 package mthesis.concurrent_graph.master.vertexmove;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 
@@ -15,7 +16,7 @@ public class QueryVertexChunk {
 	public final IntSet queries;
 	public final int numVertices;
 	public final int homeMachine;
-	public int clusterId;
+	public final IntSet clusters = new IntOpenHashSet();
 
 	public QueryVertexChunk(IntSet queries, int numVertices, int homeMachine) {
 		this.queries = queries;

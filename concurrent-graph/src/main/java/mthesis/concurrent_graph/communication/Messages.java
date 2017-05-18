@@ -3360,35 +3360,60 @@ public final class Messages {
 
         /**
          * <pre>
-         * Queries to send vertices for
+         * Queries to include vertices for
          * </pre>
          *
-         * <code>repeated int32 ChunkQueries = 1;</code>
+         * <code>repeated int32 IncludeQueries = 1;</code>
          */
-        java.util.List<java.lang.Integer> getChunkQueriesList();
+        java.util.List<java.lang.Integer> getIncludeQueriesList();
         /**
          * <pre>
-         * Queries to send vertices for
+         * Queries to include vertices for
          * </pre>
          *
-         * <code>repeated int32 ChunkQueries = 1;</code>
+         * <code>repeated int32 IncludeQueries = 1;</code>
          */
-        int getChunkQueriesCount();
+        int getIncludeQueriesCount();
         /**
          * <pre>
-         * Queries to send vertices for
+         * Queries to include vertices for
          * </pre>
          *
-         * <code>repeated int32 ChunkQueries = 1;</code>
+         * <code>repeated int32 IncludeQueries = 1;</code>
          */
-        int getChunkQueries(int index);
+        int getIncludeQueries(int index);
+
+        /**
+         * <pre>
+         * Queries to tolerate vertices for
+         * </pre>
+         *
+         * <code>repeated int32 TolreateQueries = 2;</code>
+         */
+        java.util.List<java.lang.Integer> getTolreateQueriesList();
+        /**
+         * <pre>
+         * Queries to tolerate vertices for
+         * </pre>
+         *
+         * <code>repeated int32 TolreateQueries = 2;</code>
+         */
+        int getTolreateQueriesCount();
+        /**
+         * <pre>
+         * Queries to tolerate vertices for
+         * </pre>
+         *
+         * <code>repeated int32 TolreateQueries = 2;</code>
+         */
+        int getTolreateQueries(int index);
 
         /**
          * <pre>
          * Target machine to send vertices to
          * </pre>
          *
-         * <code>optional int32 MoveToMachine = 2;</code>
+         * <code>optional int32 MoveToMachine = 3;</code>
          */
         boolean hasMoveToMachine();
         /**
@@ -3396,7 +3421,7 @@ public final class Messages {
          * Target machine to send vertices to
          * </pre>
          *
-         * <code>optional int32 MoveToMachine = 2;</code>
+         * <code>optional int32 MoveToMachine = 3;</code>
          */
         int getMoveToMachine();
 
@@ -3405,7 +3430,7 @@ public final class Messages {
          * Max. number of vertices to move
          * </pre>
          *
-         * <code>optional int32 MaxMoveCount = 3;</code>
+         * <code>optional int32 MaxMoveCount = 4;</code>
          */
         boolean hasMaxMoveCount();
         /**
@@ -3413,7 +3438,7 @@ public final class Messages {
          * Max. number of vertices to move
          * </pre>
          *
-         * <code>optional int32 MaxMoveCount = 3;</code>
+         * <code>optional int32 MaxMoveCount = 4;</code>
          */
         int getMaxMoveCount();
       }
@@ -3433,7 +3458,8 @@ public final class Messages {
           super(builder);
         }
         private SendQueryChunkMessage() {
-          chunkQueries_ = java.util.Collections.emptyList();
+          includeQueries_ = java.util.Collections.emptyList();
+          tolreateQueries_ = java.util.Collections.emptyList();
           moveToMachine_ = 0;
           maxMoveCount_ = 0;
         }
@@ -3468,31 +3494,52 @@ public final class Messages {
                 }
                 case 8: {
                   if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                    chunkQueries_ = new java.util.ArrayList<java.lang.Integer>();
+                    includeQueries_ = new java.util.ArrayList<java.lang.Integer>();
                     mutable_bitField0_ |= 0x00000001;
                   }
-                  chunkQueries_.add(input.readInt32());
+                  includeQueries_.add(input.readInt32());
                   break;
                 }
                 case 10: {
                   int length = input.readRawVarint32();
                   int limit = input.pushLimit(length);
                   if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
-                    chunkQueries_ = new java.util.ArrayList<java.lang.Integer>();
+                    includeQueries_ = new java.util.ArrayList<java.lang.Integer>();
                     mutable_bitField0_ |= 0x00000001;
                   }
                   while (input.getBytesUntilLimit() > 0) {
-                    chunkQueries_.add(input.readInt32());
+                    includeQueries_.add(input.readInt32());
                   }
                   input.popLimit(limit);
                   break;
                 }
                 case 16: {
+                  if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                    tolreateQueries_ = new java.util.ArrayList<java.lang.Integer>();
+                    mutable_bitField0_ |= 0x00000002;
+                  }
+                  tolreateQueries_.add(input.readInt32());
+                  break;
+                }
+                case 18: {
+                  int length = input.readRawVarint32();
+                  int limit = input.pushLimit(length);
+                  if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
+                    tolreateQueries_ = new java.util.ArrayList<java.lang.Integer>();
+                    mutable_bitField0_ |= 0x00000002;
+                  }
+                  while (input.getBytesUntilLimit() > 0) {
+                    tolreateQueries_.add(input.readInt32());
+                  }
+                  input.popLimit(limit);
+                  break;
+                }
+                case 24: {
                   bitField0_ |= 0x00000001;
                   moveToMachine_ = input.readInt32();
                   break;
                 }
-                case 24: {
+                case 32: {
                   bitField0_ |= 0x00000002;
                   maxMoveCount_ = input.readInt32();
                   break;
@@ -3506,7 +3553,10 @@ public final class Messages {
                 e).setUnfinishedMessage(this);
           } finally {
             if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-              chunkQueries_ = java.util.Collections.unmodifiableList(chunkQueries_);
+              includeQueries_ = java.util.Collections.unmodifiableList(includeQueries_);
+            }
+            if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              tolreateQueries_ = java.util.Collections.unmodifiableList(tolreateQueries_);
             }
             this.unknownFields = unknownFields.build();
             makeExtensionsImmutable();
@@ -3525,48 +3575,82 @@ public final class Messages {
         }
 
         private int bitField0_;
-        public static final int CHUNKQUERIES_FIELD_NUMBER = 1;
-        private java.util.List<java.lang.Integer> chunkQueries_;
+        public static final int INCLUDEQUERIES_FIELD_NUMBER = 1;
+        private java.util.List<java.lang.Integer> includeQueries_;
         /**
          * <pre>
-         * Queries to send vertices for
+         * Queries to include vertices for
          * </pre>
          *
-         * <code>repeated int32 ChunkQueries = 1;</code>
+         * <code>repeated int32 IncludeQueries = 1;</code>
          */
         public java.util.List<java.lang.Integer>
-            getChunkQueriesList() {
-          return chunkQueries_;
+            getIncludeQueriesList() {
+          return includeQueries_;
         }
         /**
          * <pre>
-         * Queries to send vertices for
+         * Queries to include vertices for
          * </pre>
          *
-         * <code>repeated int32 ChunkQueries = 1;</code>
+         * <code>repeated int32 IncludeQueries = 1;</code>
          */
-        public int getChunkQueriesCount() {
-          return chunkQueries_.size();
+        public int getIncludeQueriesCount() {
+          return includeQueries_.size();
         }
         /**
          * <pre>
-         * Queries to send vertices for
+         * Queries to include vertices for
          * </pre>
          *
-         * <code>repeated int32 ChunkQueries = 1;</code>
+         * <code>repeated int32 IncludeQueries = 1;</code>
          */
-        public int getChunkQueries(int index) {
-          return chunkQueries_.get(index);
+        public int getIncludeQueries(int index) {
+          return includeQueries_.get(index);
         }
 
-        public static final int MOVETOMACHINE_FIELD_NUMBER = 2;
+        public static final int TOLREATEQUERIES_FIELD_NUMBER = 2;
+        private java.util.List<java.lang.Integer> tolreateQueries_;
+        /**
+         * <pre>
+         * Queries to tolerate vertices for
+         * </pre>
+         *
+         * <code>repeated int32 TolreateQueries = 2;</code>
+         */
+        public java.util.List<java.lang.Integer>
+            getTolreateQueriesList() {
+          return tolreateQueries_;
+        }
+        /**
+         * <pre>
+         * Queries to tolerate vertices for
+         * </pre>
+         *
+         * <code>repeated int32 TolreateQueries = 2;</code>
+         */
+        public int getTolreateQueriesCount() {
+          return tolreateQueries_.size();
+        }
+        /**
+         * <pre>
+         * Queries to tolerate vertices for
+         * </pre>
+         *
+         * <code>repeated int32 TolreateQueries = 2;</code>
+         */
+        public int getTolreateQueries(int index) {
+          return tolreateQueries_.get(index);
+        }
+
+        public static final int MOVETOMACHINE_FIELD_NUMBER = 3;
         private int moveToMachine_;
         /**
          * <pre>
          * Target machine to send vertices to
          * </pre>
          *
-         * <code>optional int32 MoveToMachine = 2;</code>
+         * <code>optional int32 MoveToMachine = 3;</code>
          */
         public boolean hasMoveToMachine() {
           return ((bitField0_ & 0x00000001) == 0x00000001);
@@ -3576,20 +3660,20 @@ public final class Messages {
          * Target machine to send vertices to
          * </pre>
          *
-         * <code>optional int32 MoveToMachine = 2;</code>
+         * <code>optional int32 MoveToMachine = 3;</code>
          */
         public int getMoveToMachine() {
           return moveToMachine_;
         }
 
-        public static final int MAXMOVECOUNT_FIELD_NUMBER = 3;
+        public static final int MAXMOVECOUNT_FIELD_NUMBER = 4;
         private int maxMoveCount_;
         /**
          * <pre>
          * Max. number of vertices to move
          * </pre>
          *
-         * <code>optional int32 MaxMoveCount = 3;</code>
+         * <code>optional int32 MaxMoveCount = 4;</code>
          */
         public boolean hasMaxMoveCount() {
           return ((bitField0_ & 0x00000002) == 0x00000002);
@@ -3599,7 +3683,7 @@ public final class Messages {
          * Max. number of vertices to move
          * </pre>
          *
-         * <code>optional int32 MaxMoveCount = 3;</code>
+         * <code>optional int32 MaxMoveCount = 4;</code>
          */
         public int getMaxMoveCount() {
           return maxMoveCount_;
@@ -3617,14 +3701,17 @@ public final class Messages {
 
         public void writeTo(com.google.protobuf.CodedOutputStream output)
                             throws java.io.IOException {
-          for (int i = 0; i < chunkQueries_.size(); i++) {
-            output.writeInt32(1, chunkQueries_.get(i));
+          for (int i = 0; i < includeQueries_.size(); i++) {
+            output.writeInt32(1, includeQueries_.get(i));
+          }
+          for (int i = 0; i < tolreateQueries_.size(); i++) {
+            output.writeInt32(2, tolreateQueries_.get(i));
           }
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            output.writeInt32(2, moveToMachine_);
+            output.writeInt32(3, moveToMachine_);
           }
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
-            output.writeInt32(3, maxMoveCount_);
+            output.writeInt32(4, maxMoveCount_);
           }
           unknownFields.writeTo(output);
         }
@@ -3636,20 +3723,29 @@ public final class Messages {
           size = 0;
           {
             int dataSize = 0;
-            for (int i = 0; i < chunkQueries_.size(); i++) {
+            for (int i = 0; i < includeQueries_.size(); i++) {
               dataSize += com.google.protobuf.CodedOutputStream
-                .computeInt32SizeNoTag(chunkQueries_.get(i));
+                .computeInt32SizeNoTag(includeQueries_.get(i));
             }
             size += dataSize;
-            size += 1 * getChunkQueriesList().size();
+            size += 1 * getIncludeQueriesList().size();
+          }
+          {
+            int dataSize = 0;
+            for (int i = 0; i < tolreateQueries_.size(); i++) {
+              dataSize += com.google.protobuf.CodedOutputStream
+                .computeInt32SizeNoTag(tolreateQueries_.get(i));
+            }
+            size += dataSize;
+            size += 1 * getTolreateQueriesList().size();
           }
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
             size += com.google.protobuf.CodedOutputStream
-              .computeInt32Size(2, moveToMachine_);
+              .computeInt32Size(3, moveToMachine_);
           }
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
             size += com.google.protobuf.CodedOutputStream
-              .computeInt32Size(3, maxMoveCount_);
+              .computeInt32Size(4, maxMoveCount_);
           }
           size += unknownFields.getSerializedSize();
           memoizedSize = size;
@@ -3668,8 +3764,10 @@ public final class Messages {
           mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage other = (mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage) obj;
 
           boolean result = true;
-          result = result && getChunkQueriesList()
-              .equals(other.getChunkQueriesList());
+          result = result && getIncludeQueriesList()
+              .equals(other.getIncludeQueriesList());
+          result = result && getTolreateQueriesList()
+              .equals(other.getTolreateQueriesList());
           result = result && (hasMoveToMachine() == other.hasMoveToMachine());
           if (hasMoveToMachine()) {
             result = result && (getMoveToMachine()
@@ -3691,9 +3789,13 @@ public final class Messages {
           }
           int hash = 41;
           hash = (19 * hash) + getDescriptorForType().hashCode();
-          if (getChunkQueriesCount() > 0) {
-            hash = (37 * hash) + CHUNKQUERIES_FIELD_NUMBER;
-            hash = (53 * hash) + getChunkQueriesList().hashCode();
+          if (getIncludeQueriesCount() > 0) {
+            hash = (37 * hash) + INCLUDEQUERIES_FIELD_NUMBER;
+            hash = (53 * hash) + getIncludeQueriesList().hashCode();
+          }
+          if (getTolreateQueriesCount() > 0) {
+            hash = (37 * hash) + TOLREATEQUERIES_FIELD_NUMBER;
+            hash = (53 * hash) + getTolreateQueriesList().hashCode();
           }
           if (hasMoveToMachine()) {
             hash = (37 * hash) + MOVETOMACHINE_FIELD_NUMBER;
@@ -3825,12 +3927,14 @@ public final class Messages {
           }
           public Builder clear() {
             super.clear();
-            chunkQueries_ = java.util.Collections.emptyList();
+            includeQueries_ = java.util.Collections.emptyList();
             bitField0_ = (bitField0_ & ~0x00000001);
-            moveToMachine_ = 0;
+            tolreateQueries_ = java.util.Collections.emptyList();
             bitField0_ = (bitField0_ & ~0x00000002);
-            maxMoveCount_ = 0;
+            moveToMachine_ = 0;
             bitField0_ = (bitField0_ & ~0x00000004);
+            maxMoveCount_ = 0;
+            bitField0_ = (bitField0_ & ~0x00000008);
             return this;
           }
 
@@ -3856,15 +3960,20 @@ public final class Messages {
             int from_bitField0_ = bitField0_;
             int to_bitField0_ = 0;
             if (((bitField0_ & 0x00000001) == 0x00000001)) {
-              chunkQueries_ = java.util.Collections.unmodifiableList(chunkQueries_);
+              includeQueries_ = java.util.Collections.unmodifiableList(includeQueries_);
               bitField0_ = (bitField0_ & ~0x00000001);
             }
-            result.chunkQueries_ = chunkQueries_;
-            if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            result.includeQueries_ = includeQueries_;
+            if (((bitField0_ & 0x00000002) == 0x00000002)) {
+              tolreateQueries_ = java.util.Collections.unmodifiableList(tolreateQueries_);
+              bitField0_ = (bitField0_ & ~0x00000002);
+            }
+            result.tolreateQueries_ = tolreateQueries_;
+            if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
               to_bitField0_ |= 0x00000001;
             }
             result.moveToMachine_ = moveToMachine_;
-            if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
               to_bitField0_ |= 0x00000002;
             }
             result.maxMoveCount_ = maxMoveCount_;
@@ -3910,13 +4019,23 @@ public final class Messages {
 
           public Builder mergeFrom(mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage other) {
             if (other == mthesis.concurrent_graph.communication.Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.getDefaultInstance()) return this;
-            if (!other.chunkQueries_.isEmpty()) {
-              if (chunkQueries_.isEmpty()) {
-                chunkQueries_ = other.chunkQueries_;
+            if (!other.includeQueries_.isEmpty()) {
+              if (includeQueries_.isEmpty()) {
+                includeQueries_ = other.includeQueries_;
                 bitField0_ = (bitField0_ & ~0x00000001);
               } else {
-                ensureChunkQueriesIsMutable();
-                chunkQueries_.addAll(other.chunkQueries_);
+                ensureIncludeQueriesIsMutable();
+                includeQueries_.addAll(other.includeQueries_);
+              }
+              onChanged();
+            }
+            if (!other.tolreateQueries_.isEmpty()) {
+              if (tolreateQueries_.isEmpty()) {
+                tolreateQueries_ = other.tolreateQueries_;
+                bitField0_ = (bitField0_ & ~0x00000002);
+              } else {
+                ensureTolreateQueriesIsMutable();
+                tolreateQueries_.addAll(other.tolreateQueries_);
               }
               onChanged();
             }
@@ -3954,96 +4073,190 @@ public final class Messages {
           }
           private int bitField0_;
 
-          private java.util.List<java.lang.Integer> chunkQueries_ = java.util.Collections.emptyList();
-          private void ensureChunkQueriesIsMutable() {
+          private java.util.List<java.lang.Integer> includeQueries_ = java.util.Collections.emptyList();
+          private void ensureIncludeQueriesIsMutable() {
             if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-              chunkQueries_ = new java.util.ArrayList<java.lang.Integer>(chunkQueries_);
+              includeQueries_ = new java.util.ArrayList<java.lang.Integer>(includeQueries_);
               bitField0_ |= 0x00000001;
              }
           }
           /**
            * <pre>
-           * Queries to send vertices for
+           * Queries to include vertices for
            * </pre>
            *
-           * <code>repeated int32 ChunkQueries = 1;</code>
+           * <code>repeated int32 IncludeQueries = 1;</code>
            */
           public java.util.List<java.lang.Integer>
-              getChunkQueriesList() {
-            return java.util.Collections.unmodifiableList(chunkQueries_);
+              getIncludeQueriesList() {
+            return java.util.Collections.unmodifiableList(includeQueries_);
           }
           /**
            * <pre>
-           * Queries to send vertices for
+           * Queries to include vertices for
            * </pre>
            *
-           * <code>repeated int32 ChunkQueries = 1;</code>
+           * <code>repeated int32 IncludeQueries = 1;</code>
            */
-          public int getChunkQueriesCount() {
-            return chunkQueries_.size();
+          public int getIncludeQueriesCount() {
+            return includeQueries_.size();
           }
           /**
            * <pre>
-           * Queries to send vertices for
+           * Queries to include vertices for
            * </pre>
            *
-           * <code>repeated int32 ChunkQueries = 1;</code>
+           * <code>repeated int32 IncludeQueries = 1;</code>
            */
-          public int getChunkQueries(int index) {
-            return chunkQueries_.get(index);
+          public int getIncludeQueries(int index) {
+            return includeQueries_.get(index);
           }
           /**
            * <pre>
-           * Queries to send vertices for
+           * Queries to include vertices for
            * </pre>
            *
-           * <code>repeated int32 ChunkQueries = 1;</code>
+           * <code>repeated int32 IncludeQueries = 1;</code>
            */
-          public Builder setChunkQueries(
+          public Builder setIncludeQueries(
               int index, int value) {
-            ensureChunkQueriesIsMutable();
-            chunkQueries_.set(index, value);
+            ensureIncludeQueriesIsMutable();
+            includeQueries_.set(index, value);
             onChanged();
             return this;
           }
           /**
            * <pre>
-           * Queries to send vertices for
+           * Queries to include vertices for
            * </pre>
            *
-           * <code>repeated int32 ChunkQueries = 1;</code>
+           * <code>repeated int32 IncludeQueries = 1;</code>
            */
-          public Builder addChunkQueries(int value) {
-            ensureChunkQueriesIsMutable();
-            chunkQueries_.add(value);
+          public Builder addIncludeQueries(int value) {
+            ensureIncludeQueriesIsMutable();
+            includeQueries_.add(value);
             onChanged();
             return this;
           }
           /**
            * <pre>
-           * Queries to send vertices for
+           * Queries to include vertices for
            * </pre>
            *
-           * <code>repeated int32 ChunkQueries = 1;</code>
+           * <code>repeated int32 IncludeQueries = 1;</code>
            */
-          public Builder addAllChunkQueries(
+          public Builder addAllIncludeQueries(
               java.lang.Iterable<? extends java.lang.Integer> values) {
-            ensureChunkQueriesIsMutable();
+            ensureIncludeQueriesIsMutable();
             com.google.protobuf.AbstractMessageLite.Builder.addAll(
-                values, chunkQueries_);
+                values, includeQueries_);
             onChanged();
             return this;
           }
           /**
            * <pre>
-           * Queries to send vertices for
+           * Queries to include vertices for
            * </pre>
            *
-           * <code>repeated int32 ChunkQueries = 1;</code>
+           * <code>repeated int32 IncludeQueries = 1;</code>
            */
-          public Builder clearChunkQueries() {
-            chunkQueries_ = java.util.Collections.emptyList();
+          public Builder clearIncludeQueries() {
+            includeQueries_ = java.util.Collections.emptyList();
             bitField0_ = (bitField0_ & ~0x00000001);
+            onChanged();
+            return this;
+          }
+
+          private java.util.List<java.lang.Integer> tolreateQueries_ = java.util.Collections.emptyList();
+          private void ensureTolreateQueriesIsMutable() {
+            if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+              tolreateQueries_ = new java.util.ArrayList<java.lang.Integer>(tolreateQueries_);
+              bitField0_ |= 0x00000002;
+             }
+          }
+          /**
+           * <pre>
+           * Queries to tolerate vertices for
+           * </pre>
+           *
+           * <code>repeated int32 TolreateQueries = 2;</code>
+           */
+          public java.util.List<java.lang.Integer>
+              getTolreateQueriesList() {
+            return java.util.Collections.unmodifiableList(tolreateQueries_);
+          }
+          /**
+           * <pre>
+           * Queries to tolerate vertices for
+           * </pre>
+           *
+           * <code>repeated int32 TolreateQueries = 2;</code>
+           */
+          public int getTolreateQueriesCount() {
+            return tolreateQueries_.size();
+          }
+          /**
+           * <pre>
+           * Queries to tolerate vertices for
+           * </pre>
+           *
+           * <code>repeated int32 TolreateQueries = 2;</code>
+           */
+          public int getTolreateQueries(int index) {
+            return tolreateQueries_.get(index);
+          }
+          /**
+           * <pre>
+           * Queries to tolerate vertices for
+           * </pre>
+           *
+           * <code>repeated int32 TolreateQueries = 2;</code>
+           */
+          public Builder setTolreateQueries(
+              int index, int value) {
+            ensureTolreateQueriesIsMutable();
+            tolreateQueries_.set(index, value);
+            onChanged();
+            return this;
+          }
+          /**
+           * <pre>
+           * Queries to tolerate vertices for
+           * </pre>
+           *
+           * <code>repeated int32 TolreateQueries = 2;</code>
+           */
+          public Builder addTolreateQueries(int value) {
+            ensureTolreateQueriesIsMutable();
+            tolreateQueries_.add(value);
+            onChanged();
+            return this;
+          }
+          /**
+           * <pre>
+           * Queries to tolerate vertices for
+           * </pre>
+           *
+           * <code>repeated int32 TolreateQueries = 2;</code>
+           */
+          public Builder addAllTolreateQueries(
+              java.lang.Iterable<? extends java.lang.Integer> values) {
+            ensureTolreateQueriesIsMutable();
+            com.google.protobuf.AbstractMessageLite.Builder.addAll(
+                values, tolreateQueries_);
+            onChanged();
+            return this;
+          }
+          /**
+           * <pre>
+           * Queries to tolerate vertices for
+           * </pre>
+           *
+           * <code>repeated int32 TolreateQueries = 2;</code>
+           */
+          public Builder clearTolreateQueries() {
+            tolreateQueries_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000002);
             onChanged();
             return this;
           }
@@ -4054,17 +4267,17 @@ public final class Messages {
            * Target machine to send vertices to
            * </pre>
            *
-           * <code>optional int32 MoveToMachine = 2;</code>
+           * <code>optional int32 MoveToMachine = 3;</code>
            */
           public boolean hasMoveToMachine() {
-            return ((bitField0_ & 0x00000002) == 0x00000002);
+            return ((bitField0_ & 0x00000004) == 0x00000004);
           }
           /**
            * <pre>
            * Target machine to send vertices to
            * </pre>
            *
-           * <code>optional int32 MoveToMachine = 2;</code>
+           * <code>optional int32 MoveToMachine = 3;</code>
            */
           public int getMoveToMachine() {
             return moveToMachine_;
@@ -4074,10 +4287,10 @@ public final class Messages {
            * Target machine to send vertices to
            * </pre>
            *
-           * <code>optional int32 MoveToMachine = 2;</code>
+           * <code>optional int32 MoveToMachine = 3;</code>
            */
           public Builder setMoveToMachine(int value) {
-            bitField0_ |= 0x00000002;
+            bitField0_ |= 0x00000004;
             moveToMachine_ = value;
             onChanged();
             return this;
@@ -4087,10 +4300,10 @@ public final class Messages {
            * Target machine to send vertices to
            * </pre>
            *
-           * <code>optional int32 MoveToMachine = 2;</code>
+           * <code>optional int32 MoveToMachine = 3;</code>
            */
           public Builder clearMoveToMachine() {
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
             moveToMachine_ = 0;
             onChanged();
             return this;
@@ -4102,17 +4315,17 @@ public final class Messages {
            * Max. number of vertices to move
            * </pre>
            *
-           * <code>optional int32 MaxMoveCount = 3;</code>
+           * <code>optional int32 MaxMoveCount = 4;</code>
            */
           public boolean hasMaxMoveCount() {
-            return ((bitField0_ & 0x00000004) == 0x00000004);
+            return ((bitField0_ & 0x00000008) == 0x00000008);
           }
           /**
            * <pre>
            * Max. number of vertices to move
            * </pre>
            *
-           * <code>optional int32 MaxMoveCount = 3;</code>
+           * <code>optional int32 MaxMoveCount = 4;</code>
            */
           public int getMaxMoveCount() {
             return maxMoveCount_;
@@ -4122,10 +4335,10 @@ public final class Messages {
            * Max. number of vertices to move
            * </pre>
            *
-           * <code>optional int32 MaxMoveCount = 3;</code>
+           * <code>optional int32 MaxMoveCount = 4;</code>
            */
           public Builder setMaxMoveCount(int value) {
-            bitField0_ |= 0x00000004;
+            bitField0_ |= 0x00000008;
             maxMoveCount_ = value;
             onChanged();
             return this;
@@ -4135,10 +4348,10 @@ public final class Messages {
            * Max. number of vertices to move
            * </pre>
            *
-           * <code>optional int32 MaxMoveCount = 3;</code>
+           * <code>optional int32 MaxMoveCount = 4;</code>
            */
           public Builder clearMaxMoveCount() {
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
             maxMoveCount_ = 0;
             onChanged();
             return this;
@@ -11720,7 +11933,7 @@ public final class Messages {
       "ph.communication.messages\"j\n\017MessageEnve" +
       "lope\022W\n\016ControlMessage\030\001 \001(\0132?.mthesis.c" +
       "oncurrent_graph.communication.messages.C" +
-      "ontrolMessage\"\243\023\n\016ControlMessage\022Q\n\004Type" +
+      "ontrolMessage\"\276\023\n\016ControlMessage\022Q\n\004Type" +
       "\030\001 \001(\0162C.mthesis.concurrent_graph.commun" +
       "ication.messages.ControlMessageType\022\023\n\013S" +
       "uperstepNo\030\002 \001(\005\022\022\n\nSrcMachine\030\003 \001(\005\022q\n\020" +
@@ -11750,7 +11963,7 @@ public final class Messages {
       "(\005\032\230\001\n\025StartSuperstepMessage\022g\n\024WorkerQu" +
       "eryExecution\030\001 \001(\0162I.mthesis.concurrent_" +
       "graph.communication.messages.WorkerQuery" +
-      "ExecutionMode\022\026\n\016WorkersWaitFor\030\002 \003(\005\032\213\005" +
+      "ExecutionMode\022\026\n\016WorkersWaitFor\030\002 \003(\005\032\246\005" +
       "\n\023StartBarrierMessage\022\201\001\n\017QuerySuperstep" +
       "s\030\001 \003(\0132h.mthesis.concurrent_graph.commu" +
       "nication.messages.ControlMessage.StartBa" +
@@ -11763,41 +11976,41 @@ public final class Messages {
       "sages.ControlMessage.StartBarrierMessage" +
       ".ReceiveQueryChunkMessage\0326\n\024QuerySupers" +
       "tepsEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\005:\0028" +
-      "\001\032Z\n\025SendQueryChunkMessage\022\024\n\014ChunkQueri" +
-      "es\030\001 \003(\005\022\025\n\rMoveToMachine\030\002 \001(\005\022\024\n\014MaxMo" +
-      "veCount\030\003 \001(\005\032L\n\030ReceiveQueryChunkMessag",
-      "e\022\024\n\014ChunkQueries\030\001 \003(\005\022\032\n\022ReceiveFromMa" +
-      "chine\030\002 \001(\005\032\300\001\n\022WorkerStatsMessage\022t\n\007Sa" +
-      "mples\030\001 \003(\0132c.mthesis.concurrent_graph.c" +
-      "ommunication.messages.ControlMessage.Wor" +
-      "kerStatsMessage.WorkerStatSample\0324\n\020Work" +
-      "erStatSample\022\014\n\004Time\030\001 \001(\003\022\022\n\nStatsBytes" +
-      "\030\002 \001(\014\032\361\001\n\030QueryVertexChunksMessage\022k\n\006C" +
-      "hunks\030\001 \003(\0132[.mthesis.concurrent_graph.c" +
-      "ommunication.messages.ControlMessage.Que" +
-      "ryVertexChunksMapMessage\022h\n\007Queries\030\002 \003(",
-      "\0132W.mthesis.concurrent_graph.communicati" +
-      "on.messages.ControlMessage.QueryVertexQu" +
-      "eryMessage\032=\n\033QueryVertexChunksMapMessag" +
-      "e\022\017\n\007Queries\030\001 \003(\005\022\r\n\005Count\030\002 \001(\005\032X\n\027Que" +
-      "ryVertexQueryMessage\022\020\n\010IsActive\030\001 \001(\010\022\022" +
-      "\n\nSupersteps\030\002 \001(\005\022\027\n\017LocalSupersteps\030\003 " +
-      "\001(\005*\306\003\n\022ControlMessageType\022\025\n\021Channel_Ha" +
-      "ndshake\020\001\022\026\n\022Worker_Initialized\020\002\022\"\n\036Wor" +
-      "ker_Query_Superstep_Barrier\020\003\022#\n\037Worker_" +
-      "Query_Superstep_Finished\020\004\022\031\n\025Worker_Que",
-      "ry_Finished\020\005\022\032\n\026Worker_Barrier_Started\020" +
-      "\014\022#\n\037Worker_Barrier_Receive_Finished\020\017\022\033" +
-      "\n\027Worker_Barrier_Finished\020\r\022\034\n\030Master_Wo" +
-      "rker_Initialize\020\006\022\026\n\022Master_Query_Start\020" +
-      "\007\022\037\n\033Master_Query_Next_Superstep\020\010\022\031\n\025Ma" +
-      "ster_Query_Finished\020\t\022\023\n\017Master_Shutdown" +
-      "\020\n\022\030\n\024Master_Start_Barrier\020\013\022\036\n\032Worker_Q" +
-      "uery_Vertex_Chunks\020\016*]\n\030WorkerQueryExecu" +
-      "tionMode\022\014\n\010NonLocal\020\001\022\020\n\014NonLocalSkip\020\002" +
-      "\022\017\n\013LocalOnThis\020\003\022\020\n\014LocalOnOther\020\004B2\n&m",
-      "thesis.concurrent_graph.communicationB\010M" +
-      "essages"
+      "\001\032u\n\025SendQueryChunkMessage\022\026\n\016IncludeQue" +
+      "ries\030\001 \003(\005\022\027\n\017TolreateQueries\030\002 \003(\005\022\025\n\rM" +
+      "oveToMachine\030\003 \001(\005\022\024\n\014MaxMoveCount\030\004 \001(\005",
+      "\032L\n\030ReceiveQueryChunkMessage\022\024\n\014ChunkQue" +
+      "ries\030\001 \003(\005\022\032\n\022ReceiveFromMachine\030\002 \001(\005\032\300" +
+      "\001\n\022WorkerStatsMessage\022t\n\007Samples\030\001 \003(\0132c" +
+      ".mthesis.concurrent_graph.communication." +
+      "messages.ControlMessage.WorkerStatsMessa" +
+      "ge.WorkerStatSample\0324\n\020WorkerStatSample\022" +
+      "\014\n\004Time\030\001 \001(\003\022\022\n\nStatsBytes\030\002 \001(\014\032\361\001\n\030Qu" +
+      "eryVertexChunksMessage\022k\n\006Chunks\030\001 \003(\0132[" +
+      ".mthesis.concurrent_graph.communication." +
+      "messages.ControlMessage.QueryVertexChunk",
+      "sMapMessage\022h\n\007Queries\030\002 \003(\0132W.mthesis.c" +
+      "oncurrent_graph.communication.messages.C" +
+      "ontrolMessage.QueryVertexQueryMessage\032=\n" +
+      "\033QueryVertexChunksMapMessage\022\017\n\007Queries\030" +
+      "\001 \003(\005\022\r\n\005Count\030\002 \001(\005\032X\n\027QueryVertexQuery" +
+      "Message\022\020\n\010IsActive\030\001 \001(\010\022\022\n\nSupersteps\030" +
+      "\002 \001(\005\022\027\n\017LocalSupersteps\030\003 \001(\005*\306\003\n\022Contr" +
+      "olMessageType\022\025\n\021Channel_Handshake\020\001\022\026\n\022" +
+      "Worker_Initialized\020\002\022\"\n\036Worker_Query_Sup" +
+      "erstep_Barrier\020\003\022#\n\037Worker_Query_Superst",
+      "ep_Finished\020\004\022\031\n\025Worker_Query_Finished\020\005" +
+      "\022\032\n\026Worker_Barrier_Started\020\014\022#\n\037Worker_B" +
+      "arrier_Receive_Finished\020\017\022\033\n\027Worker_Barr" +
+      "ier_Finished\020\r\022\034\n\030Master_Worker_Initiali" +
+      "ze\020\006\022\026\n\022Master_Query_Start\020\007\022\037\n\033Master_Q" +
+      "uery_Next_Superstep\020\010\022\031\n\025Master_Query_Fi" +
+      "nished\020\t\022\023\n\017Master_Shutdown\020\n\022\030\n\024Master_" +
+      "Start_Barrier\020\013\022\036\n\032Worker_Query_Vertex_C" +
+      "hunks\020\016*]\n\030WorkerQueryExecutionMode\022\014\n\010N" +
+      "onLocal\020\001\022\020\n\014NonLocalSkip\020\002\022\017\n\013LocalOnTh",
+      "is\020\003\022\020\n\014LocalOnOther\020\004B2\n&mthesis.concur" +
+      "rent_graph.communicationB\010Messages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -11858,7 +12071,7 @@ public final class Messages {
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_SendQueryChunkMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_SendQueryChunkMessage_descriptor,
-        new java.lang.String[] { "ChunkQueries", "MoveToMachine", "MaxMoveCount", });
+        new java.lang.String[] { "IncludeQueries", "TolreateQueries", "MoveToMachine", "MaxMoveCount", });
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryChunkMessage_descriptor =
       internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_descriptor.getNestedTypes().get(2);
     internal_static_mthesis_concurrent_graph_communication_messages_ControlMessage_StartBarrierMessage_ReceiveQueryChunkMessage_fieldAccessorTable = new

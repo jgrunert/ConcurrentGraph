@@ -428,20 +428,24 @@ public class QueryDistribution {
 		}
 
 		// Map SrcMachine->(TargetMachine->(Query->NumVertices)
-		Map<Integer, Map<Integer, Map<Integer, Integer>>> machineMoveQueries = new HashMap<>();
+		Map<Integer, Map<Integer, Map<Integer, Integer>>> machineMoveIncludeQueries = new HashMap<>();
+		Map<Integer, Map<Integer, Map<Integer, Integer>>> machineMoveTolerateQueries = new HashMap<>();
 		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
-			machineMoveQueries.put(machine.getKey(), new HashMap<>());
+			machineMoveIncludeQueries.put(machine.getKey(), new HashMap<>());
+			machineMoveTolerateQueries.put(machine.getKey(), new HashMap<>());
 		}
 
 		// Get all moved queries
 		for (Entry<Integer, QueryWorkerMachine> machine : queryMachines.entrySet()) {
 			for (QueryVertexChunk chunk : machine.getValue().queryChunks) {
 				if (chunk.homeMachine != machine.getKey()) {
-					Map<Integer, Map<Integer, Integer>> srcMachine = machineMoveQueries.get(chunk.homeMachine);
+					Map<Integer, Map<Integer, Integer>> srcMachine = machineMoveIncludeQueries.get(chunk.homeMachine);
+					Map<Integer, Map<Integer, Integer>> srcMachineTolreate = machineMoveTolerateQueries.get(chunk.homeMachine);
 					Map<Integer, Integer> targetMachineSendQueries = srcMachine.get(machine.getKey());
 					if (targetMachineSendQueries == null) {
 						targetMachineSendQueries = new HashMap<>();
 						srcMachine.put(machine.getKey(), targetMachineSendQueries);
+						srcMachineTolreate.put(machine.getKey(), new HashMap<>());
 					}
 
 					for (int chunkQuery : chunk.queries) {
@@ -449,6 +453,43 @@ public class QueryDistribution {
 								MiscUtil.defaultInt(targetMachineSendQueries.get(chunkQuery)) + chunk.numVertices);
 					}
 				}
+			}
+		}
+
+		for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> moveSrc : machineMoveIncludeQueries.entrySet()) {
+			Map<Integer, Map<Integer, Integer>> moveSrcTolerate = machineMoveTolerateQueries.get(moveSrc.getKey());
+
+			for (Entry<Integer, Map<Integer, Integer>> moveDst : moveSrc.getValue().entrySet()) {
+				Map<Integer, Integer> moveDstTolerate = moveSrcTolerate.get(moveDst.getKey());
+				for (Entry<Integer, Integer> moveQuery : new HashMap<>(moveDst.getValue()).entrySet()) {
+					//					int queryMoveVertices = moveQuery.getValue();
+					Map<Integer, Long> srcMachineVerts = queryMachines.get(moveSrc.getKey()).queryVertices;
+					long queryVerticesOnmachine = MiscUtil.defaultLong(srcMachineVerts.get(moveQuery.getKey()));
+					// Only tolerate query if more vertices remain on machine
+					if (queryVerticesOnmachine > 0) {
+						moveDst.getValue().remove(moveQuery.getKey());
+						moveDstTolerate.put(moveQuery.getKey(), moveQuery.getValue());
+					}
+					else {
+						// Only tolerate if other move has vertices of this query
+						for (Entry<Integer, Map<Integer, Integer>> otherMoveDst : moveSrc.getValue().entrySet()) {
+							if (otherMoveDst.getKey().equals(moveDst.getKey())) continue;
+							if (MiscUtil.defaultInt(otherMoveDst.getValue().get(moveQuery.getKey())) > 0) {
+								moveDst.getValue().remove(moveQuery.getKey());
+								moveDstTolerate.put(moveQuery.getKey(), moveQuery.getValue());
+							}
+						}
+					}
+				}
+			}
+		}
+
+		System.out.println("MOVES--------");
+		for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> moveSrc : machineMoveIncludeQueries.entrySet()) {
+			System.out.println(moveSrc.getKey());
+			for (Entry<Integer, Map<Integer, Integer>> move : moveSrc.getValue().entrySet()) {
+				System.out.println("\t" + move.getKey() + " " + move.getValue() + " "
+						+ machineMoveTolerateQueries.get(moveSrc.getKey()).get(move.getKey()));
 			}
 		}
 
@@ -508,20 +549,32 @@ public class QueryDistribution {
 		//			}
 		//		}
 
-		for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> moveSrc : machineMoveQueries.entrySet()) {
-			for (Entry<Integer, Map<Integer, Integer>> moveDst : moveSrc.getValue().entrySet()) {
-				if (moveDst.getValue().isEmpty()) continue;
-				workerVertSendMsgs.get(moveSrc.getKey()).add(
+		for (Entry<Integer, Map<Integer, Map<Integer, Integer>>> moveSrcInclude : machineMoveIncludeQueries.entrySet()) {
+			Map<Integer, Map<Integer, Integer>> moveSrcTolerate = machineMoveTolerateQueries.get(moveSrcInclude.getKey());
+			if (moveSrcInclude.getValue().isEmpty()) {
+				System.err.println("No include queries, only tolerate " + moveSrcTolerate);
+				continue;
+			}
+
+			for (Entry<Integer, Map<Integer, Integer>> moveDstInclude : moveSrcInclude.getValue().entrySet()) {
+				Map<Integer, Integer> moveDstTolreate = moveSrcTolerate.get(moveDstInclude.getKey());
+				if (moveDstTolreate == null) {
+					moveDstTolreate = new HashMap<>();
+				}
+
+				if (moveDstInclude.getValue().isEmpty()) continue;
+				workerVertSendMsgs.get(moveSrcInclude.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.newBuilder()
 								//.setMaxMoveCount(moveDst.getValue().second)
 								.setMaxMoveCount(Integer.MAX_VALUE)
-								.addAllChunkQueries(moveDst.getValue().keySet())
-								.setMoveToMachine(moveDst.getKey())
+								.addAllIncludeQueries(moveDstInclude.getValue().keySet())
+								.addAllTolreateQueries(moveDstTolreate.keySet())
+								.setMoveToMachine(moveDstInclude.getKey())
 								.build());
-				workerVertRecvMsgs.get(moveDst.getKey()).add(
+				workerVertRecvMsgs.get(moveDstInclude.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage.newBuilder()
-								.addAllChunkQueries(moveDst.getValue().keySet())
-								.setReceiveFromMachine(moveSrc.getKey()).build());
+								.addAllChunkQueries(moveDstInclude.getValue().keySet())
+								.setReceiveFromMachine(moveSrcInclude.getKey()).build());
 			}
 		}
 

@@ -124,7 +124,7 @@ public class QueryWorkerMachine {
 		List<QueryVertexChunk> removedQueryChunks = new ArrayList<>();
 		for (int i = 0; i < queryChunks.size(); i++) {
 			QueryVertexChunk chunk = queryChunks.get(i);
-			if (chunk.clusterId == clusterId) {
+			if (chunk.clusters.contains(clusterId)) {
 				//				for (Integer chunkQuery : chunk.queries) {
 				//					Integer chunkLocal = localQueries.get(chunkQuery);
 				//					//if (chunkLocal != null && !chunkLocal.equals(movingTo))
