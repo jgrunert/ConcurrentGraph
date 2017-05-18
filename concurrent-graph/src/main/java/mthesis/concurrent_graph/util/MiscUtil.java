@@ -165,6 +165,12 @@ public class MiscUtil {
 		return sum;
 	}
 
+	public static <K> int mapMax(Map<K, Integer> map, K key, int add) {
+		int max = Math.max(defaultInt(map.get(key)), add);
+		map.put(key, max);
+		return max;
+	}
+
 	public static <K> long mapAdd(Map<K, Long> map, K key, long add) {
 		long sum = defaultLong(map.get(key)) + add;
 		map.put(key, sum);

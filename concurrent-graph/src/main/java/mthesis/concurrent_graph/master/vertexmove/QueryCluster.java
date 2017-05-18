@@ -24,7 +24,7 @@ public class QueryCluster {
 	public void mergeOtherCluster(QueryCluster clusterToMerge, Map<Integer, Integer> queryClusterIds, Map<Integer, QueryCluster> clusters) {
 
 		clusters.remove(clusterToMerge.id);
-		vertices += clusterToMerge.vertices;
+		vertices += clusterToMerge.vertices - clusterToMerge.intersects.get(id);
 
 		// Merge cluster queries
 		queries.addAll(clusterToMerge.queries);
@@ -34,7 +34,7 @@ public class QueryCluster {
 
 		// Merge intersects
 		for (Entry<Integer, Integer> intersect : clusterToMerge.intersects.entrySet()) {
-			MiscUtil.mapAdd(intersects, intersect.getKey(), intersect.getValue());
+			MiscUtil.mapMax(intersects, intersect.getKey(), intersect.getValue());
 		}
 		for (int clusterQuery : queries) {
 			intersects.remove(clusterQuery);
@@ -45,7 +45,7 @@ public class QueryCluster {
 			if (cluster.id == id) continue;
 			int oldIntersect = MiscUtil.defaultInt(cluster.intersects.remove(clusterToMerge.id));
 			if (oldIntersect > 0) {
-				MiscUtil.mapAdd(cluster.intersects, id, oldIntersect);
+				MiscUtil.mapMax(cluster.intersects, id, oldIntersect);
 			}
 		}
 	}

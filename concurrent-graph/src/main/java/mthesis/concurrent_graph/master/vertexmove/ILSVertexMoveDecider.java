@@ -208,6 +208,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				for (Entry<Integer, Integer> cIntersect : c0.intersects.entrySet()) {
 					long c1Verts = clusters.get(cIntersect.getKey()).vertices;
 					double intersect = (double) cIntersect.getValue() / ((c0.vertices + c1Verts) / 2);
+					//double intersect = (double) cIntersect.getValue() / c0.vertices;
 					//double intersect = (double) cIntersect.getValue() / (Math.min(c0.vertices, c1Verts));
 					if (intersect > bestIntersect) {
 						bestIntersect = intersect;
@@ -336,9 +337,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 		// Greedy improve initial distribution
-		bestDistribution =
-
-				optimizeGreedy(queryIds, workerIds, bestDistribution, clusterIds);
+		bestDistribution = optimizeGreedy(queryIds, workerIds, bestDistribution, clusterIds);
 		if (saveIlsStats) {
 			double costs = bestDistribution.getCurrentCosts();
 			currentlyBestDistributionCosts = costs;
@@ -707,8 +706,19 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				}
 			}
 
+			if (!checkTotalVertsOkOrBetter(baseDistribution, iterBestDistribution)) {
+				logger.error("iterBestDistribution not balanced: " + iterBestDistribution.getAverageTotalVerticesImbalanceFactor());
+				printIlsLog("iterBestDistribution not balanced: " + iterBestDistribution.getAverageTotalVerticesImbalanceFactor());
+				break;
+			}
+
 			if (saveIlsStats) {
 				logIlsStep(iterBestDistribution);
+				StringBuilder sb = new StringBuilder();
+				for (Entry<Integer, QueryWorkerMachine> machine : iterBestDistribution.getQueryMachines().entrySet()) {
+					sb.append(machine.getKey() + ": " + machine.getValue().totalVertices + ", ");
+				}
+				printIlsLog(sb.toString());
 			}
 
 			if (anyImproves) {

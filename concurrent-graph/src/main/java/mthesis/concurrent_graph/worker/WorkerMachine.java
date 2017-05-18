@@ -1538,7 +1538,11 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 
 		//long start2 = System.currentTimeMillis();
+
+		// Simplified chunks
 		Map<IntSet, Integer> intersectChunks = new HashMap<>();
+		// All queries of the simplified chunks
+		Map<IntSet, IntSet> intersectChunksQueries = new HashMap<>();
 
 		// Find all active vertics
 		IntSet allActiveVertices = new IntOpenHashSet();
@@ -1547,24 +1551,39 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		}
 
 		// Find queries vertices are active in
-		IntSet vertexQueriesSet = new IntOpenHashSet();
+		IntSet vertexQueriesBuffer = new IntOpenHashSet();
 		for (IntIterator it = allActiveVertices.iterator(); it.hasNext();) {
 			int vertex = it.nextInt();
 			if (samplingFactor > 1 && rd.nextInt(samplingFactor) != 0) continue;
 
 			for (WorkerQuery<V, E, M, Q> query : queriesHistoryMap.values()) {
 				if (query.VerticesEverActive.contains(vertex))
-					vertexQueriesSet.add(query.QueryId);
+					vertexQueriesBuffer.add(query.QueryId);
 			}
 
-			Integer countNow = intersectChunks.get(vertexQueriesSet);
-			if (countNow != null) {
-				intersectChunks.put(vertexQueriesSet, countNow + 1);
+			IntSet vertexQueriesChunk;
+			if (vertexQueriesBuffer.size() > 6) { // TODO Config
+				vertexQueriesChunk = new IntOpenHashSet(
+						vertexQueriesBuffer.stream()
+								.sorted()
+								.limit(6)
+								.collect(Collectors.toList()));
 			}
 			else {
-				intersectChunks.put(new IntOpenHashSet(vertexQueriesSet), 1);
+				vertexQueriesChunk = vertexQueriesBuffer;
 			}
-			vertexQueriesSet.clear();
+
+			Integer countNow = intersectChunks.get(vertexQueriesChunk);
+			if (countNow != null) {
+				intersectChunks.put(vertexQueriesChunk, countNow + 1);
+				intersectChunksQueries.get(vertexQueriesChunk).addAll(vertexQueriesBuffer);
+			}
+			else {
+				IntSet key = new IntOpenHashSet(vertexQueriesChunk);
+				intersectChunks.put(key, 1);
+				intersectChunksQueries.put(key, new IntOpenHashSet(vertexQueriesBuffer));
+			}
+			vertexQueriesChunk.clear();
 		}
 
 		// Sort out neglegible small chunks and multiply with samplingFactor
@@ -1578,12 +1597,20 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 		}
 
+		System.out.println("Sampled IntersectCalcTime " + (System.currentTimeMillis() - startTimeMs) + "ms " + intersectChunks.size()); // TODO debug
+
 		// Limit chunks
 		Map<IntSet, Integer> limitedIntersectChunks = intersectChunks.entrySet().stream()
-				.limit(IntersectChunkLimit)
 				.sorted(Map.Entry.<IntSet, Integer>comparingByValue().reversed())
+				.limit(IntersectChunkLimit)
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,
 						(e1, e2) -> e1, LinkedHashMap::new));
+
+		// Full chunks with all queries per chunk
+		Map<IntSet, Integer> intersectChunksFullQueries = new HashMap<>();
+		for (Entry<IntSet, Integer> chunk : intersectChunks.entrySet()) {
+			intersectChunksFullQueries.put(intersectChunksQueries.get(chunk.getKey()), chunk.getValue());
+		}
 
 		workerStats.IntersectCalcTime += System.nanoTime() - startTimeNano;
 		logger.info("Sampled IntersectCalcTime {}ms", (System.currentTimeMillis() - startTimeMs)); // TODO debug

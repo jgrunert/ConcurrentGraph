@@ -624,6 +624,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		//logger.info("#+-------------------------------------------------");
 
 		if (vertexMoveDeciderService.hasNewDecission() && VertexMoveEnabled) {
+			VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();
+
 			double delta = localSuperstepsRatioUnique - lastQMoveLSRU;
 			boolean lsruThreshold = localSuperstepsRatioUnique < LsruExtraShotsLow
 					|| delta < LsruExtraShotsDeltaThreshNeg || delta > LsruExtraShotsDeltaThreshPos;
@@ -649,7 +651,6 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					logger.info("Used LsruExtraShot, remaining " + remainingLsruExtraShots);//TODO Log
 				}
 
-				VertexMoveDecision newMoveDecission = vertexMoveDeciderService.getNewDecission();
 				if (!globalBarrierPlanned) {
 					if (newMoveDecission != null) {
 						// New move decision
@@ -663,6 +664,14 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 					moveDecission = newMoveDecission;
 					logger.info("Replace move decission, barrier already planned");
 				}
+			}
+			else {
+				System.err.println("Suspend QMove: " + localSuperstepsRatioUnique + " last " + lastQMoveLSRU + " delta " + delta
+						+ " avgImbalance " + latestWavwAvgImbalance + " maxImbalance " + latestWavwMaxImbalance + " "
+						+ latestWorkerActiveVerticesWindows);
+				logger.info("Suspend QMove: " + localSuperstepsRatioUnique + " last " + lastQMoveLSRU + " delta " + delta
+						+ " avgImbalance " + latestWavwAvgImbalance + " maxImbalance " + latestWavwMaxImbalance + " "
+						+ latestWorkerActiveVerticesWindows);//TODO Only log debug
 			}
 		}
 
