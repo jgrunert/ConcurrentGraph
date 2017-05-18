@@ -70,6 +70,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private static final boolean skipInactiveWorkers = Configuration.getPropertyBoolDefault("SkipInactiveWorkers", true);
 	private static final boolean localQueryExecution = Configuration.getPropertyBoolDefault("LocalQueryExecution", true);
 	private static final boolean queryGlobalBarrier = Configuration.getPropertyBoolDefault("QueryGlobalBarrier", false);
+	private static final boolean VertexMoveEnabled = Configuration.getPropertyBoolDefault("VertexMoveEnabled", false);
 
 	private final boolean EnableQueryStats = Configuration.getPropertyBoolDefault("EnableQueryStats", true);
 	private final long LocalSuperstepTimeWindow = Configuration.getPropertyLongDefault("LocalSuperstepTimeWindow", 40000);
@@ -598,7 +599,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 		//logger.info("#+-------------------------------------------------");
 
-		if (vertexMoveDeciderService.hasNewDecission()) {
+		if (vertexMoveDeciderService.hasNewDecission() && VertexMoveEnabled) {
 			double delta = localSuperstepsRatioUnique - lastQMoveLSRU;
 			boolean lsruThreshold = localSuperstepsRatioUnique < LsruExtraShotsLow
 					|| delta < LsruExtraShotsDeltaThreshNeg || delta > LsruExtraShotsDeltaThreshPos;
