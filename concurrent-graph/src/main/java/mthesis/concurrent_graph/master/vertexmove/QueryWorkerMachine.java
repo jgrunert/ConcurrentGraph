@@ -228,6 +228,7 @@ public class QueryWorkerMachine {
 				minCluster = v.getKey();
 			}
 		}
+		System.out.println(verts);
 		if (minClusterSize == Integer.MAX_VALUE) {
 			System.err.println(minCluster + " " + minClusterSize + " " + verts); // TODO logger.error
 		}

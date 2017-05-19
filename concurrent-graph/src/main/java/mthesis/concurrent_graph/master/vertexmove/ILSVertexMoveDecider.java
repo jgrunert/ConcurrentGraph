@@ -298,50 +298,18 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 		// Assign chunks to clusters
-		//		Map<Integer, Double> chunkClusterScores = new HashMap<>();
-		int multiClusterChunks = 0;
-		int chunkCount = 0;
 		for (Entry<Integer, QueryWorkerMachine> worker : bestDistribution.getQueryMachines().entrySet()) {
-			//			boolean multiClusterChunk = false;
 			for (QueryVertexChunk chunk : worker.getValue().queryChunks) {
 				for (int chunkQuery : chunk.queries) {
 					chunk.clusters.add(queryClusterIds.get(chunkQuery));
 				}
-				//				chunkClusterScores.clear();
-				//				double bestClusterScore = 0;
-				//				int bestCluster = 0;
-				//				int cluster0 = -1;
-				//				for (int chunkQuery : chunk.queries) {
-				//					int clusterID = queryClusterIds.get(chunkQuery);
-				//					QueryCluster cluster = clusters.get(clusterID);
-				//					//double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0 / cluster.queries.size());
-				//					double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, cluster.queries.size());
-				//					//double score = MiscUtil.mapAdd(chunkClusterScores, clusterID, 1.0);
-				//					if (score > bestClusterScore) {
-				//						bestClusterScore = score;
-				//						bestCluster = clusterID;
-				//					}
-				//
-				//					if (cluster0 == -1) cluster0 = clusterID;
-				//					else {
-				//						if (cluster0 != clusterID)
-				//							multiClusterChunk = true;
-				//					}
-				//				}
-
-				//				chunk.clusterId = bestCluster;
-				//				chunk.clusters.add(bestCluster);
-				//				chunkCount += chunk.numVertices;
-				//				if (multiClusterChunk) {
-				//					multiClusterChunks += chunk.numVertices;
-				//					//					chunk.clusterId = -1;
-				//				}
 			}
 		}
-		//		System.err
-		//				.println("multiClusterChunks: " + multiClusterChunks + "/" + chunkCount + " " + ((double) multiClusterChunks / chunkCount));
-		printIlsLog("multiClusterChunks: " + multiClusterChunks + "/" + chunkCount + " " + ((double) multiClusterChunks / chunkCount));
 
+		printIlsLog("worker cluster vertices: ");
+		for (Entry<Integer, QueryWorkerMachine> worker : originalDistribution.getQueryMachines().entrySet()) {
+			ilsLogWriter.println("  " + worker.getKey() + ": " + worker.getValue().getClusterVertices());
+		}
 
 
 		// Initial balancing
@@ -453,8 +421,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			moveDecission = null;
 		}
 		else {
-			if (//checkActiveVertsOkOrBetter(originalDistribution, bestDistribution)					&&
-					checkTotalVertsOkOrBetter(originalDistribution, bestDistribution)) {
+			if (checkTotalVertsOkOrBetter(originalDistribution, originalDistribution)) {
 				moveDecission = bestDistribution.toMoveDecision(workerIds, QueryKeepLocalThreshold);
 				String printMsg = "Decided move, moves: " + moveDecission.moveMessages + " movedVertices: " + movedVertices + " costs: "
 						+ bestDistribution.getCurrentCosts()
@@ -864,8 +831,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			int minLoadedId = newDistribution.getMachineMinTotalVertices();
 			int maxLoadedId = newDistribution.getMachineMaxTotalVerticesWithClusters();
 			int moveCluster = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestCluster();
-			printIlsLog("Balance move " + moveCluster + " " + maxLoadedId + "->" + minLoadedId);
-			newDistribution.moveAllClusterVertices(moveCluster, maxLoadedId, minLoadedId);
+			int moved = newDistribution.moveAllClusterVertices(moveCluster, maxLoadedId, minLoadedId);
+			printIlsLog("Balance move " + moveCluster + " " + maxLoadedId + "->" + minLoadedId + " " + moved);
 		}
 		return newDistribution;
 	}
