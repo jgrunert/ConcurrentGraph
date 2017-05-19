@@ -39,6 +39,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private final int MaxGreedyIterations = Configuration.getPropertyIntDefault("VertexMoveMaxGreedyIterations", 100);
 	private final double QueryKeepLocalThreshold = Configuration.getPropertyDoubleDefault("QueryKeepLocalThreshold", 0.5);
 	private boolean saveIlsStats = Configuration.getPropertyBoolDefault("SaveIlsStats", false);
+	private final int ClustersPerWorker = Configuration.getPropertyIntDefault("ClustersPerWorker", 4);
+	private final int ClustersAdditional = Configuration.getPropertyIntDefault("ClustersAdditional", 0);
 
 	private long decideStartTime;
 	private int ilsRunNumber = 0;
@@ -190,7 +192,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		printIlsLog("Start clustering");
 		//		Random rdCluster = new Random(0);
-		int clusterCount = workerIds.size() * 4; // TODO Config
+
+		int clusterCount = ClustersAdditional + workerIds.size() * ClustersPerWorker; // TODO Config
 		//		for (Entry<Pair<Integer, Integer>, Double> mergeIntersect : clusterIntersectsPairsSorted.entrySet()) {
 		//			if (queryClusterIntersects.size() <= clusterCount) break;
 		while (clusters.size() > clusterCount) {
@@ -436,7 +439,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		}
 		else {
 			if (//checkActiveVertsOkOrBetter(originalDistribution, bestDistribution)					&&
-			checkTotalVertsOkOrBetter(originalDistribution, bestDistribution)) {
+					checkTotalVertsOkOrBetter(originalDistribution, bestDistribution)) {
 				moveDecission = bestDistribution.toMoveDecision(workerIds, QueryKeepLocalThreshold);
 				String printMsg = "Decided move, moves: " + moveDecission.moveMessages + " movedVertices: " + movedVertices + " costs: "
 						+ bestDistribution.getCurrentCosts()
@@ -693,9 +696,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						if (!isValid) continue;
 
 						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
-						//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
-						//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
-						) {
+								//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
+								//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
+								) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							bestFrom = fromWorkerId;
