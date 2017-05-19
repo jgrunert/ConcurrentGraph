@@ -41,6 +41,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private boolean saveIlsStats = Configuration.getPropertyBoolDefault("SaveIlsStats", false);
 	private final int ClustersPerWorker = Configuration.getPropertyIntDefault("ClustersPerWorker", 4);
 	private final int ClustersAdditional = Configuration.getPropertyIntDefault("ClustersAdditional", 0);
+	private final boolean IlsBalanceFirst = Configuration.getPropertyBoolDefault("IlsBalanceFirst", true);
 
 	private long decideStartTime;
 	private int ilsRunNumber = 0;
@@ -190,6 +191,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		//			printIlsLog("clusterIntersectsSorted: " + clusterIntersectsPairsSorted);
 		//		}
 
+
+
 		printIlsLog("Start clustering");
 		//		Random rdCluster = new Random(0);
 
@@ -224,9 +227,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 			// Terminate if no more intersects
 			//			if (bestIntersect < 0.5) {
-			if (bestIntersect < 0.2) {
+			if (bestIntersect < 0.2) {// TODO Config
 				//								if (bestIntersect <= 0) {
-				printIlsLog("No more intersections, terminate with more clusters: " + clusters.size());
+				printIlsLog("No more relevant intersections, terminate with more clusters: " + clusters.size());
 				break;
 			}
 
@@ -274,6 +277,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			clusters.get(clusterIdA).mergeOtherCluster(clusters.get(clusterIdB), queryClusterIds, clusters);
 		}
 		printIlsLog("Finished clustering");
+
 
 		List<Integer> clusterIds = new ArrayList<>(clusters.keySet());
 		Collections.sort(clusterIds);
@@ -340,6 +344,17 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 
 
+		// Initial balancing
+		printIlsLog("Initial balance: " + workloadTotalBalanceOk(bestDistribution) + " " + bestDistribution.getAverageTotalVerticesImbalanceFactor());
+		if (IlsBalanceFirst) {
+			printIlsLog("Start IlsBalanceFirst");
+			bestDistribution = balanceDistribution(bestDistribution);
+			printIlsLog(
+					"Finished IlsBalanceFirst: " + workloadTotalBalanceOk(bestDistribution) + " " + bestDistribution.getAverageTotalVerticesImbalanceFactor());
+		}
+
+
+
 		// Greedy improve initial distribution
 		bestDistribution = optimizeGreedy(queryIds, workerIds, bestDistribution, clusterIds);
 		if (saveIlsStats) {
@@ -355,7 +370,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		int i = 0;
 		for (; i < MaxILSIterations && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime; i++) {
 			// Pertubation
-			QueryDistribution ilsDistribution = pertubationQueryUnifyLargestPartition(queryIdsList, workerIds, bestDistribution, rd);
+			QueryDistribution ilsDistribution = pertubationClusterUnifyLargestPartition(queryIdsList, workerIds, bestDistribution, rd);
 			latestPertubatedDistributionCosts = ilsDistribution.getCurrentCosts();
 			if (saveIlsStats) {
 				ilsLogWriter.println();
@@ -833,50 +848,37 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	/**
 	 * Pertubation by moving all partitions of a query to machine with largest partition
 	 */
-	private QueryDistribution pertubationQueryUnifyLargestPartition(List<Integer> queryIds, List<Integer> workerIds,
-			QueryDistribution baseDistribution,
-			Random rd) {
+	private QueryDistribution pertubationClusterUnifyLargestPartition(List<Integer> clusterIds, List<Integer> workerIds,
+			QueryDistribution baseDistribution, Random rd) {
 		// First unify random query
-		QueryDistribution newDistribution = unifyQueryAtLargestPartition(getRandomFromList(queryIds, rd), workerIds, baseDistribution);
+		QueryDistribution newDistribution = unifyClusterAtLargestPartition(getRandomFromList(clusterIds, rd), workerIds, baseDistribution);
+		newDistribution = balanceDistribution(newDistribution);
 
-		// Now unify until workload balancing reached. Move smallest partition from most loaded worker to least loaded worker
-		while (!workloadTotalBalanceOk(newDistribution)
-				&& (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
-			//			while (!workloadActiveBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
-			//				int minLoadedId = newDistribution.getMachineMinActiveVertices();
-			//				int maxLoadedId = newDistribution.getMachineMaxActiveVertices();
-			//				QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
-			//				//				System.out.println("A " + moveChunk + " " + maxLoadedId + "->" + minLoadedId + " "
-			//				//						+ newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId));
-			//				newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId);
-			//			}
-			//
-			//			while (!workloadTotalBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
+		return newDistribution;
+	}
+
+	private QueryDistribution balanceDistribution(QueryDistribution baseDistribution) {
+		QueryDistribution newDistribution = baseDistribution.clone();
+
+		while (!workloadTotalBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
 			int minLoadedId = newDistribution.getMachineMinTotalVertices();
-			int maxLoadedId = newDistribution.getMachineMaxTotalVertices();
-			QueryVertexChunk moveChunk = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestChunk();
-			//				System.out.println("T " + moveChunk + " " + maxLoadedId + "->" + minLoadedId + " "
-			//						+ newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId)
-			//						+ "  " + newDistribution.getQueryMachines().get(minLoadedId).totalVertices + "  "
-			//						+ newDistribution.getQueryMachines().get(maxLoadedId).totalVertices + " avg " + newDistribution.avgTotalVertices);
-			newDistribution.moveSingleChunkVertices(moveChunk, maxLoadedId, minLoadedId);
-			//			}
-
-			// Workers sorted by increasing total vertices
+			int maxLoadedId = newDistribution.getMachineMaxTotalVerticesWithClusters();
+			int moveCluster = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestCluster();
+			printIlsLog("Balance move " + moveCluster + " " + maxLoadedId + "->" + minLoadedId);
+			newDistribution.moveAllClusterVertices(moveCluster, maxLoadedId, minLoadedId);
 		}
-
 		return newDistribution;
 	}
 
 	/**
 	 * Moving all partitions of a query to machine with largest partition
 	 */
-	private QueryDistribution unifyQueryAtLargestPartition(int pertubationQuery, List<Integer> workerIds,
+	private QueryDistribution unifyClusterAtLargestPartition(int pertubationCluster, List<Integer> workerIds,
 			QueryDistribution baseDistribution) {
 		int bestWorkerId = 0;
 		long bestWorkerPartitionSize = 0;
 		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
-			long partitionSize = MiscUtil.defaultLong(machine.getValue().queryVertices.get(pertubationQuery));
+			int partitionSize = MiscUtil.defaultInt(machine.getValue().getClusterVertices().get(pertubationCluster));
 			if (partitionSize > bestWorkerPartitionSize) {
 				bestWorkerPartitionSize = partitionSize;
 				bestWorkerId = machine.getKey();
@@ -885,22 +887,22 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		if (saveIlsStats) {
 			printIlsLog(
-					"unifyQueryAtLargestPartition " + pertubationQuery + " at " + bestWorkerId + " " + bestWorkerPartitionSize + "/"
-							+ baseDistribution.queryVertices.get(pertubationQuery));
+					"unifyClusterAtLargestPartition " + pertubationCluster + " at " + bestWorkerId + " " + bestWorkerPartitionSize + "/"
+							+ baseDistribution.queryVertices.get(pertubationCluster));
 		}
 
-		return unifyQueryAtWorker(pertubationQuery, workerIds, bestWorkerId, baseDistribution);
+		return unifyClusterAtWorker(pertubationCluster, workerIds, bestWorkerId, baseDistribution);
 	}
 
 	/**
 	 * Moving all partitions of a query to machine with largest partition
 	 */
-	private QueryDistribution unifyQueryAtWorker(int pertubationQuery, List<Integer> workerIds, int targetWorkerId,
+	private QueryDistribution unifyClusterAtWorker(int clusterQuery, List<Integer> workerIds, int targetWorkerId,
 			QueryDistribution baseDistribution) {
 		QueryDistribution newDistribution = baseDistribution.clone();
 		for (int worker : workerIds) {
 			if (worker != targetWorkerId) {
-				newDistribution.moveAllQueryVertices(pertubationQuery, worker, targetWorkerId, true);
+				newDistribution.moveAllClusterVertices(clusterQuery, worker, targetWorkerId);
 			}
 		}
 		return newDistribution;

@@ -48,6 +48,7 @@ import mthesis.concurrent_graph.communication.ProtoEnvelopeMessage;
 import mthesis.concurrent_graph.communication.UpdateRegisteredVerticesMessage;
 import mthesis.concurrent_graph.communication.VertexMessage;
 import mthesis.concurrent_graph.communication.VertexMessageBucket;
+import mthesis.concurrent_graph.util.MiscUtil;
 import mthesis.concurrent_graph.util.Pair;
 import mthesis.concurrent_graph.vertex.AbstractVertex;
 import mthesis.concurrent_graph.writable.BaseWritable;
@@ -69,7 +70,7 @@ import mthesis.concurrent_graph.writable.BaseWritable.BaseWritableFactory;
  *            Global query values type
  */
 public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M extends BaseWritable, Q extends BaseQuery>
-		extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
+extends AbstractMachine<V, E, M, Q> implements VertexWorkerInterface<V, E, M, Q> {
 
 	public long ActiveVertsTimeWindow = Configuration.getPropertyLongDefault("ActiveVertsTimeWindow", 60000);
 	public int IntersectSamplingFactor = Configuration.getPropertyIntDefault("IntersectSamplingFactor", 100);
@@ -704,13 +705,13 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						lastWatchdogSignal = System.currentTimeMillis();
 						handleMasterNextSuperstep(message);
 					}
-						break;
+					break;
 
 					case Master_Query_Finished: {
 						Q query = deserializeQuery(message.getQueryValues());
 						finishQuery(activeQueries.get(query.QueryId));
 					}
-						break;
+					break;
 
 					case Master_Start_Barrier: { // Start global barrier
 						StartBarrierMessage startBarrierMsg = message.getStartBarrier();
@@ -728,12 +729,12 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 						globalBarrierRecvVerts = new HashSet<>(recvVerts.size());
 						for (ReceiveQueryChunkMessage rvMsg : recvVerts) {
 							globalBarrierRecvVerts
-									.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
+							.add(new Pair<>(new HashSet<>(rvMsg.getChunkQueriesList()), rvMsg.getReceiveFromMachine()));
 						}
 						globalBarrierQuerySupersteps = startBarrierMsg.getQuerySuperstepsMap();
 						globalBarrierRequested = true;
 					}
-						break;
+					break;
 
 
 					case Worker_Query_Superstep_Barrier: {
@@ -754,35 +755,35 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 
 						handleQuerySuperstepBarrierMsg(message, activeQuery);
 					}
-						return true;
+					return true;
 
 					case Worker_Barrier_Started: {
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierStartWaitSet.contains(srcWorker)) globalBarrierStartWaitSet.remove(srcWorker);
 						else globalBarrierStartPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Receive_Finished: {
 						logger.debug("Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierReceivingFinishWaitSet.contains(srcWorker)) globalBarrierReceivingFinishWaitSet.remove(srcWorker);
 						else globalBarrierReceivingFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 					case Worker_Barrier_Finished: {
 						logger.debug("Worker_Barrier_Finished");
 						int srcWorker = message.getSrcMachine();
 						if (globalBarrierFinishWaitSet.contains(srcWorker)) globalBarrierFinishWaitSet.remove(srcWorker);
 						else globalBarrierFinishPrematureSet.add(srcWorker);
 					}
-						return true;
+					return true;
 
 					case Master_Shutdown: {
 						logger.info("Received shutdown signal");
 						stopRequested = true;
 						stop();
 					}
-						break;
+					break;
 
 					default:
 						logger.error("Unknown control message type: " + message);
@@ -991,8 +992,8 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 		if (message.getSuperstepNo() != query.getMasterStartedSuperstep() + 1
 				&& !receivedLocalOnOtherBarrier) {
 			logger.error("Wrong superstep number to start next: " + query.QueryId + ":" + message.getSuperstepNo()
-					+ " localExecution=" + query.localExecution + " executionMode=" + query.getExecutionMode() + "/" + queryExecutionMode
-					+ " superstep should be " + (query.getMasterStartedSuperstep() + 1) + ", " + query.getSuperstepNosLog());
+			+ " localExecution=" + query.localExecution + " executionMode=" + query.getExecutionMode() + "/" + queryExecutionMode
+			+ " superstep should be " + (query.getMasterStartedSuperstep() + 1) + ", " + query.getSuperstepNosLog());
 			return;
 		}
 
@@ -1578,8 +1579,43 @@ public class WorkerMachine<V extends BaseWritable, E extends BaseWritable, M ext
 			}
 		}
 
+		// Try to merge smaller chunks
+		Map<IntSet, Integer> sortedIntersectChunks = intersectChunks.entrySet().stream()
+				.sorted(Map.Entry.<IntSet, Integer>comparingByValue())
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+		Map<IntSet, IntSet> chunkMergedQueries = new HashMap<>();
+		for (IntSet chunk : intersectChunks.keySet()) {
+			chunkMergedQueries.put(chunk, new IntOpenHashSet(chunk));
+		}
+
+		for (Entry<IntSet, Integer> chunk : new LinkedHashMap<>(sortedIntersectChunks).entrySet()) {
+			if (sortedIntersectChunks.size() <= IntersectChunkLimit) break;
+			Entry<IntSet, Integer> bestMatch = null;
+			double bestMatchOverlap = 0;
+			for (Entry<IntSet, Integer> otherChunk : sortedIntersectChunks.entrySet()) {
+				if (otherChunk.getKey().equals(chunk.getKey())) continue;
+				double overlap = (double) MiscUtil.getIntersectCount(chunk.getKey(), otherChunk.getKey()) / otherChunk.getKey().size();
+				if (overlap > bestMatchOverlap) {
+					bestMatchOverlap = overlap;
+					bestMatch = otherChunk;
+				}
+			}
+			if (bestMatchOverlap > 0) {
+				Integer thisCount = sortedIntersectChunks.remove(chunk.getKey());
+				Integer otherCount = sortedIntersectChunks.get(bestMatch.getKey());
+				chunkMergedQueries.get(bestMatch.getKey()).addAll(chunk.getKey());
+				sortedIntersectChunks.put(bestMatch.getKey(), thisCount + otherCount);
+			}
+		}
+
+		Map<IntSet, Integer> mergedIntersectChunks = new HashMap<>();
+		for (Entry<IntSet, Integer> chunk : sortedIntersectChunks.entrySet()) {
+			mergedIntersectChunks.put(chunkMergedQueries.get(chunk.getKey()), chunk.getValue());
+		}
+
 		// Limit chunks
-		Map<IntSet, Integer> limitedIntersectChunks = intersectChunks.entrySet().stream()
+		Map<IntSet, Integer> limitedIntersectChunks = mergedIntersectChunks.entrySet().stream()
 				.sorted(Map.Entry.<IntSet, Integer>comparingByValue().reversed())
 				.limit(IntersectChunkLimit)
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue,

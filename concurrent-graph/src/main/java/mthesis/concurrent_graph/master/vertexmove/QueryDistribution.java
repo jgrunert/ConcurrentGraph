@@ -482,16 +482,16 @@ public class QueryDistribution {
 				if (moveDstInclude.getValue().isEmpty()) continue;
 				workerVertSendMsgs.get(moveSrcInclude.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.newBuilder()
-								//.setMaxMoveCount(moveDst.getValue().second)
-								.setMaxMoveCount(Integer.MAX_VALUE)
-								.addAllIncludeQueries(moveDstInclude.getValue().keySet())
-								.addAllTolreateQueries(moveDstTolreate.keySet())
-								.setMoveToMachine(moveDstInclude.getKey())
-								.build());
+						//.setMaxMoveCount(moveDst.getValue().second)
+						.setMaxMoveCount(Integer.MAX_VALUE)
+						.addAllIncludeQueries(moveDstInclude.getValue().keySet())
+						.addAllTolreateQueries(moveDstTolreate.keySet())
+						.setMoveToMachine(moveDstInclude.getKey())
+						.build());
 				workerVertRecvMsgs.get(moveDstInclude.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage.newBuilder()
-								.addAllChunkQueries(moveDstInclude.getValue().keySet())
-								.setReceiveFromMachine(moveSrcInclude.getKey()).build());
+						.addAllChunkQueries(moveDstInclude.getValue().keySet())
+						.setReceiveFromMachine(moveSrcInclude.getKey()).build());
 			}
 		}
 
@@ -522,6 +522,18 @@ public class QueryDistribution {
 		long maxVertices = 0;
 		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
 			if (worker.getValue().totalVertices > maxVertices) {
+				maxVertices = worker.getValue().totalVertices;
+				workerId = worker.getKey();
+			}
+		}
+		return workerId;
+	}
+
+	public int getMachineMaxTotalVerticesWithClusters() {
+		int workerId = 0;
+		long maxVertices = 0;
+		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
+			if (worker.getValue().totalVertices > maxVertices && !worker.getValue().getClusterVertices().isEmpty()) {
 				maxVertices = worker.getValue().totalVertices;
 				workerId = worker.getKey();
 			}

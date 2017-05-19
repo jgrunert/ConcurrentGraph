@@ -216,6 +216,33 @@ public class QueryWorkerMachine {
 		return minChunk;
 	}
 
+	/** Returns cluster with least active vertices on this machine */
+	public int getSmallestCluster() {
+		Map<Integer, Integer> verts = getClusterVertices();
+		int minCluster = 0;
+		int minClusterSize = Integer.MAX_VALUE;
+		for (Entry<Integer, Integer> v : verts.entrySet()) {
+			int vNum = MiscUtil.defaultInt(v.getValue());
+			if (vNum > 0 && vNum < minClusterSize) {
+				minClusterSize = vNum;
+				minCluster = v.getKey();
+			}
+		}
+		if (minClusterSize == Integer.MAX_VALUE) {
+			System.err.println(minCluster + " " + minClusterSize + " " + verts); // TODO logger.error
+		}
+		return minCluster;
+	}
+
+	public Map<Integer, Integer> getClusterVertices() {
+		Map<Integer, Integer> verts = new HashMap<>();
+		for (QueryVertexChunk chunk : queryChunks) {
+			for (int chunkCluster : chunk.clusters) {
+				MiscUtil.mapAdd(verts, chunkCluster, chunk.numVertices);
+			}
+		}
+		return verts;
+	}
 
 	public long getNumVerticesWithQueries(IntSet queries) {
 		long verts = 0;
