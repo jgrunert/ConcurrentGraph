@@ -119,6 +119,7 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			String msg = ("workerVertices\t");
 			for (int worker : workerIds) {
 				msg += (worker + ": "
+						+ bestDistribution.getQueryMachines().get(worker).chunkVertices + " "
 						+ bestDistribution.getQueryMachines().get(worker).totalVertices + " ");
 			}
 			printIlsLog(msg);
