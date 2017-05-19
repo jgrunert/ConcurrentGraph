@@ -219,7 +219,7 @@ public class QueryWorkerMachine {
 	/** Returns cluster with least active vertices on this machine */
 	public int getSmallestCluster() {
 		Map<Integer, Integer> verts = getClusterVertices();
-		int minCluster = 0;
+		int minCluster = -1;
 		int minClusterSize = Integer.MAX_VALUE;
 		for (Entry<Integer, Integer> v : verts.entrySet()) {
 			int vNum = MiscUtil.defaultInt(v.getValue());
@@ -228,10 +228,10 @@ public class QueryWorkerMachine {
 				minCluster = v.getKey();
 			}
 		}
-		System.out.println(verts);
-		if (minClusterSize == Integer.MAX_VALUE) {
-			System.err.println(minCluster + " " + minClusterSize + " " + verts); // TODO logger.error
-		}
+		//		System.out.println(verts);
+		//		if (minClusterSize == Integer.MAX_VALUE) {
+		//			System.err.println(minCluster + " " + minClusterSize + " " + verts); // TODO logger.error
+		//		}
 		return minCluster;
 	}
 

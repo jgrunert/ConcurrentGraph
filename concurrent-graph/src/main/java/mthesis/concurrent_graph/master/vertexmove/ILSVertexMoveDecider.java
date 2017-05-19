@@ -827,10 +827,19 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 	private QueryDistribution balanceDistribution(QueryDistribution baseDistribution) {
 		QueryDistribution newDistribution = baseDistribution.clone();
 
+		int origMinLoaded = newDistribution.getMachineMinTotalVertices();
 		while (!workloadTotalBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
 			int minLoadedId = newDistribution.getMachineMinTotalVertices();
 			int maxLoadedId = newDistribution.getMachineMaxTotalVerticesWithClusters();
+			if (maxLoadedId == origMinLoaded) {
+				printIlsLog("Circle detection " + maxLoadedId + "->" + minLoadedId + " max was min");
+				break;
+			}
 			int moveCluster = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestCluster();
+			if (moveCluster == -1) {
+				printIlsLog("No valid move cluster found for " + maxLoadedId + "->" + minLoadedId);
+				break;
+			}
 			int moved = newDistribution.moveAllClusterVertices(moveCluster, maxLoadedId, minLoadedId);
 			printIlsLog("Balance move " + moveCluster + " " + maxLoadedId + "->" + minLoadedId + " " + moved);
 		}
