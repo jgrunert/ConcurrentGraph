@@ -828,23 +828,65 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 		QueryDistribution newDistribution = baseDistribution.clone();
 
 		int origMinLoaded = newDistribution.getMachineMinTotalVertices();
+		double avgImbalance = newDistribution.getAverageTotalVerticesImbalanceFactor();
 		while (!workloadTotalBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
 			int minLoadedId = newDistribution.getMachineMinTotalVertices();
 			int maxLoadedId = newDistribution.getMachineMaxTotalVerticesWithClusters();
 			if (maxLoadedId == origMinLoaded) {
+				System.err.println("Circle detection " + maxLoadedId + "->" + minLoadedId + " max was min");
 				printIlsLog("Circle detection " + maxLoadedId + "->" + minLoadedId + " max was min");
 				break;
 			}
-			int moveCluster = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestCluster();
-			if (moveCluster == -1) {
-				printIlsLog("No valid move cluster found for " + maxLoadedId + "->" + minLoadedId);
+
+			//int moveCluster = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestCluster();
+			int moveQuery = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestQuery();
+			if (moveQuery == -1) {
+				System.err.println("No valid move found for " + maxLoadedId + "->" + minLoadedId);
+				printIlsLog("No valid move found for " + maxLoadedId + "->" + minLoadedId);
 				break;
 			}
-			int moved = newDistribution.moveAllClusterVertices(moveCluster, maxLoadedId, minLoadedId);
-			printIlsLog("Balance move " + moveCluster + " " + maxLoadedId + "->" + minLoadedId + " " + moved);
+
+			QueryDistribution newDistributionTmp = baseDistribution.clone();
+			//int moved = newDistributionTmp.moveAllClusterVertices(moveCluster, maxLoadedId, minLoadedId);
+			int moved = newDistributionTmp.moveAllQueryVertices(moveQuery, maxLoadedId, minLoadedId, true);
+			double newAvgImbalance = newDistributionTmp.getAverageTotalVerticesImbalanceFactor();
+			printIlsLog("Balance move " + moveQuery + " " + maxLoadedId + "->" + minLoadedId + " " + moved + " now " + newAvgImbalance);
+			System.out.println("Balance move " + moveQuery + " " + maxLoadedId + "->" + minLoadedId + " " + moved + " now " + newAvgImbalance);//TODO
+
+			if (newAvgImbalance > avgImbalance) {
+				System.err.println("Balance step made it worse " + newAvgImbalance + " " + avgImbalance);
+				printIlsLog("Balance step made it worse " + newAvgImbalance + " " + avgImbalance);
+				break;
+			}
+
+			avgImbalance = newAvgImbalance;
+			newDistribution = newDistributionTmp;
 		}
 		return newDistribution;
 	}
+
+
+	//	/**
+	//	 * Moving all partitions of a query to machine with largest partition
+	//	 */
+	//	private QueryDistribution unifyQuerytLargestPartition(int pertubationQuery, List<Integer> workerIds, QueryDistribution baseDistribution) {
+	//		int bestWorkerId = 0;
+	//		long bestWorkerPartitionSize = 0;
+	//		for (Entry<Integer, QueryWorkerMachine> machine : baseDistribution.getQueryMachines().entrySet()) {
+	//			long partitionSize = MiscUtil.defaultLong(machine.getValue().queryVertices.get(pertubationQuery));
+	//			if (partitionSize > bestWorkerPartitionSize) {
+	//				bestWorkerPartitionSize = partitionSize;
+	//				bestWorkerId = machine.getKey();
+	//			}
+	//		}
+	//
+	//		if (saveIlsStats) {
+	//			printIlsLog("unifyQuerytLargestPartition " + pertubationQuery + " at " + bestWorkerId + " " + bestWorkerPartitionSize + "/"
+	//					+ baseDistribution.queryVertices.get(pertubationQuery));
+	//		}
+	//
+	//		return unifyQueryAtWorker(pertubationQuery, workerIds, bestWorkerId, baseDistribution);
+	//	}
 
 	/**
 	 * Moving all partitions of a query to machine with largest partition
@@ -869,6 +911,19 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		return unifyClusterAtWorker(pertubationCluster, workerIds, bestWorkerId, baseDistribution);
 	}
+
+	//	/**
+	//	 * Moving all partitions of a query to machine with largest partition
+	//	 */
+	//	private QueryDistribution unifyQueryAtWorker(int query, List<Integer> workerIds, int targetWorkerId, QueryDistribution baseDistribution) {
+	//		QueryDistribution newDistribution = baseDistribution.clone();
+	//		for (int worker : workerIds) {
+	//			if (worker != targetWorkerId) {
+	//				newDistribution.moveAllQueryVertices(query, worker, targetWorkerId, true);
+	//			}
+	//		}
+	//		return newDistribution;
+	//	}
 
 	/**
 	 * Moving all partitions of a query to machine with largest partition
