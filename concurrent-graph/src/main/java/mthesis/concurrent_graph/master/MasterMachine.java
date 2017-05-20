@@ -60,6 +60,7 @@ import mthesis.concurrent_graph.writable.NullWritable;
 public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWritable, NullWritable, NullWritable, Q> {
 
 	private long firstQueryStartTimeMs = -1;
+	private long firstQueryStartTimeNano = -1;
 	private long masterStartTimeMs;
 	private long masterStartTimeNano;
 	private final List<Integer> workerIds;
@@ -89,6 +90,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private final Map<Integer, List<Q>> queryStatsSteps = new HashMap<>();
 	private final Map<Integer, List<Long>> queryStatsStepTimes = new HashMap<>();
 	private final Map<Integer, Q> queryStatsTotals = new HashMap<>();
+	private final Map<Integer, Long> queryStartTimes = new HashMap<>();
 	private final Map<Integer, Long> queryDurations = new HashMap<>();
 	private long finishedTimeSinceStart;
 	private long finishedTimeSinceFirstQuery;
@@ -287,6 +289,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			if (firstQueryStartTimeMs == -1) {
 				logger.info("First query started after " + (System.currentTimeMillis() - masterStartTimeMs));
 				firstQueryStartTimeMs = System.currentTimeMillis();
+				firstQueryStartTimeNano = System.nanoTime();
 			}
 
 			handleStartQuery(((StartQueryMessage<Q>) message).Query);
@@ -530,6 +533,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 						activeQueries.remove(msgActiveQuery.BaseQuery.QueryId);
 					}
 					long duration = System.nanoTime() - msgActiveQuery.StartTime;
+					queryStartTimes.put(msgActiveQuery.BaseQuery.QueryId, msgActiveQuery.StartTime);
 					queryDurations.put(msgActiveQuery.BaseQuery.QueryId, duration);
 					logger.info("# Evaluated finished query " + msgActiveQuery.BaseQuery.QueryId + " after "
 							+ (duration / 1000000) + "ms, " + msgActiveQuery.StartedSuperstepNo + " steps, "
@@ -858,7 +862,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 	private void saveWorkerStats() {
 		StringBuilder sb = new StringBuilder();
-		Set<String> statsNames = new WorkerStats().getStatsMap(workerIds.size()).keySet();
+		List<String> workerStatsNames = new ArrayList<>(new WorkerStats().getStatsMap(workerIds.size()).keySet());
+		Collections.sort(workerStatsNames);
 
 		// Worker times in milliseconds, normalized for time/s
 		for (Integer workerId : workerIds) {
@@ -963,14 +968,14 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			}
 		}
 
-		// Worker all stats
+		// Worker individual stats
 		Map<String, Double> workerStatsSums = new HashMap<>();
 		for (int workerId : workerIds) {
 			try (PrintWriter writer = new PrintWriter(
 					new FileWriter(queryStatsDir + File.separator + "worker" + workerId + "_all.csv"))) {
 				// Header line
 				sb.append("Time(s);");
-				for (String statName : statsNames) {
+				for (String statName : workerStatsNames) {
 					sb.append(statName);
 					sb.append(';');
 				}
@@ -978,11 +983,13 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 				sb.setLength(0);
 
 				// Values
-				for (Pair<Long, WorkerStats> statSample : workerStats.get(workerId)) {
-					sb.append(statSample.first / 1000); // Timestamp in seconds
+				List<Pair<Long, WorkerStats>> statSamples = workerStats.get(workerId);
+				for (int iSample = 1; iSample < statSamples.size(); iSample++) {
+					Pair<Long, WorkerStats> statSample = statSamples.get(iSample);
+					sb.append((double) statSample.first / 1000); // Timestamp in seconds
 					sb.append(';');
 					Map<String, Double> sampleValues = statSample.second.getStatsMap(workerIds.size());
-					for (String statName : statsNames) {
+					for (String statName : workerStatsNames) {
 						double statValue = sampleValues.get(statName);
 						workerStatsSums.put(statName,
 								MiscUtil.defaultDouble(workerStatsSums.get(statName)) + statValue);
@@ -998,19 +1005,66 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			}
 		}
 
+
+		// Worker average stats
+		try (PrintWriter writer = new PrintWriter(
+				new FileWriter(queryStatsDir + File.separator + "workerAvgStats.csv"))) {
+			// Header line
+			sb.append("Time;");
+			for (String statName : workerStatsNames) {
+				sb.append(statName);
+				sb.append(';');
+			}
+			writer.println(sb.toString());
+			sb.setLength(0);
+
+			Map<String, Double> statSums = new HashMap<>();
+			breakAvgStatsLoop: for (int i = 1; true; i++) {
+				long avgTime = 0;
+				statSums.clear();
+				for (int workerId : workerIds) {
+					List<Pair<Long, WorkerStats>> workerStatSamples = workerStats.get(workerId);
+					if (workerStatSamples.size() <= i) {
+						break breakAvgStatsLoop;
+					}
+					Pair<Long, WorkerStats> statSample = workerStatSamples.get(i);
+					avgTime += statSample.first;
+
+					for (Entry<String, Double> stat : statSample.second.getStatsMap(workerIds.size()).entrySet()) {
+						MiscUtil.mapAdd(statSums, stat.getKey(), stat.getValue());
+					}
+				}
+
+				avgTime /= workerIds.size();
+				sb.append((double) avgTime / 1000);
+				sb.append(';');
+
+				for (String statName : workerStatsNames) {
+					sb.append(statSums.get(statName) / workerIds.size());
+					sb.append(';');
+				}
+				writer.println(sb.toString());
+				sb.setLength(0);
+			}
+		}
+		catch (Exception e) {
+			logger.error("Exception when saveWorkerStats", e);
+		}
+
+
+
 		double totalSupersteps = workerStatsSums.get("SuperstepsComputed");
 		double localSupersteps = workerStatsSums.get("LocalSuperstepsComputed");
 		double nonlocalSuperstepsUnique = (totalSupersteps - localSupersteps) / workerIds.size();
 		double totalSuperstepsUnique = localSupersteps + nonlocalSuperstepsUnique;
-		//int nonlocalSupersteps =
 		workerStatsSums.put("LocalSuperstepsRatio", localSupersteps * 100 / totalSupersteps);
 		workerStatsSums.put("SuperstepsComputedUnique", totalSuperstepsUnique);
 		workerStatsSums.put("LocalSuperstepsRatioUnique", localSupersteps * 100 / totalSuperstepsUnique);
-		List<String> workerStatsNames = new ArrayList<>(workerStatsSums.keySet());
-		Collections.sort(workerStatsNames);
+		List<String> workerStatsSumsNames = new ArrayList<>(workerStatsSums.keySet());
+		Collections.sort(workerStatsSumsNames);
 		try (PrintWriter writer = new PrintWriter(
 				new FileWriter(queryStatsDir + File.separator + "allworkers" + "_all.csv"))) {
-			for (String statName : workerStatsNames) {
+			for (String statName : workerStatsSumsNames) {
 				writer.println(statName + ";" + workerStatsSums.get(statName) + ";");
 			}
 		}
@@ -1031,6 +1085,18 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 			logger.error("Exception when saveWorkerStats", e);
 		}
 		logger.info("Saved summary");
+
+		try (PrintWriter writer = new PrintWriter(new FileWriter(queryStatsDir + File.separator + "workerStatsSums.txt"))) {
+			List<String> keys = new ArrayList<>(workerStatsSums.keySet());
+			Collections.sort(keys);
+			for (String key : keys) {
+				writer.println(key + ": " + workerStatsSums.get(key));
+			}
+		}
+		catch (Exception e) {
+			logger.error("Exception when workerStatsSums", e);
+		}
+		logger.info("Saved workerStatsSums");
 	}
 
 	private void saveQueryStats() {
@@ -1064,7 +1130,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		}
 
 
-		// All stats for all workers
+		// All stats for all queries on workers
 		for (Entry<Integer, List<SortedMap<Integer, Q>>> querySteps : queryStatsStepMachines.entrySet()) {
 			for (Integer workerId : workerIds) {
 				try (PrintWriter writer = new PrintWriter(
@@ -1105,11 +1171,18 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		// Query summary
 		try (PrintWriter writer = new PrintWriter(
 				new FileWriter(queryStatsDir + File.separator + "queries.csv"))) {
-			writer.println("Query;QueryHash;Duration (ms);WorkerTime (ms);ComputeTime (ms);");
+			writer.println(
+					"QueryId;QueryHash;QueryStartTime;QueryFinishTime;QueryDuration;Duration (ms);WorkerTime (ms);ComputeTime (ms);");
 			for (Entry<Integer, Q> query : queryStatsTotals.entrySet()) {
+				long qStartTime = (queryStartTimes.get(query.getKey()) - firstQueryStartTimeNano) / 1000000;
+				long qDuration = queryDurations.get(query.getKey()) / 1000000;
 				writer.println(
-						query.getKey() + ";" + query.getValue().GetQueryHash() + ";"
-								+ queryDurations.get(query.getKey()) / 1000000 + ";"
+						query.getKey() + ";"
+								+ query.getValue().GetQueryHash() + ";"
+								+ qStartTime + ";"
+								+ (qStartTime + qDuration) + ";"
+								+ qDuration + ";"
+								+ query.getValue().Stats.getTimeSum() / 1000000 + ";"
 								+ query.getValue().Stats.getTimeSum() / 1000000 + ";"
 								+ query.getValue().Stats.ComputeTime / 1000000 + ";");
 			}
@@ -1152,8 +1225,8 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		if (Configuration.getPropertyBoolDefault("PlotWorkerStats", false)
 				|| Configuration.getPropertyBoolDefault("PlotQueryStats", false)) {
 			try {
-				JFreeChartPlotter.plotStats(outputDir, 4);
 				JFreeChartPlotter.plotStats(outputDir, 1);
+				JFreeChartPlotter.plotStats(outputDir, 4);
 			}
 			catch (Exception e) {
 				logger.error("Exception when plot stats", e);

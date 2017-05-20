@@ -849,8 +849,8 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 
 		//		int origMinLoadedId = newDistribution.getMachineMinTotalVertices().id;
 		double avgImbalance = newDistribution.getAverageTotalVerticesImbalanceFactor();
-		//		while (!workloadTotalBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
-		while (!workloadTotalBalanceOk(newDistribution)) { // TODO Test
+		while (!workloadTotalBalanceOk(newDistribution) && (System.currentTimeMillis() - decideStartTime) < MaxTotalImproveTime) {
+			//while (!workloadTotalBalanceOk(newDistribution)) {
 			int minLoadedId = newDistribution.getMachineMinTotalVertices().id;
 			int maxLoadedId = newDistribution.getMachineMaxTotalVertices().id;
 			//			if (maxLoadedId == origMinLoadedId) {
@@ -862,7 +862,6 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 			//int moveCluster = newDistribution.getQueryMachines().get(maxLoadedId).getSmallestCluster();
 			int moveQuery = newDistribution.getQueryMachine(maxLoadedId).getSmallestQuery();
 			if (moveQuery == -1) {
-				System.err.println("No valid move found for " + maxLoadedId + "->" + minLoadedId);
 				printIlsLog("No valid move found for " + maxLoadedId + "->" + minLoadedId);
 				break;
 			}
@@ -878,15 +877,14 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 					.getQueryMachine(maxLoadedId).totalVertices) {
 				QueryDistribution reverseDistributionTmp = newDistributionTmp.clone();
 				moveQuery = newDistributionTmp.getQueryMachine(minLoadedId).getSmallestQuery();
-				moved = reverseDistributionTmp.moveAllQueryVertices(moveQuery, minLoadedId, maxLoadedId, true);//TODO Reverse move
+				moved = reverseDistributionTmp.moveAllQueryVertices(moveQuery, minLoadedId, maxLoadedId, true);
 
 				double imbalanceTmp = reverseDistributionTmp.getAverageTotalVerticesImbalanceFactor();
 				printIlsLog("Balance reverse move " + moveQuery + " " + minLoadedId + "->" + maxLoadedId + " " + moved + " now "
 						+ imbalanceTmp);
 
-				// TODO Test
-				printIlsLog("after reverse: " + newDistributionTmp.getQueryMachine(minLoadedId).totalVertices + " "
-						+ newDistributionTmp.getQueryMachine(maxLoadedId).totalVertices);
+				//				printIlsLog("after reverse: " + newDistributionTmp.getQueryMachine(minLoadedId).totalVertices + " "
+				//						+ newDistributionTmp.getQueryMachine(maxLoadedId).totalVertices);
 
 				if (imbalanceTmp > movedImbalance) {
 					printIlsLog("Balance reverse made it worse " + moveQuery + " " + minLoadedId + "->" + maxLoadedId + " " + moved
@@ -896,14 +894,11 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 				newDistributionTmp = reverseDistributionTmp;
 			}
 
-
-			// TODO Test
-			printIlsLog("after move: " + newDistributionTmp.getQueryMachine(minLoadedId).totalVertices + " "
-					+ newDistributionTmp.getQueryMachine(maxLoadedId).totalVertices);
+			//			printIlsLog("after move: " + newDistributionTmp.getQueryMachine(minLoadedId).totalVertices + " "
+			//					+ newDistributionTmp.getQueryMachine(maxLoadedId).totalVertices);
 
 			double newAvgImbalance = newDistributionTmp.getAverageTotalVerticesImbalanceFactor();
 			if (newAvgImbalance > avgImbalance) {
-				System.err.println("Balance step made it worse " + newAvgImbalance + " " + avgImbalance);
 				printIlsLog("Balance step made it worse " + newAvgImbalance + " " + avgImbalance);
 				break;
 			}

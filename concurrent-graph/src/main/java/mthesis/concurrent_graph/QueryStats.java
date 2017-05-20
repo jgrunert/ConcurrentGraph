@@ -101,8 +101,10 @@ public class QueryStats {
 		statsMap.put("MessagesTransmittedLocal", (double) MessagesTransmittedLocal);
 		statsMap.put("MessagesSentUnicast", (double) MessagesSentUnicast);
 		statsMap.put("MessagesSentBroadcast", (double) MessagesSentBroadcast);
+		statsMap.put("MessagesSentTotal", (double) MessagesSentUnicast + MessagesSentBroadcast);
 		statsMap.put("MessageBucketsSentUnicast", (double) MessageBucketsSentUnicast);
 		statsMap.put("MessageBucketsSentBroadcast", (double) MessageBucketsSentBroadcast);
+		statsMap.put("MessageBucketsSentTotal", (double) MessageBucketsSentUnicast + MessageBucketsSentBroadcast);
 		statsMap.put("MessagesReceivedWrongVertex", (double) MessagesReceivedWrongVertex);
 		statsMap.put("MessagesReceivedCorrectVertex", (double) MessagesReceivedCorrectVertex);
 		statsMap.put("DiscoveredNewVertexMachines", (double) DiscoveredNewVertexMachines);

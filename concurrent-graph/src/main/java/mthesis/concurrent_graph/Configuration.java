@@ -19,7 +19,7 @@ public class Configuration {
 	public static String ConfigFile;
 	public static Properties Properties = new Properties();
 
-	public static final String VERSION = "0.1.139";
+	public static final String VERSION = "0.1.140";
 
 	/** Maximum size of a message in bytes */
 	public static int MAX_MESSAGE_SIZE;
