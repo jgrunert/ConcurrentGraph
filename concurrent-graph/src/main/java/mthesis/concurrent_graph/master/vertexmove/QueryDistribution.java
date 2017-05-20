@@ -482,16 +482,16 @@ public class QueryDistribution {
 				if (moveDstInclude.getValue().isEmpty()) continue;
 				workerVertSendMsgs.get(moveSrcInclude.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.SendQueryChunkMessage.newBuilder()
-						//.setMaxMoveCount(moveDst.getValue().second)
-						.setMaxMoveCount(Integer.MAX_VALUE)
-						.addAllIncludeQueries(moveDstInclude.getValue().keySet())
-						.addAllTolreateQueries(moveDstTolreate.keySet())
-						.setMoveToMachine(moveDstInclude.getKey())
-						.build());
+								//.setMaxMoveCount(moveDst.getValue().second)
+								.setMaxMoveCount(Integer.MAX_VALUE)
+								.addAllIncludeQueries(moveDstInclude.getValue().keySet())
+								.addAllTolreateQueries(moveDstTolreate.keySet())
+								.setMoveToMachine(moveDstInclude.getKey())
+								.build());
 				workerVertRecvMsgs.get(moveDstInclude.getKey()).add(
 						Messages.ControlMessage.StartBarrierMessage.ReceiveQueryChunkMessage.newBuilder()
-						.addAllChunkQueries(moveDstInclude.getValue().keySet())
-						.setReceiveFromMachine(moveSrcInclude.getKey()).build());
+								.addAllChunkQueries(moveDstInclude.getValue().keySet())
+								.setReceiveFromMachine(moveSrcInclude.getKey()).build());
 			}
 		}
 
@@ -503,43 +503,47 @@ public class QueryDistribution {
 		return queryMachines;
 	}
 
+	public QueryWorkerMachine getQueryMachine(Integer key) {
+		return queryMachines.get(key);
+	}
 
 
-	public int getMachineMinTotalVertices() {
-		int workerId = 0;
+
+	public QueryWorkerMachine getMachineMinTotalVertices() {
+		QueryWorkerMachine workerMin = null;
 		long minVertices = Long.MAX_VALUE;
 		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
 			if (worker.getValue().totalVertices < minVertices) {
 				minVertices = worker.getValue().totalVertices;
-				workerId = worker.getKey();
+				workerMin = worker.getValue();
 			}
 		}
-		return workerId;
+		return workerMin;
 	}
 
-	public int getMachineMaxTotalVertices() {
-		int workerId = 0;
+	public QueryWorkerMachine getMachineMaxTotalVertices() {
+		QueryWorkerMachine workerMax = null;
 		long maxVertices = 0;
 		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
 			if (worker.getValue().totalVertices > maxVertices) {
 				maxVertices = worker.getValue().totalVertices;
-				workerId = worker.getKey();
+				workerMax = worker.getValue();
 			}
 		}
-		return workerId;
+		return workerMax;
 	}
 
-	public int getMachineMaxTotalVerticesWithClusters() {
-		int workerId = 0;
-		long maxVertices = 0;
-		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
-			if (worker.getValue().totalVertices > maxVertices && !worker.getValue().getClusterVertices().isEmpty()) {
-				maxVertices = worker.getValue().totalVertices;
-				workerId = worker.getKey();
-			}
-		}
-		return workerId;
-	}
+	//	public QueryWorkerMachine getMachineMaxTotalVerticesWithClusters() {
+	//		int workerId = 0;
+	//		long maxVertices = 0;
+	//		for (Entry<Integer, QueryWorkerMachine> worker : queryMachines.entrySet()) {
+	//			if (worker.getValue().totalVertices > maxVertices && !worker.getValue().getClusterVertices().isEmpty()) {
+	//				maxVertices = worker.getValue().totalVertices;
+	//				workerId = worker.getKey();
+	//			}
+	//		}
+	//		return workerId;
+	//	}
 
 
 	/**

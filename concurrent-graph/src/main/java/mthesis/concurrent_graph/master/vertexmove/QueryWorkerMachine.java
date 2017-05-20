@@ -17,6 +17,7 @@ import mthesis.concurrent_graph.util.MiscUtil;
  */
 public class QueryWorkerMachine {
 
+	public final int id;
 	// Total number of vertices active in a query (if a vertex is active in n queries it counts as n vertices)
 	public long chunkVertices;
 	public long totalVertices;
@@ -26,8 +27,9 @@ public class QueryWorkerMachine {
 	public Map<Integer, Long> queryVertices;
 
 
-	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, long totalVertices) {
+	public QueryWorkerMachine(int id, List<QueryVertexChunk> queryChunks, long totalVertices) {
 		super();
+		this.id = id;
 		this.queryChunks = queryChunks;
 		this.queryVertices = new HashMap<>();
 		this.totalVertices = totalVertices;
@@ -40,9 +42,10 @@ public class QueryWorkerMachine {
 		}
 	}
 
-	public QueryWorkerMachine(List<QueryVertexChunk> queryChunks, long chunkVertices, long totalVertices,
+	public QueryWorkerMachine(int id, List<QueryVertexChunk> queryChunks, long chunkVertices, long totalVertices,
 			Map<Integer, Long> queryVertices) {
 		super();
+		this.id = id;
 		this.queryChunks = queryChunks;
 		this.queryVertices = queryVertices;
 		this.chunkVertices = chunkVertices;
@@ -50,7 +53,7 @@ public class QueryWorkerMachine {
 	}
 
 	public QueryWorkerMachine createClone() {
-		return new QueryWorkerMachine(new ArrayList<>(queryChunks), chunkVertices, totalVertices, new HashMap<>(queryVertices));
+		return new QueryWorkerMachine(id, new ArrayList<>(queryChunks), chunkVertices, totalVertices, new HashMap<>(queryVertices));
 	}
 
 
