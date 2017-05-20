@@ -13,3 +13,6 @@ buildNumber.properties
 *.log
 log*.txt
 ILS_log_*.csv
+concurrent-graph/aws.ppk
+concurrent-graph/build+upload_distributed_ipvs.bat
+concurrent-graph/build+upload_local_aws.bat
