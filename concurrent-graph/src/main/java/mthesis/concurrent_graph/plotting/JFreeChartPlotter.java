@@ -134,9 +134,9 @@ public class JFreeChartPlotter {
 
 			// Plot query times
 			List<ColumnToPlot> timeColumns = new ArrayList<>();
-			timeColumns.add(new ColumnToPlot(null, queriesCsv, 2, 1));
-			timeColumns.add(new ColumnToPlot(null, queriesCsv, 3, 1));
 			timeColumns.add(new ColumnToPlot(null, queriesCsv, 4, 1));
+			timeColumns.add(new ColumnToPlot(null, queriesCsv, 5, 1));
+			timeColumns.add(new ColumnToPlot(null, queriesCsv, 6, 1));
 			plotCsvColumns(statsFolder, "QueriesTimes", "Query", "Time", 1, timeColumns, plotsOutDir);
 
 			logger.info("Finished plotting worker stats");
@@ -343,11 +343,11 @@ public class JFreeChartPlotter {
 			Configuration.Properties.put("PlotWorkerStats", "true");
 			//Configuration.Properties.put("PlotQueryStats", "true");
 			String outputDir = args[0];
-			plotStats(outputDir, 1);
+			//			plotStats(outputDir, 1);
 			//			plotStats(outputDir, 4);
-			//			plotStats(outputDir, 8);
-			//			plotStats(outputDir, 16);
-			//			plotStats(outputDir, 32);
+			plotStats(outputDir, 8);
+			plotStats(outputDir, 16);
+			plotStats(outputDir, 32);
 			System.out.println("Plot finished");
 		}
 		catch (Exception e) {
