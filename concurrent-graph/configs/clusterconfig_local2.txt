@@ -1,5 +1,5 @@
 # Master
--1	localhost	23499
-# Worker
 0	localhost	23500
+# Worker
 1	localhost	23501
+2	localhost	23502
