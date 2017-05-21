@@ -1,6 +1,5 @@
 package mthesis.concurrent_graph.apps.shortestpath;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,19 +20,21 @@ public class SPLocalTestClusterMain {
 	private static final Logger logger = LoggerFactory.getLogger(SPLocalTestClusterMain.class);
 
 	public static void main(String[] args) throws Exception {
-		if (args.length < 3) {
-			System.out.println("Usage: [configFile] [clusterConfigFile] [inputFile] [optional extraJvmPerWorker-bool]");
+		if (args.length < 4) {
+			System.out.println("Usage: [configFile] [clusterConfigFile] [inputFile] [testSequence] [optional configs cfgName=value or -ejvm]");
 			return;
 		}
-		boolean extraJvmPerWorker = false;
-		if (args.length >= 4) {
-			extraJvmPerWorker = Boolean.parseBoolean(args[3]);
-		}
+
+		final String testSequenceFile = args[3];
 
 		// Manual override configs
+		boolean extraJvmPerWorker = false;
 		Map<String, String> overrideConfigs = new HashMap<>();
 		for (int i = 4; i < args.length; i++) {
 			String[] split = args[i].split("=");
+			if (split.equals("-ejvm")) {
+				extraJvmPerWorker = true;
+			}
 			if (split.length >= 2) {
 				String cfgName = split[0].trim();
 				String cfgValue = split[1].trim();
@@ -184,7 +185,8 @@ public class SPLocalTestClusterMain {
 			//			master.startQuery(new SPQuery(queryIndex++, 2557651, 4982624));
 
 			// Run test sequence
-			new SPTestSequenceRunner(master).runTestSequence("testplans" + File.separator + "bw1.txt");
+			// Run test sequence
+			new SPTestSequenceRunner(master).runTestSequence(testSequenceFile);
 			master.waitForAllQueriesFinish();
 			master.stop();
 		}
