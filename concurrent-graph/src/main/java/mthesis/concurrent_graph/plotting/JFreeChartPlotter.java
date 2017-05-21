@@ -40,6 +40,10 @@ public class JFreeChartPlotter {
 	public static void plotStats(String outputFolder, int samplingFactor) throws Exception {
 		logger.info("Start plotting");
 
+		if (!outputFolder.endsWith("output")) {
+			outputFolder += File.separator + "output";
+		}
+
 		String statsFolder = outputFolder + File.separator + "stats";
 		String plotsOutDir = statsFolder + File.separator + "plots" + samplingFactor;
 		FileUtil.createDirOrEmptyFiles(plotsOutDir);
@@ -115,6 +119,19 @@ public class JFreeChartPlotter {
 				dataset.addSeries(series);
 				plotDataset(outputFolder, "WorkerAvgStats_" + workerAvgCsv.Captions[iStat], "Time (s)", workerAvgCsv.Captions[iStat],
 						dataset, plotsOutDir);
+			}
+
+			// Plot worker derived stats
+			CsvDataFile workerDerivedCsv = new CsvDataFile(statsFolder + File.separator + "workerDerivedStats.csv", samplingFactor);
+			for (int iStat = 1; iStat < workerDerivedCsv.Captions.length; iStat++) {
+				final XYSeriesCollection dataset = new XYSeriesCollection();
+				final XYSeries series = new XYSeries(workerDerivedCsv.Captions[iStat]);
+				for (int i = 0; i < workerDerivedCsv.NumDataRows; i++) {
+					series.add(workerDerivedCsv.Data[i][0], workerDerivedCsv.Data[i][iStat]);
+				}
+				dataset.addSeries(series);
+				plotDataset(outputFolder, "WorkerDerivedStats_" + workerDerivedCsv.Captions[iStat], "Time (s)",
+						workerDerivedCsv.Captions[iStat], dataset, plotsOutDir);
 			}
 
 			for (Integer workerId : workers) {
@@ -355,19 +372,23 @@ public class JFreeChartPlotter {
 		try (PrintWriter writer = new PrintWriter(
 				new FileWriter(statsFolder + File.separator + "workerDerivedStats.csv"))) {
 			writer.println(
-					"AvgActiveVerticesImbalance;MaxActiveVerticesImbalance;" +
+					"Time;" +
+							"AvgActiveVerticesImbalance;MaxActiveVerticesImbalance;" +
 							"AvgActiveVerticesTimeWindowImbalance;MaxActiveVerticesTimeWindowImbalance;" +
 							"AvgWorkerVerticesImbalance;MaxWorkerVerticesImbalance;");
 
 			for (int iRow = 0; iRow < dataRows; iRow++) {
+				double avgTime = 0;
 				double avgActVerts = 0;
 				double avgActVertsWin = 0;
 				double avgWorkerVerts = 0;
 				for (CsvDataFile workerCsv : workerStatsCsvs.values()) {
+					avgTime += workerCsv.Data[iRow][0];
 					avgActVerts += workerCsv.getValueByName("ActiveVertices", iRow);
 					avgActVertsWin += workerCsv.getValueByName("ActiveVerticesTimeWindow", iRow);
 					avgWorkerVerts += workerCsv.getValueByName("WorkerVertices", iRow);
 				}
+				avgTime /= workers.size();
 				avgActVerts /= workers.size();
 				avgActVertsWin /= workers.size();
 				avgWorkerVerts /= workers.size();
@@ -394,9 +415,10 @@ public class JFreeChartPlotter {
 				avgActVertsWinImb /= workers.size();
 				avgWorkerVertsImb /= workers.size();
 
-				writer.println(avgActVertsImb + ";" + maxActVertsImb + ";" +
-						avgActVertsWinImb + ";" + maxActVertsWinImb + ";" +
-						avgWorkerVertsImb + ";" + maxWorkerVertsImb + ";");
+				writer.println(avgTime + ";" +
+						avgActVertsImb * 100 + ";" + maxActVertsImb * 100 + ";" +
+						avgActVertsWinImb * 100 + ";" + maxActVertsWinImb * 100 + ";" +
+						avgWorkerVertsImb * 100 + ";" + maxWorkerVertsImb * 100 + ";");
 			}
 		}
 		catch (Exception e) {
@@ -422,7 +444,7 @@ public class JFreeChartPlotter {
 			//Configuration.Properties.put("PlotQueryStats", "true");
 
 			plotStats(outputDir, 1);
-			//			plotStats(outputDir, 4);
+			plotStats(outputDir, 4);
 			//			plotStats(outputDir, 8);
 			//			plotStats(outputDir, 16);
 			plotStats(outputDir, 32);
