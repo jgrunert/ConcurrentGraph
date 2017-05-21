@@ -1112,14 +1112,23 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 
 				for (int i = 0; i < querySteps.getValue().size(); i++) {
 					Q step = querySteps.getValue().get(i);
-					sb.append(queryStatsStepTimes.get(querySteps.getKey()).get(i) / 1000000);
-					sb.append(';');
-					sb.append(step.Stats.getTimeSum() / 1000000);
-					sb.append(';');
-					sb.append(step.Stats.ComputeTime / 1000000);
-					sb.append(';');
-					sb.append(step.Stats.StepFinishTime / 1000000);
-					sb.append(';');
+					if (step != null) {
+						List<Long> st = queryStatsStepTimes.get(querySteps.getKey());
+						if (st != null) {
+							Long stepTime = st.get(i);
+							if (stepTime != null) {
+								sb.append(stepTime / 1000000);
+							}
+						}
+						sb.append(';');
+
+						sb.append(step.Stats.getTimeSum() / 1000000);
+						sb.append(';');
+						sb.append(step.Stats.ComputeTime / 1000000);
+						sb.append(';');
+						sb.append(step.Stats.StepFinishTime / 1000000);
+						sb.append(';');
+					}
 					writer.println(sb.toString());
 					sb.setLength(0);
 				}

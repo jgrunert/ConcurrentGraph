@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
@@ -15,12 +17,17 @@ public class CsvDataFile {
 	public final int NumDataColumns;
 	public final int NumDataRows;
 	public final String[] Captions;
+	public final Map<String, Integer> ColumnNameIndex = new HashMap<>();
 	public final double[][] Data;
 
 	public CsvDataFile(String file, int samplingFactor) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		Captions = reader.readLine().split(";");
 		NumDataColumns = Captions.length;
+
+		for (int i = 0; i < Captions.length; i++) {
+			ColumnNameIndex.put(Captions[i], i);
+		}
 
 		List<double[]> dataLinesRead = new ArrayList<>();
 		String line;
@@ -87,5 +94,15 @@ public class CsvDataFile {
 			series.add(iRow, Data[iRow][columnIndex] * factor);
 		}
 		return series;
+	}
+
+
+	public int getClumnIndexByName(String colName) {
+		return ColumnNameIndex.get(colName);
+	}
+
+	public double getValueByName(String colName, int rowIndex) {
+		int colIndex = getClumnIndexByName(colName);
+		return Data[rowIndex][colIndex];
 	}
 }

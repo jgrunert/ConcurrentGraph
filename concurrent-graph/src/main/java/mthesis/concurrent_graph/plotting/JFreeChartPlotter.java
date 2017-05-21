@@ -5,7 +5,10 @@ import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,6 +80,10 @@ public class JFreeChartPlotter {
 			}
 			hashQs.add(queryId);
 		}
+
+
+		// Generate derived stats
+		generatedDerivedWorkerstats(statsFolder, workers);
 
 
 		// Plot worker stats
@@ -336,17 +343,88 @@ public class JFreeChartPlotter {
 	}
 
 
+	public static void generatedDerivedWorkerstats(String statsFolder, List<Integer> workers) throws IOException {
+		Map<Integer, CsvDataFile> workerStatsCsvs = new HashMap<>();
+		int dataRows = Integer.MAX_VALUE;
+		for (Integer workerId : workers) {
+			CsvDataFile csv = new CsvDataFile(statsFolder + File.separator + "worker" + workerId + "_all.csv", 1);
+			workerStatsCsvs.put(workerId, csv);
+			dataRows = Math.min(csv.NumDataRows, dataRows);
+		}
+
+		try (PrintWriter writer = new PrintWriter(
+				new FileWriter(statsFolder + File.separator + "workerDerivedStats.csv"))) {
+			writer.println(
+					"AvgActiveVerticesImbalance;MaxActiveVerticesImbalance;" +
+							"AvgActiveVerticesTimeWindowImbalance;MaxActiveVerticesTimeWindowImbalance;" +
+							"AvgWorkerVerticesImbalance;MaxWorkerVerticesImbalance;");
+
+			for (int iRow = 0; iRow < dataRows; iRow++) {
+				double avgActVerts = 0;
+				double avgActVertsWin = 0;
+				double avgWorkerVerts = 0;
+				for (CsvDataFile workerCsv : workerStatsCsvs.values()) {
+					avgActVerts += workerCsv.getValueByName("ActiveVertices", iRow);
+					avgActVertsWin += workerCsv.getValueByName("ActiveVerticesTimeWindow", iRow);
+					avgWorkerVerts += workerCsv.getValueByName("WorkerVertices", iRow);
+				}
+				avgActVerts /= workers.size();
+				avgActVertsWin /= workers.size();
+				avgWorkerVerts /= workers.size();
+
+				double avgActVertsImb = 0;
+				double avgActVertsWinImb = 0;
+				double avgWorkerVertsImb = 0;
+				double maxActVertsImb = 0;
+				double maxActVertsWinImb = 0;
+				double maxWorkerVertsImb = 0;
+				for (CsvDataFile workerCsv : workerStatsCsvs.values()) {
+					double actVertsImb = Math.abs(avgActVerts - workerCsv.getValueByName("ActiveVertices", iRow)) / avgActVerts;
+					double actVertsImbWin = Math.abs(avgActVertsWin - workerCsv.getValueByName("ActiveVerticesTimeWindow", iRow))
+							/ avgActVertsWin;
+					double workerVertsImb = Math.abs(avgWorkerVerts - workerCsv.getValueByName("WorkerVertices", iRow)) / avgWorkerVerts;
+					avgActVertsImb += actVertsImb;
+					avgActVertsWinImb += actVertsImbWin;
+					avgWorkerVertsImb += workerVertsImb;
+					maxActVertsImb = Math.max(maxActVertsImb, actVertsImb);
+					maxActVertsWinImb = Math.max(maxActVertsWinImb, actVertsImb);
+					maxWorkerVertsImb = Math.max(maxWorkerVertsImb, actVertsImb);
+				}
+				avgActVertsImb /= workers.size();
+				avgActVertsWinImb /= workers.size();
+				avgWorkerVertsImb /= workers.size();
+
+				writer.println(avgActVertsImb + ";" + maxActVertsImb + ";" +
+						avgActVertsWinImb + ";" + maxActVertsWinImb + ";" +
+						avgWorkerVertsImb + ";" + maxWorkerVertsImb + ";");
+			}
+		}
+		catch (Exception e) {
+			logger.error("Exception when saveQueryStats", e);
+		}
+	}
+
 
 	public static void main(String[] args) {
 		try {
+			String outputDir;
+			if (args.length > 0) {
+				outputDir = args[0];
+			}
+			else {
+				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+				System.out.println("Please enter output folder to plot");
+				outputDir = br.readLine();
+			}
+
 			// By default only worker stats
 			Configuration.Properties.put("PlotWorkerStats", "true");
 			//Configuration.Properties.put("PlotQueryStats", "true");
-			String outputDir = args[0];
-			//			plotStats(outputDir, 1);
+
+			plotStats(outputDir, 1);
 			//			plotStats(outputDir, 4);
-			plotStats(outputDir, 8);
-			plotStats(outputDir, 16);
+			//			plotStats(outputDir, 8);
+			//			plotStats(outputDir, 16);
 			plotStats(outputDir, 32);
 			System.out.println("Plot finished");
 		}
