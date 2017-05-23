@@ -26,6 +26,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 	private static final Logger logger = LoggerFactory.getLogger(SPVertex.class);
 
 	private static final double SPDistStepFactor = Configuration.getPropertyDoubleDefault("SPDistStepFactor", 10.0);
+	private static final boolean SearchNextTagTestMode = Configuration.getPropertyBoolDefault("SearchNextTagTestMode", false);
 
 	//	private final Map<Integer, Integer> visits = new HashMap<>(4);
 	//	private static int firstVisits = 0;
@@ -34,7 +35,12 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 
 	public SPVertex(int id,
 			VertexWorkerInterface<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> messageSender) {
-		super(id, messageSender);
+		this(id, -1, messageSender);
+	}
+
+	public SPVertex(int id, int tag,
+			VertexWorkerInterface<SPVertexWritable, DoubleWritable, SPMessageWritable, SPQuery> messageSender) {
+		super(id, tag, messageSender);
 	}
 
 	public SPVertex(ByteBuffer bufferToRead,
@@ -195,10 +201,12 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 
 		voteVertexHalt(query.QueryId);
 
-		if (ID == query.Query.To) {
+		if (isTarget(query.Query.Tag)) {
 			// Target vertex found.  Now start limiting max dist to target dist.
 			if (query.QueryLocal.MaxDist == Double.POSITIVE_INFINITY)
 				logger.debug(query.QueryId + ":" + superstepNo + " target vertex " + ID + " found with dist " + minDist);
+			if (SearchNextTagTestMode)
+				query.QueryLocal.To = ID;
 			query.QueryLocal.MaxDist = minDist;
 		}
 		//		else {
@@ -207,6 +215,9 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		//		}
 	}
 
+	private boolean isTarget(int target) {
+		return ((!SearchNextTagTestMode && ID == target) || (SearchNextTagTestMode && Tag == target));
+	}
 
 
 	@Override

@@ -28,7 +28,10 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 
 	private static final Logger logger = LoggerFactory.getLogger(AbstractVertex.class);
 
+	// Identifier of this vertex
 	public final int ID;
+	// Optional tag for additional properties
+	public final int Tag;
 
 	// TODO More efficient datastructure? Arrays or fastutil map
 	private List<Edge<E>> edges;
@@ -50,6 +53,14 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	public AbstractVertex(int id, VertexWorkerInterface<V, E, M, Q> worker) {
 		super();
 		this.ID = id;
+		this.Tag = -1;
+		this.worker = worker;
+	}
+
+	public AbstractVertex(int id, int tag, VertexWorkerInterface<V, E, M, Q> worker) {
+		super();
+		this.ID = id;
+		this.Tag = tag;
 		this.worker = worker;
 	}
 
@@ -62,6 +73,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 		BaseWritableFactory<M> messageValueFactory = jobConfig.getMessageValueFactory();
 
 		this.ID = bufferToRead.getInt();
+		this.Tag = bufferToRead.getInt();
 
 		int edgeCount = bufferToRead.getInt();
 		edges = new ArrayList<>(edgeCount);
@@ -124,6 +136,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 	 */
 	public void writeToBuffer(ByteBuffer buffer) {
 		buffer.putInt(ID);
+		buffer.putInt(Tag);
 
 		buffer.putInt(edges.size());
 		for (Edge<E> e : edges) {
@@ -165,7 +178,7 @@ public abstract class AbstractVertex<V extends BaseWritable, E extends BaseWrita
 			if (!qMsgs.getValue().isEmpty()) {
 				logger.warn(
 						"Will not send vertex messages for next superstep - vertices to send shouldnt have these. Query" + qMsgs.getKey()
-						+ " vertex " + ID);
+								+ " vertex " + ID);
 				break;
 			}
 		}

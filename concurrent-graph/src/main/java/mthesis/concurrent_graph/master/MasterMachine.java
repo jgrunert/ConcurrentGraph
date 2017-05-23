@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -27,6 +28,7 @@ import mthesis.concurrent_graph.BaseQuery.BaseQueryGlobalValuesFactory;
 import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.MachineConfig;
 import mthesis.concurrent_graph.QueryStats;
+import mthesis.concurrent_graph.apps.shortestpath.SPQuery;
 import mthesis.concurrent_graph.communication.ChannelMessage;
 import mthesis.concurrent_graph.communication.ControlMessageBuildUtil;
 import mthesis.concurrent_graph.communication.Messages.ControlMessage;
@@ -127,6 +129,10 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private double lastQMoveLSRU = 0;
 	private int remainingLsruExtraShots = 1;
 
+	private static final boolean SearchNextTagTestMode = Configuration.getPropertyBoolDefault("SearchNextTagTestMode", false);
+	private static final int SearchNextTagNumTags = Configuration.getPropertyIntDefault("SearchNextTagNumTags", 100);
+	private Random nextTagRestRandom = new Random(0);
+
 
 	public MasterMachine(Map<Integer, MachineConfig> machines, int ownId, List<Integer> workerIds, String inputFile,
 			String inputPartitionDir, MasterInputPartitioner inputPartitioner, MasterOutputEvaluator<Q> outputCombiner,
@@ -191,6 +197,11 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 		// Get query ready
 		if (activeQueries.containsKey(query.QueryId))
 			throw new RuntimeException("There is already an active query with this ID: " + query.QueryId);
+
+		if (SearchNextTagTestMode) {
+			((SPQuery) query).Tag = nextTagRestRandom.nextInt(SearchNextTagNumTags);
+			((SPQuery) query).To = -1;
+		}
 
 		logger.info("Start request for query: " + query.QueryId);
 		if (!workersToInitialize.isEmpty()) {
@@ -1275,7 +1286,7 @@ public class MasterMachine<Q extends BaseQuery> extends AbstractMachine<NullWrit
 	private void evaluateQueryResult(MasterQuery<Q> query) {
 		// Aggregate output
 		try {
-			outputCombiner.evaluateOutput(outputDir + File.separator + query.BaseQuery.QueryId, query.BaseQuery);
+			outputCombiner.evaluateOutput(outputDir + File.separator + query.BaseQuery.QueryId, query.QueryTotalAggregator);
 		}
 		catch (final Exception e) {
 			logger.error("writeOutput failed", e);

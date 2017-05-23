@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mthesis.concurrent_graph.BaseQuery;
+import mthesis.concurrent_graph.Configuration;
 import mthesis.concurrent_graph.QueryStats;
 
 
@@ -15,8 +16,11 @@ public class SPQuery extends BaseQuery {
 
 	protected static final Logger logger = LoggerFactory.getLogger(SPQuery.class);
 
+	private static final boolean SearchNextTagTestMode = Configuration.getPropertyBoolDefault("SearchNextTagTestMode", false);
+
 	public int From;
 	public int To;
+	public int Tag;
 	// Maximum distance. Initially set to infinite, set to target dist as soon as target discovered
 	public double MaxDist;
 	public boolean ReconstructionPhaseActive;
@@ -27,19 +31,28 @@ public class SPQuery extends BaseQuery {
 	 * Public query creation constructor
 	 */
 	public SPQuery(int queryId, int from, int to) {
+		this(queryId, from, to, -1);
+	}
+
+	/**
+	 * Public query creation constructor
+	 */
+	public SPQuery(int queryId, int from, int to, int tag) {
 		super(queryId);
 		From = from;
 		To = to;
+		Tag = tag;
 		MaxDist = Double.POSITIVE_INFINITY;
 		ReconstructionPhaseActive = false;
 		InitializedReconstructionPhase = false;
 	}
 
 	private SPQuery(int queryId, int activeVertices, int vertexCount, QueryStats stats,
-			int from, int to, double maxDist, boolean startedReconstructionPhase, boolean initializedReconstructionPhase) {
+			int from, int to, int tag, double maxDist, boolean startedReconstructionPhase, boolean initializedReconstructionPhase) {
 		super(queryId, activeVertices, vertexCount, stats);
 		From = from;
 		To = to;
+		Tag = tag;
 		MaxDist = maxDist;
 		ReconstructionPhaseActive = startedReconstructionPhase;
 		InitializedReconstructionPhase = initializedReconstructionPhase;
@@ -102,6 +115,7 @@ public class SPQuery extends BaseQuery {
 		super.writeToBuffer(buffer);
 		buffer.putInt(From);
 		buffer.putInt(To);
+		buffer.putInt(Tag);
 		buffer.putDouble(MaxDist);
 		buffer.put(ReconstructionPhaseActive ? (byte) 0 : (byte) 1);
 		buffer.put(InitializedReconstructionPhase ? (byte) 0 : (byte) 1);
@@ -115,7 +129,7 @@ public class SPQuery extends BaseQuery {
 
 	@Override
 	public int getBytesLength() {
-		return super.getBytesLength() + 2 * 4 + 1 * 8 + 2 * 1;
+		return super.getBytesLength() + 3 * 4 + 1 * 8 + 2 * 1;
 	}
 
 	@Override
@@ -130,6 +144,8 @@ public class SPQuery extends BaseQuery {
 	@Override
 	public void combine(BaseQuery v) {
 		SPQuery other = (SPQuery) v;
+		if (SearchNextTagTestMode && this.To == -1 && other.To != -1)
+			this.To = other.To;
 		MaxDist = Math.min(MaxDist, other.MaxDist);
 		ReconstructionPhaseActive |= (other).ReconstructionPhaseActive;
 		InitializedReconstructionPhase |= (other).InitializedReconstructionPhase;
@@ -158,7 +174,7 @@ public class SPQuery extends BaseQuery {
 		@Override
 		public SPQuery createFromBytes(ByteBuffer bytes) {
 			return new SPQuery(bytes.getInt(), bytes.getInt(), bytes.getInt(), new QueryStats(bytes),
-					bytes.getInt(), bytes.getInt(), bytes.getDouble(), bytes.get() == 0, bytes.get() == 0);
+					bytes.getInt(), bytes.getInt(), bytes.getInt(), bytes.getDouble(), bytes.get() == 0, bytes.get() == 0);
 		}
 	}
 }
