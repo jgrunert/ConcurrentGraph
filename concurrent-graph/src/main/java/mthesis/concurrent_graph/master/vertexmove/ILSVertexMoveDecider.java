@@ -698,9 +698,9 @@ public class ILSVertexMoveDecider extends AbstractVertexMoveDecider {
 						if (!isValid) continue;
 
 						if ((newDistribution.getCurrentCosts() < iterBestDistribution.getCurrentCosts())
-						//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
-						//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
-						) {
+								//								||								(newDistribution.getCurrentCosts() == iterBestDistribution.getCurrentCosts()
+								//										&& newDistribution.getCurrentCosts() < iterInitialCosts && moved < bestNumMoved)
+								) {
 							iterBestDistribution = newDistribution;
 							anyImproves = true;
 							bestFrom = fromWorkerId;

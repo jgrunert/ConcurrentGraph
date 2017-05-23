@@ -201,7 +201,7 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 
 		voteVertexHalt(query.QueryId);
 
-		if (isTarget(query.Query.Tag)) {
+		if (isTarget(query.Query)) {
 			// Target vertex found.  Now start limiting max dist to target dist.
 			if (query.QueryLocal.MaxDist == Double.POSITIVE_INFINITY)
 				logger.debug(query.QueryId + ":" + superstepNo + " target vertex " + ID + " found with dist " + minDist);
@@ -215,8 +215,8 @@ public class SPVertex extends AbstractVertex<SPVertexWritable, DoubleWritable, S
 		//		}
 	}
 
-	private boolean isTarget(int target) {
-		return ((!SearchNextTagTestMode && ID == target) || (SearchNextTagTestMode && Tag == target));
+	private boolean isTarget(SPQuery query) {
+		return ((!SearchNextTagTestMode && ID == query.To) || (SearchNextTagTestMode && Tag == query.Tag));
 	}
 
 

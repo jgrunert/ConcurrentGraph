@@ -3289,10 +3289,9 @@ public final class Messages {
                   mutable_bitField0_ |= 0x00000001;
                 }
                 com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-                querySupersteps__ = input.readMessage(
+                querySupersteps = input.readMessage(
                     QuerySuperstepsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-                querySupersteps_.getMutableMap().put(
-                    querySupersteps__.getKey(), querySupersteps__.getValue());
+                querySupersteps_.getMutableMap().put(querySupersteps.getKey(), querySupersteps.getValue());
                 break;
               }
               case 18: {
@@ -5282,12 +5281,15 @@ public final class Messages {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        com.google.protobuf.GeneratedMessageV3
-          .serializeIntegerMapTo(
-            output,
-            internalGetQuerySupersteps(),
-            QuerySuperstepsDefaultEntryHolder.defaultEntry,
-            1);
+        for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
+             : internalGetQuerySupersteps().getMap().entrySet()) {
+          com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
+          querySupersteps = QuerySuperstepsDefaultEntryHolder.defaultEntry.newBuilderForType()
+              .setKey(entry.getKey())
+              .setValue(entry.getValue())
+              .build();
+          output.writeMessage(1, querySupersteps);
+        }
         for (int i = 0; i < sendQueryChunks_.size(); i++) {
           output.writeMessage(2, sendQueryChunks_.get(i));
         }
@@ -5305,12 +5307,12 @@ public final class Messages {
         for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> entry
              : internalGetQuerySupersteps().getMap().entrySet()) {
           com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Integer>
-          querySupersteps__ = QuerySuperstepsDefaultEntryHolder.defaultEntry.newBuilderForType()
+          querySupersteps = QuerySuperstepsDefaultEntryHolder.defaultEntry.newBuilderForType()
               .setKey(entry.getKey())
               .setValue(entry.getValue())
               .build();
           size += com.google.protobuf.CodedOutputStream
-              .computeMessageSize(1, querySupersteps__);
+              .computeMessageSize(1, querySupersteps);
         }
         for (int i = 0; i < sendQueryChunks_.size(); i++) {
           size += com.google.protobuf.CodedOutputStream
