@@ -1,8 +1,8 @@
 # Overview
-[TODO Name] is a graph processing system that can process multiple queries concurrently in an optimized way.
+Q-Graph is a graph processing system that can process multiple queries concurrently in an optimized way.
 
 # Architecture
-TODO Master, Worker, Input, Output, Plotting, Apps
+Several components, Master, Worker, Input, Output, Plotting, Apps
 
 # Shortest Path Example
 
