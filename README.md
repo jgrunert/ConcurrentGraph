@@ -23,10 +23,10 @@ inputFile must be a graph file TODO Format. One possibility to create this file 
 If extraJvmPerWorker [experimental] is enabled, each worker will be started in a sepatarate jvm.
 
 ## Cluster Deployment
-TODO
+Q-Graph was tested on different deployments. It supports running on distributed machines
 
 ## Input Partitioning
-There are different input partitioning strategies available: Direct, Hashed and [TODO LDG]. 
+There are different input partitioning strategies available, for example: Direct, Hashed or Hotspot-Clustering. 
 Direct means that the partitions are directly assigned, the vertex order is taken from the input files. 
 Hashing means that vertices are distributed on partitions using a hash function.
 
